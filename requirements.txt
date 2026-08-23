@@ -1,0 +1,5 @@
+Django
+Django REST Framework
+django-cors-headers
+supabase
+python-dotenv
