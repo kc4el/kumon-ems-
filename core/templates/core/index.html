@@ -212,20 +212,20 @@
               <span class="stat-label">TOTAL EMPLOYEES</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             </div>
-            <div class="stat-number">128</div>
+            <div class="stat-number" id="dashboardTotalEmployees">—</div>
             <div class="stat-footer">
-              <span class="trend-pill">↗ 8.4%</span>
+              <span class="trend-pill">Live count</span>
             </div>
           </div>
 
           <div class="stat-card gradient-blue">
             <div class="stat-header">
-              <span class="stat-label">APPLICANTS</span>
+              <span class="stat-label">ACTIVE EMPLOYEES</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
             </div>
-            <div class="stat-number">116</div>
+            <div class="stat-number" id="dashboardActiveEmployees">—</div>
             <div class="stat-footer">
-              <span class="trend-pill">↗ 3.2%</span>
+              <span class="trend-pill">Live count</span>
             </div>
           </div>
 
@@ -234,9 +234,9 @@
               <span class="stat-label">ON LEAVE</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
             </div>
-            <div class="stat-number">07</div>
+            <div class="stat-number" id="dashboardApprovedLeaves">—</div>
             <div class="stat-footer">
-              <span class="trend-pill">↗ 2.1%</span>
+              <span class="trend-pill">Approved requests</span>
             </div>
           </div>
 
@@ -245,9 +245,9 @@
               <span class="stat-label">PENDING ACTIONS</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             </div>
-            <div class="stat-number">03</div>
+            <div class="stat-number" id="dashboardPendingLeaves">—</div>
             <div class="stat-footer">
-              <span class="trend-pill highlight-pill">↗ Needs you</span>
+              <span class="trend-pill highlight-pill">Pending review</span>
             </div>
           </div>
         </div>
@@ -443,7 +443,7 @@
             </div>
           </div>
 
-          <div class="employee-cards-list" id="employeeRosterList">
+          <div class="employee-cards-list" id="employeeRosterList" aria-live="polite">
             <!-- Sarah Chen Profile Card (Expanded) -->
             <div class="employee-accordion-card open" data-dept="Engineering" data-role="Senior Dev" data-status="Present Today">
               <div class="card-summary" onclick="toggleAccordion(this)">
@@ -714,23 +714,21 @@
             <div class="form-grid-4">
               <div class="form-group">
                 <label>FULL LEGAL NAME</label>
-                <input type="text" placeholder="e.g. Samantha Vance" required />
+                <input id="onboardingName" name="full_name" type="text" placeholder="e.g. Samantha Vance" required />
               </div>
               <div class="form-group">
                 <label>CORPORATE EMAIL ADDRESS</label>
-                <input type="email" placeholder="samantha.vance@northstar.com" required />
+                <input id="onboardingEmail" name="email" type="email" placeholder="samantha.vance@northstar.com" required />
               </div>
               <div class="form-group">
                 <label>DEPARTMENT & ROLE</label>
-                <input type="text" placeholder="Engineering • Senior Full Stack Developer" required />
+                <select id="onboardingDepartment" name="department_id" class="custom-select" required>
+                  <option value="">Select a department</option>
+                </select>
               </div>
               <div class="form-group">
                 <label>ASSIGNED MANAGER & START DATE</label>
-                <select class="custom-select">
-                  <option>Alex Rivera • Starting Aug 25, 2025</option>
-                  <option>Marcus Williams • Starting Sep 01, 2025</option>
-                  <option>James O'Brien • Starting Sep 15, 2025</option>
-                </select>
+                <input id="onboardingStartDate" name="start_date" type="date" required />
               </div>
             </div>
 
@@ -1568,16 +1566,13 @@
       <form id="leaveApplicationForm" onsubmit="handleApplyLeave(event)">
         <div class="form-group">
           <label>APPLICANT</label>
-          <select class="custom-select" required>
-            <option>Marcus Williams (Sales)</option>
-            <option>Sarah Chen (Engineering)</option>
-            <option>Priya Patel (Marketing)</option>
-            <option>David Kim (Finance)</option>
+          <select id="leaveEmployee" name="employee_id" class="custom-select" required>
+            <option value="">Select an employee</option>
           </select>
         </div>
         <div class="form-group">
           <label>LEAVE TYPE</label>
-          <select class="custom-select" required>
+          <select id="leaveType" name="leave_type" class="custom-select" required>
             <option>Annual Vacation</option>
             <option>Medical / Sick Leave</option>
             <option>Casual Leave</option>
@@ -1589,16 +1584,16 @@
         <div class="form-grid-2">
           <div class="form-group">
             <label>START DATE</label>
-            <input type="date" required />
+            <input id="leaveStartDate" name="start_date" type="date" required />
           </div>
           <div class="form-group">
             <label>END DATE</label>
-            <input type="date" required />
+            <input id="leaveEndDate" name="end_date" type="date" required />
           </div>
         </div>
         <div class="form-group">
           <label>REASON / HANDOVER NOTES</label>
-          <textarea rows="3" placeholder="Describe coverage and handover arrangements..." required></textarea>
+          <textarea id="leaveReason" name="reason" rows="3" placeholder="Describe coverage and handover arrangements..." required></textarea>
         </div>
         <div class="modal-actions">
           <button type="button" class="btn btn-outline-secondary" onclick="closeLeaveModal()">Cancel</button>

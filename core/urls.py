@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import (
+    DashboardSummaryView,
     # 1. Departments
     DepartmentListCreateView,
     DepartmentDetailView,
@@ -30,6 +31,8 @@ from .views import (
 )
 
 urlpatterns = [
+    path('dashboard-summary/', DashboardSummaryView.as_view(), name='dashboard-summary'),
+
     # Departments
     path('departments/', DepartmentListCreateView.as_view(), name='department-list-create'),
     path('departments/<uuid:pk>/', DepartmentDetailView.as_view(), name='department-detail'),
