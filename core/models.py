@@ -5,7 +5,7 @@ class Department(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, unique=True)
     code = models.CharField(max_length=50, unique=True, null=True, blank=True)
-    manager_id = models.UUIDField(null=True, blank=True)
+    manager = models.ForeignKey('Employee', on_delete=models.SET_NULL, null=True, blank=True, related_name='managed_departments')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -17,6 +17,7 @@ class Employee(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
+    role = models.CharField(max_length=100, blank=True, null=True)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
     date_hired = models.DateField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
@@ -31,23 +32,28 @@ class Attendance(models.Model):
     clock_in = models.DateTimeField(null=True, blank=True)
     clock_out = models.DateTimeField(null=True, blank=True)
 
+    class Meta:
+        unique_together = ('employee', 'date')
+
 class LeaveRequest(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    leave_type = models.CharField(max_length=50, default='Personal')
     start_date = models.DateField()
     end_date = models.DateField()
     reason = models.TextField()
     status = models.CharField(max_length=50, default='Pending')
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
 class ShiftRoster(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=255)
-    shift_type = models.CharField(max_length=50)
+    name = models.CharField(max_length=255, null=True, blank=True) 
+    shift_type = models.CharField(max_length=50, default='General')
     start_time = models.TimeField()
     end_time = models.TimeField()
     break_mins = models.IntegerField(default=0)
-    created_at = models.DateTimeField()
-    updated_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 class PayrollRun(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
