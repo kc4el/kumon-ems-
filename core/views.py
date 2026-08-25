@@ -1,14 +1,62 @@
 from rest_framework.views import APIView
+import logging
+import uuid
+
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import render
 from .supabase_client import supabase
 from postgrest.exceptions import APIError
+from supabase_auth.errors import AuthApiError
+
+logger = logging.getLogger(__name__)
 
 
 # 0. Dashboard View
 def dashboard_view(request):
     return render(request, 'core/index.html')
+
+
+class DashboardSummaryView(APIView):
+    """Return the aggregate counts required by the dashboard landing page."""
+
+    def get(self, request):
+        try:
+            employees = supabase.table("employees").select("*").execute().data or []
+            leave_requests = supabase.table("leave_requests").select("*").execute().data or []
+            attendance_records = supabase.table("attendance").select("*").execute().data or []
+
+            approved_leaves = sum(
+                1
+                for leave_request in leave_requests
+                if str(leave_request.get("status", "")).lower() == "approved"
+            )
+            pending_leaves = sum(
+                1
+                for leave_request in leave_requests
+                if str(leave_request.get("status", "")).lower() == "pending"
+            )
+            open_attendance_records = sum(
+                1 for record in attendance_records if not record.get("clock_out")
+            )
+
+            return Response(
+                {
+                    "total_employees": len(employees),
+                    "active_employees": sum(
+                        1 for employee in employees if employee.get("is_active", True)
+                    ),
+                    "approved_leaves": approved_leaves,
+                    "pending_leaves": pending_leaves,
+                    "open_attendance_records": open_attendance_records,
+                },
+                status=status.HTTP_200_OK,
+            )
+        except APIError:
+            return Response(
+                {"error": "Unable to load dashboard summary."},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
 
 
 # 1. Departments
@@ -63,10 +111,43 @@ class EmployeeListCreateView(APIView):
             return Response({"error": "Unable to load employees."}, status=status.HTTP_502_BAD_GATEWAY)
 
     def post(self, request):
+        payload = dict(request.data)
+        email = str(payload.get("email", "")).strip()
+        if not email:
+            return Response(
+                {"error": "An employee email address is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        created_user_id = None
         try:
-            result = supabase.table("employees").insert(request.data).execute()
+            record_id = str(uuid.uuid4())
+            auth_response = supabase.auth.admin.create_user(
+                {
+                    "id": record_id,
+                    "email": email,
+                    "email_confirm": True,
+                    "user_metadata": {
+                        "first_name": payload.get("first_name", ""),
+                        "last_name": payload.get("last_name", ""),
+                    },
+                }
+            )
+            created_user_id = str(auth_response.user.id)
+            payload["id"] = created_user_id
+            payload.setdefault(
+                "employee_code",
+                f"EMP-{created_user_id.replace('-', '')[:10].upper()}",
+            )
+            result = supabase.table("employees").insert(payload).execute()
             return Response(result.data, status=status.HTTP_201_CREATED)
-        except APIError:
+        except (APIError, AuthApiError) as error:
+            if created_user_id:
+                try:
+                    supabase.auth.admin.delete_user(created_user_id)
+                except AuthApiError:
+                    logger.exception("Unable to roll back Supabase Auth user %s", created_user_id)
+            logger.warning("Unable to create employee in Supabase: %s", error)
             return Response(
                 {"error": "Unable to create employee."},
                 status=status.HTTP_502_BAD_GATEWAY,
@@ -147,9 +228,13 @@ class LeaveRequestListCreateView(APIView):
 
     def post(self, request):
         try:
-            result = supabase.table("leave_requests").insert(request.data).execute()
+            payload = dict(request.data)
+            if payload.get("status"):
+                payload["status"] = str(payload["status"]).lower()
+            result = supabase.table("leave_requests").insert(payload).execute()
             return Response(result.data, status=status.HTTP_201_CREATED)
-        except APIError:
+        except APIError as error:
+            logger.warning("Unable to submit leave request to Supabase: %s", error)
             return Response(
                 {"error": "Unable to submit leave request."},
                 status=status.HTTP_502_BAD_GATEWAY,
@@ -169,6 +254,13 @@ class LeaveRequestDetailView(APIView):
             return Response(result.data, status=status.HTTP_200_OK)
         except APIError:
             return Response({"error": "Unable to update leave request."}, status=status.HTTP_502_BAD_GATEWAY)
+
+    def delete(self, request, pk):
+        try:
+            supabase.table("leave_requests").delete().eq("id", str(pk)).execute()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except APIError:
+            return Response({"error": "Unable to delete leave request."}, status=status.HTTP_502_BAD_GATEWAY)
 
 
 # 5. Shift Rosters

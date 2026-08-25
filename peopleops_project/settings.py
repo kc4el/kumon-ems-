@@ -22,13 +22,17 @@ load_dotenv(BASE_DIR / '.env')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-=sze1ngwx1jz$1t$mvi^)g=%b-olv1z5!(x_a$t3%+t7m(=*&^'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+# Keep production secrets and deployment settings in environment variables.
+SECRET_KEY = os.getenv(
+    'SECRET_KEY',
+    'django-insecure-=sze1ngwx1jz$1t$mvi^)g=%b-olv1z5!(x_a$t3%+t7m(=*&^',
+)
+DEBUG = os.getenv('DEBUG', 'False').strip().lower() in {'1', 'true', 'yes', 'on'}
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+    if host.strip()
+]
 
 
 # Application definition
