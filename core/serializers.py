@@ -19,6 +19,12 @@ class AttendanceSerializer(serializers.ModelSerializer):
         model = Attendance
         fields = '__all__'
 
+    def validate(self, data):
+        if not self.instance and 'employee' in data and 'date' in data:
+            if Attendance.objects.filter(employee=data['employee'], date=data['date']).exists():
+                raise serializers.ValidationError("This employee has already clocked in today.")
+        return data
+
 class LeaveRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = LeaveRequest
