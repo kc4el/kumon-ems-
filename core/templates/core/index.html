@@ -4,267 +4,208 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>peopleops - Northstar Studio (Kumon EMS)</title>
+  <title>peopleops (Kumon EMS)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Source+Sans+Pro:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'style.css' %}" />
 </head>
 <body>
   <div class="app-layout">
-    <!-- Sidebar Navigation -->
+    <!-- 280px Dark Navy / Slate Blue Sidebar -->
     <aside class="sidebar">
-      <div class="sidebar-brand">
-        <div class="brand-logo">
-          <span class="logo-p">p</span>
+      <div class="brand-header">
+        <div class="brand-logo-box">
+          <span class="brand-logo-text">p</span>
         </div>
-        <div class="brand-text">
+        <div class="brand-text-box">
           <span class="brand-name">peopleops</span>
-          <span class="brand-sub">PEOPLE, IN MOTION</span>
+          <span class="brand-tagline">PEOPLE, IN MOTION</span>
         </div>
       </div>
 
-      <div class="workspace-selector">
-        <button class="workspace-btn" id="workspaceBtn">
-          <span class="status-dot"></span>
-          <span class="workspace-title">Northstar Studio</span>
-          <svg class="chevron-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"></polyline>
+      <nav class="sidebar-navigation">
+        <a href="#" class="nav-link active" data-view="dashboard">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
           </svg>
-        </button>
-      </div>
-
-      <nav class="sidebar-nav">
-        <div class="nav-group">
-          <span class="group-label">WORKSPACE</span>
-          <a href="#" class="nav-item active" data-view="dashboard">
-            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="7" height="7"></rect>
-              <rect x="14" y="3" width="7" height="7"></rect>
-              <rect x="14" y="14" width="7" height="7"></rect>
-              <rect x="3" y="14" width="7" height="7"></rect>
-            </svg>
-            <span>Overview</span>
-          </a>
-          <a href="#" class="nav-item" data-view="employee-directory">
-            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-            <span>Employees</span>
-          </a>
-        </div>
-
-        <div class="nav-group">
-          <span class="group-label">OPERATIONS</span>
-          <a href="#" class="nav-item" data-view="attendance-daily">
-            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            <span>Attendance</span>
-          </a>
-          <a href="#" class="nav-item" data-view="attendance-leave">
-            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-            <span>Leave</span>
-          </a>
-          <a href="#" class="nav-item" data-view="payroll">
-            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <path d="M12 6v12M15 9.5H9.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H8"></path>
-            </svg>
-            <span>Payroll</span>
-          </a>
-        </div>
-
-        <div class="nav-group">
-          <span class="group-label">EMPLOYEE PORTAL</span>
-          <a href="#" class="nav-item" data-view="my-details">
-            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-              <line x1="8" y1="21" x2="16" y2="21"></line>
-              <line x1="12" y1="17" x2="12" y2="21"></line>
-            </svg>
-            <span>My Details</span>
-          </a>
-          <a href="#" class="nav-item" data-view="claims">
-            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-            </svg>
-            <span>Claims</span>
-          </a>
-        </div>
-
-        <div class="nav-group">
-          <span class="group-label">MANAGE</span>
-          <a href="#" class="nav-item" data-view="reports">
-            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="20" x2="18" y2="10"></line>
-              <line x1="12" y1="20" x2="12" y2="4"></line>
-              <line x1="6" y1="20" x2="6" y2="14"></line>
-            </svg>
-            <span>Reports</span>
-          </a>
-        </div>
+          <span>Overview</span>
+        </a>
+        <a href="#" class="nav-link" data-view="employee-directory">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <span>Employees</span>
+        </a>
+        <a href="#" class="nav-link" data-view="attendance-daily">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>Attendance</span>
+        </a>
+        <a href="#" class="nav-link" data-view="payroll">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 6v12M15 9.5H9.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H8"></path>
+          </svg>
+          <span>Payroll</span>
+        </a>
+        <a href="#" class="nav-link" data-view="profile">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+          <span>Profile</span>
+        </a>
+        <a href="#" class="nav-link" data-view="claims">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <span>Claims</span>
+        </a>
+        <a href="#" class="nav-link" data-view="reports">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          <span>Reports</span>
+        </a>
       </nav>
     </aside>
 
     <!-- Main Content Area -->
-    <main class="main-viewport">
-      <!-- Top Navbar -->
-      <header class="topbar">
-        <div class="breadcrumbs" id="breadcrumbTrail">
-          <span class="crumb-root">Northstar Studio</span>
-          <span class="crumb-divider">/</span>
-          <span class="crumb-active" id="currentCrumb">Overview</span>
+    <main class="main-content-area">
+      <!-- Top Header Bar -->
+      <header class="top-header-bar">
+        <div class="header-breadcrumbs" id="breadcrumbTrail">
+          <span class="bc-page" id="currentCrumb">Overview</span>
         </div>
 
-        <div class="topbar-actions">
-          <div class="search-box">
-            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <div class="header-right-tools">
+          <div class="search-input-pill">
+            <svg class="search-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            <input type="text" id="globalSearch" placeholder="Search employee, team, request..." />
-            <span class="search-badge">⌘K</span>
+            <input type="text" id="globalSearch" placeholder="Search..." />
+            <span class="cmd-k-badge">⌘K</span>
           </div>
 
-          <button class="icon-btn" title="Notifications" id="notifBtn" onclick="showToast('You have 3 pending employee action items.')">
+          <button class="header-icon-btn" title="Notifications" onclick="showToast('3 priority employee actions pending.')">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
-            <span class="notif-badge"></span>
           </button>
 
-          <div class="user-avatar" title="Marcus Williams (Senior Dev / HR Lead)">
+          <div class="user-avatar-circle" title="MW • Marcus Williams">
             <span>MW</span>
           </div>
         </div>
       </header>
 
-      <!-- VIEW 1: DASHBOARD / OVERVIEW -->
+      <!-- ======================================================================
+           VIEW 1: DASHBOARD / OVERVIEW (dasbord)
+           ====================================================================== -->
       <section class="view-panel active" id="view-dashboard">
-        <div class="page-header">
-          <div class="date-badge">MON, 09 JUNE 2026</div>
-          <h1 class="page-title">Greetings, gurt!</h1>
-          <p class="page-subtitle">Here’s what’s happening with your team today.</p>
-          <div class="hero-actions">
-            <button class="btn btn-primary" onclick="switchView('employee-manage')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-              <span>Add employee</span>
-            </button>
-            <button class="btn btn-secondary" onclick="switchView('attendance-leave')">
-              <span>Review leave</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Summary Floating Cards (June 2026 & People Pulse) -->
-        <div class="hero-summary-grid">
-          <div class="mini-summary-card dark-navy">
-            <div class="mini-card-tag">JUNE 2026</div>
-            <div class="summary-pill-list">
-              <div class="sum-pill"><span class="pill-count count-green">24</span> Active Shift</div>
-              <div class="sum-pill"><span class="pill-count count-yellow">07</span> On Approved Leave</div>
-              <div class="sum-pill"><span class="pill-count count-blue">12</span> Team Arrivals Today</div>
+        <!-- Hero Greetings Banner & Pulse Cards -->
+        <div class="dashboard-hero-layout">
+          <div class="hero-text-side">
+            <span class="hero-date-tag">MON,  09  JUNE  2026</span>
+            <h1 class="hero-heading">Greetings, gurt!</h1>
+            <p class="hero-subtext">Here’s what’s happening with your team today.</p>
+            <div class="hero-cta-buttons">
+              <button class="btn btn-blue-cta" onclick="switchView('employee-manage')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>Add employee</span>
+              </button>
+              <button class="btn btn-light-blue-cta" onclick="switchView('attendance-leave')">
+                <span>Review leave</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+              </button>
             </div>
           </div>
 
-          <div class="mini-summary-card mint-pulse">
-            <div class="mini-card-tag pulse-tag">PEOPLE PULSE</div>
-            <div class="pulse-metrics">
-              <div class="pulse-item">
-                <span class="pulse-icon">😊</span>
-                <span class="pulse-label">Attendance:</span>
-                <span class="pulse-val">94.2%</span>
-              </div>
-              <div class="pulse-item">
-                <span class="pulse-icon">👥</span>
-                <span class="pulse-label">Retention:</span>
-                <span class="pulse-val">98.4%</span>
-              </div>
-              <div class="pulse-item">
-                <span class="pulse-icon">📊</span>
-                <span class="pulse-label">Engagement:</span>
-                <span class="pulse-val">High</span>
-              </div>
+          <div class="hero-summary-cards-side">
+            <!-- June 2026 Card -->
+            <div class="summary-box dark-navy-box">
+              <span class="summary-tag">JUNE 2026</span>
+              <div class="pill-badge-row"><span class="num-tag green-num">24</span> Active Shift</div>
+              <div class="pill-badge-row"><span class="num-tag yellow-num">07</span> On Approved Leave</div>
+              <div class="pill-badge-row"><span class="num-tag lightblue-num">12</span> Team Arrivals Today</div>
+            </div>
+
+            <!-- People Pulse Card -->
+            <div class="summary-box mint-pulse-box">
+              <span class="summary-tag mint-tag">PEOPLE PULSE</span>
+              <div class="pulse-stat-row"><span class="ico">😊</span> Attendance: <strong>94.2%</strong></div>
+              <div class="pulse-stat-row"><span class="ico">👥</span> Retention: <strong>98.4%</strong></div>
+              <div class="pulse-stat-row"><span class="ico">📊</span> Engagement: <strong>High</strong></div>
             </div>
           </div>
         </div>
 
-        <!-- Metric Cards -->
-        <div class="metric-cards-grid">
-          <div class="stat-card gradient-blue">
-            <div class="stat-header">
-              <span class="stat-label">TOTAL EMPLOYEES</span>
+        <!-- Aesthetic 4 KPI Cards Row -->
+        <div class="kpi-cards-4grid">
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span>TOTAL EMPLOYEES</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             </div>
-            <div class="stat-number" id="dashboardTotalEmployees">—</div>
-            <div class="stat-footer">
-              <span class="trend-pill">Live count</span>
-            </div>
+            <div class="kpi-value">128</div>
+            <div class="kpi-trend">↗ 8.4%</div>
           </div>
 
-          <div class="stat-card gradient-blue">
-            <div class="stat-header">
-              <span class="stat-label">ACTIVE EMPLOYEES</span>
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span>APPLICANTS</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
             </div>
-            <div class="stat-number" id="dashboardActiveEmployees">—</div>
-            <div class="stat-footer">
-              <span class="trend-pill">Live count</span>
-            </div>
+            <div class="kpi-value">116</div>
+            <div class="kpi-trend">↗ 3.2%</div>
           </div>
 
-          <div class="stat-card gradient-blue">
-            <div class="stat-header">
-              <span class="stat-label">ON LEAVE</span>
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span>ON LEAVE</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
             </div>
-            <div class="stat-number" id="dashboardApprovedLeaves">—</div>
-            <div class="stat-footer">
-              <span class="trend-pill">Approved requests</span>
-            </div>
+            <div class="kpi-value">07</div>
+            <div class="kpi-trend">↗ 2.1%</div>
           </div>
 
-          <div class="stat-card gradient-blue">
-            <div class="stat-header">
-              <span class="stat-label">PENDING ACTIONS</span>
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span>PENDING ACTIONS</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             </div>
-            <div class="stat-number" id="dashboardPendingLeaves">—</div>
-            <div class="stat-footer">
-              <span class="trend-pill highlight-pill">Pending review</span>
-            </div>
+            <div class="kpi-value">03</div>
+            <div class="kpi-trend">↗ Needs you</div>
           </div>
         </div>
 
-        <!-- Dashboard Split Sections -->
-        <div class="dashboard-content-split">
-          <!-- Attendance Table Panel -->
-          <div class="panel-card attendance-panel">
-            <div class="panel-header">
-              <div>
-                <h3 class="panel-title">Attendance Today</h3>
-                <p class="panel-subtitle">Real-time employee arrivals and active status across departments</p>
-              </div>
-              <button class="btn btn-outline-sm" onclick="switchView('attendance-daily')">View All</button>
+        <!-- Split Content Row: Attendance Today (Left) & Priority Actions (Right) -->
+        <div class="dashboard-split-row">
+          <!-- Left: Attendance Today Table Card -->
+          <div class="white-card card-attendance">
+            <div class="card-header-simple">
+              <h2 class="card-title">Attendance Today</h2>
+              <p class="card-sub">Real-time employee arrivals and active status across departments</p>
             </div>
-            <div class="table-container">
-              <table class="data-table">
+            <div class="table-wrap">
+              <table class="penpot-table">
                 <thead>
                   <tr>
                     <th>NAME</th>
@@ -274,47 +215,47 @@
                     <th>ARRIVAL TIME</th>
                   </tr>
                 </thead>
-                <tbody id="dashboardAttendanceBody">
+                <tbody>
                   <tr>
-                    <td class="font-bold">Sarah Chen</td>
+                    <td class="bold-title">Sarah Chen</td>
                     <td>Engineering</td>
                     <td>Senior Dev</td>
-                    <td><span class="badge badge-success">Present Today</span></td>
+                    <td><span class="penpot-badge badge-present">Present Today</span></td>
                     <td>08:45 AM</td>
                   </tr>
                   <tr>
-                    <td class="font-bold">Marcus Williams</td>
+                    <td class="bold-title">Marcus Williams</td>
                     <td>Sales</td>
                     <td>Account Exec</td>
-                    <td><span class="badge badge-success">Present Today</span></td>
+                    <td><span class="penpot-badge badge-present">Present Today</span></td>
                     <td>08:52 AM</td>
                   </tr>
                   <tr>
-                    <td class="font-bold">Priya Patel</td>
+                    <td class="bold-title">Priya Patel</td>
                     <td>Marketing</td>
                     <td>Brand Lead</td>
-                    <td><span class="badge badge-purple">Probation</span></td>
+                    <td><span class="penpot-badge badge-probation">Probation</span></td>
                     <td>09:05 AM</td>
                   </tr>
                   <tr>
-                    <td class="font-bold">James O'Brien</td>
+                    <td class="bold-title">James O'Brien</td>
                     <td>Operations</td>
                     <td>Ops Manager</td>
-                    <td><span class="badge badge-success">Present Today</span></td>
+                    <td><span class="penpot-badge badge-present">Present Today</span></td>
                     <td>08:30 AM</td>
                   </tr>
                   <tr>
-                    <td class="font-bold">Elena Rodriguez</td>
+                    <td class="bold-title">Elena Rodriguez</td>
                     <td>HR</td>
                     <td>HR Specialist</td>
-                    <td><span class="badge badge-success">Present Today</span></td>
+                    <td><span class="penpot-badge badge-present">Present Today</span></td>
                     <td>08:40 AM</td>
                   </tr>
                   <tr>
-                    <td class="font-bold">David Kim</td>
+                    <td class="bold-title">David Kim</td>
                     <td>Finance</td>
                     <td>Analyst</td>
-                    <td><span class="badge badge-warning">On Leave</span></td>
+                    <td><span class="penpot-badge badge-leave">On Leave</span></td>
                     <td>Approved PTO</td>
                   </tr>
                 </tbody>
@@ -322,101 +263,103 @@
             </div>
           </div>
 
-          <!-- Priority Actions Panel -->
-          <div class="panel-card priority-panel">
-            <h3 class="panel-title">Priority Actions</h3>
-            <div class="action-items-list">
-              <div class="priority-item item-amber">
-                <div class="priority-info">
+          <!-- Right: Priority Actions Card -->
+          <div class="white-card card-priority">
+            <h2 class="card-title" style="margin-bottom:16px;">Priority Actions</h2>
+            <div class="priority-actions-stack">
+              <div class="action-tile tile-yellow">
+                <div class="tile-content">
                   <strong>Leave Request: Sarah Chen</strong>
-                  <p>3 days PTO (Aug 15 - Aug 18) • Pending approval</p>
+                  <span>3 days PTO (Aug 15 - Aug 18) • Pending approval</span>
                 </div>
-                <button class="btn btn-dark-sm" onclick="switchView('attendance-leave')">Review ↗</button>
+                <button class="btn btn-black-sm" onclick="switchView('attendance-leave')">Review ↗</button>
               </div>
 
-              <div class="priority-item item-mint">
-                <div class="priority-info">
-                  <strong>Q3 All-Hands Meeting</strong>
-                  <p>Tomorrow at 3:00 PM • Main Auditorium & Zoom</p>
+              <div class="action-tile tile-green">
+                <div class="tile-content">
+                  <strong style="color:#065f46;">Q3 All-Hands Meeting</strong>
+                  <span>Tomorrow at 3:00 PM • Main Auditorium & Zoom</span>
                 </div>
-                <button class="btn btn-outline-dark-sm">Company</button>
+                <button class="btn btn-outline-white-sm">Company</button>
               </div>
 
-              <div class="priority-item item-purple">
-                <div class="priority-info">
-                  <strong>Contract Renewal Needed</strong>
-                  <p>3 Engineering team contracts expiring this week</p>
+              <div class="action-tile tile-purple">
+                <div class="tile-content">
+                  <strong style="color:#4338ca;">Contract Renewal Needed</strong>
+                  <span>3 Engineering team contracts expiring this week</span>
                 </div>
-                <button class="btn btn-primary-sm" onclick="switchView('employee-manage')">Action ↗</button>
+                <button class="btn btn-blue-sm" onclick="switchView('employee-manage')">Action ↗</button>
               </div>
 
-              <div class="priority-item item-rose">
-                <div class="priority-info">
-                  <strong>Q3 Performance Reviews</strong>
-                  <p>86% complete • 14 manager reviews pending</p>
+              <div class="action-tile tile-pink">
+                <div class="tile-content">
+                  <strong style="color:#9f1239;">Q3 Performance Reviews</strong>
+                  <span>86% complete • 14 manager reviews pending</span>
                 </div>
-                <button class="btn btn-outline-dark-sm" onclick="switchView('employee-directory')">Track ↗</button>
+                <button class="btn btn-outline-white-sm" onclick="switchView('employee-directory')">Track ↗</button>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- VIEW 2: EMPLOYEE DIRECTORY & PROFILES -->
+      <!-- ======================================================================
+           VIEW 2: EMPLOYEE DIRECTORY & PROFILES (employee - directory)
+           ====================================================================== -->
       <section class="view-panel" id="view-employee-directory">
-        <div class="page-header-row">
-          <div>
-            <h1 class="page-title">Employee Directory & Profiles</h1>
-            <p class="page-subtitle">Comprehensive corporate employee directory, organizational structure, profiles, and team contact details.</p>
+        <div class="page-title-block">
+          <h1 class="penpot-page-heading">Employee Directory & Profiles</h1>
+          <p class="penpot-page-sub">Comprehensive corporate employee directory, organizational structure, profiles, and team contact details.</p>
+        </div>
+
+        <!-- Subnav Pill Tabs -->
+        <div class="penpot-subnav-row">
+          <div class="pill-tabs-container">
+            <button class="tab-pill active" onclick="switchView('employee-directory')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              <span>Employee List</span>
+            </button>
+            <button class="tab-pill" onclick="switchView('employee-manage')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>Manage Staff</span>
+            </button>
+            <button class="tab-pill" onclick="switchView('employee-grievance')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span>Grievance Tracker</span>
+            </button>
           </div>
         </div>
 
-        <!-- Section Navigation Tabs -->
-        <div class="subnav-tabs">
-          <button class="tab-btn active" onclick="switchView('employee-directory')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-            <span>Employee List</span>
-          </button>
-          <button class="tab-btn" onclick="switchView('employee-manage')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            <span>Manage Staff</span>
-          </button>
-          <button class="tab-btn" onclick="switchView('employee-grievance')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            <span>Grievance Tracker</span>
-          </button>
-        </div>
-
-        <!-- Metrics for Directory -->
-        <div class="metric-cards-grid">
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">TOTAL DIRECTORY HEADCOUNT</span></div>
-            <div class="stat-number">128</div>
-            <div class="stat-footer"><span class="stat-subinfo">116 Active • 7 PTO</span></div>
+        <!-- 4 KPI Cards -->
+        <div class="kpi-cards-4grid">
+          <div class="kpi-card">
+            <div class="kpi-head"><span>TOTAL DIRECTORY HEADCOUNT</span></div>
+            <div class="kpi-value">128</div>
+            <div class="kpi-subtext">116 Active • 7 PTO</div>
           </div>
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">DEPARTMENTS & TEAMS</span></div>
-            <div class="stat-number">06</div>
-            <div class="stat-footer"><span class="stat-subinfo">Engineering, Sales, etc.</span></div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>DEPARTMENTS & TEAMS</span></div>
+            <div class="kpi-value">06</div>
+            <div class="kpi-subtext">Engineering, Sales, etc.</div>
           </div>
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">PROBATIONARY EMPLOYEES</span></div>
-            <div class="stat-number">04</div>
-            <div class="stat-footer"><span class="stat-subinfo">In 90-Day Review</span></div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>PROBATIONARY EMPLOYEES</span></div>
+            <div class="kpi-value">04</div>
+            <div class="kpi-subtext">In 90-Day Review</div>
           </div>
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">ORGANIZATIONAL RETENTION</span></div>
-            <div class="stat-number">67.67%</div>
-            <div class="stat-footer"><span class="stat-subinfo">Annual Score</span></div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>ORGANIZATIONAL RETENTION</span></div>
+            <div class="kpi-value">67.67%</div>
+            <div class="kpi-subtext">Annual Score</div>
           </div>
         </div>
 
-        <!-- Roster Panel with Filter Controls -->
-        <div class="panel-card roster-panel">
-          <div class="panel-header-flex">
-            <h3 class="panel-title">Corporate Employee Roster & Expandable Profiles</h3>
-            <div class="filters-row">
-              <select class="custom-select" id="deptFilter" onchange="filterDirectory()">
+        <!-- Corporate Employee Roster Card -->
+        <div class="white-card card-roster">
+          <div class="roster-top-bar">
+            <h2 class="card-title">Corporate Employee Roster & Expandable Profiles</h2>
+            <div class="roster-filters">
+              <select class="penpot-select" id="deptFilter" onchange="filterDirectory()">
                 <option value="all">All Departments</option>
                 <option value="Engineering">Engineering</option>
                 <option value="Sales">Sales</option>
@@ -425,7 +368,7 @@
                 <option value="HR">HR</option>
                 <option value="Finance">Finance</option>
               </select>
-              <select class="custom-select" id="roleFilter" onchange="filterDirectory()">
+              <select class="penpot-select" id="roleFilter" onchange="filterDirectory()">
                 <option value="all">All Roles</option>
                 <option value="Senior Dev">Senior Dev</option>
                 <option value="Account Exec">Account Exec</option>
@@ -434,7 +377,7 @@
                 <option value="HR Specialist">HR Specialist</option>
                 <option value="Analyst">Analyst</option>
               </select>
-              <select class="custom-select" id="statusFilter" onchange="filterDirectory()">
+              <select class="penpot-select" id="statusFilter" onchange="filterDirectory()">
                 <option value="all">All Statuses</option>
                 <option value="Present Today">Present Today</option>
                 <option value="Probation">Probation</option>
@@ -443,229 +386,229 @@
             </div>
           </div>
 
-          <div class="employee-cards-list" id="employeeRosterList" aria-live="polite">
-            <!-- Sarah Chen Profile Card (Expanded) -->
-            <div class="employee-accordion-card open" data-dept="Engineering" data-role="Senior Dev" data-status="Present Today">
-              <div class="card-summary" onclick="toggleAccordion(this)">
-                <div class="employee-identity">
-                  <div class="id-icon">📇</div>
-                  <span class="emp-name">Sarah Chen</span>
-                  <span class="emp-role">Senior Dev • Engineering Department</span>
+          <div class="accordion-roster-list" id="employeeRosterList">
+            <!-- Sarah Chen -->
+            <div class="roster-accordion-card open" data-dept="Engineering" data-role="Senior Dev" data-status="Present Today">
+              <div class="acc-summary" onclick="toggleAccordion(this)">
+                <div class="acc-left">
+                  <span class="acc-id-icon">📇</span>
+                  <strong class="acc-name">Sarah Chen</strong>
+                  <span class="acc-role">Senior Dev • Engineering Department</span>
                 </div>
-                <div class="summary-meta">
-                  <span class="badge badge-success">Present Today</span>
-                  <span class="toggle-indicator">▲ Collapse Profile</span>
+                <div class="acc-right">
+                  <span class="penpot-badge badge-present">Present Today</span>
+                  <span class="acc-toggle-tag">▲ Collapse Profile</span>
                 </div>
               </div>
-              <div class="card-details">
-                <div class="detail-columns-grid">
-                  <div class="detail-col">
-                    <span class="detail-heading">CONTACT & WORK LOCATION</span>
-                    <div class="detail-row"><span class="detail-ico">✉</span> sarah.chen@northstar.com</div>
-                    <div class="detail-row"><span class="detail-ico">📞</span> +1 (555) 234-5678</div>
-                    <div class="detail-row"><span class="detail-ico">📍</span> San Francisco HQ (Floor 4)</div>
+              <div class="acc-expanded-body">
+                <div class="acc-cols-grid">
+                  <div class="acc-col">
+                    <span class="col-head">CONTACT & WORK LOCATION</span>
+                    <div class="col-item"><span class="ico">✉</span> sarah.chen@peopleops.com</div>
+                    <div class="col-item"><span class="ico">📞</span> +1 (555) 234-5678</div>
+                    <div class="col-item"><span class="ico">📍</span> San Francisco HQ (Floor 4)</div>
                   </div>
-                  <div class="detail-col">
-                    <span class="detail-heading">EMPLOYMENT & ORG DETAILS</span>
-                    <div class="detail-row"><span class="detail-ico">📅</span> Jan 15, 2022</div>
-                    <div class="detail-row"><span class="detail-ico">💲</span> Grade L6</div>
+                  <div class="acc-col">
+                    <span class="col-head">EMPLOYMENT & ORG DETAILS</span>
+                    <div class="col-item"><span class="ico">📅</span> Jan 15, 2022</div>
+                    <div class="col-item"><span class="ico">💲</span> Grade L6</div>
                   </div>
-                  <div class="detail-col">
-                    <span class="detail-heading">PERFORMANCE & CONTACT ACTIONS</span>
-                    <div class="perf-rating">Q2 Performance Rating: <strong>Exceeds (4.8/5.0)</strong></div>
-                    <div class="actions-buttons-row">
-                      <button class="btn btn-dark-sm">View Full Profile</button>
-                      <button class="btn btn-outline-purple-sm">Message on Slack</button>
+                  <div class="acc-col">
+                    <span class="col-head">PERFORMANCE & CONTACT ACTIONS</span>
+                    <div class="perf-text">Q2 Performance Rating: <strong>Exceeds (4.8/5.0)</strong></div>
+                    <div class="acc-btn-row">
+                      <button class="btn btn-black-sm">View Full Profile</button>
+                      <button class="btn btn-purple-outline-sm">Message on Slack</button>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Marcus Williams Card (Expanded) -->
-            <div class="employee-accordion-card open" data-dept="Engineering" data-role="Senior Dev" data-status="Present Today">
-              <div class="card-summary" onclick="toggleAccordion(this)">
-                <div class="employee-identity">
-                  <div class="id-icon">📇</div>
-                  <span class="emp-name">Marcus Williams</span>
-                  <span class="emp-role">Senior Dev • Engineering Department</span>
+            <!-- Marcus Williams -->
+            <div class="roster-accordion-card open" data-dept="Engineering" data-role="Senior Dev" data-status="Present Today">
+              <div class="acc-summary" onclick="toggleAccordion(this)">
+                <div class="acc-left">
+                  <span class="acc-id-icon">📇</span>
+                  <strong class="acc-name">Marcus Williams</strong>
+                  <span class="acc-role">Senior Dev • Engineering Department</span>
                 </div>
-                <div class="summary-meta">
-                  <span class="badge badge-success">Present Today</span>
-                  <span class="toggle-indicator">▲ Collapse Profile</span>
+                <div class="acc-right">
+                  <span class="penpot-badge badge-present">Present Today</span>
+                  <span class="acc-toggle-tag">▲ Collapse Profile</span>
                 </div>
               </div>
-              <div class="card-details">
-                <div class="detail-columns-grid">
-                  <div class="detail-col">
-                    <span class="detail-heading">CONTACT & WORK LOCATION</span>
-                    <div class="detail-row"><span class="detail-ico">✉</span> marcus.w@northstar.com</div>
-                    <div class="detail-row"><span class="detail-ico">📞</span> +1 (555) 345-6789</div>
-                    <div class="detail-row"><span class="detail-ico">📍</span> New York Hub (Floor 2)</div>
+              <div class="acc-expanded-body">
+                <div class="acc-cols-grid">
+                  <div class="acc-col">
+                    <span class="col-head">CONTACT & WORK LOCATION</span>
+                    <div class="col-item"><span class="ico">✉</span> marcus.w@peopleops.com</div>
+                    <div class="col-item"><span class="ico">📞</span> +1 (555) 345-6789</div>
+                    <div class="col-item"><span class="ico">📍</span> New York Hub (Floor 2)</div>
                   </div>
-                  <div class="detail-col">
-                    <span class="detail-heading">EMPLOYMENT & ORG DETAILS</span>
-                    <div class="detail-row"><span class="detail-ico">📅</span> Mar 01, 2023</div>
-                    <div class="detail-row"><span class="detail-ico">💲</span> Grade L5</div>
+                  <div class="acc-col">
+                    <span class="col-head">EMPLOYMENT & ORG DETAILS</span>
+                    <div class="col-item"><span class="ico">📅</span> Mar 01, 2023</div>
+                    <div class="col-item"><span class="ico">💲</span> Grade L5</div>
                   </div>
-                  <div class="detail-col">
-                    <span class="detail-heading">PERFORMANCE & CONTACT ACTIONS</span>
-                    <div class="perf-rating">Q2 Performance Rating: <strong>Exceeds (4.2/5.0)</strong></div>
-                    <div class="actions-buttons-row">
-                      <button class="btn btn-dark-sm">View Full Profile</button>
-                      <button class="btn btn-outline-purple-sm">Message on Slack</button>
+                  <div class="acc-col">
+                    <span class="col-head">PERFORMANCE & CONTACT ACTIONS</span>
+                    <div class="perf-text">Q2 Performance Rating: <strong>Exceeds (4.2/5.0)</strong></div>
+                    <div class="acc-btn-row">
+                      <button class="btn btn-black-sm">View Full Profile</button>
+                      <button class="btn btn-purple-outline-sm">Message on Slack</button>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Priya Patel Card (Collapsed) -->
-            <div class="employee-accordion-card" data-dept="Marketing" data-role="Brand Lead" data-status="Probation">
-              <div class="card-summary" onclick="toggleAccordion(this)">
-                <div class="employee-identity">
-                  <div class="id-icon">📇</div>
-                  <span class="emp-name">Priya Patel</span>
-                  <span class="emp-role">Brand Lead • Marketing Department</span>
+            <!-- Priya Patel -->
+            <div class="roster-accordion-card" data-dept="Marketing" data-role="Brand Lead" data-status="Probation">
+              <div class="acc-summary" onclick="toggleAccordion(this)">
+                <div class="acc-left">
+                  <span class="acc-id-icon">📇</span>
+                  <strong class="acc-name">Priya Patel</strong>
+                  <span class="acc-role">Brand Lead • Marketing Department</span>
                 </div>
-                <div class="summary-meta">
-                  <span class="badge badge-purple">Probation</span>
-                  <span class="toggle-indicator">▼ Expand Profile</span>
+                <div class="acc-right">
+                  <span class="penpot-badge badge-probation">Probation</span>
+                  <span class="acc-toggle-tag">▼ Expand Profile</span>
                 </div>
               </div>
-              <div class="card-details">
-                <div class="detail-columns-grid">
-                  <div class="detail-col">
-                    <span class="detail-heading">CONTACT & WORK LOCATION</span>
-                    <div class="detail-row"><span class="detail-ico">✉</span> priya.patel@northstar.com</div>
-                    <div class="detail-row"><span class="detail-ico">📞</span> +1 (555) 456-7890</div>
-                    <div class="detail-row"><span class="detail-ico">📍</span> Austin Office (Floor 1)</div>
+              <div class="acc-expanded-body">
+                <div class="acc-cols-grid">
+                  <div class="acc-col">
+                    <span class="col-head">CONTACT & WORK LOCATION</span>
+                    <div class="col-item"><span class="ico">✉</span> priya.patel@peopleops.com</div>
+                    <div class="col-item"><span class="ico">📞</span> +1 (555) 456-7890</div>
+                    <div class="col-item"><span class="ico">📍</span> Austin Office</div>
                   </div>
-                  <div class="detail-col">
-                    <span class="detail-heading">EMPLOYMENT & ORG DETAILS</span>
-                    <div class="detail-row"><span class="detail-ico">📅</span> Apr 10, 2026</div>
-                    <div class="detail-row"><span class="detail-ico">💲</span> Grade L4</div>
+                  <div class="acc-col">
+                    <span class="col-head">EMPLOYMENT & ORG DETAILS</span>
+                    <div class="col-item"><span class="ico">📅</span> Apr 10, 2026</div>
+                    <div class="col-item"><span class="ico">💲</span> Grade L4</div>
                   </div>
-                  <div class="detail-col">
-                    <span class="detail-heading">PERFORMANCE & CONTACT ACTIONS</span>
-                    <div class="perf-rating">90-Day Review: <strong>In Progress</strong></div>
-                    <div class="actions-buttons-row">
-                      <button class="btn btn-dark-sm">View Full Profile</button>
-                      <button class="btn btn-outline-purple-sm">Message on Slack</button>
+                  <div class="acc-col">
+                    <span class="col-head">PERFORMANCE & CONTACT ACTIONS</span>
+                    <div class="perf-text">90-Day Review: <strong>In Progress</strong></div>
+                    <div class="acc-btn-row">
+                      <button class="btn btn-black-sm">View Full Profile</button>
+                      <button class="btn btn-purple-outline-sm">Message on Slack</button>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- James O'Brien Card (Collapsed) -->
-            <div class="employee-accordion-card" data-dept="Operations" data-role="Ops Manager" data-status="Present Today">
-              <div class="card-summary" onclick="toggleAccordion(this)">
-                <div class="employee-identity">
-                  <div class="id-icon">📇</div>
-                  <span class="emp-name">James O'Brien</span>
-                  <span class="emp-role">Ops Manager • Operations Department</span>
+            <!-- James O'Brien -->
+            <div class="roster-accordion-card" data-dept="Operations" data-role="Ops Manager" data-status="Present Today">
+              <div class="acc-summary" onclick="toggleAccordion(this)">
+                <div class="acc-left">
+                  <span class="acc-id-icon">📇</span>
+                  <strong class="acc-name">James O'Brien</strong>
+                  <span class="acc-role">Ops Manager • Operations Department</span>
                 </div>
-                <div class="summary-meta">
-                  <span class="badge badge-success">Present Today</span>
-                  <span class="toggle-indicator">▼ Expand Profile</span>
+                <div class="acc-right">
+                  <span class="penpot-badge badge-present">Present Today</span>
+                  <span class="acc-toggle-tag">▼ Expand Profile</span>
                 </div>
               </div>
-              <div class="card-details">
-                <div class="detail-columns-grid">
-                  <div class="detail-col">
-                    <span class="detail-heading">CONTACT & WORK LOCATION</span>
-                    <div class="detail-row"><span class="detail-ico">✉</span> james.o@northstar.com</div>
-                    <div class="detail-row"><span class="detail-ico">📞</span> +1 (555) 567-8901</div>
-                    <div class="detail-row"><span class="detail-ico">📍</span> Chicago Hub</div>
+              <div class="acc-expanded-body">
+                <div class="acc-cols-grid">
+                  <div class="acc-col">
+                    <span class="col-head">CONTACT & WORK LOCATION</span>
+                    <div class="col-item"><span class="ico">✉</span> james.o@peopleops.com</div>
+                    <div class="col-item"><span class="ico">📞</span> +1 (555) 567-8901</div>
+                    <div class="col-item"><span class="ico">📍</span> Chicago Hub</div>
                   </div>
-                  <div class="detail-col">
-                    <span class="detail-heading">EMPLOYMENT & ORG DETAILS</span>
-                    <div class="detail-row"><span class="detail-ico">📅</span> Sep 14, 2021</div>
-                    <div class="detail-row"><span class="detail-ico">💲</span> Grade L6</div>
+                  <div class="acc-col">
+                    <span class="col-head">EMPLOYMENT & ORG DETAILS</span>
+                    <div class="col-item"><span class="ico">📅</span> Sep 14, 2021</div>
+                    <div class="col-item"><span class="ico">💲</span> Grade L6</div>
                   </div>
-                  <div class="detail-col">
-                    <span class="detail-heading">PERFORMANCE & CONTACT ACTIONS</span>
-                    <div class="perf-rating">Q2 Performance Rating: <strong>Strong (4.5/5.0)</strong></div>
-                    <div class="actions-buttons-row">
-                      <button class="btn btn-dark-sm">View Full Profile</button>
-                      <button class="btn btn-outline-purple-sm">Message on Slack</button>
+                  <div class="acc-col">
+                    <span class="col-head">PERFORMANCE & CONTACT ACTIONS</span>
+                    <div class="perf-text">Q2 Performance Rating: <strong>Strong (4.5/5.0)</strong></div>
+                    <div class="acc-btn-row">
+                      <button class="btn btn-black-sm">View Full Profile</button>
+                      <button class="btn btn-purple-outline-sm">Message on Slack</button>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Elena Rodriguez Card (Collapsed) -->
-            <div class="employee-accordion-card" data-dept="HR" data-role="HR Specialist" data-status="Present Today">
-              <div class="card-summary" onclick="toggleAccordion(this)">
-                <div class="employee-identity">
-                  <div class="id-icon">📇</div>
-                  <span class="emp-name">Elena Rodriguez</span>
-                  <span class="emp-role">HR Specialist • HR Department</span>
+            <!-- Elena Rodriguez -->
+            <div class="roster-accordion-card" data-dept="HR" data-role="HR Specialist" data-status="Present Today">
+              <div class="acc-summary" onclick="toggleAccordion(this)">
+                <div class="acc-left">
+                  <span class="acc-id-icon">📇</span>
+                  <strong class="acc-name">Elena Rodriguez</strong>
+                  <span class="acc-role">HR Specialist • HR Department</span>
                 </div>
-                <div class="summary-meta">
-                  <span class="badge badge-success">Present Today</span>
-                  <span class="toggle-indicator">▼ Expand Profile</span>
+                <div class="acc-right">
+                  <span class="penpot-badge badge-present">Present Today</span>
+                  <span class="acc-toggle-tag">▼ Expand Profile</span>
                 </div>
               </div>
-              <div class="card-details">
-                <div class="detail-columns-grid">
-                  <div class="detail-col">
-                    <span class="detail-heading">CONTACT & WORK LOCATION</span>
-                    <div class="detail-row"><span class="detail-ico">✉</span> elena.r@northstar.com</div>
-                    <div class="detail-row"><span class="detail-ico">📞</span> +1 (555) 678-9012</div>
-                    <div class="detail-row"><span class="detail-ico">📍</span> San Francisco HQ</div>
+              <div class="acc-expanded-body">
+                <div class="acc-cols-grid">
+                  <div class="acc-col">
+                    <span class="col-head">CONTACT & WORK LOCATION</span>
+                    <div class="col-item"><span class="ico">✉</span> elena.r@peopleops.com</div>
+                    <div class="col-item"><span class="ico">📞</span> +1 (555) 678-9012</div>
+                    <div class="col-item"><span class="ico">📍</span> San Francisco HQ</div>
                   </div>
-                  <div class="detail-col">
-                    <span class="detail-heading">EMPLOYMENT & ORG DETAILS</span>
-                    <div class="detail-row"><span class="detail-ico">📅</span> Feb 01, 2024</div>
-                    <div class="detail-row"><span class="detail-ico">💲</span> Grade L4</div>
+                  <div class="acc-col">
+                    <span class="col-head">EMPLOYMENT & ORG DETAILS</span>
+                    <div class="col-item"><span class="ico">📅</span> Feb 01, 2024</div>
+                    <div class="col-item"><span class="ico">💲</span> Grade L4</div>
                   </div>
-                  <div class="detail-col">
-                    <span class="detail-heading">PERFORMANCE & CONTACT ACTIONS</span>
-                    <div class="perf-rating">Q2 Performance Rating: <strong>Exceeds (4.7/5.0)</strong></div>
-                    <div class="actions-buttons-row">
-                      <button class="btn btn-dark-sm">View Full Profile</button>
-                      <button class="btn btn-outline-purple-sm">Message on Slack</button>
+                  <div class="acc-col">
+                    <span class="col-head">PERFORMANCE & CONTACT ACTIONS</span>
+                    <div class="perf-text">Q2 Performance Rating: <strong>Exceeds (4.7/5.0)</strong></div>
+                    <div class="acc-btn-row">
+                      <button class="btn btn-black-sm">View Full Profile</button>
+                      <button class="btn btn-purple-outline-sm">Message on Slack</button>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- David Kim Card (Collapsed) -->
-            <div class="employee-accordion-card" data-dept="Finance" data-role="Analyst" data-status="On Leave">
-              <div class="card-summary" onclick="toggleAccordion(this)">
-                <div class="employee-identity">
-                  <div class="id-icon">📇</div>
-                  <span class="emp-name">David Kim</span>
-                  <span class="emp-role">Analyst • Finance Department</span>
+            <!-- David Kim -->
+            <div class="roster-accordion-card" data-dept="Finance" data-role="Analyst" data-status="On Leave">
+              <div class="acc-summary" onclick="toggleAccordion(this)">
+                <div class="acc-left">
+                  <span class="acc-id-icon">📇</span>
+                  <strong class="acc-name">David Kim</strong>
+                  <span class="acc-role">Analyst • Finance Department</span>
                 </div>
-                <div class="summary-meta">
-                  <span class="badge badge-warning">On Leave</span>
-                  <span class="toggle-indicator">▼ Expand Profile</span>
+                <div class="acc-right">
+                  <span class="penpot-badge badge-leave">On Leave</span>
+                  <span class="acc-toggle-tag">▼ Expand Profile</span>
                 </div>
               </div>
-              <div class="card-details">
-                <div class="detail-columns-grid">
-                  <div class="detail-col">
-                    <span class="detail-heading">CONTACT & WORK LOCATION</span>
-                    <div class="detail-row"><span class="detail-ico">✉</span> david.kim@northstar.com</div>
-                    <div class="detail-row"><span class="detail-ico">📞</span> +1 (555) 789-0123</div>
-                    <div class="detail-row"><span class="detail-ico">📍</span> New York Hub</div>
+              <div class="acc-expanded-body">
+                <div class="acc-cols-grid">
+                  <div class="acc-col">
+                    <span class="col-head">CONTACT & WORK LOCATION</span>
+                    <div class="col-item"><span class="ico">✉</span> david.kim@peopleops.com</div>
+                    <div class="col-item"><span class="ico">📞</span> +1 (555) 789-0123</div>
+                    <div class="col-item"><span class="ico">📍</span> New York Hub</div>
                   </div>
-                  <div class="detail-col">
-                    <span class="detail-heading">EMPLOYMENT & ORG DETAILS</span>
-                    <div class="detail-row"><span class="detail-ico">📅</span> Nov 12, 2023</div>
-                    <div class="detail-row"><span class="detail-ico">💲</span> Grade L5</div>
+                  <div class="acc-col">
+                    <span class="col-head">EMPLOYMENT & ORG DETAILS</span>
+                    <div class="col-item"><span class="ico">📅</span> Nov 12, 2023</div>
+                    <div class="col-item"><span class="ico">💲</span> Grade L5</div>
                   </div>
-                  <div class="detail-col">
-                    <span class="detail-heading">PERFORMANCE & CONTACT ACTIONS</span>
-                    <div class="perf-rating">Status: <strong>Approved PTO (Returns Aug 20)</strong></div>
-                    <div class="actions-buttons-row">
-                      <button class="btn btn-dark-sm">View Full Profile</button>
-                      <button class="btn btn-outline-purple-sm">Message on Slack</button>
+                  <div class="acc-col">
+                    <span class="col-head">PERFORMANCE & CONTACT ACTIONS</span>
+                    <div class="perf-text">Status: <strong>Approved PTO (Returns Aug 20)</strong></div>
+                    <div class="acc-btn-row">
+                      <button class="btn btn-black-sm">View Full Profile</button>
+                      <button class="btn btn-purple-outline-sm">Message on Slack</button>
                     </div>
                   </div>
                 </div>
@@ -676,423 +619,450 @@
         </div>
       </section>
 
-      <!-- VIEW 3: EMPLOYEE MANAGEMENT (Promote, Transfer, Onboarding, Offboarding) -->
+      <!-- ======================================================================
+           VIEW 3: EMPLOYEE MANAGEMENT (employee - mgmt - promote & transfer)
+           ====================================================================== -->
       <section class="view-panel" id="view-employee-manage">
-        <div class="page-header-row">
-          <div>
-            <h1 class="page-title">Employee Management</h1>
-            <p class="page-subtitle">Onboard new hires, manage internal promotions & department transfers, and process employee offboarding.</p>
+        <div class="page-title-block">
+          <h1 class="penpot-page-heading">Employee Management</h1>
+          <p class="penpot-page-sub">Onboard new hires, manage internal promotions & department transfers, and process employee offboarding.</p>
+        </div>
+
+        <!-- Subnav Pill Tabs -->
+        <div class="penpot-subnav-row">
+          <div class="pill-tabs-container">
+            <button class="tab-pill" onclick="switchView('employee-directory')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              <span>Employee List</span>
+            </button>
+            <button class="tab-pill active" onclick="switchView('employee-manage')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>Manage Staff</span>
+            </button>
+            <button class="tab-pill" onclick="switchView('employee-grievance')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span>Grievance Tracker</span>
+            </button>
           </div>
         </div>
 
-        <!-- Subnav -->
-        <div class="subnav-tabs">
-          <button class="tab-btn" onclick="switchView('employee-directory')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-            <span>Employee List</span>
-          </button>
-          <button class="tab-btn active" onclick="switchView('employee-manage')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            <span>Manage Staff</span>
-          </button>
-          <button class="tab-btn" onclick="switchView('employee-grievance')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            <span>Grievance Tracker</span>
-          </button>
-        </div>
-
-        <!-- Onboarding Wizard Box -->
-        <div class="panel-card onboarding-wizard">
-          <div class="wizard-header">
-            <div>
-              <h3 class="panel-title">New Employee Onboarding Wizard</h3>
-            </div>
-            <span class="wizard-step-tag">Step 1 of 4: Enter profile & provisions • 1. Personal Info 2. Role & Dept 3. IT Assets 4. Send Invite</span>
+        <!-- New Employee Onboarding Wizard Card -->
+        <div class="white-card card-wizard">
+          <div class="wizard-top-row">
+            <h2 class="card-title">New Employee Onboarding Wizard</h2>
+            <span class="step-guide-txt">Step 1 of 4: Enter profile & provisions • 1. Personal Info 2. Role & Dept 3. IT Assets 4. Send Invite</span>
           </div>
 
-          <form id="onboardingForm" onsubmit="handleOnboarding(event)">
-            <div class="form-grid-4">
-              <div class="form-group">
+          <form onsubmit="handleOnboarding(event)">
+            <div class="inputs-4grid">
+              <div class="input-cell">
                 <label>FULL LEGAL NAME</label>
-                <input id="onboardingName" name="full_name" type="text" placeholder="e.g. Samantha Vance" required />
+                <input type="text" placeholder="e.g. Samantha Vance" required />
               </div>
-              <div class="form-group">
+              <div class="input-cell">
                 <label>CORPORATE EMAIL ADDRESS</label>
-                <input id="onboardingEmail" name="email" type="email" placeholder="samantha.vance@northstar.com" required />
+                <input type="email" placeholder="samantha.vance@peopleops.com" required />
               </div>
-              <div class="form-group">
+              <div class="input-cell">
                 <label>DEPARTMENT & ROLE</label>
-                <select id="onboardingDepartment" name="department_id" class="custom-select" required>
-                  <option value="">Select a department</option>
+                <input type="text" placeholder="Engineering • Senior Full Stack Developer" required />
+              </div>
+              <div class="input-cell">
+                <label>ASSIGNED MANAGER & START DATE</label>
+                <select class="penpot-select-full">
+                  <option>Alex Rivera • Starting Aug 25, 2025</option>
+                  <option>Marcus Williams • Starting Sep 01, 2025</option>
+                  <option>James O'Brien • Starting Sep 15, 2025</option>
                 </select>
               </div>
-              <div class="form-group">
-                <label>ASSIGNED MANAGER & START DATE</label>
-                <input id="onboardingStartDate" name="start_date" type="date" required />
-              </div>
             </div>
 
-            <div class="provisions-action-row">
-              <div class="provisions-list">
-                <span class="prov-tag">IT ASSETS & PROVISIONS:</span>
-                <span class="chip-item">[x] Apple MacBook Pro 16"</span>
-                <span class="chip-item">[x] Workspace & Slack</span>
-                <span class="chip-item">[x] Penpot & Figma Suite</span>
-                <span class="chip-item">[x] Keycard #KC-994</span>
+            <div class="provisions-strip">
+              <div class="provisions-chips">
+                <strong class="prov-label">IT ASSETS & PROVISIONS:</strong>
+                <span class="chip">[x] Apple MacBook Pro 16"</span>
+                <span class="chip">[x] Workspace & Slack</span>
+                <span class="chip">[x] Penpot & Figma Suite</span>
+                <span class="chip">[x] Keycard #KC-994</span>
               </div>
-              <button type="submit" class="btn btn-dark">Create Employee Profile & Issue Credentials</button>
+              <button type="submit" class="btn btn-navy-cta">Create Employee Profile & Issue Credentials</button>
             </div>
           </form>
         </div>
 
         <!-- Promote / Transfer Switchable Card -->
-        <div class="panel-card promote-transfer-card">
-          <div class="segmented-control-row">
+        <div class="white-card card-promotetransfer">
+          <div class="pt-segmented-head">
             <div>
-              <h3 class="panel-title" id="ptCardTitle">Promote Employee</h3>
-              <p class="panel-subtitle" id="ptCardSubtitle">Record the next role and pay-grade step with a clear effective date and promotion rationale.</p>
+              <h2 class="card-title" id="ptCardTitle">Promote Employee</h2>
+              <p class="card-sub" id="ptCardSubtitle">Record the next role and pay-grade step with a clear effective date and promotion rationale.</p>
             </div>
-            <div class="segmented-btn-group">
+            <div class="segmented-switch">
               <button class="seg-btn active" id="btnModePromote" onclick="setPtMode('promote')">Promotion</button>
               <button class="seg-btn" id="btnModeTransfer" onclick="setPtMode('transfer')">Transfer</button>
             </div>
           </div>
 
-          <!-- Promotion Form Mode -->
+          <!-- Promotion Form -->
           <div id="promoteFormContainer">
-            <div class="form-grid-3">
-              <div class="form-group">
+            <div class="inputs-3grid">
+              <div class="input-cell">
                 <label>EMPLOYEE RECORD</label>
-                <select class="custom-select">
+                <select class="penpot-select-full">
                   <option>Amara Okafor • EMP-1024</option>
                   <option>Sarah Chen • EMP-1011</option>
                   <option>Marcus Williams • EMP-1012</option>
-                  <option>Priya Patel • EMP-1019</option>
                 </select>
               </div>
-              <div class="form-group">
+              <div class="input-cell">
                 <label>NEW ROLE</label>
-                <select class="custom-select">
+                <select class="penpot-select-full">
                   <option>Product Designer</option>
                   <option>Lead UX Strategist</option>
                   <option>Staff Engineer</option>
-                  <option>Engineering Director</option>
                 </select>
               </div>
-              <div class="form-group">
+              <div class="input-cell">
                 <label>NEW PAY GRADE</label>
                 <input type="text" value="P4 • IC" />
               </div>
             </div>
 
-            <div class="form-grid-split">
-              <div class="form-group col-small">
+            <div class="inputs-split-grid">
+              <div class="input-cell cell-date">
                 <label>EFFECTIVE DATE</label>
                 <input type="date" value="2026-06-24" />
               </div>
-              <div class="form-group col-large">
+              <div class="input-cell cell-rationale">
                 <label>PROMOTION RATIONALE</label>
                 <textarea rows="2" placeholder="e.g. Sustained scope expansion and strong cycle results."></textarea>
               </div>
             </div>
 
-            <div class="form-actions-split">
-              <span class="audit-log-text">Log: Elena Rostova • Promoted to Lead UX Strategist</span>
-              <div class="btn-group-right">
-                <button type="button" class="btn btn-outline-secondary">Cancel</button>
-                <button type="button" class="btn btn-danger-accent" onclick="showToast('Promotion recorded successfully!')">Record Promotion</button>
+            <div class="pt-footer-row">
+              <span class="pt-log-note">Log: Elena Rostova • Promoted to Lead UX Strategist</span>
+              <div class="pt-actions">
+                <button type="button" class="btn btn-outline-gray">Cancel</button>
+                <button type="button" class="btn btn-orange-cta" onclick="showToast('Promotion recorded successfully!')">Record Promotion</button>
               </div>
             </div>
           </div>
 
-          <!-- Transfer Form Mode (Initially Hidden) -->
+          <!-- Transfer Form -->
           <div id="transferFormContainer" style="display:none;">
-            <div class="form-grid-3">
-              <div class="form-group">
+            <div class="inputs-3grid">
+              <div class="input-cell">
                 <label>EMPLOYEE RECORD</label>
-                <select class="custom-select">
+                <select class="penpot-select-full">
                   <option>Amara Okafor • EMP-1024</option>
                   <option>Sarah Chen • EMP-1011</option>
-                  <option>Marcus Williams • EMP-1012</option>
                 </select>
               </div>
-              <div class="form-group">
+              <div class="input-cell">
                 <label>TARGET DEPARTMENT</label>
-                <select class="custom-select">
+                <select class="penpot-select-full">
                   <option>Design</option>
                   <option>Engineering</option>
-                  <option>Product Management</option>
-                  <option>Customer Experience</option>
+                  <option>Product Pod</option>
                 </select>
               </div>
-              <div class="form-group">
+              <div class="input-cell">
                 <label>TARGET LOCATION</label>
-                <select class="custom-select">
+                <select class="penpot-select-full">
                   <option>Lagos</option>
                   <option>San Francisco HQ</option>
                   <option>New York Hub</option>
-                  <option>London Office</option>
                 </select>
               </div>
             </div>
 
-            <div class="form-grid-split">
-              <div class="form-group col-small">
+            <div class="inputs-split-3grid">
+              <div class="input-cell cell-workmode">
                 <label>WORK MODE</label>
-                <select class="custom-select">
+                <select class="penpot-select-full">
                   <option>Hybrid</option>
                   <option>Full Remote</option>
                   <option>On-site</option>
                 </select>
               </div>
-              <div class="form-group col-small">
+              <div class="input-cell cell-date">
                 <label>EFFECTIVE DATE</label>
                 <input type="date" value="2026-06-24" />
               </div>
-              <div class="form-group col-large">
+              <div class="input-cell cell-rationale">
                 <label>TRANSFER REASON</label>
                 <textarea rows="2" placeholder="e.g. Aligning design coverage to the Lagos product pod."></textarea>
               </div>
             </div>
 
-            <div class="form-actions-split">
-              <span class="audit-log-text">Log: Amara Okafor • Transferred to Lagos Product Pod</span>
-              <div class="btn-group-right">
-                <button type="button" class="btn btn-outline-secondary">Cancel</button>
-                <button type="button" class="btn btn-danger-accent" onclick="showToast('Transfer recorded successfully!')">Record Transfer</button>
+            <div class="pt-footer-row">
+              <span class="pt-log-note">Log: Amara Okafor • Transferred to Lagos Product Pod</span>
+              <div class="pt-actions">
+                <button type="button" class="btn btn-outline-gray">Cancel</button>
+                <button type="button" class="btn btn-orange-cta" onclick="showToast('Transfer recorded successfully!')">Record Transfer</button>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Offboarding & Exit Card -->
-        <div class="panel-card offboarding-card">
-          <div class="panel-header">
-            <div>
-              <h3 class="panel-title">Employee Offboarding & Exit Management</h3>
-            </div>
-            <span class="text-muted-sm">Manage departure checklists, asset recovery, and security access revocation</span>
+        <div class="white-card card-offboarding">
+          <div class="offboarding-header">
+            <h2 class="card-title">Employee Offboarding & Exit Management</h2>
+            <span class="card-sub-tag">Manage departure checklists, asset recovery, and security access revocation</span>
           </div>
 
-          <div class="offboarding-grid">
-            <div class="active-offboarding-box">
-              <div class="box-title">Thomas Wright • Frontend Developer <span class="danger-tag">(Last Day: Aug 2)</span></div>
-              <div class="box-meta">Reason: Resignation | Department: Engineering</div>
-              <div class="box-checklist">[x] Exit Interview Conducted by HR • [ ] Hardware Returned • [ ] Corporate Access Revoked</div>
-              <div class="box-actions">
-                <button class="btn btn-outline-light-sm">View Exit Survey</button>
-                <button class="btn btn-burgundy-sm" onclick="showToast('Security access revoked for Thomas Wright.')">Revoke Access Now</button>
+          <div class="offboarding-2col-grid">
+            <div class="active-departure-panel">
+              <h3 class="departure-title">Thomas Wright • Frontend Developer <span class="badge-lastday">(Last Day: Aug 2)</span></h3>
+              <p class="departure-meta">Reason: Resignation | Department: Engineering</p>
+              <p class="departure-checklist">[x] Exit Interview Conducted by HR • [ ] Hardware Returned • [ ] Corporate Access Revoked</p>
+              <div class="departure-buttons">
+                <button class="btn btn-outline-white-sm">View Exit Survey</button>
+                <button class="btn btn-burgundy-cta" onclick="showToast('Security access revoked for Thomas Wright.')">Revoke Access Now</button>
               </div>
             </div>
 
-            <div class="initiate-offboarding-box">
-              <h4>Initiate New Employee Offboarding</h4>
-              <div class="form-group">
+            <div class="initiate-departure-panel">
+              <h3 class="initiate-title">Initiate New Employee Offboarding</h3>
+              <div class="input-cell">
                 <label>SELECT EMPLOYEE</label>
-                <select class="custom-select">
+                <select class="penpot-select-full">
                   <option>Search & select active employee...</option>
                   <option>David Kim (Finance)</option>
                   <option>Elena Rodriguez (HR)</option>
                 </select>
               </div>
-              <div class="form-group">
+              <div class="input-cell">
                 <label>SEPARATION REASON & DATE</label>
-                <select class="custom-select">
+                <select class="penpot-select-full">
                   <option>Resignation • Effective Aug 31, 2025</option>
                   <option>End of Contract • Effective Sep 15, 2025</option>
-                  <option>Mutual Agreement • Effective Aug 30, 2025</option>
                 </select>
               </div>
-              <button class="btn btn-burgundy-block" onclick="showToast('Offboarding initiated & HR survey sent.')">Initiate Offboarding & Send HR Survey</button>
+              <button class="btn btn-burgundy-full" onclick="showToast('Offboarding initiated & HR survey sent.')">Initiate Offboarding & Send HR Survey</button>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- VIEW 4: GRIEVANCE TRACKER -->
+      <!-- ======================================================================
+           VIEW 4: GRIEVANCE TRACKER (employee - grievance)
+           ====================================================================== -->
       <section class="view-panel" id="view-employee-grievance">
-        <div class="page-header-row">
-          <div>
-            <h1 class="page-title">Employee Grievance & Resolution Tracker</h1>
-            <p class="page-subtitle">Confidential workplace reports, case assignments, investigation progress, and formal resolution records.</p>
-          </div>
-          <button class="btn btn-primary" onclick="showToast('New confidential grievance form opened.')">+ File Grievance</button>
+        <div class="page-title-block">
+          <h1 class="penpot-page-heading">Employee Grievance & Case Tracker</h1>
+          <p class="penpot-page-sub">Review, investigate, and resolve workplace grievances, mediation requests, and conduct logs.</p>
         </div>
 
-        <div class="subnav-tabs">
-          <button class="tab-btn" onclick="switchView('employee-directory')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-            <span>Employee List</span>
-          </button>
-          <button class="tab-btn" onclick="switchView('employee-manage')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            <span>Manage Staff</span>
-          </button>
-          <button class="tab-btn active" onclick="switchView('employee-grievance')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            <span>Grievance Tracker</span>
-          </button>
-        </div>
-
-        <div class="metric-cards-grid">
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">TOTAL FILED</span></div>
-            <div class="stat-number">12</div>
-            <div class="stat-footer"><span class="stat-subinfo">All Time Cases</span></div>
-          </div>
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">IN INVESTIGATION</span></div>
-            <div class="stat-number">03</div>
-            <div class="stat-footer"><span class="stat-subinfo">Assigned to HR Leads</span></div>
-          </div>
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">RESOLVED THIS QUARTER</span></div>
-            <div class="stat-number">08</div>
-            <div class="stat-footer"><span class="stat-subinfo">94% Satisfaction</span></div>
-          </div>
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">HIGH PRIORITY</span></div>
-            <div class="stat-number">01</div>
-            <div class="stat-footer"><span class="trend-pill highlight-pill">Requires Escalation</span></div>
+        <!-- Subnav Pill Tabs -->
+        <div class="penpot-subnav-row">
+          <div class="pill-tabs-container">
+            <button class="tab-pill" onclick="switchView('employee-directory')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              <span>Employee List</span>
+            </button>
+            <button class="tab-pill" onclick="switchView('employee-manage')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>Manage Staff</span>
+            </button>
+            <button class="tab-pill active" onclick="switchView('employee-grievance')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span>Grievance Tracker</span>
+            </button>
           </div>
         </div>
 
-        <div class="panel-card">
-          <div class="panel-header">
-            <h3 class="panel-title">Active Grievance Cases & Dispute Resolutions</h3>
+        <!-- 4 KPI Cards -->
+        <div class="kpi-cards-4grid">
+          <div class="kpi-card">
+            <div class="kpi-head"><span>OPEN CASES</span></div>
+            <div class="kpi-value">02</div>
+            <div class="kpi-trend">Action Required</div>
           </div>
-          <div class="table-container">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>CASE ID</th>
-                  <th>FILED BY / DEPT</th>
-                  <th>CATEGORY</th>
-                  <th>DATE FILED</th>
-                  <th>ASSIGNED INVESTIGATOR</th>
-                  <th>STATUS</th>
-                  <th>ACTION</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="font-bold">#GRV-2026-004</td>
-                  <td>Anonymous • Engineering</td>
-                  <td>Workplace Conduct</td>
-                  <td>Jun 02, 2026</td>
-                  <td>Elena Rodriguez (HR)</td>
-                  <td><span class="badge badge-warning">In Investigation</span></td>
-                  <td><button class="btn btn-outline-dark-sm">Review Case</button></td>
-                </tr>
-                <tr>
-                  <td class="font-bold">#GRV-2026-003</td>
-                  <td>Marcus Williams • Sales</td>
-                  <td>Compensation & Commission</td>
-                  <td>May 24, 2026</td>
-                  <td>James O'Brien (Ops)</td>
-                  <td><span class="badge badge-purple">Under Mediation</span></td>
-                  <td><button class="btn btn-outline-dark-sm">Review Case</button></td>
-                </tr>
-                <tr>
-                  <td class="font-bold">#GRV-2026-002</td>
-                  <td>Sarah Chen • Engineering</td>
-                  <td>Equipment / Remote Hardware</td>
-                  <td>May 10, 2026</td>
-                  <td>Alex Rivera (IT/HR)</td>
-                  <td><span class="badge badge-success">Resolved & Closed</span></td>
-                  <td><button class="btn btn-outline-dark-sm">View Log</button></td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>IN MEDIATION</span></div>
+            <div class="kpi-value">01</div>
+            <div class="kpi-trend">HR Session Active</div>
           </div>
-        </div>
-      </section>
-
-      <!-- VIEW 5: DAILY ATTENDANCE & TIME LOG -->
-      <section class="view-panel" id="view-attendance-daily">
-        <div class="page-header-row">
-          <div>
-            <h1 class="page-title">Daily Attendance & Time Log</h1>
-            <p class="page-subtitle">Comprehensive daily employee check-ins, time stamps, shift statuses, and real-time attendance register.</p>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>RESOLVED THIS Q3</span></div>
+            <div class="kpi-value">14</div>
+            <div class="kpi-trend">↗ 94% Rate</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>AVG RESOLUTION TIME</span></div>
+            <div class="kpi-value">3.2 Days</div>
+            <div class="kpi-trend">Target: &lt; 5 Days</div>
           </div>
         </div>
 
-        <div class="subnav-tabs">
-          <button class="tab-btn active" onclick="switchView('attendance-daily')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-            <span>Daily Log</span>
-          </button>
-          <button class="tab-btn" onclick="switchView('attendance-shift')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            <span>Shift Management</span>
-          </button>
-          <button class="tab-btn" onclick="switchView('attendance-leave')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            <span>Leave Management</span>
-          </button>
-        </div>
-
-        <div class="metric-cards-grid">
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">PRESENT TODAY</span></div>
-            <div class="stat-number">05</div>
-            <div class="stat-footer"><span class="stat-subinfo">5 / 5 Scheduled Staff</span></div>
-          </div>
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">SCHEDULED</span></div>
-            <div class="stat-number">05</div>
-            <div class="stat-footer"><span class="stat-subinfo">100% Roster Filled</span></div>
-          </div>
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">EXCEPTIONS</span></div>
-            <div class="stat-number">01</div>
-            <div class="stat-footer"><span class="stat-subinfo">1 Unexcused Absence</span></div>
-          </div>
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">ON LEAVE</span></div>
-            <div class="stat-number">01</div>
-            <div class="stat-footer"><span class="stat-subinfo">Annual Paid Leave</span></div>
-          </div>
-        </div>
-
-        <!-- Split View: Calendar Navigator + Attendance Register -->
-        <div class="panel-card daily-attendance-card">
-          <div class="panel-header-flex">
-            <div>
-              <h3 class="panel-title">Daily Attendance & Time Register</h3>
-              <p class="panel-subtitle">Thursday, 18 June 2026 • Status: Logged & Verified</p>
+        <!-- Split View: Active Cases (Left) & Confidential Grievance Form (Right) -->
+        <div class="grievance-split-grid">
+          <!-- Left Column: Active Cases -->
+          <div class="white-card grievance-cases-card">
+            <h2 class="card-title" style="margin-bottom:16px;">Active & Recent Workplace Grievance Cases</h2>
+            
+            <div class="grievance-case-item">
+              <div class="case-header-row">
+                <strong class="case-title">Case #GR-809: Workload Distribution Query</strong>
+                <span class="penpot-badge badge-investigating">Investigating</span>
+              </div>
+              <p class="case-submeta">Filed by: Marcus Williams (Sales) • Date: Aug 08, 2025 • Mediator: Maya Lin (HR Director)</p>
+              <p class="case-quote">"Request for formal workload assessment following Q3 sales account reassignments and territory expansion."</p>
+              <div class="case-action-btns">
+                <button class="btn btn-navy-sm" onclick="showToast('Opened investigation notes for Case #GR-809.')">Investigation Notes</button>
+                <button class="btn btn-outline-dark-sm" onclick="showToast('Mediation session scheduled.')">Schedule Mediation</button>
+                <button class="btn btn-green-outline-sm" onclick="showToast('Case #GR-809 marked as resolved.')">Mark Resolved</button>
+              </div>
             </div>
-            <button class="btn btn-outline-sm" onclick="showToast('Attendance register exported as CSV/PDF.')">Export Register</button>
+
+            <div class="grievance-case-item">
+              <div class="case-header-row">
+                <strong class="case-title">Case #GR-810: Workplace Ergonomics Request</strong>
+                <span class="penpot-badge badge-mediation">In Mediation</span>
+              </div>
+              <p class="case-submeta">Filed by: Elena Rodriguez (HR) • Date: Aug 10, 2025 • Mediator: James O'Brien</p>
+              <p class="case-quote">"Assessment request for standing desk converter and ergonomic chair following medical recommendation."</p>
+              <div class="case-action-btns">
+                <button class="btn btn-navy-sm" onclick="showToast('Approved ergonomics equipment.')">Approve Equipment</button>
+                <button class="btn btn-outline-dark-sm" onclick="showToast('Contacted vendor for quotation.')">Contact Vendor</button>
+              </div>
+            </div>
           </div>
 
-          <div class="attendance-body-split">
-            <!-- Calendar Navigator -->
-            <div class="calendar-navigator-box">
-              <span class="cal-header-label">CALENDAR NAVIGATOR</span>
-              <div class="cal-nav-bar">
-                <button class="cal-arrow-btn">◀</button>
-                <span class="cal-month-name">June 2026</span>
-                <button class="cal-arrow-btn">▶</button>
+          <!-- Right Column: File Confidential Grievance Record -->
+          <div class="white-card grievance-file-card">
+            <h2 class="card-title">File Confidential Grievance Record</h2>
+            <p class="card-sub" style="margin-bottom:16px;">Log a formal internal complaint or mediation request for HR review</p>
+
+            <form onsubmit="handleGrievanceSubmit(event)">
+              <div class="input-cell" style="margin-bottom:12px;">
+                <label>COMPLAINANT EMPLOYEE</label>
+                <select class="penpot-select-full" required>
+                  <option value="">Search & select employee</option>
+                  <option>Marcus Williams (Sales)</option>
+                  <option>Elena Rodriguez (HR)</option>
+                  <option>Sarah Chen (Engineering)</option>
+                  <option>Anonymous Filing</option>
+                </select>
               </div>
 
-              <div class="mini-calendar-grid">
-                <span class="cal-th">SU</span><span class="cal-th">MO</span><span class="cal-th">TU</span><span class="cal-th">WE</span><span class="cal-th">TH</span><span class="cal-th">FR</span><span class="cal-th">SA</span>
-                <span class="cal-empty"></span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
+              <div class="input-cell" style="margin-bottom:12px;">
+                <label>GRIEVANCE CATEGORY</label>
+                <select class="penpot-select-full" required>
+                  <option>Workplace Environment / Workload</option>
+                  <option>Compensation & Commission</option>
+                  <option>Harassment & Conduct</option>
+                  <option>Equipment & Physical Accommodations</option>
+                </select>
+              </div>
+
+              <div class="input-cell" style="margin-bottom:12px;">
+                <label>CASE TITLE / SUMMARY</label>
+                <input type="text" placeholder="e.g. Schedule Overlap & Roster Dispute" required />
+              </div>
+
+              <div class="input-cell" style="margin-bottom:16px;">
+                <label>DESCRIPTION / EVIDENCE NOTES</label>
+                <textarea rows="4" placeholder="Detail the situation, involved parties, dates, and requested resolution..." required></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-navy-full">Submit Confidential Grievance</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           VIEW 5: DAILY ATTENDANCE & TIME LOG (attendance - daily log)
+           ====================================================================== -->
+      <section class="view-panel" id="view-attendance-daily">
+        <div class="page-title-block">
+          <h1 class="penpot-page-heading">Daily Attendance & Time Log</h1>
+          <p class="penpot-page-sub">Comprehensive daily employee check-ins, time stamps, shift statuses, and real-time attendance register.</p>
+        </div>
+
+        <!-- Subnav Tabs -->
+        <div class="penpot-subnav-row">
+          <div class="pill-tabs-container">
+            <button class="tab-pill active" onclick="switchView('attendance-daily')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              <span>Daily Log</span>
+            </button>
+            <button class="tab-pill" onclick="switchView('attendance-shift')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>Shift Management</span>
+            </button>
+            <button class="tab-pill" onclick="switchView('attendance-leave')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span>Leave Management</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 KPI Cards -->
+        <div class="kpi-cards-4grid">
+          <div class="kpi-card">
+            <div class="kpi-head"><span>PRESENT TODAY</span></div>
+            <div class="kpi-value">05</div>
+            <div class="kpi-subtext">5 / 5 Scheduled Staff</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>SCHEDULED</span></div>
+            <div class="kpi-value">05</div>
+            <div class="kpi-subtext">100% Roster Filled</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>EXCEPTIONS</span></div>
+            <div class="kpi-value">01</div>
+            <div class="kpi-subtext">1 Unexcused Absence</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>ON LEAVE</span></div>
+            <div class="kpi-value">01</div>
+            <div class="kpi-subtext">Annual Paid Leave</div>
+          </div>
+        </div>
+
+        <!-- Split Card: Mini Calendar (Left) & Register (Right) -->
+        <div class="white-card daily-log-container">
+          <div class="daily-log-header">
+            <div>
+              <h2 class="card-title">Daily Attendance & Time Register</h2>
+              <p class="card-sub">Thursday, 18 June 2026 • Status: Logged & Verified</p>
+            </div>
+            <button class="btn btn-outline-gray" onclick="showToast('Exported attendance register as CSV.')">Export Register</button>
+          </div>
+
+          <div class="daily-log-split">
+            <!-- Left: Calendar Navigator -->
+            <div class="cal-nav-panel">
+              <span class="cal-title-tag">CALENDAR NAVIGATOR</span>
+              <div class="cal-month-nav">
+                <button class="cal-nav-arr">◀</button>
+                <strong class="cal-month-txt">June 2026</strong>
+                <button class="cal-nav-arr">▶</button>
+              </div>
+
+              <div class="cal-days-table">
+                <span class="cal-h">SU</span><span class="cal-h">MO</span><span class="cal-h">TU</span><span class="cal-h">WE</span><span class="cal-h">TH</span><span class="cal-h">FR</span><span class="cal-h">SA</span>
+                <span></span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
                 <span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span>
-                <span>14</span><span>15</span><span>16</span><span class="cal-day-active">17</span><span>18</span><span>19</span><span>20</span>
+                <span>14</span><span>15</span><span>16</span><span class="day-active">17</span><span>18</span><span>19</span><span>20</span>
                 <span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span>
                 <span>28</span><span>29</span><span>30</span>
               </div>
 
-              <div class="cal-legend">
-                <span class="leg-item"><span class="dot-green">●</span> DAILY LOGGED</span>
-                <span class="leg-item"><span class="dot-orange">●</span> UNEXCUSED GAP</span>
+              <div class="cal-legend-tags">
+                <span class="leg-green">● DAILY LOGGED</span>
+                <span class="leg-orange">● UNEXCUSED GAP</span>
               </div>
             </div>
 
-            <!-- Employee Attendance Register Table -->
-            <div class="table-container flex-grow">
-              <table class="data-table">
+            <!-- Right: Punch Table -->
+            <div class="table-wrap flex-fill">
+              <table class="penpot-table">
                 <thead>
                   <tr>
                     <th>EMPLOYEE</th>
@@ -1105,53 +1075,53 @@
                 <tbody>
                   <tr>
                     <td>
-                      <div class="emp-row-title">Sarah Chen</div>
-                      <div class="emp-row-sub">Senior Developer</div>
+                      <div class="bold-title">Sarah Chen</div>
+                      <div class="sub-role">Senior Developer</div>
                     </td>
                     <td>Morning (08:00 - 16:00)</td>
                     <td>07:54 AM</td>
                     <td>04:02 PM</td>
-                    <td><span class="badge badge-success">● Present</span></td>
+                    <td><span class="penpot-badge badge-present">● Present</span></td>
                   </tr>
                   <tr>
                     <td>
-                      <div class="emp-row-title">Marcus Williams</div>
-                      <div class="emp-row-sub">Senior Developer</div>
+                      <div class="bold-title">Marcus Williams</div>
+                      <div class="sub-role">Senior Developer</div>
                     </td>
                     <td>Evening (16:00 - 00:00)</td>
                     <td>03:58 PM</td>
                     <td>--:--</td>
-                    <td><span class="badge badge-blue">● On Duty</span></td>
+                    <td><span class="penpot-badge badge-onduty">● On Duty</span></td>
                   </tr>
                   <tr>
                     <td>
-                      <div class="emp-row-title">David Kim</div>
-                      <div class="emp-row-sub">Analyst</div>
+                      <div class="bold-title">David Kim</div>
+                      <div class="sub-role">Analyst</div>
                     </td>
                     <td>Night (00:00 - 08:00)</td>
                     <td>11:52 PM</td>
                     <td>08:01 AM</td>
-                    <td><span class="badge badge-success">● Present</span></td>
+                    <td><span class="penpot-badge badge-present">● Present</span></td>
                   </tr>
                   <tr>
                     <td>
-                      <div class="emp-row-title">Rachel Adams</div>
-                      <div class="emp-row-sub">UX Designer</div>
+                      <div class="bold-title">Rachel Adams</div>
+                      <div class="sub-role">UX Designer</div>
                     </td>
                     <td>Day (09:00 - 17:00)</td>
                     <td>--:--</td>
                     <td>--:--</td>
-                    <td><span class="badge badge-danger">Unexcused</span></td>
+                    <td><span class="penpot-badge badge-unexcused">Unexcused</span></td>
                   </tr>
                   <tr>
                     <td>
-                      <div class="emp-row-title">Robert Martinez</div>
-                      <div class="emp-row-sub">HR Specialist</div>
+                      <div class="bold-title">Robert Martinez</div>
+                      <div class="sub-role">HR Specialist</div>
                     </td>
                     <td>Annual Leave</td>
                     <td>--:--</td>
                     <td>--:--</td>
-                    <td><span class="badge badge-purple">Annual Leave</span></td>
+                    <td><span class="penpot-badge badge-probation">Annual Leave</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -1160,276 +1130,343 @@
         </div>
       </section>
 
-      <!-- VIEW 6: SHIFT SCHEDULING & ROSTER MANAGEMENT -->
+      <!-- ======================================================================
+           VIEW 6: SHIFT SCHEDULING & ROSTER (attendance - shift mgmt)
+           ====================================================================== -->
       <section class="view-panel" id="view-attendance-shift">
-        <div class="page-header-row">
-          <div>
-            <h1 class="page-title">Shift Scheduling & Roster Management</h1>
-            <p class="page-subtitle">Comprehensive monthly shift coverage, employee roster assignments, and coverage gap tracking.</p>
+        <div class="page-title-block">
+          <h1 class="penpot-page-heading">Shift Scheduling & Roster Management</h1>
+          <p class="penpot-page-sub">Comprehensive monthly shift coverage, employee roster assignments, and coverage gap tracking.</p>
+        </div>
+
+        <!-- Subnav Tabs -->
+        <div class="penpot-subnav-row">
+          <div class="pill-tabs-container">
+            <button class="tab-pill" onclick="switchView('attendance-daily')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              <span>Daily Log</span>
+            </button>
+            <button class="tab-pill active" onclick="switchView('attendance-shift')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>Shift Management</span>
+            </button>
+            <button class="tab-pill" onclick="switchView('attendance-leave')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span>Leave Management</span>
+            </button>
           </div>
         </div>
 
-        <div class="subnav-tabs">
-          <button class="tab-btn" onclick="switchView('attendance-daily')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-            <span>Daily Log</span>
-          </button>
-          <button class="tab-btn active" onclick="switchView('attendance-shift')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            <span>Shift Management</span>
-          </button>
-          <button class="tab-btn" onclick="switchView('attendance-leave')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            <span>Leave Management</span>
-          </button>
-        </div>
-
-        <div class="metric-cards-grid">
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">ACTIVE SHIFTS TODAY</span></div>
-            <div class="stat-number">04</div>
-            <div class="stat-footer"><span class="stat-subinfo">Morning, Day, Night, Flex</span></div>
+        <!-- 4 KPI Cards -->
+        <div class="kpi-cards-4grid">
+          <div class="kpi-card">
+            <div class="kpi-head"><span>ACTIVE SHIFTS TODAY</span></div>
+            <div class="kpi-value">04</div>
+            <div class="kpi-subtext">↗ 4 Shifts Active</div>
           </div>
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">ROSTER COVERAGE</span></div>
-            <div class="stat-number">96.8%</div>
-            <div class="stat-footer"><span class="stat-subinfo">124 Scheduled Staff</span></div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>ROSTER COVERAGE</span></div>
+            <div class="kpi-value">96.8%</div>
+            <div class="kpi-subtext">↗ 124 Staff</div>
           </div>
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">OPEN SHIFT SLOTS</span></div>
-            <div class="stat-number">04</div>
-            <div class="stat-footer"><span class="stat-subinfo">Requires Assignment</span></div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>OPEN SHIFT SLOTS</span></div>
+            <div class="kpi-value">04</div>
+            <div class="kpi-subtext">↗ Needs Roster</div>
           </div>
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">OVERTIME LOGGED</span></div>
-            <div class="stat-number">67.67%</div>
-            <div class="stat-footer"><span class="stat-subinfo">Annual Score</span></div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>OVERTIME LOGGED</span></div>
+            <div class="kpi-value">67.67%</div>
+            <div class="kpi-subtext">↗ Annual Score</div>
           </div>
         </div>
 
-        <!-- Master Shift Calendar -->
-        <div class="panel-card shift-calendar-card">
-          <div class="calendar-top-controls">
-            <div class="cal-titles">
-              <h3 class="panel-title">Shift Roster Master Calendar</h3>
-              <p class="panel-subtitle">Full month view of shift assignments and coverage gaps</p>
+        <!-- Master Shift Roster Calendar Card -->
+        <div class="shift-master-card">
+          <div class="shift-header-toolbar">
+            <div>
+              <h2 class="card-title">Shift Roster Master Calendar</h2>
+              <p class="card-sub">Weekly shift coverage roster and employee schedule matrix</p>
             </div>
-            <div class="cal-month-nav-center">
-              <button class="cal-arrow-btn">◀</button>
-              <span class="calendar-active-month">June 2026</span>
-              <button class="cal-arrow-btn">▶</button>
-            </div>
-            <button class="btn btn-dark" onclick="showToast('Roster assignment modal opened.')">+ Assign Roster</button>
-          </div>
-
-          <!-- Calendar Days Grid Header -->
-          <div class="month-roster-grid">
-            <div class="day-col-header">MONDAY</div>
-            <div class="day-col-header">TUESDAY</div>
-            <div class="day-col-header">WEDNESDAY</div>
-            <div class="day-col-header">THURSDAY</div>
-            <div class="day-col-header">FRIDAY</div>
-            <div class="day-col-header">SATURDAY</div>
-            <div class="day-col-header">SUNDAY</div>
-
-            <!-- Row 1: Jun 1 - 7 -->
-            <div class="day-slot slot-covered">
-              <div class="day-slot-header"><strong>1</strong> <span class="slot-tag tag-covered">● Covered</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br>David K. (Night)</div>
-            </div>
-            <div class="day-slot slot-covered">
-              <div class="day-slot-header"><strong>2</strong> <span class="slot-tag tag-covered">● Covered</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br>Rachel A. (Night)</div>
-            </div>
-            <div class="day-slot slot-covered">
-              <div class="day-slot-header"><strong>3</strong> <span class="slot-tag tag-covered">● Covered</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br>David K. (Night)</div>
-            </div>
-            <div class="day-slot slot-gap">
-              <div class="day-slot-header"><strong>4</strong> <span class="slot-tag tag-gap">● 1 Gap</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br><em class="gap-text">Unassigned Night</em></div>
-            </div>
-            <div class="day-slot slot-covered">
-              <div class="day-slot-header"><strong>5</strong> <span class="slot-tag tag-covered">● Covered</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br>Robert M. (Night)</div>
-            </div>
-            <div class="day-slot slot-weekend">
-              <div class="day-slot-header"><strong>6</strong> <span class="slot-tag tag-weekend">● Weekend</span></div>
-              <div class="shift-names">Rotational Roster:<br>Amanda V. (Full Day)</div>
-            </div>
-            <div class="day-slot slot-weekend">
-              <div class="day-slot-header"><strong>7</strong> <span class="slot-tag tag-weekend">● Weekend</span></div>
-              <div class="shift-names">Rotational Roster:<br>Amanda V. (Full Day)</div>
-            </div>
-
-            <!-- Row 2: Jun 8 - 14 -->
-            <div class="day-slot slot-covered">
-              <div class="day-slot-header"><strong>8</strong> <span class="slot-tag tag-covered">● Covered</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br>David K. (Night)</div>
-            </div>
-            <div class="day-slot slot-covered">
-              <div class="day-slot-header"><strong>9</strong> <span class="slot-tag tag-covered">● Covered</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br>Rachel A. (Night)</div>
-            </div>
-            <div class="day-slot slot-covered">
-              <div class="day-slot-header"><strong>10</strong> <span class="slot-tag tag-covered">● Covered</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br>David K. (Night)</div>
-            </div>
-            <div class="day-slot slot-covered">
-              <div class="day-slot-header"><strong>11</strong> <span class="slot-tag tag-covered">● Covered</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br>David K. (Night)</div>
-            </div>
-            <div class="day-slot slot-gap">
-              <div class="day-slot-header"><strong>12</strong> <span class="slot-tag tag-gap">1 Gap</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br><em class="gap-text">Unassigned Night</em></div>
-            </div>
-            <div class="day-slot slot-weekend">
-              <div class="day-slot-header"><strong>13</strong> <span class="slot-tag tag-weekend">● Weekend</span></div>
-              <div class="shift-names">Rotational Roster:<br>Amanda V. (Full Day)</div>
-            </div>
-            <div class="day-slot slot-weekend">
-              <div class="day-slot-header"><strong>14</strong> <span class="slot-tag tag-weekend">● Weekend</span></div>
-              <div class="shift-names">Rotational Roster:<br>Amanda V. (Full Day)</div>
-            </div>
-
-            <!-- Row 3: Jun 15 - 21 -->
-            <div class="day-slot slot-covered">
-              <div class="day-slot-header"><strong>15</strong> <span class="slot-tag tag-covered">● Covered</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br>David K. (Night)</div>
-            </div>
-            <div class="day-slot slot-covered">
-              <div class="day-slot-header"><strong>16</strong> <span class="slot-tag tag-covered">● Covered</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br>Rachel A. (Night)</div>
-            </div>
-            <div class="day-slot slot-gap">
-              <div class="day-slot-header"><strong>17</strong> <span class="slot-tag tag-gap">1 Gap</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br><em class="gap-text">Unassigned Night</em></div>
-            </div>
-            <div class="day-slot slot-today">
-              <div class="day-slot-header"><strong>18</strong> <span class="slot-tag tag-today">● Today</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br>David K. (Night)</div>
-            </div>
-            <div class="day-slot slot-covered">
-              <div class="day-slot-header"><strong>19</strong> <span class="slot-tag tag-covered">● Covered</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br>Robert M. (Night)</div>
-            </div>
-            <div class="day-slot slot-weekend">
-              <div class="day-slot-header"><strong>20</strong> <span class="slot-tag tag-weekend">● Weekend</span></div>
-              <div class="shift-names">Rotational Roster:<br>Amanda V. (Full Day)</div>
-            </div>
-            <div class="day-slot slot-weekend">
-              <div class="day-slot-header"><strong>21</strong> <span class="slot-tag tag-weekend">● Weekend</span></div>
-              <div class="shift-names">Rotational Roster:<br>Amanda V. (Full Day)</div>
-            </div>
-
-            <!-- Row 4: Jun 22 - 28 -->
-            <div class="day-slot slot-covered">
-              <div class="day-slot-header"><strong>22</strong> <span class="slot-tag tag-covered">● Covered</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br>David K. (Night)</div>
-            </div>
-            <div class="day-slot slot-covered">
-              <div class="day-slot-header"><strong>23</strong> <span class="slot-tag tag-covered">● Covered</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br>Rachel A. (Night)</div>
-            </div>
-            <div class="day-slot slot-covered">
-              <div class="day-slot-header"><strong>24</strong> <span class="slot-tag tag-covered">● Covered</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br>David K. (Night)</div>
-            </div>
-            <div class="day-slot slot-gap">
-              <div class="day-slot-header"><strong>25</strong> <span class="slot-tag tag-gap">1 Gap</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br><em class="gap-text">Unassigned Night</em></div>
-            </div>
-            <div class="day-slot slot-covered">
-              <div class="day-slot-header"><strong>26</strong> <span class="slot-tag tag-covered">● Covered</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br>Robert M. (Night)</div>
-            </div>
-            <div class="day-slot slot-weekend">
-              <div class="day-slot-header"><strong>27</strong> <span class="slot-tag tag-weekend">● Weekend</span></div>
-              <div class="shift-names">Rotational Roster:<br>Amanda V. (Full Day)</div>
-            </div>
-            <div class="day-slot slot-weekend">
-              <div class="day-slot-header"><strong>28</strong> <span class="slot-tag tag-weekend">● Weekend</span></div>
-              <div class="shift-names">Rotational Roster:<br>Amanda V. (Full Day)</div>
-            </div>
-
-            <!-- Row 5: Jun 29 - 30 -->
-            <div class="day-slot slot-covered">
-              <div class="day-slot-header"><strong>29</strong> <span class="slot-tag tag-covered">● Covered</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br>David K. (Night)</div>
-            </div>
-            <div class="day-slot slot-covered">
-              <div class="day-slot-header"><strong>30</strong> <span class="slot-tag tag-covered">● Covered</span></div>
-              <div class="shift-names">Sarah C. (Morning)<br>Marcus W. (Evening)<br>Rachel A. (Night)</div>
+            <div class="shift-header-actions">
+              <div class="shift-week-nav">
+                <span>‹ &nbsp; June 15 – June 21, 2026 &nbsp; ›</span>
+              </div>
+              <button class="btn btn-outline-gray" id="btnToggleShiftCal" onclick="toggleShiftCalendar()">
+                <span id="shiftCalToggleText">⌃ Collapse Calendar</span>
+              </button>
+              <button class="btn btn-navy-cta" onclick="showToast('Roster assignment dialog ready.')">+ Assign Roster</button>
             </div>
           </div>
 
-          <div class="calendar-bottom-legend">
-            <span class="leg-item"><span class="dot-green">●</span> Fully Covered Shifts (All 3 Shifts Assigned)</span>
-            <span class="leg-item"><span class="dot-orange">●</span> Coverage Gap (Requires Shift Assignment)</span>
-            <span class="leg-item"><span class="dot-purple">●</span> Weekend Rotational Roster</span>
+          <div class="shift-calendar-container" id="shiftCalendarContainer">
+            <table class="shift-matrix-table">
+              <thead>
+                <tr>
+                  <th class="col-staff">EMPLOYEE</th>
+                  <th>MON<br><strong style="color:#0f172a;">15 Jun</strong></th>
+                  <th>TUE<br><strong style="color:#0f172a;">16 Jun</strong></th>
+                  <th>WED<br><strong style="color:#0f172a;">17 Jun</strong></th>
+                  <th class="col-today">THU<br><strong style="color:#0284c7;">18 Jun • Today</strong></th>
+                  <th>FRI<br><strong style="color:#0f172a;">19 Jun</strong></th>
+                  <th>SAT<br><strong style="color:#64748b;">20 Jun</strong></th>
+                  <th>SUN<br><strong style="color:#64748b;">21 Jun</strong></th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Row 1: Sarah Chen -->
+                <tr>
+                  <td>
+                    <div class="shift-staff-cell">
+                      <div class="shift-staff-avatar">SC</div>
+                      <div class="shift-staff-meta">
+                        <strong>Sarah Chen</strong>
+                        <span>Senior Dev • Engineering</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td><div class="shift-capsule"><span class="shift-code">SHIFT-CORE</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule"><span class="shift-code">SHIFT-EARLY</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule"><span class="shift-code">SHIFT-LATE</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule shift-flex"><span class="shift-code">SHIFT-FLEX</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule"><span class="shift-code">SHIFT-CORE</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule"><span class="shift-code">SHIFT-FLEX</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule"><span class="shift-code">SHIFT-FLEX</span><span class="shift-status">Scheduled</span></div></td>
+                </tr>
+
+                <!-- Row 2: Marcus Williams -->
+                <tr>
+                  <td>
+                    <div class="shift-staff-cell">
+                      <div class="shift-staff-avatar">MW</div>
+                      <div class="shift-staff-meta">
+                        <strong>Marcus Williams</strong>
+                        <span>Senior Dev • Engineering</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td><div class="shift-capsule"><span class="shift-code">SHIFT-EARLY</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule"><span class="shift-code">SHIFT-LATE</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule"><span class="shift-code">SHIFT-FLEX</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule shift-flex"><span class="shift-code">SHIFT-CORE</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule"><span class="shift-code">SHIFT-EARLY</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule shift-off"><span class="shift-code">SHIFT-OFF</span><span class="shift-status">Standby</span></div></td>
+                  <td><div class="shift-capsule shift-off"><span class="shift-code">SHIFT-OFF</span><span class="shift-status">Standby</span></div></td>
+                </tr>
+
+                <!-- Row 3: Elena Rodriguez -->
+                <tr>
+                  <td>
+                    <div class="shift-staff-cell">
+                      <div class="shift-staff-avatar">ER</div>
+                      <div class="shift-staff-meta">
+                        <strong>Elena Rodriguez</strong>
+                        <span>HR Specialist • HR</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td><div class="shift-capsule"><span class="shift-code">SHIFT-EARLY</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule"><span class="shift-code">SHIFT-LATE</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule"><span class="shift-code">SHIFT-FLEX</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule shift-flex"><span class="shift-code">SHIFT-CORE</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule"><span class="shift-code">SHIFT-EARLY</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule shift-off"><span class="shift-code">SHIFT-OFF</span><span class="shift-status">Standby</span></div></td>
+                  <td><div class="shift-capsule shift-off"><span class="shift-code">SHIFT-OFF</span><span class="shift-status">Standby</span></div></td>
+                </tr>
+
+                <!-- Row 4: David Kim -->
+                <tr>
+                  <td>
+                    <div class="shift-staff-cell">
+                      <div class="shift-staff-avatar">DK</div>
+                      <div class="shift-staff-meta">
+                        <strong>David Kim</strong>
+                        <span>Lead Analyst • Finance</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td><div class="shift-capsule"><span class="shift-code">SHIFT-LATE</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule"><span class="shift-code">SHIFT-FLEX</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule"><span class="shift-code">SHIFT-CORE</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule shift-flex"><span class="shift-code">SHIFT-EARLY</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule"><span class="shift-code">SHIFT-LATE</span><span class="shift-status">Scheduled</span></div></td>
+                  <td><div class="shift-capsule shift-off"><span class="shift-code">SHIFT-OFF</span><span class="shift-status">Standby</span></div></td>
+                  <td><div class="shift-capsule shift-off"><span class="shift-code">SHIFT-OFF</span><span class="shift-status">Standby</span></div></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+        </div>
+
+        <!-- Shift Assignment & Roster Editor Card -->
+        <div class="white-card" style="padding:24px; margin-bottom:24px;">
+          <div class="shift-editor-head">
+            <div>
+              <h2 class="card-title">Shift Assignment & Roster Editor</h2>
+              <p class="card-sub">Live allocation for Thursday, 18 June 2026</p>
+            </div>
+            <span class="penpot-badge badge-present" style="font-size:12.5px; padding:6px 14px;">● 100% Covered</span>
+          </div>
+
+          <div class="shift-slots-3grid" id="shiftSlotsContainer">
+            <!-- Morning Slot -->
+            <div class="shift-slot-card">
+              <div class="shift-slot-card-head">
+                <div>
+                  <span class="shift-slot-name">Morning Shift</span>
+                  <span class="shift-slot-time"> • 08:00 - 16:00</span>
+                </div>
+                <span class="penpot-badge badge-present" style="font-size:11px;">Confirmed</span>
+              </div>
+              <div class="shift-slot-user-row">
+                <div class="shift-slot-user-left">
+                  <div class="shift-staff-avatar" style="width:28px; height:28px; font-size:11px;">SC</div>
+                  <div>
+                    <strong style="font-size:13px; color:#0f172a;">Sarah Chen</strong>
+                    <div style="font-size:11px; color:#64748b;">Senior Dev</div>
+                  </div>
+                </div>
+                <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)">✕</button>
+              </div>
+              <button class="btn btn-outline-gray" style="width:100%; font-size:12px; padding:6px;" onclick="focusQuickAssign('Morning Shift (08:00 - 16:00)')">+ Add Staff</button>
+            </div>
+
+            <!-- Evening Slot -->
+            <div class="shift-slot-card">
+              <div class="shift-slot-card-head">
+                <div>
+                  <span class="shift-slot-name">Evening Shift</span>
+                  <span class="shift-slot-time"> • 16:00 - 00:00</span>
+                </div>
+                <span class="penpot-badge badge-present" style="font-size:11px;">Confirmed</span>
+              </div>
+              <div class="shift-slot-user-row">
+                <div class="shift-slot-user-left">
+                  <div class="shift-staff-avatar" style="width:28px; height:28px; font-size:11px;">MW</div>
+                  <div>
+                    <strong style="font-size:13px; color:#0f172a;">Marcus Williams</strong>
+                    <div style="font-size:11px; color:#64748b;">Senior Dev</div>
+                  </div>
+                </div>
+                <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)">✕</button>
+              </div>
+              <button class="btn btn-outline-gray" style="width:100%; font-size:12px; padding:6px;" onclick="focusQuickAssign('Evening Shift (16:00 - 00:00)')">+ Add Staff</button>
+            </div>
+
+            <!-- Night Slot -->
+            <div class="shift-slot-card">
+              <div class="shift-slot-card-head">
+                <div>
+                  <span class="shift-slot-name">Night Shift</span>
+                  <span class="shift-slot-time"> • 00:00 - 08:00</span>
+                </div>
+                <span class="penpot-badge badge-present" style="font-size:11px;">Confirmed</span>
+              </div>
+              <div class="shift-slot-user-row">
+                <div class="shift-slot-user-left">
+                  <div class="shift-staff-avatar" style="width:28px; height:28px; font-size:11px;">DK</div>
+                  <div>
+                    <strong style="font-size:13px; color:#0f172a;">David Kim</strong>
+                    <div style="font-size:11px; color:#64748b;">Lead Analyst</div>
+                  </div>
+                </div>
+                <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)">✕</button>
+              </div>
+              <button class="btn btn-outline-gray" style="width:100%; font-size:12px; padding:6px;" onclick="focusQuickAssign('Night Shift (00:00 - 08:00)')">+ Add Staff</button>
+            </div>
+          </div>
+
+          <!-- Quick Assign Bar -->
+          <form class="quick-assign-bar" onsubmit="handleQuickAssignShift(event)">
+            <select id="qaShiftSelect" required>
+              <option value="">Select Shift Slot...</option>
+              <option value="Morning Shift (08:00 - 16:00)">Morning Shift (08:00 - 16:00)</option>
+              <option value="Evening Shift (16:00 - 00:00)">Evening Shift (16:00 - 00:00)</option>
+              <option value="Night Shift (00:00 - 08:00)">Night Shift (00:00 - 08:00)</option>
+            </select>
+            <select id="qaEmployeeSelect" required>
+              <option value="">Select Employee...</option>
+              <option value="Sarah Chen">Sarah Chen (Engineering)</option>
+              <option value="Marcus Williams">Marcus Williams (Engineering)</option>
+              <option value="Elena Rodriguez">Elena Rodriguez (HR)</option>
+              <option value="David Kim">David Kim (Finance)</option>
+              <option value="Rachel Adams">Rachel Adams (Product)</option>
+              <option value="Michael Chang">Michael Chang (DevOps)</option>
+              <option value="Amanda Vance">Amanda Vance (Marketing)</option>
+            </select>
+            <select id="qaRoleSelect" required>
+              <option value="Lead / Senior">Lead / Senior Staff</option>
+              <option value="Associate">Associate Level</option>
+              <option value="Support">Support / On-Call</option>
+            </select>
+            <button type="submit" class="btn btn-navy-cta">+ Add Employee to Shift</button>
+          </form>
         </div>
       </section>
 
-      <!-- VIEW 7: LEAVE & ABSENCE MANAGEMENT -->
+      <!-- ======================================================================
+           VIEW 7: LEAVE & ABSENCE MANAGEMENT (attendance - leave mgmt)
+           ====================================================================== -->
       <section class="view-panel" id="view-attendance-leave">
-        <div class="page-header-row">
-          <div>
-            <h1 class="page-title">Leave & Absence Management</h1>
-            <p class="page-subtitle">Review employee leave balances, process pending vacation and sick leave requests, and manage leave policies.</p>
+        <div class="page-title-block">
+          <h1 class="penpot-page-heading">Leave & Absence Management</h1>
+          <p class="penpot-page-sub">Review employee leave balances, process pending vacation and sick leave requests, and manage leave policies.</p>
+        </div>
+
+        <!-- Subnav Tabs -->
+        <div class="penpot-subnav-row">
+          <div class="pill-tabs-container">
+            <button class="tab-pill" onclick="switchView('attendance-daily')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              <span>Daily Log</span>
+            </button>
+            <button class="tab-pill" onclick="switchView('attendance-shift')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>Shift Management</span>
+            </button>
+            <button class="tab-pill active" onclick="switchView('attendance-leave')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span>Leave Management</span>
+            </button>
           </div>
         </div>
 
-        <div class="subnav-tabs">
-          <button class="tab-btn" onclick="switchView('attendance-daily')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-            <span>Daily Log</span>
-          </button>
-          <button class="tab-btn" onclick="switchView('attendance-shift')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            <span>Shift Management</span>
-          </button>
-          <button class="tab-btn active" onclick="switchView('attendance-leave')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            <span>Leave Management</span>
-          </button>
-        </div>
-
-        <div class="metric-cards-grid">
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">PENDING REQUESTS</span></div>
-            <div class="stat-number">05</div>
-            <div class="stat-footer"><span class="stat-subinfo">Requires HR Action</span></div>
+        <!-- 4 KPI Cards -->
+        <div class="kpi-cards-4grid">
+          <div class="kpi-card">
+            <div class="kpi-head"><span>PENDING REQUESTS</span></div>
+            <div class="kpi-value">05</div>
+            <div class="kpi-subtext">Requires HR Action</div>
           </div>
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">APPROVED THIS MONTH</span></div>
-            <div class="stat-number">18</div>
-            <div class="stat-footer"><span class="stat-subinfo">22.5 Days Total</span></div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>APPROVED THIS MONTH</span></div>
+            <div class="kpi-value">18</div>
+            <div class="kpi-subtext">22.5 Days Total</div>
           </div>
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">ON LEAVE TODAY</span></div>
-            <div class="stat-number">04</div>
-            <div class="stat-footer"><span class="stat-subinfo">03 Annual • 01 Sick</span></div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>ON LEAVE TODAY</span></div>
+            <div class="kpi-value">04</div>
+            <div class="kpi-subtext">03 Annual • 01 Sick</div>
           </div>
-          <div class="stat-card gradient-blue">
-            <div class="stat-header"><span class="stat-label">AVG LEAVE UTILIZATION</span></div>
-            <div class="stat-number">67.67%</div>
-            <div class="stat-footer"><span class="stat-subinfo">Annual Score</span></div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>AVG LEAVE UTILIZATION</span></div>
+            <div class="kpi-value">67.67%</div>
+            <div class="kpi-subtext">Annual Score</div>
           </div>
         </div>
 
-        <!-- Leave Register Panel -->
-        <div class="panel-card leave-register-card">
-          <div class="panel-header-flex">
+        <!-- Leave Applications Register Card -->
+        <div class="white-card leave-master-card">
+          <div class="leave-master-head">
             <div>
-              <h3 class="panel-title">Employee Leave Applications Register</h3>
-              <p class="panel-subtitle">Showing active employee leave requests, department allocations, duration periods, and approval status.</p>
+              <h2 class="card-title">Employee Leave Applications Register</h2>
+              <p class="card-sub">Showing active employee leave requests, department allocations, duration periods, and approval status.</p>
             </div>
-            <button class="btn btn-dark" onclick="openLeaveModal()">+ Apply for Leave</button>
+            <button class="btn btn-navy-cta" onclick="openLeaveModal()">+ Apply for Leave</button>
           </div>
 
-          <div class="table-container">
-            <table class="data-table">
+          <div class="table-wrap">
+            <table class="penpot-table">
               <thead>
                 <tr>
                   <th>APPLICANT & DEPARTMENT</th>
@@ -1442,94 +1479,94 @@
               <tbody id="leaveRegisterTableBody">
                 <tr>
                   <td>
-                    <div class="emp-row-title">Sarah Chen</div>
-                    <div class="emp-row-sub">Senior Developer • Engineering Dept</div>
+                    <div class="bold-title">Sarah Chen</div>
+                    <div class="sub-role">Senior Developer • Engineering Dept</div>
                   </td>
-                  <td><span class="pill-type pill-type-blue">Annual Vacation</span></td>
+                  <td><span class="penpot-leave-pill pill-blue">Annual Vacation</span></td>
                   <td>
-                    <div class="duration-main">5 Working Days</div>
-                    <div class="duration-sub">Jun 22 - Jun 26, 2026</div>
+                    <div class="bold-title">5 Working Days</div>
+                    <div class="sub-role">Jun 22 - Jun 26, 2026</div>
                   </td>
                   <td>Jun 10, 2026</td>
-                  <td><span class="badge badge-success">● Accepted</span></td>
+                  <td><span class="penpot-badge badge-accepted">● Accepted</span></td>
                 </tr>
                 <tr>
                   <td>
-                    <div class="emp-row-title">David Kim</div>
-                    <div class="emp-row-sub">Lead Financial Analyst • Finance Dept</div>
+                    <div class="bold-title">David Kim</div>
+                    <div class="sub-role">Lead Financial Analyst • Finance Dept</div>
                   </td>
-                  <td><span class="pill-type pill-type-cyan">Medical / Sick Leave</span></td>
+                  <td><span class="penpot-leave-pill pill-cyan">Medical / Sick Leave</span></td>
                   <td>
-                    <div class="duration-main">3 Working Days</div>
-                    <div class="duration-sub">Jun 24 - Jun 26, 2026</div>
+                    <div class="bold-title">3 Working Days</div>
+                    <div class="sub-role">Jun 24 - Jun 26, 2026</div>
                   </td>
                   <td>Jun 14, 2026</td>
-                  <td><span class="badge badge-success">● Accepted</span></td>
+                  <td><span class="penpot-badge badge-accepted">● Accepted</span></td>
                 </tr>
                 <tr>
                   <td>
-                    <div class="emp-row-title">Marcus Williams</div>
-                    <div class="emp-row-sub">Senior Account Exec • Sales Dept</div>
+                    <div class="bold-title">Marcus Williams</div>
+                    <div class="sub-role">Senior Account Exec • Sales Dept</div>
                   </td>
-                  <td><span class="pill-type pill-type-purple">Casual Leave</span></td>
+                  <td><span class="penpot-leave-pill pill-purple">Casual Leave</span></td>
                   <td>
-                    <div class="duration-main">2 Working Days</div>
-                    <div class="duration-sub">Jun 29 - Jun 30, 2026</div>
+                    <div class="bold-title">2 Working Days</div>
+                    <div class="sub-role">Jun 29 - Jun 30, 2026</div>
                   </td>
                   <td>Jun 16, 2026</td>
-                  <td><span class="badge badge-danger">● Rejected</span></td>
+                  <td><span class="penpot-badge badge-rejected">● Rejected</span></td>
                 </tr>
                 <tr>
                   <td>
-                    <div class="emp-row-title">Rachel Adams</div>
-                    <div class="emp-row-sub">Lead Product Designer • Product Design</div>
+                    <div class="bold-title">Rachel Adams</div>
+                    <div class="sub-role">Lead Product Designer • Product Design</div>
                   </td>
-                  <td><span class="pill-type pill-type-blue">Annual Vacation</span></td>
+                  <td><span class="penpot-leave-pill pill-blue">Annual Vacation</span></td>
                   <td>
-                    <div class="duration-main">7 Working Days</div>
-                    <div class="duration-sub">Jul 06 - Jul 14, 2026</div>
+                    <div class="bold-title">7 Working Days</div>
+                    <div class="sub-role">Jul 06 - Jul 14, 2026</div>
                   </td>
                   <td>Jun 17, 2026</td>
-                  <td><span class="badge badge-warning">● Pending Review</span></td>
+                  <td><span class="penpot-badge badge-pending">● Pending Review</span></td>
                 </tr>
                 <tr>
                   <td>
-                    <div class="emp-row-title">Robert Martinez</div>
-                    <div class="emp-row-sub">People Specialist • HR & Operations</div>
+                    <div class="bold-title">Robert Martinez</div>
+                    <div class="sub-role">People Specialist • HR & Operations</div>
                   </td>
-                  <td><span class="pill-type pill-type-indigo">Parental Leave</span></td>
+                  <td><span class="penpot-leave-pill pill-indigo">Parental Leave</span></td>
                   <td>
-                    <div class="duration-main">30 Calendar Days</div>
-                    <div class="duration-sub">Jul 01 - Jul 30, 2026</div>
+                    <div class="bold-title">30 Calendar Days</div>
+                    <div class="sub-role">Jul 01 - Jul 30, 2026</div>
                   </td>
                   <td>Jun 05, 2026</td>
-                  <td><span class="badge badge-success">● Accepted</span></td>
+                  <td><span class="penpot-badge badge-accepted">● Accepted</span></td>
                 </tr>
                 <tr>
                   <td>
-                    <div class="emp-row-title">Amanda Vance</div>
-                    <div class="emp-row-sub">Brand Strategist • Marketing Dept</div>
+                    <div class="bold-title">Amanda Vance</div>
+                    <div class="sub-role">Brand Strategist • Marketing Dept</div>
                   </td>
-                  <td><span class="pill-type pill-type-orange">Emergency Personal</span></td>
+                  <td><span class="penpot-leave-pill pill-orange">Emergency Personal</span></td>
                   <td>
-                    <div class="duration-main">4 Working Days</div>
-                    <div class="duration-sub">Jun 18 - Jun 21, 2026</div>
+                    <div class="bold-title">4 Working Days</div>
+                    <div class="sub-role">Jun 18 - Jun 21, 2026</div>
                   </td>
                   <td>Jun 17, 2026</td>
-                  <td><span class="badge badge-danger">● Rejected</span></td>
+                  <td><span class="penpot-badge badge-rejected">● Rejected</span></td>
                 </tr>
                 <tr>
                   <td>
-                    <div class="emp-row-title">Michael Chang</div>
-                    <div class="emp-row-sub">DevOps Engineer • Engineering Dept</div>
+                    <div class="bold-title">Michael Chang</div>
+                    <div class="sub-role">DevOps Engineer • Engineering Dept</div>
                   </td>
-                  <td><span class="pill-type pill-type-slate">Compensatory Off</span></td>
+                  <td><span class="penpot-leave-pill pill-gray">Compensatory Off</span></td>
                   <td>
-                    <div class="duration-main">1 Working Day</div>
-                    <div class="duration-sub">Jun 22, 2026</div>
+                    <div class="bold-title">1 Working Day</div>
+                    <div class="sub-role">Jun 22, 2026</div>
                   </td>
                   <td>Jun 15, 2026</td>
-                  <td><span class="badge badge-success">● Accepted</span></td>
+                  <td><span class="penpot-badge badge-accepted">● Accepted</span></td>
                 </tr>
               </tbody>
             </table>
@@ -1537,42 +1574,657 @@
         </div>
       </section>
 
-      <!-- VIEW: PAYROLL / CLAIMS / REPORTS PLACEHOLDER -->
-      <section class="view-panel" id="view-placeholder">
-        <div class="page-header-row">
-          <div>
-            <h1 class="page-title" id="placeholderTitle">Feature Module</h1>
-            <p class="page-subtitle" id="placeholderSubtitle">Detailed module analytics, exportable ledger, and transactional audit trails.</p>
+      <!-- ======================================================================
+           VIEW 8: CLAIMS & REIMBURSEMENT MANAGEMENT (claims - pending, history, advance)
+           ====================================================================== -->
+      <section class="view-panel" id="view-claims">
+        <div class="page-title-block">
+          <h1 class="penpot-page-heading">Claims & Reimbursement Management</h1>
+          <p class="penpot-page-sub">Review employee expense claims, reimbursement audit history, and advance salary requests.</p>
+        </div>
+
+        <!-- Subnav Tabs -->
+        <div class="penpot-subnav-row">
+          <div class="pill-tabs-container">
+            <button class="tab-pill active" id="claimsTabBtnPending" onclick="switchClaimsTab('pending')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <span>Pending Claims</span>
+            </button>
+            <button class="tab-pill" id="claimsTabBtnHistory" onclick="switchClaimsTab('history')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+              <span>Claims History</span>
+            </button>
+            <button class="tab-pill" id="claimsTabBtnAdvance" onclick="switchClaimsTab('advance')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v12M15 9.5H9.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H8"></path></svg>
+              <span>Advance Pay Requests</span>
+            </button>
           </div>
         </div>
-        <div class="panel-card" style="text-align:center; padding: 60px 20px;">
-          <div style="font-size:48px; margin-bottom:16px;">📁</div>
-          <h3 style="font-size:20px; font-weight:700; color:#1e293b; margin-bottom:8px;">Ready for Production Data Integration</h3>
-          <p style="color:#64748b; max-width:500px; margin:0 auto 24px auto;">This module is configured and ready to connect with your backend API or payroll ledger.</p>
-          <button class="btn btn-primary" onclick="switchView('dashboard')">Back to Overview</button>
+
+        <!-- ================= SUB-PANEL 1: PENDING CLAIMS ================= -->
+        <div class="claims-subpanel active" id="claimsSubpanelPending">
+          <!-- 4 KPI Cards -->
+          <div class="kpi-cards-4grid">
+            <div class="kpi-card">
+              <div class="kpi-head"><span>PENDING CLAIMS</span></div>
+              <div class="kpi-value">14</div>
+              <div class="kpi-subtext">↗ $4,820.50 Total</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>APPROVED THIS MONTH</span></div>
+              <div class="kpi-value">48</div>
+              <div class="kpi-subtext">↗ $18,450 Settled</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>REJECTED / FLAGGED</span></div>
+              <div class="kpi-value">03</div>
+              <div class="kpi-subtext">↗ Policy Mismatch</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>AVG PROCESSING TIME</span></div>
+              <div class="kpi-value">1.8d</div>
+              <div class="kpi-subtext">↗ Faster by 0.6d</div>
+            </div>
+          </div>
+
+          <!-- Pending Claims Table Card -->
+          <div class="white-card" style="padding:0; overflow:hidden; margin-bottom:24px;">
+            <div style="padding:22px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+              <div>
+                <h2 class="card-title">Active Pending Claims Register</h2>
+                <p class="card-sub">Showing 6 submitted expense claims requiring managerial review and settlement approval.</p>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <input type="text" placeholder="Search claim ID, applicant, or category..." class="penpot-select-full" style="width:280px; padding:8px 14px; font-size:13px;" onkeyup="filterClaimsTable(this, 'pendingClaimsTableBody')" />
+                <button class="btn btn-navy-cta" onclick="batchApproveClaims()">+ Batch Approve (0)</button>
+              </div>
+            </div>
+
+            <div class="claims-table-wrapper">
+              <table class="claims-table">
+                <thead>
+                  <tr>
+                    <th>CLAIM ID & APPLICANT</th>
+                    <th>CATEGORY</th>
+                    <th>DATE FILED</th>
+                    <th>EXPENSE DETAILS & RECEIPT</th>
+                    <th>AMOUNT</th>
+                    <th>STATUS</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="pendingClaimsTableBody">
+                  <!-- Row 1: Sarah Chen -->
+                  <tr id="claim-row-CLM-2026-081">
+                    <td>
+                      <div class="claims-applicant-cell">
+                        <div class="claims-avatar">SC</div>
+                        <div class="claims-applicant-info">
+                          <strong>Sarah Chen &nbsp;<span style="color:#64748b; font-weight:500;">[CLM-2026-081]</span></strong>
+                          <span>Senior Dev • Engineering</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="claims-cat-pill">Travel & Lodging</span></td>
+                    <td>Jun 18, 2026</td>
+                    <td>
+                      <div class="claims-details-cell">
+                        <div class="claims-details-text">Client onsite workshop hotel & flight booking</div>
+                        <div class="claims-attachment-text" onclick="showToast('Downloading Receipt-4092.pdf (1.4 MB)...')">📎 Receipt-4092.pdf (1.4 MB)</div>
+                      </div>
+                    </td>
+                    <td><span class="claims-amount-txt">$1,240.00</span></td>
+                    <td><span class="claims-status-pill pending" id="status-CLM-2026-081">● Pending</span></td>
+                    <td>
+                      <div class="claims-actions-cell" id="actions-CLM-2026-081">
+                        <button class="btn-claim-approve" onclick="handleClaimAction('CLM-2026-081', 'Approve')">Approve</button>
+                        <button class="btn-claim-reject" onclick="handleClaimAction('CLM-2026-081', 'Reject')">Reject</button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- Row 2: Marcus Williams -->
+                  <tr id="claim-row-CLM-2026-082">
+                    <td>
+                      <div class="claims-applicant-cell">
+                        <div class="claims-avatar">MW</div>
+                        <div class="claims-applicant-info">
+                          <strong>Marcus Williams &nbsp;<span style="color:#64748b; font-weight:500;">[CLM-2026-082]</span></strong>
+                          <span>Senior Dev • Engineering</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="claims-cat-pill">Hardware & Tools</span></td>
+                    <td>Jun 17, 2026</td>
+                    <td>
+                      <div class="claims-details-cell">
+                        <div class="claims-details-text">4K External Monitor & ergonomic standing riser</div>
+                        <div class="claims-attachment-text" onclick="showToast('Downloading Invoice-8812.pdf (820 KB)...')">📎 Invoice-8812.pdf (820 KB)</div>
+                      </div>
+                    </td>
+                    <td><span class="claims-amount-txt">$485.50</span></td>
+                    <td><span class="claims-status-pill pending" id="status-CLM-2026-082">● Pending</span></td>
+                    <td>
+                      <div class="claims-actions-cell" id="actions-CLM-2026-082">
+                        <button class="btn-claim-approve" onclick="handleClaimAction('CLM-2026-082', 'Approve')">Approve</button>
+                        <button class="btn-claim-reject" onclick="handleClaimAction('CLM-2026-082', 'Reject')">Reject</button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- Row 3: Rachel Adams -->
+                  <tr id="claim-row-CLM-2026-083">
+                    <td>
+                      <div class="claims-applicant-cell">
+                        <div class="claims-avatar">RA</div>
+                        <div class="claims-applicant-info">
+                          <strong>Rachel Adams &nbsp;<span style="color:#64748b; font-weight:500;">[CLM-2026-083]</span></strong>
+                          <span>Lead Designer • Product</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="claims-cat-pill">Software Subs</span></td>
+                    <td>Jun 16, 2026</td>
+                    <td>
+                      <div class="claims-details-cell">
+                        <div class="claims-details-text">Annual Figma Enterprise & Font License renewal</div>
+                        <div class="claims-attachment-text" onclick="showToast('Downloading Receipt-9931.pdf (2.1 MB)...')">📎 Receipt-9931.pdf (2.1 MB)</div>
+                      </div>
+                    </td>
+                    <td><span class="claims-amount-txt">$620.00</span></td>
+                    <td><span class="claims-status-pill pending" id="status-CLM-2026-083">● Pending</span></td>
+                    <td>
+                      <div class="claims-actions-cell" id="actions-CLM-2026-083">
+                        <button class="btn-claim-approve" onclick="handleClaimAction('CLM-2026-083', 'Approve')">Approve</button>
+                        <button class="btn-claim-reject" onclick="handleClaimAction('CLM-2026-083', 'Reject')">Reject</button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- Row 4: David Kim -->
+                  <tr id="claim-row-CLM-2026-084">
+                    <td>
+                      <div class="claims-applicant-cell">
+                        <div class="claims-avatar">DK</div>
+                        <div class="claims-applicant-info">
+                          <strong>David Kim &nbsp;<span style="color:#64748b; font-weight:500;">[CLM-2026-084]</span></strong>
+                          <span>Lead Analyst • Finance</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="claims-cat-pill">Client Meals</span></td>
+                    <td>Jun 16, 2026</td>
+                    <td>
+                      <div class="claims-details-cell">
+                        <div class="claims-details-text">Dinner with Q2 audit partners</div>
+                        <div class="claims-attachment-text" onclick="showToast('Downloading Receipt-1029.jpg (640 KB)...')">📎 Receipt-1029.jpg (640 KB)</div>
+                      </div>
+                    </td>
+                    <td><span class="claims-amount-txt">$315.00</span></td>
+                    <td><span class="claims-status-pill pending" id="status-CLM-2026-084">● Pending</span></td>
+                    <td>
+                      <div class="claims-actions-cell" id="actions-CLM-2026-084">
+                        <button class="btn-claim-approve" onclick="handleClaimAction('CLM-2026-084', 'Approve')">Approve</button>
+                        <button class="btn-claim-reject" onclick="handleClaimAction('CLM-2026-084', 'Reject')">Reject</button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- Row 5: Amanda Vance -->
+                  <tr id="claim-row-CLM-2026-085">
+                    <td>
+                      <div class="claims-applicant-cell">
+                        <div class="claims-avatar">AV</div>
+                        <div class="claims-applicant-info">
+                          <strong>Amanda Vance &nbsp;<span style="color:#64748b; font-weight:500;">[CLM-2026-085]</span></strong>
+                          <span>Brand Strategist • Marketing</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="claims-cat-pill">Office Supplies</span></td>
+                    <td>Jun 15, 2026</td>
+                    <td>
+                      <div class="claims-details-cell">
+                        <div class="claims-details-text">Design workshop stationery & whiteboard set</div>
+                        <div class="claims-attachment-text" onclick="showToast('Downloading Receipt-5521.pdf (410 KB)...')">📎 Receipt-5521.pdf (410 KB)</div>
+                      </div>
+                    </td>
+                    <td><span class="claims-amount-txt">$142.80</span></td>
+                    <td><span class="claims-status-pill pending" id="status-CLM-2026-085">● Pending</span></td>
+                    <td>
+                      <div class="claims-actions-cell" id="actions-CLM-2026-085">
+                        <button class="btn-claim-approve" onclick="handleClaimAction('CLM-2026-085', 'Approve')">Approve</button>
+                        <button class="btn-claim-reject" onclick="handleClaimAction('CLM-2026-085', 'Reject')">Reject</button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- Row 6: Michael Chang -->
+                  <tr id="claim-row-CLM-2026-086">
+                    <td>
+                      <div class="claims-applicant-cell">
+                        <div class="claims-avatar">MC</div>
+                        <div class="claims-applicant-info">
+                          <strong>Michael Chang &nbsp;<span style="color:#64748b; font-weight:500;">[CLM-2026-086]</span></strong>
+                          <span>DevOps Engineer • Platform</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="claims-cat-pill">Certifications</span></td>
+                    <td>Jun 14, 2026</td>
+                    <td>
+                      <div class="claims-details-cell">
+                        <div class="claims-details-text">AWS Solutions Architect Professional exam fee</div>
+                        <div class="claims-attachment-text" onclick="showToast('Downloading Voucher-7714.pdf (980 KB)...')">📎 Voucher-7714.pdf (980 KB)</div>
+                      </div>
+                    </td>
+                    <td><span class="claims-amount-txt">$395.00</span></td>
+                    <td><span class="claims-status-pill pending" id="status-CLM-2026-086">● Pending</span></td>
+                    <td>
+                      <div class="claims-actions-cell" id="actions-CLM-2026-086">
+                        <button class="btn-claim-approve" onclick="handleClaimAction('CLM-2026-086', 'Approve')">Approve</button>
+                        <button class="btn-claim-reject" onclick="handleClaimAction('CLM-2026-086', 'Reject')">Reject</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="claims-pagination-bar">
+              <span>Showing 1 to 6 of 14 pending expense claims requiring review</span>
+              <div class="claims-page-buttons">
+                <button class="btn-page-arr">‹ Prev</button>
+                <button class="btn-page-num active">1</button>
+                <button class="btn-page-num">2</button>
+                <button class="btn-page-num">3</button>
+                <button class="btn-page-arr">Next ›</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= SUB-PANEL 2: CLAIMS HISTORY ================= -->
+        <div class="claims-subpanel" id="claimsSubpanelHistory" style="display:none;">
+          <!-- 4 KPI Cards -->
+          <div class="kpi-cards-4grid">
+            <div class="kpi-card">
+              <div class="kpi-head"><span>TOTAL SETTLED (YTD)</span></div>
+              <div class="kpi-value">182</div>
+              <div class="kpi-subtext">↗ $64,280 Total</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>TOTAL APPROVED</span></div>
+              <div class="kpi-value">168</div>
+              <div class="kpi-subtext">↗ 92.3% Rate</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>TOTAL REJECTED</span></div>
+              <div class="kpi-value">14</div>
+              <div class="kpi-subtext">↗ 7.7% Rate</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>REIMBURSEMENT SPEED</span></div>
+              <div class="kpi-value">1.4d</div>
+              <div class="kpi-subtext">↗ SLA Compliant</div>
+            </div>
+          </div>
+
+          <!-- Claims History Table Card -->
+          <div class="white-card" style="padding:0; overflow:hidden; margin-bottom:24px;">
+            <div style="padding:22px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+              <div>
+                <h2 class="card-title">Claims Settlement & Audit History</h2>
+                <p class="card-sub">Showing 6 recently processed expense claims with manager approval audit records.</p>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <input type="text" placeholder="Search past claim ID, employee, or approver..." class="penpot-select-full" style="width:300px; padding:8px 14px; font-size:13px;" onkeyup="filterClaimsTable(this, 'historyClaimsTableBody')" />
+                <button class="btn btn-outline-gray" onclick="showToast('Exporting settlement audit history as CSV...')">Export Audit CSV</button>
+              </div>
+            </div>
+
+            <div class="claims-table-wrapper">
+              <table class="claims-table">
+                <thead>
+                  <tr>
+                    <th>CLAIM ID & APPLICANT</th>
+                    <th>CATEGORY</th>
+                    <th>SUBMITTED / SETTLED</th>
+                    <th>EXPENSE DETAILS</th>
+                    <th>AMOUNT</th>
+                    <th>STATUS</th>
+                    <th>APPROVED / AUDITED BY</th>
+                  </tr>
+                </thead>
+                <tbody id="historyClaimsTableBody">
+                  <!-- Row 1 -->
+                  <tr>
+                    <td>
+                      <div class="claims-applicant-cell">
+                        <div class="claims-avatar">SC</div>
+                        <div class="claims-applicant-info">
+                          <strong>Sarah Chen &nbsp;<span style="color:#64748b; font-weight:500;">[CLM-2026-078]</span></strong>
+                          <span>Senior Dev • Engineering</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="claims-cat-pill">Client Dinner</span></td>
+                    <td>Jun 10 / Jun 12</td>
+                    <td>Executive dinner with client leadership</td>
+                    <td><span class="claims-amount-txt">$290.00</span></td>
+                    <td><span class="claims-status-pill approved">● Approved</span></td>
+                    <td><strong style="font-size:13px; color:#0f172a;">Elena Rostova</strong><div style="font-size:11px; color:#64748b;">VP Engineering</div></td>
+                  </tr>
+
+                  <!-- Row 2 -->
+                  <tr>
+                    <td>
+                      <div class="claims-applicant-cell">
+                        <div class="claims-avatar">DK</div>
+                        <div class="claims-applicant-info">
+                          <strong>David Kim &nbsp;<span style="color:#64748b; font-weight:500;">[CLM-2026-077]</span></strong>
+                          <span>Lead Analyst • Finance</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="claims-cat-pill">Personal Meals</span></td>
+                    <td>Jun 08 / Jun 09</td>
+                    <td>Weekend takeout dinner - Non-eligible expense</td>
+                    <td><span class="claims-amount-txt">$85.00</span></td>
+                    <td><span class="claims-status-pill rejected">● Rejected</span></td>
+                    <td><strong style="font-size:13px; color:#ef4444;">Elena Rostova</strong><div style="font-size:11px; color:#64748b;">Out of Policy</div></td>
+                  </tr>
+
+                  <!-- Row 3 -->
+                  <tr>
+                    <td>
+                      <div class="claims-applicant-cell">
+                        <div class="claims-avatar">RM</div>
+                        <div class="claims-applicant-info">
+                          <strong>Robert Martinez &nbsp;<span style="color:#64748b; font-weight:500;">[CLM-2026-076]</span></strong>
+                          <span>Marketing Manager</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="claims-cat-pill">Relocation Travel</span></td>
+                    <td>Jun 05 / Jun 07</td>
+                    <td>Corporate regional transfer flight ticket</td>
+                    <td><span class="claims-amount-txt">$850.00</span></td>
+                    <td><span class="claims-status-pill approved">● Approved</span></td>
+                    <td><strong style="font-size:13px; color:#0f172a;">Alex Rivera</strong><div style="font-size:11px; color:#64748b;">HR Lead</div></td>
+                  </tr>
+
+                  <!-- Row 4 -->
+                  <tr>
+                    <td>
+                      <div class="claims-applicant-cell">
+                        <div class="claims-avatar">MW</div>
+                        <div class="claims-applicant-info">
+                          <strong>Marcus Williams &nbsp;<span style="color:#64748b; font-weight:500;">[CLM-2026-075]</span></strong>
+                          <span>Senior Dev • Engineering</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="claims-cat-pill">Office Ergonomics</span></td>
+                    <td>Jun 02 / Jun 04</td>
+                    <td>Ergonomic chair lumbar support accessory</td>
+                    <td><span class="claims-amount-txt">$120.00</span></td>
+                    <td><span class="claims-status-pill approved">● Approved</span></td>
+                    <td><strong style="font-size:13px; color:#0f172a;">Elena Rostova</strong><div style="font-size:11px; color:#64748b;">VP Engineering</div></td>
+                  </tr>
+
+                  <!-- Row 5 -->
+                  <tr>
+                    <td>
+                      <div class="claims-applicant-cell">
+                        <div class="claims-avatar">AV</div>
+                        <div class="claims-applicant-info">
+                          <strong>Amanda Vance &nbsp;<span style="color:#64748b; font-weight:500;">[CLM-2026-074]</span></strong>
+                          <span>Brand Strategist • Marketing</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="claims-cat-pill">Airport Transit</span></td>
+                    <td>May 28 / May 30</td>
+                    <td>Airport Uber for Q2 partner summit</td>
+                    <td><span class="claims-amount-txt">$68.50</span></td>
+                    <td><span class="claims-status-pill approved">● Approved</span></td>
+                    <td><strong style="font-size:13px; color:#0f172a;">Alex Rivera</strong><div style="font-size:11px; color:#64748b;">HR Lead</div></td>
+                  </tr>
+
+                  <!-- Row 6 -->
+                  <tr>
+                    <td>
+                      <div class="claims-applicant-cell">
+                        <div class="claims-avatar">MC</div>
+                        <div class="claims-applicant-info">
+                          <strong>Michael Chang &nbsp;<span style="color:#64748b; font-weight:500;">[CLM-2026-073]</span></strong>
+                          <span>DevOps Engineer • Platform</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="claims-cat-pill">Remote Internet</span></td>
+                    <td>May 25 / May 26</td>
+                    <td>Monthly high-speed remote stipend</td>
+                    <td><span class="claims-amount-txt">$75.00</span></td>
+                    <td><span class="claims-status-pill approved">● Approved</span></td>
+                    <td><strong style="font-size:13px; color:#0f172a;">Elena Rostova</strong><div style="font-size:11px; color:#64748b;">VP Engineering</div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="claims-pagination-bar">
+              <span>Showing 1 to 6 of 182 historical settled claims</span>
+              <div class="claims-page-buttons">
+                <button class="btn-page-arr">‹ Prev</button>
+                <button class="btn-page-num active">1</button>
+                <button class="btn-page-num">2</button>
+                <button class="btn-page-num">3</button>
+                <button class="btn-page-arr">Next ›</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= SUB-PANEL 3: ADVANCE PAY REQUESTS ================= -->
+        <div class="claims-subpanel" id="claimsSubpanelAdvance" style="display:none;">
+          <!-- 4 KPI Cards -->
+          <div class="kpi-cards-4grid">
+            <div class="kpi-card">
+              <div class="kpi-head"><span>PENDING ADVANCES</span></div>
+              <div class="kpi-value">04</div>
+              <div class="kpi-subtext">↗ $6,500 Requested</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>DISBURSED THIS Q2</span></div>
+              <div class="kpi-value">12</div>
+              <div class="kpi-subtext">↗ $19,200 Total</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>REPAYMENT RECOVERY</span></div>
+              <div class="kpi-value">100%</div>
+              <div class="kpi-subtext">↗ Zero Defaults</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>PAYROLL CAP LIMIT</span></div>
+              <div class="kpi-value">50%</div>
+              <div class="kpi-subtext">↗ Max Salary Cap</div>
+            </div>
+          </div>
+
+          <!-- Advance Pay Table Card -->
+          <div class="white-card" style="padding:0; overflow:hidden; margin-bottom:24px;">
+            <div style="padding:22px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+              <div>
+                <h2 class="card-title">Employee Advance Pay & Salary Loan Register</h2>
+                <p class="card-sub">Showing 4 submitted salary advance applications subject to HR policy cap verification.</p>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <input type="text" placeholder="Search advance request ID, employee..." class="penpot-select-full" style="width:280px; padding:8px 14px; font-size:13px;" onkeyup="filterClaimsTable(this, 'advanceClaimsTableBody')" />
+                <button class="btn btn-navy-cta" onclick="openAdvanceModal()">+ Request Advance Pay</button>
+              </div>
+            </div>
+
+            <div class="claims-table-wrapper">
+              <table class="claims-table">
+                <thead>
+                  <tr>
+                    <th>REQUEST ID & APPLICANT</th>
+                    <th>REQUESTED AMOUNT</th>
+                    <th>REPAYMENT TERMS</th>
+                    <th>PURPOSE / JUSTIFICATION</th>
+                    <th>BASE SALARY / CAP</th>
+                    <th>STATUS</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="advanceClaimsTableBody">
+                  <!-- Row 1: Sarah Chen -->
+                  <tr id="adv-row-ADV-2026-018">
+                    <td>
+                      <div class="claims-applicant-cell">
+                        <div class="claims-avatar">SC</div>
+                        <div class="claims-applicant-info">
+                          <strong>Sarah Chen &nbsp;<span style="color:#64748b; font-weight:500;">[ADV-2026-018]</span></strong>
+                          <span>Senior Dev • Engineering</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="claims-amount-txt">$2,500.00</span></td>
+                    <td><span class="claims-cat-pill">2 Pay Cycles ($1,250/mo)</span></td>
+                    <td>Urgent medical procedure copay for family member</td>
+                    <td><strong style="font-size:13px; color:#0f172a;">$8,500/mo</strong> <span style="font-size:11px; color:#16a34a;">(Cap OK)</span></td>
+                    <td><span class="claims-status-pill pending" id="status-ADV-2026-018">● Pending</span></td>
+                    <td>
+                      <div class="claims-actions-cell" id="actions-ADV-2026-018">
+                        <button class="btn-claim-approve" onclick="handleClaimAction('ADV-2026-018', 'Approve')">Approve</button>
+                        <button class="btn-claim-reject" onclick="handleClaimAction('ADV-2026-018', 'Reject')">Reject</button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- Row 2: Marcus Williams -->
+                  <tr id="adv-row-ADV-2026-019">
+                    <td>
+                      <div class="claims-applicant-cell">
+                        <div class="claims-avatar">MW</div>
+                        <div class="claims-applicant-info">
+                          <strong>Marcus Williams &nbsp;<span style="color:#64748b; font-weight:500;">[ADV-2026-019]</span></strong>
+                          <span>Senior Dev • Engineering</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="claims-amount-txt">$1,800.00</span></td>
+                    <td><span class="claims-cat-pill">Next Payroll (Full)</span></td>
+                    <td>Home emergency plumbing & structural repairs</td>
+                    <td><strong style="font-size:13px; color:#0f172a;">$8,500/mo</strong> <span style="font-size:11px; color:#16a34a;">(Cap OK)</span></td>
+                    <td><span class="claims-status-pill pending" id="status-ADV-2026-019">● Pending</span></td>
+                    <td>
+                      <div class="claims-actions-cell" id="actions-ADV-2026-019">
+                        <button class="btn-claim-approve" onclick="handleClaimAction('ADV-2026-019', 'Approve')">Approve</button>
+                        <button class="btn-claim-reject" onclick="handleClaimAction('ADV-2026-019', 'Reject')">Reject</button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- Row 3: Amanda Vance -->
+                  <tr id="adv-row-ADV-2026-020">
+                    <td>
+                      <div class="claims-applicant-cell">
+                        <div class="claims-avatar">AV</div>
+                        <div class="claims-applicant-info">
+                          <strong>Amanda Vance &nbsp;<span style="color:#64748b; font-weight:500;">[ADV-2026-020]</span></strong>
+                          <span>Brand Strategist • Marketing</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="claims-amount-txt">$1,200.00</span></td>
+                    <td><span class="claims-cat-pill">3 Pay Cycles ($400/mo)</span></td>
+                    <td>Security deposit for new apartment lease</td>
+                    <td><strong style="font-size:13px; color:#0f172a;">$6,200/mo</strong> <span style="font-size:11px; color:#16a34a;">(Cap OK)</span></td>
+                    <td><span class="claims-status-pill pending" id="status-ADV-2026-020">● Pending</span></td>
+                    <td>
+                      <div class="claims-actions-cell" id="actions-ADV-2026-020">
+                        <button class="btn-claim-approve" onclick="handleClaimAction('ADV-2026-020', 'Approve')">Approve</button>
+                        <button class="btn-claim-reject" onclick="handleClaimAction('ADV-2026-020', 'Reject')">Reject</button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- Row 4: David Kim -->
+                  <tr id="adv-row-ADV-2026-021">
+                    <td>
+                      <div class="claims-applicant-cell">
+                        <div class="claims-avatar">DK</div>
+                        <div class="claims-applicant-info">
+                          <strong>David Kim &nbsp;<span style="color:#64748b; font-weight:500;">[ADV-2026-021]</span></strong>
+                          <span>Lead Analyst • Finance</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="claims-amount-txt">$1,000.00</span></td>
+                    <td><span class="claims-cat-pill">2 Pay Cycles ($500/mo)</span></td>
+                    <td>Emergency vehicle maintenance & transport</td>
+                    <td><strong style="font-size:13px; color:#0f172a;">$7,800/mo</strong> <span style="font-size:11px; color:#16a34a;">(Cap OK)</span></td>
+                    <td><span class="claims-status-pill pending" id="status-ADV-2026-021">● Pending</span></td>
+                    <td>
+                      <div class="claims-actions-cell" id="actions-ADV-2026-021">
+                        <button class="btn-claim-approve" onclick="handleClaimAction('ADV-2026-021', 'Approve')">Approve</button>
+                        <button class="btn-claim-reject" onclick="handleClaimAction('ADV-2026-021', 'Reject')">Reject</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="claims-pagination-bar">
+              <span>Showing 1 to 4 of 4 submitted advance pay applications</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           GENERIC PLACEHOLDER VIEW (Payroll, Reports)
+           ====================================================================== -->
+      <section class="view-panel" id="view-placeholder">
+        <div class="page-title-block">
+          <h1 class="penpot-page-heading" id="placeholderTitle">Feature Module</h1>
+          <p class="penpot-page-sub">Detailed module analytics, exportable ledger, and transactional audit trails.</p>
+        </div>
+        <div class="white-card" style="text-align:center; padding: 70px 20px;">
+          <div style="font-size:48px; margin-bottom:16px;">📊</div>
+          <h3 style="font-size:22px; font-weight:800; color:#0f172a; margin-bottom:8px;">Production Module Active</h3>
+          <p style="color:#64748b; max-width:480px; margin:0 auto 24px auto;">This module connects directly with peopleops records and HR analytics.</p>
+          <button class="btn btn-navy-cta" onclick="switchView('dashboard')">Back to Overview</button>
         </div>
       </section>
 
     </main>
   </div>
 
-  <!-- Apply Leave Modal -->
+  <!-- Leave Modal -->
   <div class="modal-backdrop" id="leaveModal">
-    <div class="modal-dialog">
-      <div class="modal-header">
+    <div class="modal-card">
+      <div class="modal-head">
         <h3>Submit Leave Application</h3>
-        <button class="close-modal-btn" onclick="closeLeaveModal()">&times;</button>
+        <button class="modal-close" onclick="closeLeaveModal()">&times;</button>
       </div>
-      <form id="leaveApplicationForm" onsubmit="handleApplyLeave(event)">
-        <div class="form-group">
+      <form onsubmit="handleApplyLeave(event)">
+        <div class="input-cell" style="margin-bottom:12px;">
           <label>APPLICANT</label>
-          <select id="leaveEmployee" name="employee_id" class="custom-select" required>
-            <option value="">Select an employee</option>
+          <select class="penpot-select-full" required>
+            <option>Marcus Williams (Sales)</option>
+            <option>Sarah Chen (Engineering)</option>
+            <option>Priya Patel (Marketing)</option>
+            <option>David Kim (Finance)</option>
           </select>
         </div>
-        <div class="form-group">
+        <div class="input-cell" style="margin-bottom:12px;">
           <label>LEAVE TYPE</label>
-          <select id="leaveType" name="leave_type" class="custom-select" required>
+          <select class="penpot-select-full" required>
             <option>Annual Vacation</option>
             <option>Medical / Sick Leave</option>
             <option>Casual Leave</option>
@@ -1581,30 +2233,75 @@
             <option>Compensatory Off</option>
           </select>
         </div>
-        <div class="form-grid-2">
-          <div class="form-group">
+        <div class="inputs-2grid" style="margin-bottom:12px;">
+          <div class="input-cell">
             <label>START DATE</label>
-            <input id="leaveStartDate" name="start_date" type="date" required />
+            <input type="date" required />
           </div>
-          <div class="form-group">
+          <div class="input-cell">
             <label>END DATE</label>
-            <input id="leaveEndDate" name="end_date" type="date" required />
+            <input type="date" required />
           </div>
         </div>
-        <div class="form-group">
+        <div class="input-cell" style="margin-bottom:20px;">
           <label>REASON / HANDOVER NOTES</label>
-          <textarea id="leaveReason" name="reason" rows="3" placeholder="Describe coverage and handover arrangements..." required></textarea>
+          <textarea rows="3" placeholder="Describe coverage and handover arrangements..." required></textarea>
         </div>
-        <div class="modal-actions">
-          <button type="button" class="btn btn-outline-secondary" onclick="closeLeaveModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Submit Application</button>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-outline-gray" onclick="closeLeaveModal()">Cancel</button>
+          <button type="submit" class="btn btn-navy-cta">Submit Application</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Toast Notification Container -->
-  <div id="toastContainer" class="toast-container"></div>
+  <!-- Advance Pay Request Modal -->
+  <div class="modal-backdrop" id="advanceModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Request Salary Advance / Loan</h3>
+        <button class="modal-close" onclick="closeAdvanceModal()">&times;</button>
+      </div>
+      <form onsubmit="handleRequestAdvance(event)">
+        <div class="input-cell" style="margin-bottom:12px;">
+          <label>APPLICANT EMPLOYEE</label>
+          <select class="penpot-select-full" required>
+            <option>Sarah Chen (Senior Dev • $8,500/mo)</option>
+            <option>Marcus Williams (Senior Dev • $8,500/mo)</option>
+            <option>Amanda Vance (Brand Strategist • $6,200/mo)</option>
+            <option>David Kim (Lead Analyst • $7,800/mo)</option>
+            <option>Elena Rodriguez (HR Specialist • $6,500/mo)</option>
+          </select>
+        </div>
+        <div class="inputs-2grid" style="margin-bottom:12px;">
+          <div class="input-cell">
+            <label>REQUESTED AMOUNT ($)</label>
+            <input type="number" min="100" max="5000" placeholder="e.g. 1500" required />
+          </div>
+          <div class="input-cell">
+            <label>REPAYMENT TERMS</label>
+            <select class="penpot-select-full" required>
+              <option>Next Payroll (Full Deduction)</option>
+              <option>2 Pay Cycles (50% each)</option>
+              <option>3 Pay Cycles (33% each)</option>
+              <option>4 Pay Cycles (25% each)</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-cell" style="margin-bottom:20px;">
+          <label>PURPOSE & FINANCIAL JUSTIFICATION</label>
+          <textarea rows="3" placeholder="State reason for advance request (subject to HR policy cap review)..." required></textarea>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-outline-gray" onclick="closeAdvanceModal()">Cancel</button>
+          <button type="submit" class="btn btn-navy-cta">Submit Advance Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-stack"></div>
 
   <script src="{% static 'app.js' %}"></script>
 </body>
