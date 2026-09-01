@@ -58,6 +58,17 @@ function switchView(viewName) {
     panel.classList.remove('active');
   });
 
+  // Handle header visibility and layout mode for messages
+  const topHeader = document.querySelector('.top-header-bar');
+  const mainArea = document.querySelector('.main-content-area');
+  if (viewName === 'messages') {
+    if (topHeader) topHeader.style.display = 'none';
+    if (mainArea) mainArea.classList.add('messages-active-area');
+  } else {
+    if (topHeader) topHeader.style.display = 'flex';
+    if (mainArea) mainArea.classList.remove('messages-active-area');
+  }
+
   // Show target view panel or placeholder
   const targetPanel = document.getElementById(`view-${viewName}`);
   if (targetPanel) {

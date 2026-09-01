@@ -469,15 +469,22 @@ body {
 .pulse-stat-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13.5px;
+  justify-content: space-between;
+  font-size: 14.5px;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: 9px;
+  color: #064e3b;
+}
+
+.pulse-stat-row:last-child {
+  margin-bottom: 0;
 }
 
 .pulse-stat-row strong {
   margin-left: auto;
+  font-size: 16px;
   font-weight: 800;
+  color: #065f46;
 }
 
 /* --------------------------------------------------------------------------
@@ -2008,36 +2015,38 @@ body {
 /* --------------------------------------------------------------------------
    Messages & Channels (Penpot Design)
    -------------------------------------------------------------------------- */
-.messages-status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background-color: #dcfce7;
-  color: #166534;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 12.5px;
-  font-weight: 700;
+/* --------------------------------------------------------------------------
+   Messages & Channels (Full Viewport / Fixed App Layout)
+   -------------------------------------------------------------------------- */
+.main-content-area.messages-active-area {
+  padding: 0 !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
 }
 
-.pulse-dot-green {
-  width: 8px;
-  height: 8px;
-  background-color: #16a34a;
-  border-radius: 50%;
-  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
+#view-messages.active {
+  height: 100vh;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
 }
 
 .messages-layout-card {
   display: grid;
   grid-template-columns: 360px 1fr;
   background-color: #ffffff;
-  border: 1px solid var(--card-border);
-  border-radius: 14px;
-  box-shadow: var(--card-shadow);
-  min-height: 720px;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+  height: 100vh;
+  max-height: 100vh;
+  width: 100%;
   overflow: hidden;
-  margin-bottom: 24px;
 }
 
 .messages-inbox-sidebar {
@@ -2046,6 +2055,9 @@ body {
   padding: 18px 16px;
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
 }
 
 .inbox-search-wrap {
@@ -2057,6 +2069,7 @@ body {
   border-radius: 8px;
   padding: 8px 12px;
   margin-bottom: 16px;
+  flex-shrink: 0;
 }
 
 .inbox-search-wrap input {
@@ -2074,6 +2087,7 @@ body {
   color: #94a3b8;
   letter-spacing: 0.8px;
   margin-bottom: 8px;
+  flex-shrink: 0;
 }
 
 .channel-list-item {
@@ -2087,6 +2101,7 @@ body {
   cursor: pointer;
   transition: all 0.15s ease;
   margin-bottom: 4px;
+  flex-shrink: 0;
 }
 
 .channel-list-item:hover, .channel-list-item.active {
@@ -2144,6 +2159,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
 }
 
@@ -2157,6 +2174,7 @@ body {
   border: 1px solid #f1f5f9;
   cursor: pointer;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 .inbox-user-tile:hover {
@@ -2246,6 +2264,9 @@ body {
   display: flex;
   flex-direction: column;
   background-color: #faf8f5;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
 }
 
 .chat-header-bar {
@@ -2256,6 +2277,7 @@ body {
   background-color: #ffffff;
   border-bottom: 1px solid #e2e8f0;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .chat-header-user {
@@ -2294,6 +2316,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-height: 0;
 }
 
 .chat-date-separator {
@@ -2301,6 +2324,7 @@ body {
   align-items: center;
   justify-content: center;
   margin: 4px 0;
+  flex-shrink: 0;
 }
 
 .chat-date-separator span {
