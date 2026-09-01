@@ -20,6 +20,7 @@ const viewBreadcrumbs = {
   'profile': { active: 'Profile' },
   'my-details': { active: 'Profile' },
   'claims': { active: 'Claims & Reimbursements' },
+  'messages': { active: 'Messages & Channels' },
   'reports': { active: 'Reports & Analytics' }
 };
 
@@ -44,6 +45,7 @@ function switchView(viewName) {
        (viewName.startsWith('employee') && dataView === 'employee-directory') ||
        (viewName.startsWith('attendance') && dataView === 'attendance-daily') ||
        (viewName === 'claims' && dataView === 'claims') ||
+       (viewName === 'messages' && dataView === 'messages') ||
        ((viewName === 'profile' || viewName === 'my-details') && dataView === 'profile')) {
       link.classList.add('active');
     } else {
@@ -336,23 +338,135 @@ function initSearch() {
   });
 }
 
-// Toast Alert Utility
-function showToast(message) {
-  const container = document.getElementById('toastContainer');
-  if (!container) return;
+// ==========================================================================
+// Messages & Channels Handlers
+// ==========================================================================
+function filterInboxes(input) {
+  const q = input.value.toLowerCase();
+  const tiles = document.querySelectorAll('#inboxConversationsList .inbox-user-tile');
+  tiles.forEach(tile => {
+    const text = tile.textContent.toLowerCase();
+    tile.style.display = text.includes(q) ? 'flex' : 'none';
+  });
+}
 
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.textContent = message;
+function selectChannel(elem, channelKey) {
+  document.querySelectorAll('.channel-list-item, .inbox-user-tile').forEach(el => el.classList.remove('active'));
+  elem.classList.add('active');
 
-  container.appendChild(toast);
+  const avatar = document.getElementById('activeChatAvatar');
+  const name = document.getElementById('activeChatName');
+  const status = document.getElementById('activeChatStatus');
+  const input = document.getElementById('chatTextInput');
 
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(10px)';
-    toast.style.transition = 'all 0.3s ease';
-    setTimeout(() => {
-      toast.remove();
-    }, 300);
-  }, 3500);
+  if (avatar) {
+    avatar.className = 'avatar-circle-md avatar-slate';
+    avatar.textContent = '#';
+  }
+  if (name) name.textContent = 'Company Announcements';
+  if (status) status.textContent = '● Broadcast Channel • All Staff';
+  if (input) input.placeholder = 'Post an announcement to the team...';
+  showToast('Switched to # Company Announcements channel.');
+}
+
+function selectInboxUser(elem, userName, initials, userRole, key) {
+  document.querySelectorAll('.channel-list-item, .inbox-user-tile').forEach(el => el.classList.remove('active'));
+  elem.classList.add('active');
+  elem.classList.remove('unread');
+  const unreadBadge = elem.querySelector('.unread-count-pill');
+  if (unreadBadge) unreadBadge.remove();
+
+  const avatar = document.getElementById('activeChatAvatar');
+  const name = document.getElementById('activeChatName');
+  const status = document.getElementById('activeChatStatus');
+  const input = document.getElementById('chatTextInput');
+
+  if (avatar) {
+    avatar.className = `avatar-circle-md avatar-blue`;
+    avatar.textContent = initials;
+  }
+  if (name) name.textContent = userName;
+  if (status) status.textContent = `● ${userRole} • Online Now`;
+  if (input) input.placeholder = `Type a message to ${userName}...`;
+  showToast(`Active chat: ${userName}`);
+}
+
+function handleSendChatMessage(e) {
+  e.preventDefault();
+  const input = document.getElementById('chatTextInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const stream = document.getElementById('chatStreamMessages');
+  if (stream) {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const row = document.createElement('div');
+    row.className = 'chat-msg-row outgoing';
+    row.innerHTML = `
+      <div class="chat-bubble outgoing">
+        <p>${escapeHtml(text)}</p>
+        <span class="chat-time-stamp outgoing-stamp">${timeStr} • Sent</span>
+      </div>
+    `;
+    stream.appendChild(row);
+    stream.scrollTop = stream.scrollHeight;
+  }
+
+  input.value = '';
+  showToast('Message sent.');
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
+// ==========================================================================
+// Authentication Modal Handlers
+// ==========================================================================
+function openAuthModal(mode = 'login') {
+  const modal = document.getElementById('authModal');
+  if (modal) {
+    modal.classList.add('active');
+    switchAuthMode(mode);
+  }
+}
+
+function closeAuthModal() {
+  const modal = document.getElementById('authModal');
+  if (modal) modal.classList.remove('active');
+}
+
+function switchAuthMode(mode) {
+  const loginC = document.getElementById('authLoginContainer');
+  const signupC = document.getElementById('authSignupContainer');
+  if (loginC && signupC) {
+    loginC.style.display = (mode === 'login' ? 'block' : 'none');
+    signupC.style.display = (mode === 'signup' ? 'block' : 'none');
+  }
+}
+
+function togglePasswordVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = 'Hide';
+  } else {
+    input.type = 'password';
+    btn.textContent = 'Show';
+  }
+}
+
+function handleAuthLogin(e) {
+  e.preventDefault();
+  closeAuthModal();
+  showToast('Welcome back! Successfully authenticated to peopleops.');
+}
+
+function handleAuthSignup(e) {
+  e.preventDefault();
+  closeAuthModal();
+  showToast('Corporate employee registration submitted successfully!');
 }
