@@ -2501,8 +2501,61 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   Auth Modals (Login & Registration)
+   Auth Portal (Full-Screen First-Instance & Modals)
    -------------------------------------------------------------------------- */
+.auth-fullscreen-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--penpot-bg);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.auth-fullscreen-container.authenticated {
+  display: none !important;
+}
+
+.auth-top-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 40px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+.auth-nav-tag {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #64748b;
+  background-color: #f1f5f9;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.auth-center-stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.auth-page-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 36px 32px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+}
+
 .auth-modal-card {
   max-width: 440px;
   padding: 32px 28px;

@@ -434,8 +434,17 @@ function escapeHtml(str) {
 }
 
 // ==========================================================================
-// Authentication Modal Handlers
+// Authentication Screen & Modal Handlers
 // ==========================================================================
+function switchAuthPage(mode) {
+  const loginCard = document.getElementById('authScreenLogin');
+  const signupCard = document.getElementById('authScreenSignup');
+  if (loginCard && signupCard) {
+    loginCard.style.display = (mode === 'login' ? 'block' : 'none');
+    signupCard.style.display = (mode === 'signup' ? 'block' : 'none');
+  }
+}
+
 function openAuthModal(mode = 'login') {
   const modal = document.getElementById('authModal');
   if (modal) {
@@ -471,13 +480,28 @@ function togglePasswordVisibility(inputId, btn) {
 }
 
 function handleAuthLogin(e) {
-  e.preventDefault();
+  if (e) e.preventDefault();
+  const authScreen = document.getElementById('authScreenContainer');
+  if (authScreen) authScreen.classList.add('authenticated');
   closeAuthModal();
-  showToast('Welcome back! Successfully authenticated to peopleops.');
+  switchView('dashboard');
+  showToast('Welcome back, Marcus! Authenticated to peopleops.');
 }
 
 function handleAuthSignup(e) {
-  e.preventDefault();
+  if (e) e.preventDefault();
+  const authScreen = document.getElementById('authScreenContainer');
+  if (authScreen) authScreen.classList.add('authenticated');
   closeAuthModal();
-  showToast('Corporate employee registration submitted successfully!');
+  switchView('dashboard');
+  showToast('Account registered successfully! Welcome to peopleops.');
+}
+
+function signOut() {
+  const authScreen = document.getElementById('authScreenContainer');
+  if (authScreen) {
+    authScreen.classList.remove('authenticated');
+    switchAuthPage('login');
+  }
+  showToast('Signed out of corporate session.');
 }
