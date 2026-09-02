@@ -106,12 +106,17 @@ function toggleAccordion(summaryElement) {
   
   if (card.classList.contains('open')) {
     card.classList.remove('open');
-    if (tag) tag.textContent = '▼ Expand Profile';
+    if (tag) {
+      tag.innerHTML = `<svg class="chevron-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg> <span>Expand Profile</span>`;
+    }
   } else {
     card.classList.add('open');
-    if (tag) tag.textContent = '▲ Collapse Profile';
+    if (tag) {
+      tag.innerHTML = `<svg class="chevron-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> <span>Collapse Profile</span>`;
+    }
   }
 }
+
 
 // Filter Employee Directory
 function filterDirectory() {
@@ -187,14 +192,15 @@ function toggleShiftCalendar() {
 
   if (cal.classList.contains('collapsed')) {
     cal.classList.remove('collapsed');
-    if (txt) txt.textContent = '⌃ Collapse Calendar';
+    if (txt) txt.textContent = 'Collapse Calendar';
     showToast('Shift Roster Master Calendar expanded.');
   } else {
     cal.classList.add('collapsed');
-    if (txt) txt.textContent = '⌄ Expand Calendar';
+    if (txt) txt.textContent = 'Expand Calendar';
     showToast('Shift Roster Master Calendar collapsed.');
   }
 }
+
 
 function focusQuickAssign(shiftName) {
   const select = document.getElementById('qaShiftSelect');
@@ -263,13 +269,13 @@ function handleClaimAction(id, action) {
   if (action === 'Approve') {
     if (statusElem) {
       statusElem.className = 'claims-status-pill approved';
-      statusElem.textContent = '● Approved';
+      statusElem.textContent = 'Approved';
     }
     showToast(`Claim ${id} approved for reimbursement settlement.`);
   } else {
     if (statusElem) {
       statusElem.className = 'claims-status-pill rejected';
-      statusElem.textContent = '● Rejected';
+      statusElem.textContent = 'Rejected';
     }
     showToast(`Claim ${id} flagged and marked as rejected.`);
   }
@@ -283,14 +289,15 @@ function batchApproveClaims() {
   const pendingBadges = document.querySelectorAll('#pendingClaimsTableBody .claims-status-pill.pending');
   pendingBadges.forEach(b => {
     b.className = 'claims-status-pill approved';
-    b.textContent = '● Approved';
+    b.textContent = 'Approved';
   });
   const actionCells = document.querySelectorAll('#pendingClaimsTableBody .claims-actions-cell');
   actionCells.forEach(ac => {
-    ac.innerHTML = `<span style="font-size:12px; color:#16a34a; font-weight:700;">✓ Approved</span>`;
+    ac.innerHTML = `<span style="font-size:12px; color:#16a34a; font-weight:700;">Approved</span>`;
   });
   showToast('Batch approved all active pending expense claims.');
 }
+
 
 // Advance Pay Modal
 function openAdvanceModal() {

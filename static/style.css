@@ -940,8 +940,11 @@ body {
   gap: 10px;
 }
 
-.acc-id-icon {
-  font-size: 18px;
+.acc-id-icon-svg {
+  width: 20px;
+  height: 20px;
+  color: #0f172a;
+  flex-shrink: 0;
 }
 
 .acc-name {
@@ -965,6 +968,15 @@ body {
   font-size: 12px;
   font-weight: 600;
   color: #ea580c;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.acc-toggle-tag .chevron-ico {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.5;
 }
 
 .acc-expanded-body {
@@ -996,11 +1008,19 @@ body {
 .col-item {
   font-size: 13px;
   color: var(--text-body);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
+
+.penpot-col-ico {
+  width: 15px;
+  height: 15px;
+  color: #0f172a;
+  flex-shrink: 0;
+}
+
 
 .perf-text {
   font-size: 13px;
