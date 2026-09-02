@@ -75,7 +75,7 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   Sidebar (220px Slate Blue)
+   Sidebar (220px Slate Blue - Static / Sticky)
    -------------------------------------------------------------------------- */
 .sidebar {
   width: 220px;
@@ -85,9 +85,23 @@ body {
   flex-direction: column;
   flex-shrink: 0;
   padding: 24px 14px;
-  min-height: 100vh;
+  height: 100vh;
+  position: sticky;
+  top: 0;
   box-sizing: border-box;
+  overflow-y: auto;
+  z-index: 100;
 }
+
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
 
 .brand-header {
   display: flex;
@@ -2824,9 +2838,13 @@ body {
   }
   .sidebar {
     width: 100%;
+    height: auto;
     min-height: auto;
+    position: relative;
+    top: auto;
     padding: 16px;
   }
+
   .brand-header {
     margin-bottom: 20px;
   }
