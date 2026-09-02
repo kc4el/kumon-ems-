@@ -80,8 +80,9 @@ class PageViewTests(TestCase):
     def test_dashboard_view_renders_successfully(self):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'peopleops')
+        self.assertContains(response, 'Kumon EMS')
         self.assertContains(response, 'view-dashboard')
+
 
     def test_login_view_renders_successfully(self):
         for path in ['/login/', '/signup/', '/auth/']:

@@ -1,11 +1,42 @@
 /* ==========================================================================
-   peopleops (Kumon EMS) - Interactive Logic
+   Kumon EMS - Interactive Logic & State Management
    ========================================================================== */
 
+
 document.addEventListener('DOMContentLoaded', () => {
+  initBrandLogo();
   initNavigation();
   initSearch();
 });
+
+// Automatic Logo Path Resolver for file:// and http:// protocols
+function initBrandLogo() {
+  const isFileProtocol = window.location.protocol === 'file:';
+  const currentPath = window.location.pathname.toLowerCase();
+  
+  const logoImgs = document.querySelectorAll('.brand-logo-img');
+  logoImgs.forEach(img => {
+    let bestSrc = '/static/kumon-logo.png';
+    if (isFileProtocol) {
+      if (currentPath.includes('templates') || currentPath.includes('core')) {
+        bestSrc = '../../static/kumon-logo.png';
+      } else {
+        bestSrc = 'static/kumon-logo.png';
+      }
+    }
+    img.src = bestSrc;
+    img.onerror = () => {
+      if (img.src.includes('../../static')) {
+        img.src = 'static/kumon-logo.png';
+      } else if (img.src.includes('static/')) {
+        img.src = '/static/kumon-logo.png';
+      } else {
+        img.src = 'kumon-logo.png';
+      }
+    };
+  });
+}
+
 
 // View Navigation Mapping
 const viewBreadcrumbs = {
@@ -343,8 +374,9 @@ function initSearch() {
     if (e.key === 'Enter') {
       const q = searchInput.value.trim();
       if (q) {
-        showToast(`Searching for "${q}" across peopleops...`);
+        showToast(`Searching for "${q}" across Kumon EMS...`);
       }
+
     }
   });
 
@@ -504,12 +536,12 @@ function switchAuthPage(mode = 'login') {
       loginCard.style.display = 'none';
       signupCard.style.display = 'block';
       window.location.hash = 'signup';
-      document.title = 'Employee Registration • peopleops';
+      document.title = 'Employee Registration • Kumon EMS';
     } else {
       signupCard.style.display = 'none';
       loginCard.style.display = 'block';
       window.location.hash = 'login';
-      document.title = 'Portal Authentication • peopleops';
+      document.title = 'Portal Authentication • Kumon EMS';
     }
   }
 }
@@ -530,8 +562,8 @@ function togglePasswordVisibility(inputId, btn) {
 function handleAuthLogin(e) {
   if (e) e.preventDefault();
   const empId = document.getElementById('loginEmployeeId')?.value || 'Marcus Williams';
-  showToast(`Welcome back, ${empId}! Authenticated to peopleops.`);
-  sessionStorage.setItem('peopleops_auth_user', empId);
+  showToast(`Welcome back, ${empId}! Authenticated to Kumon EMS.`);
+  sessionStorage.setItem('kumon_ems_auth_user', empId);
 
   const authScreen = document.getElementById('authScreenContainer');
   if (authScreen) authScreen.classList.add('authenticated');
@@ -557,8 +589,8 @@ function handleAuthLogin(e) {
 function handleAuthSignup(e) {
   if (e) e.preventDefault();
   const empId = document.getElementById('signupEmployeeId')?.value || 'New Employee';
-  showToast(`Account registered successfully! Welcome to peopleops, ${empId}.`);
-  sessionStorage.setItem('peopleops_auth_user', empId);
+  showToast(`Account registered successfully! Welcome to Kumon EMS, ${empId}.`);
+  sessionStorage.setItem('kumon_ems_auth_user', empId);
 
   const authScreen = document.getElementById('authScreenContainer');
   if (authScreen) authScreen.classList.add('authenticated');
@@ -593,7 +625,8 @@ function navigateToLogin(mode = 'login') {
 
 function signOut() {
   showToast('Signing out of corporate session...');
-  sessionStorage.removeItem('peopleops_auth_user');
+  sessionStorage.removeItem('kumon_ems_auth_user');
+
 
   const authScreen = document.getElementById('authScreenContainer');
   if (authScreen) {

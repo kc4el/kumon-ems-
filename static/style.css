@@ -1,5 +1,5 @@
 /* ==========================================================================
-   peopleops (Kumon EMS) - Design System & Stylesheet
+   Kumon EMS - Design System & Stylesheet
    Extracted & Pixel-Perfect Recreated from Penpot Designs
    ========================================================================== */
 
@@ -111,9 +111,9 @@ body {
 }
 
 .brand-logo-box {
-  width: 36px;
-  height: 36px;
-  background-color: var(--brand-orange);
+  width: 38px;
+  height: 38px;
+  background-color: #ffffff;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -124,7 +124,18 @@ body {
   font-family: 'Source Sans Pro', sans-serif;
   line-height: 1;
   flex-shrink: 0;
+  padding: 3px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
 }
+
+.brand-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
 
 .brand-text-box {
   display: flex;
@@ -1835,6 +1846,8 @@ body {
 /* ==========================================================================
    Claims & Reimbursements Module
    ========================================================================== */
+
+
 .claims-table-wrapper {
   overflow-x: auto;
 }

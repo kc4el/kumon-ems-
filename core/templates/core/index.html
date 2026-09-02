@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>peopleops (Kumon EMS)</title>
+  <title>Kumon EMS (Employee Management System)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -21,12 +21,13 @@
     <!-- 220px Dark Navy / Slate Blue Sidebar -->
     <aside class="sidebar">
       <div class="brand-header">
-        <div class="brand-logo-box">
-          <span class="brand-logo-text">p</span>
+        <div class="brand-logo-box brand-kumon-box">
+          <img src="/static/kumon-logo.png" alt="Kumon Logo" class="brand-logo-img"
+            onerror="this.onerror=null; this.src='../../static/kumon-logo.png';" />
+
         </div>
         <div class="brand-text-box">
-          <span class="brand-name">peopleops</span>
-          <span class="brand-tagline">PEOPLE, IN MOTION</span>
+          <span class="brand-name">Kumon EMS</span>
         </div>
       </div>
 
@@ -85,7 +86,8 @@
           </svg>
           <span>Profile</span>
         </a>
-        <a href="login.html" class="nav-link" onclick="navigateToLogin('login'); return false;" title="Open Portal Authentication">
+        <a href="login.html" class="nav-link" onclick="navigateToLogin('login'); return false;"
+          title="Open Portal Authentication">
           <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="2">
             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
@@ -444,14 +446,24 @@
               data-status="Present Today">
               <div class="acc-summary" onclick="toggleAccordion(this)">
                 <div class="acc-left">
-                  <svg class="acc-id-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2"/><rect width="18" height="18" x="3" y="4" rx="2"/><circle cx="12" cy="10" r="2"/><line x1="8" x2="8" y1="2" y2="4"/><line x1="16" x2="16" y1="2" y2="4"/></svg>
+                  <svg class="acc-id-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 18a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2" />
+                    <rect width="18" height="18" x="3" y="4" rx="2" />
+                    <circle cx="12" cy="10" r="2" />
+                    <line x1="8" x2="8" y1="2" y2="4" />
+                    <line x1="16" x2="16" y1="2" y2="4" />
+                  </svg>
                   <strong class="acc-name">Sarah Chen</strong>
                   <span class="acc-role">Senior Dev • Engineering Department</span>
                 </div>
                 <div class="acc-right">
                   <span class="penpot-badge badge-present">Present Today</span>
                   <span class="acc-toggle-tag">
-                    <svg class="chevron-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                    <svg class="chevron-ico" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2.5">
+                      <polyline points="18 15 12 9 6 15"></polyline>
+                    </svg>
                     <span>Collapse Profile</span>
                   </span>
                 </div>
@@ -461,26 +473,52 @@
                   <div class="acc-col">
                     <span class="col-head">CONTACT & WORK LOCATION</span>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                      <span>sarah.chen@peopleops.com</span>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <rect width="20" height="16" x="2" y="4" rx="2" />
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                      </svg>
+                      <span>sarah.chen@kumon-ems.com</span>
                     </div>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path
+                          d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                      </svg>
                       <span>+1 (555) 234-5678</span>
                     </div>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path
+                          d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+                        <circle cx="12" cy="10" r="3" />
+                      </svg>
                       <span>San Francisco HQ (Floor 4)</span>
                     </div>
                   </div>
                   <div class="acc-col">
                     <span class="col-head">EMPLOYMENT & ORG DETAILS</span>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M10 16h4"/><path d="M12 14v4"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M8 2v4" />
+                        <path d="M16 2v4" />
+                        <rect width="18" height="18" x="3" y="4" rx="2" />
+                        <path d="M3 10h18" />
+                        <path d="M10 16h4" />
+                        <path d="M12 14v4" />
+                      </svg>
                       <span>Jan 15, 2022</span>
                     </div>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 6v12"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+                        <path d="M12 6v12" />
+                      </svg>
                       <span>Grade L6</span>
                     </div>
                   </div>
@@ -501,14 +539,24 @@
               data-status="Present Today">
               <div class="acc-summary" onclick="toggleAccordion(this)">
                 <div class="acc-left">
-                  <svg class="acc-id-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2"/><rect width="18" height="18" x="3" y="4" rx="2"/><circle cx="12" cy="10" r="2"/><line x1="8" x2="8" y1="2" y2="4"/><line x1="16" x2="16" y1="2" y2="4"/></svg>
+                  <svg class="acc-id-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 18a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2" />
+                    <rect width="18" height="18" x="3" y="4" rx="2" />
+                    <circle cx="12" cy="10" r="2" />
+                    <line x1="8" x2="8" y1="2" y2="4" />
+                    <line x1="16" x2="16" y1="2" y2="4" />
+                  </svg>
                   <strong class="acc-name">Marcus Williams</strong>
                   <span class="acc-role">Senior Dev • Engineering Department</span>
                 </div>
                 <div class="acc-right">
                   <span class="penpot-badge badge-present">Present Today</span>
                   <span class="acc-toggle-tag">
-                    <svg class="chevron-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                    <svg class="chevron-ico" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2.5">
+                      <polyline points="18 15 12 9 6 15"></polyline>
+                    </svg>
                     <span>Collapse Profile</span>
                   </span>
                 </div>
@@ -518,26 +566,52 @@
                   <div class="acc-col">
                     <span class="col-head">CONTACT & WORK LOCATION</span>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                      <span>marcus.w@peopleops.com</span>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <rect width="20" height="16" x="2" y="4" rx="2" />
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                      </svg>
+                      <span>marcus.w@kumon-ems.com</span>
                     </div>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path
+                          d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                      </svg>
                       <span>+1 (555) 345-6789</span>
                     </div>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path
+                          d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+                        <circle cx="12" cy="10" r="3" />
+                      </svg>
                       <span>New York Hub (Floor 2)</span>
                     </div>
                   </div>
                   <div class="acc-col">
                     <span class="col-head">EMPLOYMENT & ORG DETAILS</span>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M10 16h4"/><path d="M12 14v4"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M8 2v4" />
+                        <path d="M16 2v4" />
+                        <rect width="18" height="18" x="3" y="4" rx="2" />
+                        <path d="M3 10h18" />
+                        <path d="M10 16h4" />
+                        <path d="M12 14v4" />
+                      </svg>
                       <span>Mar 01, 2023</span>
                     </div>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 6v12"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+                        <path d="M12 6v12" />
+                      </svg>
                       <span>Grade L5</span>
                     </div>
                   </div>
@@ -557,14 +631,24 @@
             <div class="roster-accordion-card" data-dept="Marketing" data-role="Brand Lead" data-status="Probation">
               <div class="acc-summary" onclick="toggleAccordion(this)">
                 <div class="acc-left">
-                  <svg class="acc-id-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2"/><rect width="18" height="18" x="3" y="4" rx="2"/><circle cx="12" cy="10" r="2"/><line x1="8" x2="8" y1="2" y2="4"/><line x1="16" x2="16" y1="2" y2="4"/></svg>
+                  <svg class="acc-id-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 18a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2" />
+                    <rect width="18" height="18" x="3" y="4" rx="2" />
+                    <circle cx="12" cy="10" r="2" />
+                    <line x1="8" x2="8" y1="2" y2="4" />
+                    <line x1="16" x2="16" y1="2" y2="4" />
+                  </svg>
                   <strong class="acc-name">Priya Patel</strong>
                   <span class="acc-role">Brand Lead • Marketing Department</span>
                 </div>
                 <div class="acc-right">
                   <span class="penpot-badge badge-probation">Probation</span>
                   <span class="acc-toggle-tag">
-                    <svg class="chevron-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    <svg class="chevron-ico" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2.5">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
                     <span>Expand Profile</span>
                   </span>
                 </div>
@@ -574,26 +658,52 @@
                   <div class="acc-col">
                     <span class="col-head">CONTACT & WORK LOCATION</span>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                      <span>priya.patel@peopleops.com</span>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <rect width="20" height="16" x="2" y="4" rx="2" />
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                      </svg>
+                      <span>priya.patel@kumon-ems.com</span>
                     </div>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path
+                          d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                      </svg>
                       <span>+1 (555) 456-7890</span>
                     </div>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path
+                          d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+                        <circle cx="12" cy="10" r="3" />
+                      </svg>
                       <span>Austin Office</span>
                     </div>
                   </div>
                   <div class="acc-col">
                     <span class="col-head">EMPLOYMENT & ORG DETAILS</span>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M10 16h4"/><path d="M12 14v4"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M8 2v4" />
+                        <path d="M16 2v4" />
+                        <rect width="18" height="18" x="3" y="4" rx="2" />
+                        <path d="M3 10h18" />
+                        <path d="M10 16h4" />
+                        <path d="M12 14v4" />
+                      </svg>
                       <span>Apr 10, 2026</span>
                     </div>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 6v12"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+                        <path d="M12 6v12" />
+                      </svg>
                       <span>Grade L4</span>
                     </div>
                   </div>
@@ -614,14 +724,24 @@
               data-status="Present Today">
               <div class="acc-summary" onclick="toggleAccordion(this)">
                 <div class="acc-left">
-                  <svg class="acc-id-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2"/><rect width="18" height="18" x="3" y="4" rx="2"/><circle cx="12" cy="10" r="2"/><line x1="8" x2="8" y1="2" y2="4"/><line x1="16" x2="16" y1="2" y2="4"/></svg>
+                  <svg class="acc-id-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 18a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2" />
+                    <rect width="18" height="18" x="3" y="4" rx="2" />
+                    <circle cx="12" cy="10" r="2" />
+                    <line x1="8" x2="8" y1="2" y2="4" />
+                    <line x1="16" x2="16" y1="2" y2="4" />
+                  </svg>
                   <strong class="acc-name">James O'Brien</strong>
                   <span class="acc-role">Ops Manager • Operations Department</span>
                 </div>
                 <div class="acc-right">
                   <span class="penpot-badge badge-present">Present Today</span>
                   <span class="acc-toggle-tag">
-                    <svg class="chevron-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    <svg class="chevron-ico" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2.5">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
                     <span>Expand Profile</span>
                   </span>
                 </div>
@@ -631,26 +751,52 @@
                   <div class="acc-col">
                     <span class="col-head">CONTACT & WORK LOCATION</span>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                      <span>james.o@peopleops.com</span>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <rect width="20" height="16" x="2" y="4" rx="2" />
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                      </svg>
+                      <span>james.o@kumon-ems.com</span>
                     </div>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path
+                          d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                      </svg>
                       <span>+1 (555) 567-8901</span>
                     </div>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path
+                          d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+                        <circle cx="12" cy="10" r="3" />
+                      </svg>
                       <span>Chicago Hub</span>
                     </div>
                   </div>
                   <div class="acc-col">
                     <span class="col-head">EMPLOYMENT & ORG DETAILS</span>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M10 16h4"/><path d="M12 14v4"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M8 2v4" />
+                        <path d="M16 2v4" />
+                        <rect width="18" height="18" x="3" y="4" rx="2" />
+                        <path d="M3 10h18" />
+                        <path d="M10 16h4" />
+                        <path d="M12 14v4" />
+                      </svg>
                       <span>Sep 14, 2021</span>
                     </div>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 6v12"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+                        <path d="M12 6v12" />
+                      </svg>
                       <span>Grade L6</span>
                     </div>
                   </div>
@@ -670,14 +816,24 @@
             <div class="roster-accordion-card" data-dept="HR" data-role="HR Specialist" data-status="Present Today">
               <div class="acc-summary" onclick="toggleAccordion(this)">
                 <div class="acc-left">
-                  <svg class="acc-id-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2"/><rect width="18" height="18" x="3" y="4" rx="2"/><circle cx="12" cy="10" r="2"/><line x1="8" x2="8" y1="2" y2="4"/><line x1="16" x2="16" y1="2" y2="4"/></svg>
+                  <svg class="acc-id-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 18a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2" />
+                    <rect width="18" height="18" x="3" y="4" rx="2" />
+                    <circle cx="12" cy="10" r="2" />
+                    <line x1="8" x2="8" y1="2" y2="4" />
+                    <line x1="16" x2="16" y1="2" y2="4" />
+                  </svg>
                   <strong class="acc-name">Elena Rodriguez</strong>
                   <span class="acc-role">HR Specialist • HR Department</span>
                 </div>
                 <div class="acc-right">
                   <span class="penpot-badge badge-present">Present Today</span>
                   <span class="acc-toggle-tag">
-                    <svg class="chevron-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    <svg class="chevron-ico" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2.5">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
                     <span>Expand Profile</span>
                   </span>
                 </div>
@@ -687,26 +843,52 @@
                   <div class="acc-col">
                     <span class="col-head">CONTACT & WORK LOCATION</span>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                      <span>elena.r@peopleops.com</span>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <rect width="20" height="16" x="2" y="4" rx="2" />
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                      </svg>
+                      <span>elena.r@kumon-ems.com</span>
                     </div>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path
+                          d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                      </svg>
                       <span>+1 (555) 678-9012</span>
                     </div>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path
+                          d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+                        <circle cx="12" cy="10" r="3" />
+                      </svg>
                       <span>San Francisco HQ</span>
                     </div>
                   </div>
                   <div class="acc-col">
                     <span class="col-head">EMPLOYMENT & ORG DETAILS</span>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M10 16h4"/><path d="M12 14v4"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M8 2v4" />
+                        <path d="M16 2v4" />
+                        <rect width="18" height="18" x="3" y="4" rx="2" />
+                        <path d="M3 10h18" />
+                        <path d="M10 16h4" />
+                        <path d="M12 14v4" />
+                      </svg>
                       <span>Feb 01, 2024</span>
                     </div>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 6v12"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+                        <path d="M12 6v12" />
+                      </svg>
                       <span>Grade L4</span>
                     </div>
                   </div>
@@ -726,14 +908,24 @@
             <div class="roster-accordion-card" data-dept="Finance" data-role="Analyst" data-status="On Leave">
               <div class="acc-summary" onclick="toggleAccordion(this)">
                 <div class="acc-left">
-                  <svg class="acc-id-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 18a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2"/><rect width="18" height="18" x="3" y="4" rx="2"/><circle cx="12" cy="10" r="2"/><line x1="8" x2="8" y1="2" y2="4"/><line x1="16" x2="16" y1="2" y2="4"/></svg>
+                  <svg class="acc-id-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 18a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2" />
+                    <rect width="18" height="18" x="3" y="4" rx="2" />
+                    <circle cx="12" cy="10" r="2" />
+                    <line x1="8" x2="8" y1="2" y2="4" />
+                    <line x1="16" x2="16" y1="2" y2="4" />
+                  </svg>
                   <strong class="acc-name">David Kim</strong>
                   <span class="acc-role">Analyst • Finance Department</span>
                 </div>
                 <div class="acc-right">
                   <span class="penpot-badge badge-leave">On Leave</span>
                   <span class="acc-toggle-tag">
-                    <svg class="chevron-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    <svg class="chevron-ico" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2.5">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
                     <span>Expand Profile</span>
                   </span>
                 </div>
@@ -743,26 +935,52 @@
                   <div class="acc-col">
                     <span class="col-head">CONTACT & WORK LOCATION</span>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                      <span>david.kim@peopleops.com</span>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <rect width="20" height="16" x="2" y="4" rx="2" />
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                      </svg>
+                      <span>david.kim@kumon-ems.com</span>
                     </div>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path
+                          d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                      </svg>
                       <span>+1 (555) 789-0123</span>
                     </div>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path
+                          d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
+                        <circle cx="12" cy="10" r="3" />
+                      </svg>
                       <span>New York Hub</span>
                     </div>
                   </div>
                   <div class="acc-col">
                     <span class="col-head">EMPLOYMENT & ORG DETAILS</span>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M10 16h4"/><path d="M12 14v4"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <path d="M8 2v4" />
+                        <path d="M16 2v4" />
+                        <rect width="18" height="18" x="3" y="4" rx="2" />
+                        <path d="M3 10h18" />
+                        <path d="M10 16h4" />
+                        <path d="M12 14v4" />
+                      </svg>
                       <span>Nov 12, 2023</span>
                     </div>
                     <div class="col-item">
-                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 6v12"/></svg>
+                      <svg class="penpot-col-ico" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+                        <path d="M12 6v12" />
+                      </svg>
                       <span>Grade L5</span>
                     </div>
                   </div>
@@ -839,7 +1057,7 @@
               </div>
               <div class="input-cell">
                 <label>CORPORATE EMAIL ADDRESS</label>
-                <input type="email" placeholder="samantha.vance@peopleops.com" required />
+                <input type="email" placeholder="samantha.vance@kumon-ems.com" required />
               </div>
               <div class="input-cell">
                 <label>DEPARTMENT & ROLE</label>
@@ -1652,7 +1870,11 @@
                     <div style="font-size:11px; color:#64748b;">Senior Dev</div>
                   </div>
                 </div>
-                <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12"
+                    height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg></button>
               </div>
               <button class="btn btn-outline-gray" style="width:100%; font-size:12px; padding:6px;"
                 onclick="focusQuickAssign('Morning Shift (08:00 - 16:00)')">+ Add Staff</button>
@@ -1675,7 +1897,11 @@
                     <div style="font-size:11px; color:#64748b;">Senior Dev</div>
                   </div>
                 </div>
-                <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12"
+                    height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg></button>
               </div>
               <button class="btn btn-outline-gray" style="width:100%; font-size:12px; padding:6px;"
                 onclick="focusQuickAssign('Evening Shift (16:00 - 00:00)')">+ Add Staff</button>
@@ -1698,7 +1924,11 @@
                     <div style="font-size:11px; color:#64748b;">Lead Analyst</div>
                   </div>
                 </div>
-                <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12"
+                    height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg></button>
               </div>
               <button class="btn btn-outline-gray" style="width:100%; font-size:12px; padding:6px;"
                 onclick="focusQuickAssign('Night Shift (00:00 - 08:00)')">+ Add Staff</button>
@@ -2032,7 +2262,12 @@
                       <div class="claims-details-cell">
                         <div class="claims-details-text">Client onsite workshop hotel & flight booking</div>
                         <div class="claims-attachment-text"
-                          onclick="showToast('Downloading Receipt-4092.pdf (1.4 MB)...')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Receipt-4092.pdf (1.4 MB)
+                          onclick="showToast('Downloading Receipt-4092.pdf (1.4 MB)...')"><svg width="12" height="12"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            style="vertical-align:middle; margin-right:4px;">
+                            <path
+                              d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                          </svg> Receipt-4092.pdf (1.4 MB)
                         </div>
                       </div>
                     </td>
@@ -2066,7 +2301,12 @@
                       <div class="claims-details-cell">
                         <div class="claims-details-text">4K External Monitor & ergonomic standing riser</div>
                         <div class="claims-attachment-text"
-                          onclick="showToast('Downloading Invoice-8812.pdf (820 KB)...')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Invoice-8812.pdf (820 KB)
+                          onclick="showToast('Downloading Invoice-8812.pdf (820 KB)...')"><svg width="12" height="12"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            style="vertical-align:middle; margin-right:4px;">
+                            <path
+                              d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                          </svg> Invoice-8812.pdf (820 KB)
                         </div>
                       </div>
                     </td>
@@ -2100,7 +2340,12 @@
                       <div class="claims-details-cell">
                         <div class="claims-details-text">Annual Figma Enterprise & Font License renewal</div>
                         <div class="claims-attachment-text"
-                          onclick="showToast('Downloading Receipt-9931.pdf (2.1 MB)...')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Receipt-9931.pdf (2.1 MB)
+                          onclick="showToast('Downloading Receipt-9931.pdf (2.1 MB)...')"><svg width="12" height="12"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            style="vertical-align:middle; margin-right:4px;">
+                            <path
+                              d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                          </svg> Receipt-9931.pdf (2.1 MB)
                         </div>
                       </div>
                     </td>
@@ -2134,7 +2379,12 @@
                       <div class="claims-details-cell">
                         <div class="claims-details-text">Dinner with Q2 audit partners</div>
                         <div class="claims-attachment-text"
-                          onclick="showToast('Downloading Receipt-1029.jpg (640 KB)...')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Receipt-1029.jpg (640 KB)
+                          onclick="showToast('Downloading Receipt-1029.jpg (640 KB)...')"><svg width="12" height="12"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            style="vertical-align:middle; margin-right:4px;">
+                            <path
+                              d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                          </svg> Receipt-1029.jpg (640 KB)
                         </div>
                       </div>
                     </td>
@@ -2168,7 +2418,12 @@
                       <div class="claims-details-cell">
                         <div class="claims-details-text">Design workshop stationery & whiteboard set</div>
                         <div class="claims-attachment-text"
-                          onclick="showToast('Downloading Receipt-5521.pdf (410 KB)...')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Receipt-5521.pdf (410 KB)
+                          onclick="showToast('Downloading Receipt-5521.pdf (410 KB)...')"><svg width="12" height="12"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            style="vertical-align:middle; margin-right:4px;">
+                            <path
+                              d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                          </svg> Receipt-5521.pdf (410 KB)
                         </div>
                       </div>
                     </td>
@@ -2202,7 +2457,12 @@
                       <div class="claims-details-cell">
                         <div class="claims-details-text">AWS Solutions Architect Professional exam fee</div>
                         <div class="claims-attachment-text"
-                          onclick="showToast('Downloading Voucher-7714.pdf (980 KB)...')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Voucher-7714.pdf (980 KB)
+                          onclick="showToast('Downloading Voucher-7714.pdf (980 KB)...')"><svg width="12" height="12"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            style="vertical-align:middle; margin-right:4px;">
+                            <path
+                              d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                          </svg> Voucher-7714.pdf (980 KB)
                         </div>
                       </div>
                     </td>
@@ -2779,7 +3039,12 @@
                   <p>Great! Let me know if any updates are needed for today's briefing.</p>
                   <div class="chat-bubble-footer">
                     <span class="chat-time-stamp">10:42 AM • Sarah Chen</span>
-                    <span class="chat-reaction-chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h3Z"/></svg> Acknowledged (2)</span>
+                    <span class="chat-reaction-chip"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;">
+                        <path d="M7 10v12" />
+                        <path
+                          d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h3Z" />
+                      </svg> Acknowledged (2)</span>
                   </div>
                 </div>
               </div>
@@ -2818,7 +3083,13 @@
                     <span>+ Image</span>
                   </button>
                   <button type="button" class="composer-tool-btn" onclick="showToast('Choose an emoji reaction...')">
-                    <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg> React</span>
+                    <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" style="vertical-align:middle; margin-right:4px;">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                        <line x1="9" y1="9" x2="9.01" y2="9" />
+                        <line x1="15" y1="9" x2="15.01" y2="9" />
+                      </svg> React</span>
                   </button>
                   <button type="button" class="composer-tool-btn"
                     onclick="showToast('Type @ to mention an employee...')">
@@ -2840,10 +3111,15 @@
           <p class="penpot-page-sub">Detailed module analytics, exportable ledger, and transactional audit trails.</p>
         </div>
         <div class="white-card" style="text-align:center; padding: 70px 20px;">
-          <div style="margin-bottom:16px;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.75"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div>
+          <div style="margin-bottom:16px;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#2563eb"
+              stroke-width="1.75">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg></div>
           <h3 style="font-size:22px; font-weight:800; color:#0f172a; margin-bottom:8px;">Production Module Active</h3>
           <p style="color:#64748b; max-width:480px; margin:0 auto 24px auto;">This module connects directly with
-            peopleops records and HR analytics.</p>
+            Kumon EMS records and HR analytics.</p>
           <button class="btn btn-navy-cta" onclick="switchView('dashboard')">Back to Overview</button>
         </div>
       </section>
