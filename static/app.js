@@ -434,22 +434,42 @@ function escapeHtml(str) {
 }
 
 // ==========================================================================
-// Authentication Screen & Modal Handlers
+// Authentication Screen & Navigation Handlers
 // ==========================================================================
 function switchAuthPage(mode) {
   const loginCard = document.getElementById('authScreenLogin');
   const signupCard = document.getElementById('authScreenSignup');
+  const tabLogin = document.getElementById('tabBtnLogin');
+  const tabSignup = document.getElementById('tabBtnSignup');
+
   if (loginCard && signupCard) {
     loginCard.style.display = (mode === 'login' ? 'block' : 'none');
     signupCard.style.display = (mode === 'signup' ? 'block' : 'none');
   }
+
+  if (tabLogin && tabSignup) {
+    if (mode === 'login') {
+      tabLogin.classList.add('active');
+      tabSignup.classList.remove('active');
+    } else {
+      tabSignup.classList.add('active');
+      tabLogin.classList.remove('active');
+    }
+  }
+
+  if (window.history && window.history.replaceState) {
+    window.history.replaceState(null, '', `#${mode}`);
+  }
 }
 
 function openAuthModal(mode = 'login') {
+  // If dedicated login page is preferred or fallback modal exists
   const modal = document.getElementById('authModal');
   if (modal) {
     modal.classList.add('active');
     switchAuthMode(mode);
+  } else {
+    navigateToLogin(mode);
   }
 }
 
@@ -481,27 +501,74 @@ function togglePasswordVisibility(inputId, btn) {
 
 function handleAuthLogin(e) {
   if (e) e.preventDefault();
+  const empId = document.getElementById('loginEmployeeId')?.value || 'Marcus Williams';
+  showToast(`Welcome back, ${empId}! Authenticated to peopleops.`);
+  sessionStorage.setItem('peopleops_auth_user', empId);
+
   const authScreen = document.getElementById('authScreenContainer');
   if (authScreen) authScreen.classList.add('authenticated');
   closeAuthModal();
-  switchView('dashboard');
-  showToast('Welcome back, Marcus! Authenticated to peopleops.');
+
+  // If on standalone login page, redirect to dashboard/index
+  const currentPath = window.location.pathname.toLowerCase();
+  if (currentPath.includes('login') || currentPath.includes('auth') || currentPath.includes('signup')) {
+    setTimeout(() => {
+      if (currentPath.endsWith('.html')) {
+        window.location.href = 'index.html';
+      } else {
+        window.location.href = '/';
+      }
+    }, 400);
+  } else {
+    switchView('dashboard');
+  }
 }
 
 function handleAuthSignup(e) {
   if (e) e.preventDefault();
+  const empId = document.getElementById('signupEmployeeId')?.value || 'New Employee';
+  showToast(`Account registered successfully! Welcome to peopleops, ${empId}.`);
+  sessionStorage.setItem('peopleops_auth_user', empId);
+
   const authScreen = document.getElementById('authScreenContainer');
   if (authScreen) authScreen.classList.add('authenticated');
   closeAuthModal();
-  switchView('dashboard');
-  showToast('Account registered successfully! Welcome to peopleops.');
+
+  const currentPath = window.location.pathname.toLowerCase();
+  if (currentPath.includes('login') || currentPath.includes('auth') || currentPath.includes('signup')) {
+    setTimeout(() => {
+      if (currentPath.endsWith('.html')) {
+        window.location.href = 'index.html';
+      } else {
+        window.location.href = '/';
+      }
+    }, 400);
+  } else {
+    switchView('dashboard');
+  }
+}
+
+function navigateToLogin(mode = 'login') {
+  const currentPath = window.location.pathname.toLowerCase();
+  if (currentPath.endsWith('.html')) {
+    window.location.href = `login.html#${mode}`;
+  } else {
+    window.location.href = `/login/#${mode}`;
+  }
 }
 
 function signOut() {
+  showToast('Signing out of corporate session...');
+  sessionStorage.removeItem('peopleops_auth_user');
+
   const authScreen = document.getElementById('authScreenContainer');
   if (authScreen) {
     authScreen.classList.remove('authenticated');
     switchAuthPage('login');
+  } else {
+    setTimeout(() => {
+      navigateToLogin('login');
+    }, 400);
   }
-  showToast('Signed out of corporate session.');
 }
+

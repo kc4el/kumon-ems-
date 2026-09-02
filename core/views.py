@@ -24,6 +24,9 @@ logger = logging.getLogger(__name__)
 def dashboard_view(request):
     return render(request, 'core/index.html')
 
+def login_view(request):
+    return render(request, 'core/login.html')
+
 class DashboardSummaryView(APIView):
     """Return the aggregate counts required by the dashboard landing page."""
     def get(self, request):

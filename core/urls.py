@@ -1,5 +1,7 @@
 from django.urls import path
 from .views import (
+    dashboard_view,
+    login_view,
     DashboardSummaryView,
     # 1. Departments
     DepartmentListCreateView,
@@ -31,6 +33,10 @@ from .views import (
 )
 
 urlpatterns = [
+    path('', dashboard_view, name='dashboard'),
+    path('login/', login_view, name='login'),
+    path('signup/', login_view, name='signup'),
+    path('auth/', login_view, name='auth'),
     path('dashboard-summary/', DashboardSummaryView.as_view(), name='dashboard-summary'),
 
     # Departments

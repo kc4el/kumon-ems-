@@ -15,102 +15,8 @@
 </head>
 
 <body>
-  <!-- ======================================================================
-       FULL-SCREEN AUTHENTICATION SCREEN (auth - login & auth - signup)
-       ====================================================================== -->
-  <div id="authScreenContainer" class="auth-fullscreen-container">
-    <!-- Top Branding Navbar -->
-    <header class="auth-top-navbar">
-      <div class="brand-header" style="margin-bottom: 0;">
-        <div class="brand-logo-box">
-          <span class="brand-logo-text">p</span>
-        </div>
-        <div class="brand-text-box">
-          <span class="brand-name" style="color:#0f172a; font-size:18px;">peopleops</span>
-          <span class="brand-tagline" style="color:#64748b; font-size:8px;">PEOPLE, IN MOTION</span>
-        </div>
-      </div>
-      <div class="auth-nav-tag">
-        <span>Corporate Portal v2.6</span>
-      </div>
-    </header>
-
-    <!-- Center Card Wrapper -->
-    <div class="auth-center-stage">
-      <!-- Login Card -->
-      <div class="white-card auth-page-card" id="authScreenLogin">
-        <span class="auth-tag-pill orange-pill">PORTAL AUTHENTICATION</span>
-        <h1 class="auth-title">Welcome back</h1>
-        <p class="auth-sub">Enter your employee credentials to sign in</p>
-
-        <form onsubmit="handleAuthLogin(event)">
-          <div class="input-cell" style="margin-bottom:14px;">
-            <label>EMPLOYEE ID NUMBER</label>
-            <input type="text" id="loginEmployeeId" placeholder="e.g. EMP-10482" value="EMP-10482" required />
-          </div>
-          <div class="input-cell" style="margin-bottom:14px;">
-            <label>PASSWORD</label>
-            <div class="password-input-wrap">
-              <input type="password" id="loginPasswordInput" placeholder="••••••••••••" value="peopleops2026" required />
-              <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('loginPasswordInput', this)">Show</button>
-            </div>
-          </div>
-          <div class="auth-options-row">
-            <label class="auth-checkbox-label">
-              <input type="checkbox" checked />
-              <span>Remember my ID</span>
-            </label>
-            <a href="#" class="auth-link-orange" onclick="showToast('Password reset instructions dispatched to your email.'); return false;">Forgot password?</a>
-          </div>
-          <button type="submit" class="btn btn-navy-full" style="margin-top:18px; padding:12px; font-size:14.5px;">Sign In to Portal</button>
-        </form>
-
-        <div class="auth-switch-foot">
-          <span>Don't have an account?</span>
-          <a href="#" class="auth-link-bold" onclick="switchAuthPage('signup'); return false;">Create account / Sign up →</a>
-        </div>
-      </div>
-
-      <!-- Signup Card -->
-      <div class="white-card auth-page-card" id="authScreenSignup" style="display:none;">
-        <span class="auth-tag-pill blue-pill">EMPLOYEE REGISTRATION</span>
-        <h1 class="auth-title">Create an Account</h1>
-        <p class="auth-sub">Register your corporate credentials for system onboarding</p>
-
-        <form onsubmit="handleAuthSignup(event)">
-          <div class="input-cell" style="margin-bottom:12px;">
-            <label>EMPLOYEE ID NUMBER</label>
-            <input type="text" id="signupEmployeeId" placeholder="e.g. EMP-10482" value="EMP-10482" required />
-          </div>
-          <div class="input-cell" style="margin-bottom:12px;">
-            <label>CORPORATE EMAIL ADDRESS</label>
-            <input type="email" id="signupEmail" placeholder="employee@peopleops.corp" value="employee@peopleops.corp" required />
-          </div>
-          <div class="input-cell" style="margin-bottom:12px;">
-            <label>CREATE PASSWORD</label>
-            <div class="password-input-wrap">
-              <input type="password" id="signupPasswordInput" placeholder="At least 8 characters (1 number, 1 symbol)" value="SecurePass2026!" required />
-              <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('signupPasswordInput', this)">Show</button>
-            </div>
-          </div>
-          <div class="auth-options-row">
-            <label class="auth-checkbox-label">
-              <input type="checkbox" required checked />
-              <span>I agree to Corporate IT Security & Usage Policy</span>
-            </label>
-          </div>
-          <button type="submit" class="btn btn-blue-full" style="margin-top:18px; padding:12px; font-size:14.5px;">Complete Registration</button>
-        </form>
-
-        <div class="auth-switch-foot">
-          <span>Already have an account?</span>
-          <a href="#" class="auth-link-bold" onclick="switchAuthPage('login'); return false;">Sign in here →</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="app-layout">
+
     <!-- 220px Dark Navy / Slate Blue Sidebar -->
     <aside class="sidebar">
       <div class="brand-header">
@@ -196,7 +102,17 @@
           </svg>
           <span>Reports</span>
         </a>
+        <a href="{% url 'login' %}" class="nav-link" title="Open Portal Authentication">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+            <polyline points="10 17 15 12 10 7"></polyline>
+            <line x1="15" y1="12" x2="3" y2="12"></line>
+          </svg>
+          <span>Portal Auth</span>
+        </a>
       </nav>
+
     </aside>
 
     <!-- Main Content Area -->
@@ -226,8 +142,7 @@
             </svg>
           </button>
 
-          <div class="user-avatar-circle" title="MW • Marcus Williams (Click to Sign Out)"
-            onclick="signOut()">
+          <div class="user-avatar-circle" title="MW • Marcus Williams (Click to Sign Out)" onclick="signOut()">
             <span>MW</span>
           </div>
         </div>
@@ -2935,104 +2850,6 @@
           <button type="submit" class="btn btn-navy-cta">Submit Advance Request</button>
         </div>
       </form>
-    </div>
-  </div>
-
-  <!-- Auth Modal (Login / Signup) -->
-  <div class="modal-backdrop" id="authModal">
-    <div class="modal-card auth-modal-card">
-      <button class="modal-close" onclick="closeAuthModal()">&times;</button>
-
-      <!-- Login View -->
-      <div id="authLoginContainer">
-        <div class="auth-brand-head">
-          <div class="brand-logo-box"><span class="brand-logo-text">p</span></div>
-          <div>
-            <span class="brand-name" style="color:#0f172a; font-size:20px;">peopleops</span>
-            <span class="brand-tagline" style="color:#64748b; font-size:8.5px;">PEOPLE, IN MOTION</span>
-          </div>
-        </div>
-
-        <span class="auth-tag-pill orange-pill">PORTAL AUTHENTICATION</span>
-        <h2 class="auth-title">Welcome back</h2>
-        <p class="auth-sub">Enter your employee credentials to sign in</p>
-
-        <form onsubmit="handleAuthLogin(event)">
-          <div class="input-cell" style="margin-bottom:14px;">
-            <label>EMPLOYEE ID NUMBER</label>
-            <input type="text" placeholder="e.g. EMP-10482" required />
-          </div>
-          <div class="input-cell" style="margin-bottom:14px;">
-            <label>PASSWORD</label>
-            <div class="password-input-wrap">
-              <input type="password" id="loginPasswordInput" value="peopleops2026" required />
-              <button type="button" class="btn-toggle-pwd"
-                onclick="togglePasswordVisibility('loginPasswordInput', this)">Show</button>
-            </div>
-          </div>
-          <div class="auth-options-row">
-            <label class="auth-checkbox-label">
-              <input type="checkbox" checked />
-              <span>Remember my ID</span>
-            </label>
-            <a href="#" class="auth-link-orange" onclick="showToast('Password reset link dispatched to HR.')">Forgot
-              password?</a>
-          </div>
-          <button type="submit" class="btn btn-navy-full" style="margin-top:16px;">Sign In to Portal</button>
-        </form>
-
-        <div class="auth-switch-foot">
-          <span>Don't have an account?</span>
-          <a href="#" class="auth-link-bold" onclick="switchAuthMode('signup')">Create account / Sign up →</a>
-        </div>
-      </div>
-
-      <!-- Signup View -->
-      <div id="authSignupContainer" style="display:none;">
-        <div class="auth-brand-head">
-          <div class="brand-logo-box"><span class="brand-logo-text">p</span></div>
-          <div>
-            <span class="brand-name" style="color:#0f172a; font-size:20px;">peopleops</span>
-            <span class="brand-tagline" style="color:#64748b; font-size:8.5px;">PEOPLE, IN MOTION</span>
-          </div>
-        </div>
-
-        <span class="auth-tag-pill blue-pill">EMPLOYEE REGISTRATION</span>
-        <h2 class="auth-title">Create an Account</h2>
-        <p class="auth-sub">Register your corporate credentials for system onboarding</p>
-
-        <form onsubmit="handleAuthSignup(event)">
-          <div class="input-cell" style="margin-bottom:12px;">
-            <label>EMPLOYEE ID NUMBER</label>
-            <input type="text" placeholder="e.g. EMP-10482" required />
-          </div>
-          <div class="input-cell" style="margin-bottom:12px;">
-            <label>CORPORATE EMAIL ADDRESS</label>
-            <input type="email" placeholder="employee@peopleops.corp" required />
-          </div>
-          <div class="input-cell" style="margin-bottom:12px;">
-            <label>CREATE PASSWORD</label>
-            <div class="password-input-wrap">
-              <input type="password" id="signupPasswordInput" placeholder="At least 8 characters (1 number, 1 symbol)"
-                required />
-              <button type="button" class="btn-toggle-pwd"
-                onclick="togglePasswordVisibility('signupPasswordInput', this)">Show</button>
-            </div>
-          </div>
-          <div class="auth-options-row">
-            <label class="auth-checkbox-label">
-              <input type="checkbox" required checked />
-              <span>I agree to Corporate IT Security & Usage Policy</span>
-            </label>
-          </div>
-          <button type="submit" class="btn btn-blue-full" style="margin-top:16px;">Complete Registration</button>
-        </form>
-
-        <div class="auth-switch-foot">
-          <span>Already have an account?</span>
-          <a href="#" class="auth-link-bold" onclick="switchAuthMode('login')">Sign in here →</a>
-        </div>
-      </div>
     </div>
   </div>
 

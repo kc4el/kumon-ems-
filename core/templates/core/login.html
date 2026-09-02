@@ -1,0 +1,175 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In &bull; peopleops (Kumon EMS)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Source+Sans+Pro:wght@700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="../../../static/style.css" />
+  <link rel="stylesheet" href="{% static 'style.css' %}" />
+</head>
+
+<body class="auth-page-body">
+  <div class="auth-standalone-layout">
+    <!-- Top Branding Navbar -->
+    <header class="auth-top-navbar">
+      <div class="brand-header" style="margin-bottom: 0;">
+        <div class="brand-logo-box">
+          <span class="brand-logo-text">p</span>
+        </div>
+        <div class="brand-text-box">
+          <span class="brand-name" style="color:#0f172a; font-size:18px;">peopleops</span>
+          <span class="brand-tagline" style="color:#64748b; font-size:8px;">PEOPLE, IN MOTION</span>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div class="auth-nav-tag">
+          <span>Corporate Portal v2.6</span>
+        </div>
+        <a href="{% url 'dashboard' %}" class="btn-auth-nav-link" id="navToDashboardLink">Go to Dashboard &rarr;</a>
+      </div>
+    </header>
+
+    <!-- Center Authentication Stage -->
+    <main class="auth-center-stage">
+      <div class="auth-card-container">
+        <!-- Tab Navigation Switcher -->
+        <div class="auth-tab-bar">
+          <button type="button" class="auth-tab-btn active" id="tabBtnLogin" onclick="switchAuthPage('login')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <polyline points="10 17 15 12 10 7"></polyline>
+              <line x1="15" y1="12" x2="3" y2="12"></line>
+            </svg>
+            Sign In
+          </button>
+          <button type="button" class="auth-tab-btn" id="tabBtnSignup" onclick="switchAuthPage('signup')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <line x1="19" y1="8" x2="19" y2="14"></line>
+              <line x1="22" y1="11" x2="16" y2="11"></line>
+            </svg>
+            Create Account
+          </button>
+        </div>
+
+        <!-- Login Card -->
+        <div class="white-card auth-page-card" id="authScreenLogin">
+          <span class="auth-tag-pill orange-pill">PORTAL AUTHENTICATION</span>
+          <h1 class="auth-title">Welcome back</h1>
+          <p class="auth-sub">Enter your employee credentials to access your workspace</p>
+
+          <form onsubmit="handleAuthLogin(event)">
+            <div class="input-cell" style="margin-bottom:14px;">
+              <label for="loginEmployeeId">EMPLOYEE ID NUMBER</label>
+              <input type="text" id="loginEmployeeId" placeholder="e.g. EMP-10482" value="EMP-10482" required />
+            </div>
+            <div class="input-cell" style="margin-bottom:14px;">
+              <label for="loginPasswordInput">PASSWORD</label>
+              <div class="password-input-wrap">
+                <input type="password" id="loginPasswordInput" placeholder="••••••••••••" value="peopleops2026" required />
+                <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('loginPasswordInput', this)">Show</button>
+              </div>
+            </div>
+            <div class="auth-options-row">
+              <label class="auth-checkbox-label">
+                <input type="checkbox" id="rememberMeCheckbox" checked />
+                <span>Remember my ID</span>
+              </label>
+              <a href="#" class="auth-link-orange" onclick="showToast('Password reset instructions dispatched to your email.'); return false;">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="btn btn-navy-full" style="margin-top:18px; padding:12px; font-size:14.5px;">Sign In to Portal</button>
+
+            <!-- Quick Demo Bypass Button -->
+            <button type="button" class="btn-demo-quick" onclick="quickDemoLogin()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+              Quick Demo Access (Marcus Williams)
+            </button>
+          </form>
+
+          <div class="auth-switch-foot">
+            <span>Don't have an account?</span>
+            <a href="#signup" class="auth-link-bold" onclick="switchAuthPage('signup'); return false;">Create account / Sign up →</a>
+          </div>
+        </div>
+
+        <!-- Signup Card -->
+        <div class="white-card auth-page-card" id="authScreenSignup" style="display:none;">
+          <span class="auth-tag-pill blue-pill">EMPLOYEE REGISTRATION</span>
+          <h1 class="auth-title">Create an Account</h1>
+          <p class="auth-sub">Register your corporate credentials for system onboarding</p>
+
+          <form onsubmit="handleAuthSignup(event)">
+            <div class="input-cell" style="margin-bottom:12px;">
+              <label for="signupEmployeeId">EMPLOYEE ID NUMBER</label>
+              <input type="text" id="signupEmployeeId" placeholder="e.g. EMP-10482" value="EMP-10482" required />
+            </div>
+            <div class="input-cell" style="margin-bottom:12px;">
+              <label for="signupEmail">CORPORATE EMAIL ADDRESS</label>
+              <input type="email" id="signupEmail" placeholder="employee@peopleops.corp" value="employee@peopleops.corp" required />
+            </div>
+            <div class="input-cell" style="margin-bottom:12px;">
+              <label for="signupPasswordInput">CREATE PASSWORD</label>
+              <div class="password-input-wrap">
+                <input type="password" id="signupPasswordInput" placeholder="At least 8 characters (1 number, 1 symbol)" value="SecurePass2026!" required />
+                <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('signupPasswordInput', this)">Show</button>
+              </div>
+            </div>
+            <div class="auth-options-row">
+              <label class="auth-checkbox-label">
+                <input type="checkbox" id="policyAgreement" required checked />
+                <span>I agree to Corporate IT Security &amp; Usage Policy</span>
+              </label>
+            </div>
+            <button type="submit" class="btn btn-blue-full" style="margin-top:18px; padding:12px; font-size:14.5px;">Complete Registration</button>
+          </form>
+
+          <div class="auth-switch-foot">
+            <span>Already have an account?</span>
+            <a href="#login" class="auth-link-bold" onclick="switchAuthPage('login'); return false;">Sign in here →</a>
+          </div>
+        </div>
+
+        <!-- Security & Helpdesk Footer -->
+        <div class="auth-sub-footer">
+          <span>Protected by Enterprise 256-bit SSL Encryption</span>
+          <a href="#" onclick="showToast('Helpdesk: support@peopleops.corp | Internal Ext: 4401'); return false;">Need IT Support?</a>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Notification Stack -->
+  <div id="toastContainer" class="toast-stack"></div>
+
+  <script src="../../../static/app.js"></script>
+  <script src="{% static 'app.js' %}"></script>
+  <script>
+    // Automatic URL hash and query detection (?mode=signup or #signup)
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const mode = urlParams.get('mode') || (window.location.hash === '#signup' ? 'signup' : 'login');
+      switchAuthPage(mode);
+    });
+
+    function quickDemoLogin() {
+      showToast('Quick demo authorization granted...');
+      sessionStorage.setItem('peopleops_auth_user', 'Marcus Williams');
+      setTimeout(() => {
+        window.location.href = "{% url 'dashboard' %}";
+      }, 400);
+    }
+  </script>
+</body>
+
+</html>
