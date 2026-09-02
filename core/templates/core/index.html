@@ -39,7 +39,7 @@
             <rect x="14" y="14" width="7" height="7"></rect>
             <rect x="3" y="14" width="7" height="7"></rect>
           </svg>
-          <span>Overview</span>
+          <span>Dashboard</span>
         </a>
         <a href="#" class="nav-link" data-view="employee-directory">
           <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -61,24 +61,6 @@
           </svg>
           <span>Attendance</span>
         </a>
-        <a href="#" class="nav-link" data-view="payroll">
-          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
-            <path d="M12 6v12"></path>
-          </svg>
-          <span>Payroll</span>
-        </a>
-        <a href="#" class="nav-link" data-view="profile">
-          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2">
-            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-            <line x1="8" y1="21" x2="16" y2="21"></line>
-            <line x1="12" y1="17" x2="12" y2="21"></line>
-          </svg>
-          <span>Profile</span>
-        </a>
         <a href="#" class="nav-link" data-view="claims">
           <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="2">
@@ -94,16 +76,16 @@
           </svg>
           <span>Messages</span>
         </a>
-        <a href="#" class="nav-link" data-view="reports">
+        <a href="#" class="nav-link" data-view="profile">
           <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="2">
-            <line x1="18" y1="20" x2="18" y2="10"></line>
-            <line x1="12" y1="20" x2="12" y2="4"></line>
-            <line x1="6" y1="20" x2="6" y2="14"></line>
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
           </svg>
-          <span>Reports</span>
+          <span>Profile</span>
         </a>
-        <a href="{% url 'login' %}" class="nav-link" title="Open Portal Authentication">
+        <a href="login.html" class="nav-link" onclick="navigateToLogin('login'); return false;" title="Open Portal Authentication">
           <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="2">
             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
@@ -112,6 +94,7 @@
           </svg>
           <span>Portal Auth</span>
         </a>
+
       </nav>
 
     </aside>
@@ -121,8 +104,9 @@
       <!-- Top Header Bar -->
       <header class="top-header-bar">
         <div class="header-breadcrumbs" id="breadcrumbTrail">
-          <span class="bc-page" id="currentCrumb">Overview</span>
+          <span class="bc-page" id="currentCrumb">Dashboard</span>
         </div>
+
 
         <div class="header-right-tools">
           <div class="search-input-pill">

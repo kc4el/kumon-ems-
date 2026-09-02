@@ -9,23 +9,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // View Navigation Mapping
 const viewBreadcrumbs = {
-  'dashboard': { active: 'Overview' },
+  'dashboard': { active: 'Dashboard' },
   'employee-directory': { active: 'Employee Directory' },
   'employee-manage': { root: 'Employees', active: 'Manage Staff' },
   'employee-grievance': { root: 'Employees', active: 'Grievance Tracker' },
   'attendance-daily': { root: 'Attendance', active: 'Daily Attendance & Time Log' },
   'attendance-shift': { root: 'Attendance', active: 'Shift Scheduling & Roster' },
   'attendance-leave': { root: 'Attendance', active: 'Leave & Absence Management' },
-  'payroll': { root: 'Payroll', active: 'Payroll Ledger' },
-  'profile': { active: 'Profile' },
-  'my-details': { active: 'Profile' },
   'claims': { active: 'Claims & Reimbursements' },
   'messages': { active: 'Messages & Channels' },
+  'profile': { active: 'Profile' },
+  'my-details': { active: 'Profile' },
   'reports': { active: 'Reports & Analytics' }
 };
 
+
 function initNavigation() {
-  const navLinks = document.querySelectorAll('.nav-link');
+  const navLinks = document.querySelectorAll('.nav-link[data-view]');
   navLinks.forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
@@ -36,6 +36,7 @@ function initNavigation() {
     });
   });
 }
+
 
 function switchView(viewName) {
   // Update sidebar active link
@@ -487,6 +488,26 @@ function switchAuthMode(mode) {
   }
 }
 
+function switchAuthPage(mode = 'login') {
+  const loginCard = document.getElementById('authScreenLogin');
+  const signupCard = document.getElementById('authScreenSignup');
+
+  if (loginCard && signupCard) {
+    if (mode === 'signup') {
+      loginCard.style.display = 'none';
+      signupCard.style.display = 'block';
+      window.location.hash = 'signup';
+      document.title = 'Employee Registration • peopleops';
+    } else {
+      signupCard.style.display = 'none';
+      loginCard.style.display = 'block';
+      window.location.hash = 'login';
+      document.title = 'Portal Authentication • peopleops';
+    }
+  }
+}
+
+
 function togglePasswordVisibility(inputId, btn) {
   const input = document.getElementById(inputId);
   if (!input) return;
@@ -511,9 +532,11 @@ function handleAuthLogin(e) {
 
   // If on standalone login page, redirect to dashboard/index
   const currentPath = window.location.pathname.toLowerCase();
-  if (currentPath.includes('login') || currentPath.includes('auth') || currentPath.includes('signup')) {
+  const isFileProtocol = window.location.protocol === 'file:';
+
+  if (isFileProtocol || currentPath.includes('login') || currentPath.includes('auth') || currentPath.includes('signup')) {
     setTimeout(() => {
-      if (currentPath.endsWith('.html')) {
+      if (isFileProtocol || currentPath.endsWith('.html')) {
         window.location.href = 'index.html';
       } else {
         window.location.href = '/';
@@ -535,9 +558,11 @@ function handleAuthSignup(e) {
   closeAuthModal();
 
   const currentPath = window.location.pathname.toLowerCase();
-  if (currentPath.includes('login') || currentPath.includes('auth') || currentPath.includes('signup')) {
+  const isFileProtocol = window.location.protocol === 'file:';
+
+  if (isFileProtocol || currentPath.includes('login') || currentPath.includes('auth') || currentPath.includes('signup')) {
     setTimeout(() => {
-      if (currentPath.endsWith('.html')) {
+      if (isFileProtocol || currentPath.endsWith('.html')) {
         window.location.href = 'index.html';
       } else {
         window.location.href = '/';
@@ -550,7 +575,9 @@ function handleAuthSignup(e) {
 
 function navigateToLogin(mode = 'login') {
   const currentPath = window.location.pathname.toLowerCase();
-  if (currentPath.endsWith('.html')) {
+  const isFileProtocol = window.location.protocol === 'file:';
+
+  if (isFileProtocol || currentPath.endsWith('.html')) {
     window.location.href = `login.html#${mode}`;
   } else {
     window.location.href = `/login/#${mode}`;
@@ -571,4 +598,5 @@ function signOut() {
     }, 400);
   }
 }
+
 

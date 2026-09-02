@@ -2547,43 +2547,31 @@ body {
   display: none !important;
 }
 
+/* --------------------------------------------------------------------------
+   Standalone Authentication (Penpot Exact Match: auth - login & auth - signup)
+   -------------------------------------------------------------------------- */
+.auth-page-body {
+  background-color: #faf8f5;
+  min-height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-standalone-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
 .auth-top-navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 40px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 24px 48px;
+  background: transparent;
   flex-shrink: 0;
-}
-
-.auth-nav-tag {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: #64748b;
-  background-color: #f1f5f9;
-  padding: 4px 10px;
-  border-radius: 6px;
-}
-
-.btn-auth-nav-link {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #2563eb;
-  background-color: #eff6ff;
-  border: 1px solid #dbeafe;
-  padding: 5px 12px;
-  border-radius: 6px;
-  text-decoration: none;
-  transition: all 0.15s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.btn-auth-nav-link:hover {
-  background-color: #dbeafe;
-  color: #1d4ed8;
 }
 
 .auth-center-stage {
@@ -2591,227 +2579,231 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  padding: 20px 20px 60px 20px;
 }
 
 .auth-card-container {
   width: 100%;
-  max-width: 440px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  max-width: 500px;
 }
 
-.auth-tab-bar {
-  display: flex;
-  background-color: #e2e8f0;
-  border-radius: 10px;
-  padding: 4px;
-  gap: 4px;
-}
-
-.auth-tab-btn {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 14px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #64748b;
-  background: transparent;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.auth-tab-btn.active {
-  background-color: #ffffff;
-  color: #0f172a;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
-}
-
-.auth-tab-btn:hover:not(.active) {
-  color: #0f172a;
-}
-
-.auth-page-card {
+.penpot-auth-card {
   width: 100%;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 40px 38px;
   box-sizing: border-box;
-  padding: 36px 32px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
-  border: 1px solid var(--card-border);
-  border-radius: 14px;
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.04);
+  text-align: center;
 }
 
-.auth-modal-card {
-  max-width: 440px;
-  padding: 32px 28px;
-}
-
-.auth-brand-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.auth-tag-pill {
+.penpot-auth-badge {
   display: inline-block;
-  padding: 3px 10px;
-  border-radius: 20px;
+  padding: 4px 14px;
+  border-radius: 13px;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.8px;
-  margin-bottom: 8px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
 }
 
-.auth-tag-pill.orange-pill {
-  background-color: #fef3c7;
-  color: #ea580c;
+.penpot-auth-badge.badge-portal {
+  background-color: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #f05638;
 }
 
-.auth-tag-pill.blue-pill {
-  background-color: #dbeafe;
+.penpot-auth-badge.badge-onboarding {
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
   color: #2563eb;
 }
 
-.auth-title {
+.penpot-auth-title {
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 700;
   color: #0f172a;
-  margin-bottom: 4px;
+  margin: 0 0 6px 0;
+  line-height: 1.2;
 }
 
-.auth-sub {
+.penpot-auth-sub {
   font-size: 13px;
+  font-weight: 400;
   color: #64748b;
-  margin-bottom: 20px;
+  margin: 0 0 26px 0;
 }
 
-.password-input-wrap {
-  display: flex;
-  align-items: center;
+.penpot-auth-form {
+  text-align: left;
+}
+
+.penpot-form-group {
+  margin-bottom: 16px;
+}
+
+.penpot-form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.penpot-input-wrap {
   position: relative;
-}
-
-.password-input-wrap input {
   width: 100%;
-  padding-right: 55px;
 }
 
-.btn-toggle-pwd {
+.penpot-input {
+  width: 100%;
+  height: 44px;
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #0f172a;
+  box-sizing: border-box;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.penpot-input:focus {
+  background-color: #ffffff;
+  border-color: #0f172a;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
+}
+
+.penpot-input::placeholder {
+  color: #94a3b8;
+}
+
+.penpot-input-wrap .penpot-input.has-action {
+  padding-right: 56px;
+}
+
+.penpot-input-action {
   position: absolute;
-  right: 10px;
-  background: transparent;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
   border: none;
   color: #64748b;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  padding: 4px;
 }
 
-.auth-options-row {
+.penpot-input-action:hover {
+  color: #0f172a;
+}
+
+.penpot-options-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 12.5px;
-  margin-top: 8px;
+  font-size: 12px;
+  margin-top: 10px;
+  margin-bottom: 22px;
 }
 
-.auth-checkbox-label {
+.penpot-checkbox-label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   color: #475569;
+  font-size: 12px;
   cursor: pointer;
+  user-select: none;
 }
 
-.auth-link-orange {
-  color: #ea580c;
+.penpot-checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #f05638;
+  cursor: pointer;
+  margin: 0;
+}
+
+.penpot-link-coral {
+  color: #f05638;
+  font-size: 12px;
   font-weight: 600;
   text-decoration: none;
 }
 
-.btn-blue-full {
+.penpot-link-coral:hover {
+  text-decoration: underline;
+}
+
+.penpot-btn-primary-navy {
   width: 100%;
-  background-color: #2563eb;
+  height: 48px;
+  background-color: #0f172a;
   color: #ffffff;
-  padding: 11px;
   font-size: 14px;
-  border-radius: 8px;
-  font-weight: 700;
+  font-weight: 600;
   border: none;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
-.btn-blue-full:hover { background-color: #1d4ed8; }
+.penpot-btn-primary-navy:hover {
+  background-color: #1e293b;
+}
 
-.btn-demo-quick {
+.penpot-btn-primary-coral {
   width: 100%;
-  background-color: #f8fafc;
-  color: #475569;
-  border: 1px dashed #cbd5e1;
-  padding: 9px;
-  font-size: 12.5px;
-  border-radius: 8px;
+  height: 48px;
+  background-color: #f05638;
+  color: #ffffff;
+  font-size: 14px;
   font-weight: 600;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
-  margin-top: 10px;
+  transition: all 0.15s ease;
+}
+
+.penpot-btn-primary-coral:hover {
+  background-color: #dc4528;
+}
+
+.penpot-switcher-row {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  transition: all 0.15s ease;
-}
-
-.btn-demo-quick:hover {
-  background-color: #f1f5f9;
-  border-color: #94a3b8;
-  color: #0f172a;
-}
-
-.auth-switch-foot {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #f1f5f9;
+  margin-top: 22px;
   font-size: 13px;
   color: #64748b;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
 
-.auth-link-bold {
-  color: #0f172a;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.auth-link-bold:hover { text-decoration: underline; }
-
-.auth-sub-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 11.5px;
-  color: #94a3b8;
-  padding: 4px 6px;
-}
-
-.auth-sub-footer a {
-  color: #64748b;
-  text-decoration: none;
+.penpot-switch-link {
+  font-size: 13px;
   font-weight: 600;
+  text-decoration: none;
 }
 
-.auth-sub-footer a:hover {
-  color: #2563eb;
+.penpot-switch-link.coral {
+  color: #f05638;
+}
+
+.penpot-switch-link.navy {
+  color: #0f172a;
+}
+
+.penpot-switch-link:hover {
   text-decoration: underline;
 }
+
 
 
 /* --------------------------------------------------------------------------
