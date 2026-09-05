@@ -6,7 +6,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   initBrandLogo();
   initNavigation();
-  initSearch();
 });
 
 // Automatic Logo Path Resolver for file:// and http:// protocols
@@ -49,8 +48,9 @@ const viewBreadcrumbs = {
   'attendance-leave': { root: 'Attendance', active: 'Leave & Absence Management' },
   'claims': { active: 'Claims & Reimbursements' },
   'messages': { active: 'Messages & Channels' },
-  'profile': { active: 'Profile' },
-  'my-details': { active: 'Profile' },
+  'logs': { root: 'Security & Audit', active: 'Audit & Activity Logs' },
+  'profile': { root: 'Security & Audit', active: 'Audit & Activity Logs' },
+  'my-details': { root: 'Security & Audit', active: 'Audit & Activity Logs' },
   'reports': { active: 'Reports & Analytics' }
 };
 
@@ -78,7 +78,7 @@ function switchView(viewName) {
        (viewName.startsWith('attendance') && dataView === 'attendance-daily') ||
        (viewName === 'claims' && dataView === 'claims') ||
        (viewName === 'messages' && dataView === 'messages') ||
-       ((viewName === 'profile' || viewName === 'my-details') && dataView === 'profile')) {
+       ((viewName === 'logs' || viewName === 'profile' || viewName === 'my-details') && dataView === 'logs')) {
       link.classList.add('active');
     } else {
       link.classList.remove('active');
@@ -365,29 +365,6 @@ function handleApplyLeave(e) {
   showToast('Leave request submitted for HR approval.');
 }
 
-// Global search handling
-function initSearch() {
-  const searchInput = document.getElementById('globalSearch');
-  if (!searchInput) return;
-
-  searchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      const q = searchInput.value.trim();
-      if (q) {
-        showToast(`Searching for "${q}" across Kumon EMS...`);
-      }
-
-    }
-  });
-
-  // Shortcut ⌘K / Ctrl+K
-  document.addEventListener('keydown', (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      e.preventDefault();
-      searchInput.focus();
-    }
-  });
-}
 
 // ==========================================================================
 // Messages & Channels Handlers
@@ -474,59 +451,8 @@ function escapeHtml(str) {
 }
 
 // ==========================================================================
-// Authentication Screen & Navigation Handlers
+// Standalone Authentication Handlers & Navigation
 // ==========================================================================
-function switchAuthPage(mode) {
-  const loginCard = document.getElementById('authScreenLogin');
-  const signupCard = document.getElementById('authScreenSignup');
-  const tabLogin = document.getElementById('tabBtnLogin');
-  const tabSignup = document.getElementById('tabBtnSignup');
-
-  if (loginCard && signupCard) {
-    loginCard.style.display = (mode === 'login' ? 'block' : 'none');
-    signupCard.style.display = (mode === 'signup' ? 'block' : 'none');
-  }
-
-  if (tabLogin && tabSignup) {
-    if (mode === 'login') {
-      tabLogin.classList.add('active');
-      tabSignup.classList.remove('active');
-    } else {
-      tabSignup.classList.add('active');
-      tabLogin.classList.remove('active');
-    }
-  }
-
-  if (window.history && window.history.replaceState) {
-    window.history.replaceState(null, '', `#${mode}`);
-  }
-}
-
-function openAuthModal(mode = 'login') {
-  // If dedicated login page is preferred or fallback modal exists
-  const modal = document.getElementById('authModal');
-  if (modal) {
-    modal.classList.add('active');
-    switchAuthMode(mode);
-  } else {
-    navigateToLogin(mode);
-  }
-}
-
-function closeAuthModal() {
-  const modal = document.getElementById('authModal');
-  if (modal) modal.classList.remove('active');
-}
-
-function switchAuthMode(mode) {
-  const loginC = document.getElementById('authLoginContainer');
-  const signupC = document.getElementById('authSignupContainer');
-  if (loginC && signupC) {
-    loginC.style.display = (mode === 'login' ? 'block' : 'none');
-    signupC.style.display = (mode === 'signup' ? 'block' : 'none');
-  }
-}
-
 function switchAuthPage(mode = 'login') {
   const loginCard = document.getElementById('authScreenLogin');
   const signupCard = document.getElementById('authScreenSignup');
@@ -535,17 +461,20 @@ function switchAuthPage(mode = 'login') {
     if (mode === 'signup') {
       loginCard.style.display = 'none';
       signupCard.style.display = 'block';
-      window.location.hash = 'signup';
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', '#signup');
+      }
       document.title = 'Employee Registration • Kumon EMS';
     } else {
       signupCard.style.display = 'none';
       loginCard.style.display = 'block';
-      window.location.hash = 'login';
-      document.title = 'Portal Authentication • Kumon EMS';
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', '#login');
+      }
+      document.title = 'Employee Login • Kumon EMS';
     }
   }
 }
-
 
 function togglePasswordVisibility(inputId, btn) {
   const input = document.getElementById(inputId);
@@ -565,25 +494,16 @@ function handleAuthLogin(e) {
   showToast(`Welcome back, ${empId}! Authenticated to Kumon EMS.`);
   sessionStorage.setItem('kumon_ems_auth_user', empId);
 
-  const authScreen = document.getElementById('authScreenContainer');
-  if (authScreen) authScreen.classList.add('authenticated');
-  closeAuthModal();
-
-  // If on standalone login page, redirect to dashboard/index
   const currentPath = window.location.pathname.toLowerCase();
   const isFileProtocol = window.location.protocol === 'file:';
 
-  if (isFileProtocol || currentPath.includes('login') || currentPath.includes('auth') || currentPath.includes('signup')) {
-    setTimeout(() => {
-      if (isFileProtocol || currentPath.endsWith('.html')) {
-        window.location.href = 'index.html';
-      } else {
-        window.location.href = '/';
-      }
-    }, 400);
-  } else {
-    switchView('dashboard');
-  }
+  setTimeout(() => {
+    if (isFileProtocol || currentPath.endsWith('.html')) {
+      window.location.href = 'index.html';
+    } else {
+      window.location.href = '/';
+    }
+  }, 400);
 }
 
 function handleAuthSignup(e) {
@@ -592,24 +512,16 @@ function handleAuthSignup(e) {
   showToast(`Account registered successfully! Welcome to Kumon EMS, ${empId}.`);
   sessionStorage.setItem('kumon_ems_auth_user', empId);
 
-  const authScreen = document.getElementById('authScreenContainer');
-  if (authScreen) authScreen.classList.add('authenticated');
-  closeAuthModal();
-
   const currentPath = window.location.pathname.toLowerCase();
   const isFileProtocol = window.location.protocol === 'file:';
 
-  if (isFileProtocol || currentPath.includes('login') || currentPath.includes('auth') || currentPath.includes('signup')) {
-    setTimeout(() => {
-      if (isFileProtocol || currentPath.endsWith('.html')) {
-        window.location.href = 'index.html';
-      } else {
-        window.location.href = '/';
-      }
-    }, 400);
-  } else {
-    switchView('dashboard');
-  }
+  setTimeout(() => {
+    if (isFileProtocol || currentPath.endsWith('.html')) {
+      window.location.href = 'index.html';
+    } else {
+      window.location.href = '/';
+    }
+  }, 400);
 }
 
 function navigateToLogin(mode = 'login') {
@@ -627,16 +539,91 @@ function signOut() {
   showToast('Signing out of corporate session...');
   sessionStorage.removeItem('kumon_ems_auth_user');
 
+  setTimeout(() => {
+    navigateToLogin('login');
+  }, 400);
+}
 
-  const authScreen = document.getElementById('authScreenContainer');
-  if (authScreen) {
-    authScreen.classList.remove('authenticated');
-    switchAuthPage('login');
-  } else {
-    setTimeout(() => {
-      navigateToLogin('login');
-    }, 400);
+// ==========================================================================
+// Audit Logs View Handlers
+// ==========================================================================
+let activeLogTabCategory = 'all';
+
+function filterLogsByTab(category, btnElement) {
+  activeLogTabCategory = category;
+  const tabs = document.querySelectorAll('#view-logs .pill-tabs-container .tab-pill, #view-logs .claims-subtabs-bar .claims-subtab');
+  tabs.forEach(tab => tab.classList.remove('active'));
+  if (btnElement) {
+    btnElement.classList.add('active');
   }
+
+  const categorySelect = document.getElementById('auditCategoryFilter');
+  if (categorySelect) {
+    categorySelect.value = category === 'all' ? '' : category;
+  }
+
+  filterAuditLogs();
+}
+
+function filterAuditLogs() {
+  const searchInput = document.getElementById('auditSearchInput');
+  const categorySelect = document.getElementById('auditCategoryFilter');
+  const adminSelect = document.getElementById('auditAdminFilter');
+
+  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+  const selectedCategory = categorySelect ? categorySelect.value : (activeLogTabCategory === 'all' ? '' : activeLogTabCategory);
+  const selectedAdmin = adminSelect ? adminSelect.value : '';
+
+  const rows = document.querySelectorAll('#auditLogsTableBody tr');
+  let visibleCount = 0;
+
+  rows.forEach(row => {
+    const rowCategory = row.getAttribute('data-category') || '';
+    const rowAdmin = row.getAttribute('data-admin') || '';
+    const rowText = row.textContent.toLowerCase();
+
+    const matchesCategory = !selectedCategory || selectedCategory === 'all' || rowCategory.toLowerCase() === selectedCategory.toLowerCase();
+    const matchesAdmin = !selectedAdmin || rowAdmin.toLowerCase().includes(selectedAdmin.toLowerCase());
+    const matchesQuery = !query || rowText.includes(query);
+
+    if (matchesCategory && matchesAdmin && matchesQuery) {
+      row.style.display = '';
+      visibleCount++;
+    } else {
+      row.style.display = 'none';
+    }
+  });
+
+  const paginationInfo = document.getElementById('auditPaginationInfo');
+  if (paginationInfo) {
+    paginationInfo.textContent = `Showing ${visibleCount} of 1,482 logged admin events`;
+  }
+}
+
+function exportAuditLogs() {
+  showToast('Exporting admin audit log trail (CSV)...');
+  const csvRows = [
+    ['Timestamp', 'Administrator', 'Action Class', 'Action', 'Target Record', 'Details', 'Status', 'Audit ID'],
+    ['2026-06-09 14:32:00', 'Marcus Williams (Admin)', 'Personnel', 'Added Employee: Sofia Taylor', 'EMP-10482', 'Created employee profile, issued portal credentials', 'Completed', 'LOG-9482'],
+    ['2026-06-09 11:15:00', 'Elena Rostova (Admin)', 'Leaves', 'Approved Leave Request', 'EMP-10291', 'Approved 3 days Medical Leave', 'Approved', 'LOG-9481'],
+    ['2026-06-08 16:45:00', 'Marcus Williams (Admin)', 'Personnel', 'Promoted Staff: Marcus Chen', 'EMP-10334', 'Promoted to Lead Instructor', 'Completed', 'LOG-9480'],
+    ['2026-06-08 10:20:00', 'David Kim (Admin)', 'Claims', 'Approved Expense Claim', 'CLM-2026-088', 'Educational materials reimbursement ($420.50)', 'Disbursed', 'LOG-9479'],
+    ['2026-06-07 15:10:00', 'Elena Rostova (Admin)', 'Shifts', 'Modified Shift Roster', 'ROSTER-2026-W24', 'Reassigned 12 instructors to Morning Shift', 'Applied', 'LOG-9478'],
+    ['2026-06-07 09:30:00', 'Marcus Williams (Admin)', 'Claims', 'Disbursed Advance Pay', 'ADV-2026-014', 'Approved emergency payroll advance ($800.00)', 'Disbursed', 'LOG-9477'],
+    ['2026-06-06 17:00:00', 'Elena Rostova (Admin)', 'Grievance', 'Resolved Grievance Case', 'GRV-4091', 'Mediation completed and agreed', 'Resolved', 'LOG-9476'],
+    ['2026-06-06 13:40:00', 'Marcus Williams (Admin)', 'Personnel', 'Transferred Employee Center', 'EMP-10255', 'Transferred to West Campus Center', 'Completed', 'LOG-9475'],
+    ['2026-06-05 18:00:00', 'System Bot', 'Leaves', 'Accrued Monthly Leave Balances', 'ALL INSTRUCTORS', 'Automated 1.5 days annual leave accrual', 'Executed', 'LOG-9474'],
+    ['2026-06-05 11:25:00', 'David Kim (Admin)', 'Claims', 'Rejected Non-Compliant Claim', 'CLM-2026-079', 'Rejected fuel claim missing tax invoice', 'Rejected', 'LOG-9473']
+  ];
+
+  const csvContent = 'data:text/csv;charset=utf-8,' + csvRows.map(e => e.map(i => `"${i}"`).join(',')).join('\n');
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement('a');
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download', `kumon_ems_audit_logs_${new Date().toISOString().slice(0, 10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 

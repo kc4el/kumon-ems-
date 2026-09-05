@@ -10,8 +10,9 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Source+Sans+Pro:wght@700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="../../../static/style.css" />
+  <link rel="stylesheet" href="static/style.css" />
   <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="../../../static/style.css" />
 
 </head>
 
@@ -23,11 +24,6 @@
       <div class="brand-header">
         <div class="brand-logo-box brand-kumon-box">
           <img src="static/kumon-logo.png" alt="Kumon Logo" class="brand-logo-img" onerror="this.onerror=null; this.src='/static/kumon-logo.png';" />
-
-        </div>
-        <div class="brand-text-box">
-          <span class="brand-name">Kumon EMS</span>
-          <span class="brand-tagline">EMPLOYEE MANAGEMENT SYSTEM</span>
         </div>
       </div>
 
@@ -77,25 +73,17 @@
           </svg>
           <span>Messages</span>
         </a>
-        <a href="#" class="nav-link" data-view="profile">
+        <a href="#" class="nav-link" data-view="logs">
           <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="2">
-            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-            <line x1="8" y1="21" x2="16" y2="21"></line>
-            <line x1="12" y1="17" x2="12" y2="21"></line>
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
           </svg>
-          <span>Profile</span>
+          <span>Logs</span>
         </a>
-        <a href="login.html" class="nav-link" onclick="navigateToLogin('login'); return false;" title="Open Portal Authentication">
-          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-            <polyline points="10 17 15 12 10 7"></polyline>
-            <line x1="15" y1="12" x2="3" y2="12"></line>
-          </svg>
-          <span>Portal Auth</span>
-        </a>
-
       </nav>
 
     </aside>
@@ -110,16 +98,6 @@
 
 
         <div class="header-right-tools">
-          <div class="search-input-pill">
-            <svg class="search-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input type="text" id="globalSearch" placeholder="Search..." />
-            <span class="cmd-k-badge">⌘K</span>
-          </div>
-
           <button class="header-icon-btn" title="Notifications"
             onclick="showToast('3 priority employee actions pending.')">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -166,17 +144,71 @@
             <!-- June 2026 Card -->
             <div class="summary-box dark-navy-box">
               <span class="summary-tag">JUNE 2026</span>
-              <div class="pill-badge-row"><span class="num-tag green-num">24</span> Active Shift</div>
-              <div class="pill-badge-row"><span class="num-tag yellow-num">07</span> On Approved Leave</div>
-              <div class="pill-badge-row"><span class="num-tag lightblue-num">12</span> Team Arrivals Today</div>
+              <div class="pulse-stat-row">
+                <svg class="pulse-stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>Total Attendance</span>
+                <strong>1,420</strong>
+              </div>
+              <div class="pulse-stat-row">
+                <svg class="pulse-stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span>Employee Leaves</span>
+                <strong>18</strong>
+              </div>
+              <div class="pulse-stat-row">
+                <svg class="pulse-stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                <span>Claims Count</span>
+                <strong>32</strong>
+              </div>
             </div>
 
             <!-- People Pulse Card -->
             <div class="summary-box mint-pulse-box">
               <span class="summary-tag mint-tag">PEOPLE PULSE</span>
-              <div class="pulse-stat-row"><span>Attendance</span> <strong>94.2%</strong></div>
-              <div class="pulse-stat-row"><span>Retention</span> <strong>98.4%</strong></div>
-              <div class="pulse-stat-row"><span>Engagement</span> <strong>High</strong></div>
+              <div class="pulse-stat-row">
+                <svg class="pulse-stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                  <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                  <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                </svg>
+                <span>Attendance</span>
+                <strong>94.2%</strong>
+              </div>
+              <div class="pulse-stat-row">
+                <svg class="pulse-stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span>Retention</span>
+                <strong>98.4%</strong>
+              </div>
+              <div class="pulse-stat-row">
+                <svg class="pulse-stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 3v18h18"></path>
+                  <path d="M18 17V9"></path>
+                  <path d="M13 17V5"></path>
+                  <path d="M8 17v-3"></path>
+                </svg>
+                <span>Engagement</span>
+                <strong>High</strong>
+              </div>
             </div>
           </div>
         </div>
@@ -2833,6 +2865,334 @@
       </section>
 
       <!-- ======================================================================
+           VIEW 10: ADMIN AUDIT & ACTIVITY LOGS (view-logs)
+           ====================================================================== -->
+      <section class="view-panel" id="view-logs">
+        <!-- Page Title Block -->
+        <div class="page-title-block">
+          <div class="title-with-badge">
+            <h1 class="penpot-page-heading">Audit & Activity Logs</h1>
+            <span class="badge-active-live">LIVE SYSTEM AUDIT</span>
+          </div>
+          <p class="penpot-page-sub">Comprehensive chronological record of administrative actions, personnel updates, access grants, and status changes across Kumon EMS.</p>
+        </div>
+
+        <!-- Subtabs Navigation: Filter by Class -->
+        <div class="penpot-subnav-row" style="margin-bottom: 24px;">
+          <div class="pill-tabs-container">
+            <button class="tab-pill active" onclick="filterLogsByTab('all', this)">All Classes (1,482)</button>
+            <button class="tab-pill" onclick="filterLogsByTab('Personnel', this)">Personnel &amp; Staff (412)</button>
+            <button class="tab-pill" onclick="filterLogsByTab('Leaves', this)">Leave Requests (318)</button>
+            <button class="tab-pill" onclick="filterLogsByTab('Claims', this)">Claims &amp; Payroll (286)</button>
+            <button class="tab-pill" onclick="filterLogsByTab('Shifts', this)">Shift Rosters (244)</button>
+            <button class="tab-pill" onclick="filterLogsByTab('Grievance', this)">Grievance Cases (222)</button>
+          </div>
+        </div>
+
+        <!-- Table Card -->
+        <div class="white-card" style="padding:0; overflow:hidden; margin-bottom:24px;">
+          <div style="padding:20px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; border-bottom:1px solid #e2e8f0;">
+            <div>
+              <h2 class="card-title" style="margin-bottom:4px;">System &amp; Administrative Audit Trail</h2>
+              <p class="card-sub" style="color:#64748b; font-size:13.5px; margin:0;">Every privileged action is signed, timestamped, and categorized by class for security compliance.</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <div class="audit-search-box">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="auditSearchInput" placeholder="Search admin, action, employee, or detail..." oninput="filterAuditLogs()" />
+              </div>
+              <select class="audit-select-control" id="auditCategoryFilter" onchange="filterAuditLogs()">
+                <option value="">All Classes</option>
+                <option value="Personnel">Personnel &amp; Staff</option>
+                <option value="Leaves">Leave Requests</option>
+                <option value="Claims">Claims &amp; Payroll</option>
+                <option value="Shifts">Shift Rosters</option>
+                <option value="Grievance">Grievance Cases</option>
+              </select>
+              <select class="audit-select-control" id="auditAdminFilter" onchange="filterAuditLogs()">
+                <option value="">All Admins</option>
+                <option value="Marcus Williams">Marcus Williams</option>
+                <option value="Elena Rostova">Elena Rostova</option>
+                <option value="David Kim">David Kim</option>
+                <option value="System Bot">System Bot</option>
+              </select>
+              <button class="btn btn-navy-cta" onclick="exportAuditLogs()" style="height:38px; display:inline-flex; align-items:center; gap:6px; padding:0 14px; font-size:13px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>Export CSV</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Table Content -->
+          <div class="claims-table-wrapper">
+            <table class="claims-table audit-logs-table" id="auditLogsTable">
+              <thead>
+                <tr>
+                  <th style="width: 210px;">ADMINISTRATOR</th>
+                  <th style="width: 140px;">ACTION CLASS</th>
+                  <th style="width: 150px;">TIMESTAMP</th>
+                  <th style="width: 250px;">ACTION &amp; TARGET RECORD</th>
+                  <th>DETAILS &amp; AUDIT NOTES</th>
+                  <th style="width: 120px;">STATUS</th>
+                  <th style="width: 110px; text-align: right;">AUDIT ID</th>
+                </tr>
+              </thead>
+              <tbody id="auditLogsTableBody">
+                <tr data-category="Personnel" data-admin="Marcus Williams">
+                  <td>
+                    <div class="claims-applicant-cell">
+                      <div class="claims-avatar" style="background:#e0f2fe; color:#0369a1;">MW</div>
+                      <div class="claims-applicant-info">
+                        <strong>Marcus Williams</strong>
+                        <span>HR Director (Admin)</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="audit-badge badge-personnel">Personnel</span></td>
+                  <td><span class="audit-timestamp">09 Jun 2026, 14:32</span></td>
+                  <td>
+                    <div class="action-title">Added Employee: Sofia Taylor</div>
+                    <div class="action-target">EMP-10482 &bull; Mathematics Dept</div>
+                  </td>
+                  <td>
+                    <div class="audit-detail-text">Created employee profile, issued portal credentials, and assigned default instructor IT provisions.</div>
+                  </td>
+                  <td><span class="audit-status-pill audit-status-completed">Completed</span></td>
+                  <td style="text-align: right;"><span class="audit-id-badge">LOG-9482</span></td>
+                </tr>
+
+                <tr data-category="Leaves" data-admin="Elena Rostova">
+                  <td>
+                    <div class="claims-applicant-cell">
+                      <div class="claims-avatar" style="background:#fef3c7; color:#b45309;">ER</div>
+                      <div class="claims-applicant-info">
+                        <strong>Elena Rostova</strong>
+                        <span>Operations Head (Admin)</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="audit-badge badge-leaves">Leaves</span></td>
+                  <td><span class="audit-timestamp">09 Jun 2026, 11:15</span></td>
+                  <td>
+                    <div class="action-title">Approved Leave Request</div>
+                    <div class="action-target">EMP-10291 &bull; Ethan Vance</div>
+                  </td>
+                  <td>
+                    <div class="audit-detail-text">Approved 3 days of Medical Leave following clinic certificate verification and balance deduction.</div>
+                  </td>
+                  <td><span class="audit-status-pill audit-status-approved">Approved</span></td>
+                  <td style="text-align: right;"><span class="audit-id-badge">LOG-9481</span></td>
+                </tr>
+
+                <tr data-category="Personnel" data-admin="Marcus Williams">
+                  <td>
+                    <div class="claims-applicant-cell">
+                      <div class="claims-avatar" style="background:#e0f2fe; color:#0369a1;">MW</div>
+                      <div class="claims-applicant-info">
+                        <strong>Marcus Williams</strong>
+                        <span>HR Director (Admin)</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="audit-badge badge-personnel">Personnel</span></td>
+                  <td><span class="audit-timestamp">08 Jun 2026, 16:45</span></td>
+                  <td>
+                    <div class="action-title">Promoted Staff: Marcus Chen</div>
+                    <div class="action-target">EMP-10334 &bull; Senior Instructor</div>
+                  </td>
+                  <td>
+                    <div class="audit-detail-text">Promoted to Lead Instructor with updated compensation grade and center supervisor authority.</div>
+                  </td>
+                  <td><span class="audit-status-pill audit-status-completed">Completed</span></td>
+                  <td style="text-align: right;"><span class="audit-id-badge">LOG-9480</span></td>
+                </tr>
+
+                <tr data-category="Claims" data-admin="David Kim">
+                  <td>
+                    <div class="claims-applicant-cell">
+                      <div class="claims-avatar" style="background:#dcfce7; color:#15803d;">DK</div>
+                      <div class="claims-applicant-info">
+                        <strong>David Kim</strong>
+                        <span>Finance Lead (Admin)</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="audit-badge badge-claims">Claims</span></td>
+                  <td><span class="audit-timestamp">08 Jun 2026, 10:20</span></td>
+                  <td>
+                    <div class="action-title">Approved Expense Claim</div>
+                    <div class="action-target">CLM-2026-088 &bull; Sarah Chen</div>
+                  </td>
+                  <td>
+                    <div class="audit-detail-text">Reimbursed instructional materials expense ($420.50) after itemized tax receipt validation.</div>
+                  </td>
+                  <td><span class="audit-status-pill audit-status-disbursed">Disbursed</span></td>
+                  <td style="text-align: right;"><span class="audit-id-badge">LOG-9479</span></td>
+                </tr>
+
+                <tr data-category="Shifts" data-admin="Elena Rostova">
+                  <td>
+                    <div class="claims-applicant-cell">
+                      <div class="claims-avatar" style="background:#fef3c7; color:#b45309;">ER</div>
+                      <div class="claims-applicant-info">
+                        <strong>Elena Rostova</strong>
+                        <span>Operations Head (Admin)</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="audit-badge badge-shifts">Shifts</span></td>
+                  <td><span class="audit-timestamp">07 Jun 2026, 15:10</span></td>
+                  <td>
+                    <div class="action-title">Modified Shift Roster</div>
+                    <div class="action-target">ROSTER-2026-W24 &bull; Center Schedule</div>
+                  </td>
+                  <td>
+                    <div class="audit-detail-text">Reassigned 12 instructors across morning and evening shifts to balance student examination week load.</div>
+                  </td>
+                  <td><span class="audit-status-pill audit-status-applied">Applied</span></td>
+                  <td style="text-align: right;"><span class="audit-id-badge">LOG-9478</span></td>
+                </tr>
+
+                <tr data-category="Claims" data-admin="Marcus Williams">
+                  <td>
+                    <div class="claims-applicant-cell">
+                      <div class="claims-avatar" style="background:#e0f2fe; color:#0369a1;">MW</div>
+                      <div class="claims-applicant-info">
+                        <strong>Marcus Williams</strong>
+                        <span>HR Director (Admin)</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="audit-badge badge-claims">Claims</span></td>
+                  <td><span class="audit-timestamp">07 Jun 2026, 09:30</span></td>
+                  <td>
+                    <div class="action-title">Disbursed Advance Pay</div>
+                    <div class="action-target">ADV-2026-014 &bull; Liam Parker</div>
+                  </td>
+                  <td>
+                    <div class="audit-detail-text">Approved and queued emergency payroll advance ($800.00) scheduled for recovery across 2 pay cycles.</div>
+                  </td>
+                  <td><span class="audit-status-pill audit-status-disbursed">Disbursed</span></td>
+                  <td style="text-align: right;"><span class="audit-id-badge">LOG-9477</span></td>
+                </tr>
+
+                <tr data-category="Grievance" data-admin="Elena Rostova">
+                  <td>
+                    <div class="claims-applicant-cell">
+                      <div class="claims-avatar" style="background:#fef3c7; color:#b45309;">ER</div>
+                      <div class="claims-applicant-info">
+                        <strong>Elena Rostova</strong>
+                        <span>Operations Head (Admin)</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="audit-badge badge-grievance">Grievance</span></td>
+                  <td><span class="audit-timestamp">06 Jun 2026, 17:00</span></td>
+                  <td>
+                    <div class="action-title">Resolved Grievance Case</div>
+                    <div class="action-target">GRV-4091 &bull; Lucas Scott</div>
+                  </td>
+                  <td>
+                    <div class="audit-detail-text">Mediation completed; schedule adjustment mutually agreed and case status changed to Resolved.</div>
+                  </td>
+                  <td><span class="audit-status-pill audit-status-resolved">Resolved</span></td>
+                  <td style="text-align: right;"><span class="audit-id-badge">LOG-9476</span></td>
+                </tr>
+
+                <tr data-category="Personnel" data-admin="Marcus Williams">
+                  <td>
+                    <div class="claims-applicant-cell">
+                      <div class="claims-avatar" style="background:#e0f2fe; color:#0369a1;">MW</div>
+                      <div class="claims-applicant-info">
+                        <strong>Marcus Williams</strong>
+                        <span>HR Director (Admin)</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="audit-badge badge-personnel">Personnel</span></td>
+                  <td><span class="audit-timestamp">06 Jun 2026, 13:40</span></td>
+                  <td>
+                    <div class="action-title">Transferred Employee Center</div>
+                    <div class="action-target">EMP-10255 &bull; Rachel Green</div>
+                  </td>
+                  <td>
+                    <div class="audit-detail-text">Transferred primary teaching branch to West Campus Center per departmental requisition.</div>
+                  </td>
+                  <td><span class="audit-status-pill audit-status-completed">Completed</span></td>
+                  <td style="text-align: right;"><span class="audit-id-badge">LOG-9475</span></td>
+                </tr>
+
+                <tr data-category="Leaves" data-admin="System Bot">
+                  <td>
+                    <div class="claims-applicant-cell">
+                      <div class="claims-avatar" style="background:#f1f5f9; color:#475569;">SB</div>
+                      <div class="claims-applicant-info">
+                        <strong>System Bot</strong>
+                        <span>Automated Policy Engine</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="audit-badge badge-leaves">Leaves</span></td>
+                  <td><span class="audit-timestamp">05 Jun 2026, 18:00</span></td>
+                  <td>
+                    <div class="action-title">Accrued Monthly Leave Balances</div>
+                    <div class="action-target">ALL ACTIVE INSTRUCTORS (124)</div>
+                  </td>
+                  <td>
+                    <div class="audit-detail-text">Automated batch accrual added 1.5 days annual entitlement to all verified full-time employees.</div>
+                  </td>
+                  <td><span class="audit-status-pill audit-status-executed">Executed</span></td>
+                  <td style="text-align: right;"><span class="audit-id-badge">LOG-9474</span></td>
+                </tr>
+
+                <tr data-category="Claims" data-admin="David Kim">
+                  <td>
+                    <div class="claims-applicant-cell">
+                      <div class="claims-avatar" style="background:#dcfce7; color:#15803d;">DK</div>
+                      <div class="claims-applicant-info">
+                        <strong>David Kim</strong>
+                        <span>Finance Lead (Admin)</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td><span class="audit-badge badge-claims">Claims</span></td>
+                  <td><span class="audit-timestamp">05 Jun 2026, 11:25</span></td>
+                  <td>
+                    <div class="action-title">Rejected Non-Compliant Claim</div>
+                    <div class="action-target">CLM-2026-079 &bull; Ethan Vance</div>
+                  </td>
+                  <td>
+                    <div class="audit-detail-text">Claim rejected due to missing official VAT receipts and expense falling outside eligible policy window.</div>
+                  </td>
+                  <td><span class="audit-status-pill audit-status-rejected">Rejected</span></td>
+                  <td style="text-align: right;"><span class="audit-id-badge">LOG-9473</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Footer -->
+          <div class="claims-pagination-bar">
+            <span id="auditPaginationInfo">Showing 1 to 10 of 1,482 logged admin events</span>
+            <div class="claims-page-buttons">
+              <button class="btn-page-num" disabled style="opacity:0.5; cursor:not-allowed;">&lt;</button>
+              <button class="btn-page-num active">1</button>
+              <button class="btn-page-num" onclick="showToast('Loading page 2...')">2</button>
+              <button class="btn-page-num" onclick="showToast('Loading page 3...')">3</button>
+              <button class="btn-page-num" onclick="showToast('Loading next page...')">&gt;</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
            GENERIC PLACEHOLDER VIEW (Payroll, Reports)
            ====================================================================== -->
       <section class="view-panel" id="view-placeholder">
@@ -2951,8 +3311,9 @@
   <!-- Toast Container -->
   <div id="toastContainer" class="toast-stack"></div>
 
-  <script src="../../../static/app.js"></script>
+  <script src="static/app.js"></script>
   <script src="/static/app.js"></script>
+  <script src="../../../static/app.js"></script>
 </body>
 
 

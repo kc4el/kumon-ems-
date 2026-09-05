@@ -106,34 +106,36 @@ body {
 .brand-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 44px;
+  margin-bottom: 36px;
 }
 
 .brand-logo-box {
-  width: 38px;
-  height: 38px;
-  background-color: #ffffff;
-  border-radius: 10px;
+  width: 192px;
+  height: 50px;
+  background-color: transparent;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #0f1e2e;
-  font-weight: 700;
-  font-size: 22px;
-  font-family: 'Source Sans Pro', sans-serif;
-  line-height: 1;
+  padding: 0;
+  box-shadow: none;
+  box-sizing: border-box;
+  overflow: visible;
   flex-shrink: 0;
-  padding: 3px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-  overflow: hidden;
 }
 
 .brand-logo-img {
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
   display: block;
+}
+
+.auth-top-navbar .brand-logo-box {
+  width: 220px;
+  height: 54px;
 }
 
 
@@ -247,44 +249,6 @@ body {
   gap: 14px;
 }
 
-.search-input-pill {
-  background-color: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 24px;
-  display: flex;
-  align-items: center;
-  padding: 6px 14px;
-  gap: 8px;
-  width: 240px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-}
-
-.search-ico {
-  color: #94a3b8;
-}
-
-.search-input-pill input {
-  border: none;
-  outline: none;
-  font-family: inherit;
-  font-size: 13.5px;
-  width: 100%;
-  color: #0f172a;
-}
-
-.search-input-pill input::placeholder {
-  color: #64748b;
-}
-
-.cmd-k-badge {
-  background-color: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  padding: 1px 5px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #94a3b8;
-}
 
 .header-icon-btn {
   background: #ffffff;
@@ -494,11 +458,48 @@ body {
 .pulse-stat-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: 14.5px;
-  font-weight: 600;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
   margin-bottom: 9px;
   color: #064e3b;
+}
+
+.pulse-stat-icon {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  stroke: currentColor;
+}
+
+.dark-navy-box .pulse-stat-row {
+  color: #ffffff;
+}
+
+.dark-navy-box .pulse-stat-row .pulse-stat-icon {
+  stroke: #cbd5e1;
+}
+
+.mint-pulse-box .pulse-stat-row .pulse-stat-icon {
+  stroke: #065f46;
+}
+
+.dark-navy-box .pulse-stat-row span {
+  color: #cbd5e1;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.mint-pulse-box .pulse-stat-row span {
+  color: #065f46;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.dark-navy-box .pulse-stat-row strong {
+  color: #ffffff;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .pulse-stat-row:last-child {
@@ -507,9 +508,10 @@ body {
 
 .pulse-stat-row strong {
   margin-left: auto;
-  font-size: 16px;
-  font-weight: 800;
-  color: #065f46;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #064e3b;
+  white-space: nowrap;
 }
 
 /* --------------------------------------------------------------------------
@@ -2835,6 +2837,230 @@ body {
 
 .penpot-switch-link:hover {
   text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   Audit & Activity Logs View Styles
+   -------------------------------------------------------------------------- */
+.audit-search-box {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  gap: 8px;
+  width: 280px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.audit-search-box svg {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.audit-search-box input {
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 13px;
+  width: 100%;
+  color: #0f172a;
+}
+
+.audit-search-box input::placeholder {
+  color: #94a3b8;
+}
+
+.audit-logs-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.audit-logs-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.audit-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 12px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.badge-personnel {
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+}
+
+.badge-leaves {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+}
+
+.badge-claims {
+  background-color: #faf5ff;
+  border: 1px solid #e9d5ff;
+  color: #7e22ce;
+}
+
+.badge-shifts {
+  background-color: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #b45309;
+}
+
+.badge-grievance {
+  background-color: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #be123c;
+}
+
+.audit-timestamp {
+  font-size: 12.5px;
+  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  color: #475569;
+  font-weight: 500;
+}
+
+.action-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.action-target {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.audit-detail-text {
+  font-size: 12.5px;
+  color: #334155;
+  line-height: 1.45;
+  max-width: 420px;
+}
+
+.audit-id-badge {
+  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 3px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+/* Audit Status Pills */
+.audit-status-pill,
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.audit-status-completed,
+.audit-status-approved,
+.status-pill.status-approved,
+.status-pill.status-completed {
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.audit-status-resolved {
+  background-color: #e0e7ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+}
+
+.audit-status-executed {
+  background-color: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+
+.audit-status-disbursed {
+  background-color: #f3e8ff;
+  color: #7e22ce;
+  border: 1px solid #e9d5ff;
+}
+
+.audit-status-applied {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.audit-status-rejected,
+.status-pill.status-rejected {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* User Cell Meta (Avatar & Name) in Table */
+.user-cell-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cell-avatar-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cell-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.cell-sub {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.audit-select-control {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  font-size: 13px;
+  font-family: inherit;
+  color: #0f172a;
+  cursor: pointer;
+  outline: none;
+}
+
+.audit-select-control:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 
