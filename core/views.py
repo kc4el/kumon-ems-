@@ -83,7 +83,6 @@ class EmployeeListCreateView(generics.ListCreateAPIView):
             
             created_user_id = str(auth_response.user.id)
             payload["id"] = created_user_id
-            payload["code"] = f"EMP-{created_user_id.replace('-', '')[:10].upper()}"
 
             serializer = self.get_serializer(data=payload)
             serializer.is_valid(raise_exception=True)
