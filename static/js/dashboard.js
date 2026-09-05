@@ -18,15 +18,17 @@ function initBrandLogo() {
     let bestSrc = '/static/images/kumon-logo.png';
     if (isFileProtocol) {
       if (currentPath.includes('templates') || currentPath.includes('core')) {
-        bestSrc = '../../static/images/kumon-logo.png';
+        bestSrc = '../../../static/images/kumon-logo.png';
+      } else if (currentPath.includes('pages')) {
+        bestSrc = '../static/images/kumon-logo.png';
       } else {
         bestSrc = 'static/images/kumon-logo.png';
       }
     }
     img.src = bestSrc;
     img.onerror = () => {
-      if (img.src.includes('../../static')) {
-        img.src = 'static/images/kumon-logo.png';
+      if (img.src.includes('../../../static') || img.src.includes('../../static')) {
+        img.src = '../static/images/kumon-logo.png';
       } else if (img.src.includes('static/')) {
         img.src = '/static/images/kumon-logo.png';
       } else {

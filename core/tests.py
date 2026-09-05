@@ -91,3 +91,9 @@ class PageViewTests(TestCase):
             self.assertContains(response, 'Sign In to Portal')
             self.assertContains(response, 'Complete Registration')
 
+    def test_static_assets_serve_successfully(self):
+        for static_path in ['/static/css/main.css', '/static/js/dashboard.js', '/static/images/kumon-logo.png']:
+            response = self.client.get(static_path)
+            self.assertEqual(response.status_code, 200, f"Static asset {static_path} failed to load.")
+
+

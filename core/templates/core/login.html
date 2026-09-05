@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -10,6 +11,8 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Source+Sans+Pro:wght@700&display=swap"
     rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+  <link rel="stylesheet" href="../../../static/css/main.css" />
   <link rel="stylesheet" href="/static/css/main.css" />
 </head>
 
@@ -19,7 +22,7 @@
     <header class="auth-top-navbar">
       <div class="brand-header" style="margin-bottom: 0;">
         <div class="brand-logo-box brand-kumon-box">
-          <img src="/static/images/kumon-logo.png" alt="Kumon Logo" class="brand-logo-img" onerror="this.onerror=null; this.src='/static/images/kumon-logo.png';" />
+          <img src="{% static 'images/kumon-logo.png' %}" alt="Kumon Logo" class="brand-logo-img" onerror="this.onerror=null; this.src='../../../static/images/kumon-logo.png';" />
         </div>
       </div>
     </header>
@@ -119,7 +122,12 @@
   <!-- Toast Notification Stack -->
   <div id="toastContainer" class="toast-stack"></div>
 
-  <script src="/static/js/dashboard.js"></script>
+  <script src="{% static 'js/dashboard.js' %}"></script>
+  <script>
+    if (typeof switchAuthPage === 'undefined') {
+      document.write('<script src="../../../static/js/dashboard.js"><\/script>');
+    }
+  </script>
   <script>
     // Automatic URL hash and query detection (?mode=signup or #signup)
     document.addEventListener('DOMContentLoaded', () => {
