@@ -16,22 +16,22 @@ function initBrandLogo() {
   
   const logoImgs = document.querySelectorAll('.brand-logo-img');
   logoImgs.forEach(img => {
-    let bestSrc = '/static/kumon-logo.png';
+    let bestSrc = '/static/images/kumon-logo.png';
     if (isFileProtocol) {
       if (currentPath.includes('templates') || currentPath.includes('core')) {
-        bestSrc = '../../static/kumon-logo.png';
+        bestSrc = '../../static/images/kumon-logo.png';
       } else {
-        bestSrc = 'static/kumon-logo.png';
+        bestSrc = 'static/images/kumon-logo.png';
       }
     }
     img.src = bestSrc;
     img.onerror = () => {
       if (img.src.includes('../../static')) {
-        img.src = 'static/kumon-logo.png';
+        img.src = 'static/images/kumon-logo.png';
       } else if (img.src.includes('static/')) {
-        img.src = '/static/kumon-logo.png';
+        img.src = '/static/images/kumon-logo.png';
       } else {
-        img.src = 'kumon-logo.png';
+        img.src = 'images/kumon-logo.png';
       }
     };
   });
@@ -576,7 +576,7 @@ function handleAuthLogin(e) {
   if (isFileProtocol || currentPath.includes('login') || currentPath.includes('auth') || currentPath.includes('signup')) {
     setTimeout(() => {
       if (isFileProtocol || currentPath.endsWith('.html')) {
-        window.location.href = 'index.html';
+        window.location.href = 'dashboard.html';
       } else {
         window.location.href = '/';
       }
@@ -602,7 +602,7 @@ function handleAuthSignup(e) {
   if (isFileProtocol || currentPath.includes('login') || currentPath.includes('auth') || currentPath.includes('signup')) {
     setTimeout(() => {
       if (isFileProtocol || currentPath.endsWith('.html')) {
-        window.location.href = 'index.html';
+        window.location.href = 'dashboard.html';
       } else {
         window.location.href = '/';
       }

@@ -30,6 +30,15 @@ SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=replace-with-a-server-side-secret
 ```
 
+## Project structure
+
+- `pages/`: standalone HTML previews (`dashboard.html`, `dashboard-preview.html`, and `login.html`)
+- `core/templates/core/`: Django-rendered dashboard and login templates
+- `static/css/`: stylesheets
+- `static/js/`: browser scripts
+- `static/images/`: image assets
+- `static/assets/`: source asset data such as the logo base64 file
+
 Apply migrations and start the development server:
 
 ```bash
