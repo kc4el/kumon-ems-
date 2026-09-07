@@ -2005,123 +2005,211 @@
         </div>
 
         <!-- Shift Assignment & Roster Editor Card -->
+        <!-- Shift Assignment & Roster Editor Card -->
         <div class="white-card" style="padding:24px; margin-bottom:24px;">
           <div class="shift-editor-head">
-            <div>
+            <div class="shift-editor-title-group">
               <h2 class="card-title">Shift Assignment & Roster Editor</h2>
-              <p class="card-sub">Live allocation for Thursday, 18 June 2026</p>
+              <p class="card-sub" id="shiftDateDisplay">Live allocation for Thursday, 18 June 2026</p>
             </div>
-            <span class="penpot-badge badge-present" style="font-size:12.5px; padding:6px 14px;">● 100% Covered</span>
+            <div class="shift-editor-controls">
+              <div class="shift-date-selector-group">
+                <button type="button" class="btn-date-nav" onclick="stepShiftDate(-1)" title="Previous Day" aria-label="Previous Day">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <div class="shift-date-input-wrap">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <input type="date" id="shiftDatePicker" class="shift-date-input" value="2026-06-18" onchange="handleShiftDateChange(this.value)" aria-label="Select Shift Date">
+                </div>
+                <button type="button" class="btn-date-nav" onclick="stepShiftDate(1)" title="Next Day" aria-label="Next Day">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+                <button type="button" class="btn-date-today" onclick="setShiftDateToday()">Today</button>
+              </div>
+              <span class="penpot-badge badge-present" id="shiftOverallCoverage" style="font-size:12px; padding:6px 14px;">● 100% Covered</span>
+            </div>
           </div>
 
           <div class="shift-slots-3grid" id="shiftSlotsContainer">
             <!-- Morning Slot -->
             <div class="shift-slot-card">
-              <div class="shift-slot-card-head">
-                <div>
-                  <span class="shift-slot-name">Morning Shift</span>
-                  <span class="shift-slot-time"> • 08:00 - 16:00</span>
-                </div>
-                <span class="penpot-badge badge-present" style="font-size:11px;">Confirmed</span>
-              </div>
-              <div class="shift-slot-user-row">
-                <div class="shift-slot-user-left">
-                  <div class="shift-staff-avatar" style="width:28px; height:28px; font-size:11px;">SC</div>
+              <div>
+                <div class="shift-slot-card-head">
                   <div>
-                    <strong style="font-size:13px; color:#0f172a;">Sarah Chen</strong>
-                    <div style="font-size:11px; color:#64748b;">Senior Dev</div>
+                    <span class="shift-slot-name">Morning Shift</span>
+                    <span class="shift-slot-time"> • 08:00 - 16:00</span>
+                  </div>
+                  <span class="penpot-badge badge-present" id="shiftBadge-morning" style="font-size:11px;">Confirmed</span>
+                </div>
+                <div class="shift-slot-users-list" id="shiftUsers-morning">
+                  <div class="shift-slot-user-row">
+                    <div class="shift-slot-user-left">
+                      <div class="shift-staff-avatar" style="width:28px; height:28px; font-size:11px;">SC</div>
+                      <div>
+                        <strong style="font-size:13px; color:#0f172a;">Sarah Chen</strong>
+                        <div style="font-size:11px; color:#64748b;">Senior Dev &bull; Primary Lead</div>
+                      </div>
+                    </div>
+                    <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12"
+                        height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg></button>
                   </div>
                 </div>
-                <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12"
-                    height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg></button>
               </div>
-              <button class="btn btn-outline-gray" style="width:100%; font-size:12px; padding:6px;"
-                onclick="focusQuickAssign('Morning Shift (08:00 - 16:00)')">+ Add Staff</button>
+
+              <div>
+                <button class="btn btn-outline-gray" id="btnAddStaff-morning" style="width:100%; font-size:12px; padding:7px;"
+                  onclick="toggleAddStaffForm('morning', true)">+ Add Staff</button>
+
+                <div class="shift-inline-assign-form" id="addStaffForm-morning" style="display:none;">
+                  <div class="shift-inline-fields">
+                    <select class="shift-inline-select" id="staffSelect-morning" aria-label="Select Employee">
+                      <option value="">Select Employee...</option>
+                      <option value="Sarah Chen|Senior Dev|SC">Sarah Chen (Senior Dev - SC)</option>
+                      <option value="Marcus Williams|Senior Dev|MW">Marcus Williams (Senior Dev - MW)</option>
+                      <option value="Elena Rodriguez|HR Specialist|ER">Elena Rodriguez (HR Specialist - ER)</option>
+                      <option value="David Kim|Lead Analyst|DK">David Kim (Lead Analyst - DK)</option>
+                      <option value="Rachel Adams|Lead Designer|RA">Rachel Adams (Lead Designer - RA)</option>
+                      <option value="Michael Chang|DevOps Engineer|MC">Michael Chang (DevOps - MC)</option>
+                      <option value="Amanda Vance|Marketing Lead|AV">Amanda Vance (Marketing - AV)</option>
+                    </select>
+                    <select class="shift-inline-select" id="roleSelect-morning" aria-label="Select Shift Role">
+                      <option value="Primary Lead">Primary Lead</option>
+                      <option value="Duty Staff">Duty Staff</option>
+                      <option value="Standby Relief">Standby Relief</option>
+                    </select>
+                  </div>
+                  <div class="shift-inline-actions">
+                    <button type="button" class="btn btn-outline-gray btn-sm" style="font-size:11.5px; padding:4px 10px;" onclick="toggleAddStaffForm('morning', false)">Cancel</button>
+                    <button type="button" class="btn btn-navy-cta btn-sm" style="font-size:11.5px; padding:4px 12px;" onclick="confirmAddStaff('morning')">Assign</button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Evening Slot -->
             <div class="shift-slot-card">
-              <div class="shift-slot-card-head">
-                <div>
-                  <span class="shift-slot-name">Evening Shift</span>
-                  <span class="shift-slot-time"> • 16:00 - 00:00</span>
-                </div>
-                <span class="penpot-badge badge-present" style="font-size:11px;">Confirmed</span>
-              </div>
-              <div class="shift-slot-user-row">
-                <div class="shift-slot-user-left">
-                  <div class="shift-staff-avatar" style="width:28px; height:28px; font-size:11px;">MW</div>
+              <div>
+                <div class="shift-slot-card-head">
                   <div>
-                    <strong style="font-size:13px; color:#0f172a;">Marcus Williams</strong>
-                    <div style="font-size:11px; color:#64748b;">Senior Dev</div>
+                    <span class="shift-slot-name">Evening Shift</span>
+                    <span class="shift-slot-time"> • 16:00 - 00:00</span>
+                  </div>
+                  <span class="penpot-badge badge-present" id="shiftBadge-evening" style="font-size:11px;">Confirmed</span>
+                </div>
+                <div class="shift-slot-users-list" id="shiftUsers-evening">
+                  <div class="shift-slot-user-row">
+                    <div class="shift-slot-user-left">
+                      <div class="shift-staff-avatar" style="width:28px; height:28px; font-size:11px;">MW</div>
+                      <div>
+                        <strong style="font-size:13px; color:#0f172a;">Marcus Williams</strong>
+                        <div style="font-size:11px; color:#64748b;">Senior Dev &bull; Duty Staff</div>
+                      </div>
+                    </div>
+                    <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12"
+                        height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg></button>
                   </div>
                 </div>
-                <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12"
-                    height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg></button>
               </div>
-              <button class="btn btn-outline-gray" style="width:100%; font-size:12px; padding:6px;"
-                onclick="focusQuickAssign('Evening Shift (16:00 - 00:00)')">+ Add Staff</button>
+
+              <div>
+                <button class="btn btn-outline-gray" id="btnAddStaff-evening" style="width:100%; font-size:12px; padding:7px;"
+                  onclick="toggleAddStaffForm('evening', true)">+ Add Staff</button>
+
+                <div class="shift-inline-assign-form" id="addStaffForm-evening" style="display:none;">
+                  <div class="shift-inline-fields">
+                    <select class="shift-inline-select" id="staffSelect-evening" aria-label="Select Employee">
+                      <option value="">Select Employee...</option>
+                      <option value="Sarah Chen|Senior Dev|SC">Sarah Chen (Senior Dev - SC)</option>
+                      <option value="Marcus Williams|Senior Dev|MW">Marcus Williams (Senior Dev - MW)</option>
+                      <option value="Elena Rodriguez|HR Specialist|ER">Elena Rodriguez (HR Specialist - ER)</option>
+                      <option value="David Kim|Lead Analyst|DK">David Kim (Lead Analyst - DK)</option>
+                      <option value="Rachel Adams|Lead Designer|RA">Rachel Adams (Lead Designer - RA)</option>
+                      <option value="Michael Chang|DevOps Engineer|MC">Michael Chang (DevOps - MC)</option>
+                      <option value="Amanda Vance|Marketing Lead|AV">Amanda Vance (Marketing - AV)</option>
+                    </select>
+                    <select class="shift-inline-select" id="roleSelect-evening" aria-label="Select Shift Role">
+                      <option value="Primary Lead">Primary Lead</option>
+                      <option value="Duty Staff" selected>Duty Staff</option>
+                      <option value="Standby Relief">Standby Relief</option>
+                    </select>
+                  </div>
+                  <div class="shift-inline-actions">
+                    <button type="button" class="btn btn-outline-gray btn-sm" style="font-size:11.5px; padding:4px 10px;" onclick="toggleAddStaffForm('evening', false)">Cancel</button>
+                    <button type="button" class="btn btn-navy-cta btn-sm" style="font-size:11.5px; padding:4px 12px;" onclick="confirmAddStaff('evening')">Assign</button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Night Slot -->
             <div class="shift-slot-card">
-              <div class="shift-slot-card-head">
-                <div>
-                  <span class="shift-slot-name">Night Shift</span>
-                  <span class="shift-slot-time"> • 00:00 - 08:00</span>
-                </div>
-                <span class="penpot-badge badge-present" style="font-size:11px;">Confirmed</span>
-              </div>
-              <div class="shift-slot-user-row">
-                <div class="shift-slot-user-left">
-                  <div class="shift-staff-avatar" style="width:28px; height:28px; font-size:11px;">DK</div>
+              <div>
+                <div class="shift-slot-card-head">
                   <div>
-                    <strong style="font-size:13px; color:#0f172a;">David Kim</strong>
-                    <div style="font-size:11px; color:#64748b;">Lead Analyst</div>
+                    <span class="shift-slot-name">Night Shift</span>
+                    <span class="shift-slot-time"> • 00:00 - 08:00</span>
+                  </div>
+                  <span class="penpot-badge badge-present" id="shiftBadge-night" style="font-size:11px;">Confirmed</span>
+                </div>
+                <div class="shift-slot-users-list" id="shiftUsers-night">
+                  <div class="shift-slot-user-row">
+                    <div class="shift-slot-user-left">
+                      <div class="shift-staff-avatar" style="width:28px; height:28px; font-size:11px;">DK</div>
+                      <div>
+                        <strong style="font-size:13px; color:#0f172a;">David Kim</strong>
+                        <div style="font-size:11px; color:#64748b;">Lead Analyst &bull; Standby Relief</div>
+                      </div>
+                    </div>
+                    <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12"
+                        height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg></button>
                   </div>
                 </div>
-                <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12"
-                    height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg></button>
               </div>
-              <button class="btn btn-outline-gray" style="width:100%; font-size:12px; padding:6px;"
-                onclick="focusQuickAssign('Night Shift (00:00 - 08:00)')">+ Add Staff</button>
+
+              <div>
+                <button class="btn btn-outline-gray" id="btnAddStaff-night" style="width:100%; font-size:12px; padding:7px;"
+                  onclick="toggleAddStaffForm('night', true)">+ Add Staff</button>
+
+                <div class="shift-inline-assign-form" id="addStaffForm-night" style="display:none;">
+                  <div class="shift-inline-fields">
+                    <select class="shift-inline-select" id="staffSelect-night" aria-label="Select Employee">
+                      <option value="">Select Employee...</option>
+                      <option value="Sarah Chen|Senior Dev|SC">Sarah Chen (Senior Dev - SC)</option>
+                      <option value="Marcus Williams|Senior Dev|MW">Marcus Williams (Senior Dev - MW)</option>
+                      <option value="Elena Rodriguez|HR Specialist|ER">Elena Rodriguez (HR Specialist - ER)</option>
+                      <option value="David Kim|Lead Analyst|DK">David Kim (Lead Analyst - DK)</option>
+                      <option value="Rachel Adams|Lead Designer|RA">Rachel Adams (Lead Designer - RA)</option>
+                      <option value="Michael Chang|DevOps Engineer|MC">Michael Chang (DevOps - MC)</option>
+                      <option value="Amanda Vance|Marketing Lead|AV">Amanda Vance (Marketing - AV)</option>
+                    </select>
+                    <select class="shift-inline-select" id="roleSelect-night" aria-label="Select Shift Role">
+                      <option value="Primary Lead">Primary Lead</option>
+                      <option value="Duty Staff">Duty Staff</option>
+                      <option value="Standby Relief" selected>Standby Relief</option>
+                    </select>
+                  </div>
+                  <div class="shift-inline-actions">
+                    <button type="button" class="btn btn-outline-gray btn-sm" style="font-size:11.5px; padding:4px 10px;" onclick="toggleAddStaffForm('night', false)">Cancel</button>
+                    <button type="button" class="btn btn-navy-cta btn-sm" style="font-size:11.5px; padding:4px 12px;" onclick="confirmAddStaff('night')">Assign</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-
-          <!-- Quick Assign Bar -->
-          <form class="quick-assign-bar" onsubmit="handleQuickAssignShift(event)">
-            <select id="qaShiftSelect" required>
-              <option value="">Select Shift Slot...</option>
-              <option value="Morning Shift (08:00 - 16:00)">Morning Shift (08:00 - 16:00)</option>
-              <option value="Evening Shift (16:00 - 00:00)">Evening Shift (16:00 - 00:00)</option>
-              <option value="Night Shift (00:00 - 08:00)">Night Shift (00:00 - 08:00)</option>
-            </select>
-            <select id="qaEmployeeSelect" required>
-              <option value="">Select Employee...</option>
-              <option value="Sarah Chen">Sarah Chen (Engineering)</option>
-              <option value="Marcus Williams">Marcus Williams (Engineering)</option>
-              <option value="Elena Rodriguez">Elena Rodriguez (HR)</option>
-              <option value="David Kim">David Kim (Finance)</option>
-              <option value="Rachel Adams">Rachel Adams (Product)</option>
-              <option value="Michael Chang">Michael Chang (DevOps)</option>
-              <option value="Amanda Vance">Amanda Vance (Marketing)</option>
-            </select>
-            <select id="qaRoleSelect" required>
-              <option value="Lead / Senior">Lead / Senior Staff</option>
-              <option value="Associate">Associate Level</option>
-              <option value="Support">Support / On-Call</option>
-            </select>
-            <button type="submit" class="btn btn-navy-cta">+ Add Employee to Shift</button>
-          </form>
         </div>
       </section>
 

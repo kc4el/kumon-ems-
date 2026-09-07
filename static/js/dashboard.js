@@ -275,36 +275,180 @@ function toggleShiftCalendar() {
 }
 
 
-function focusQuickAssign(shiftName) {
-  const select = document.getElementById('qaShiftSelect');
-  if (select) {
-    select.value = shiftName;
-    select.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    select.focus();
+// ==========================================================================
+// Integrated Shift Management Handlers
+// ==========================================================================
+
+function formatShiftDisplayDate(dateObj) {
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const dayName = days[dateObj.getDay()];
+  const dayNum = dateObj.getDate();
+  const monthName = months[dateObj.getMonth()];
+  const year = dateObj.getFullYear();
+  return `${dayName}, ${dayNum} ${monthName} ${year}`;
+}
+
+function handleShiftDateChange(dateVal) {
+  if (!dateVal) return;
+  const parts = dateVal.split('-');
+  if (parts.length === 3) {
+    const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    const label = formatShiftDisplayDate(d);
+    const displayEl = document.getElementById('shiftDateDisplay');
+    if (displayEl) {
+      displayEl.textContent = `Live allocation for ${label}`;
+    }
+    showToast(`Roster updated for ${label}`);
   }
+}
+
+function stepShiftDate(offsetDays) {
+  const picker = document.getElementById('shiftDatePicker');
+  if (!picker) return;
+  let currentDate = picker.value ? new Date(picker.value) : new Date(2026, 5, 18);
+  if (isNaN(currentDate.getTime())) {
+    currentDate = new Date(2026, 5, 18);
+  }
+  currentDate.setDate(currentDate.getDate() + offsetDays);
+  const yyyy = currentDate.getFullYear();
+  const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+  const dd = String(currentDate.getDate()).padStart(2, '0');
+  const newDateStr = `${yyyy}-${mm}-${dd}`;
+  picker.value = newDateStr;
+  handleShiftDateChange(newDateStr);
+}
+
+function setShiftDateToday() {
+  const picker = document.getElementById('shiftDatePicker');
+  if (!picker) return;
+  const todayStr = '2026-06-18'; // Demo live date
+  picker.value = todayStr;
+  handleShiftDateChange(todayStr);
+  showToast('Reset roster view to Today (18 June 2026).');
+}
+
+function toggleAddStaffForm(shiftKey, show) {
+  const form = document.getElementById(`addStaffForm-${shiftKey}`);
+  const addBtn = document.getElementById(`btnAddStaff-${shiftKey}`);
+  if (!form) return;
+
+  if (show === undefined) {
+    show = form.style.display === 'none' || form.style.display === '';
+  }
+
+  if (show) {
+    form.style.display = 'block';
+    if (addBtn) addBtn.style.display = 'none';
+    const select = document.getElementById(`staffSelect-${shiftKey}`);
+    if (select) select.focus();
+  } else {
+    form.style.display = 'none';
+    if (addBtn) addBtn.style.display = 'block';
+  }
+}
+
+function confirmAddStaff(shiftKey) {
+  const select = document.getElementById(`staffSelect-${shiftKey}`);
+  const roleSelect = document.getElementById(`roleSelect-${shiftKey}`);
+  const usersList = document.getElementById(`shiftUsers-${shiftKey}`);
+  const shiftBadge = document.getElementById(`shiftBadge-${shiftKey}`);
+
+  if (!select || !select.value) {
+    showToast('Please choose an employee to assign.');
+    if (select) select.focus();
+    return;
+  }
+
+  const [name, jobTitle, initials] = select.value.split('|');
+  const roleTag = roleSelect ? roleSelect.value : 'Duty Staff';
+
+  // Remove empty placeholder if present
+  const placeholder = usersList.querySelector('.shift-empty-placeholder');
+  if (placeholder) placeholder.remove();
+
+  // Create new user row
+  const userRow = document.createElement('div');
+  userRow.className = 'shift-slot-user-row';
+  userRow.innerHTML = `
+    <div class="shift-slot-user-left">
+      <div class="shift-staff-avatar" style="width:28px; height:28px; font-size:11px;">${initials}</div>
+      <div>
+        <strong style="font-size:13px; color:#0f172a;">${name}</strong>
+        <div style="font-size:11px; color:#64748b;">${jobTitle} &bull; ${roleTag}</div>
+      </div>
+    </div>
+    <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+  `;
+
+  usersList.appendChild(userRow);
+
+  // Update shift card badge
+  if (shiftBadge) {
+    shiftBadge.className = 'penpot-badge badge-present';
+    shiftBadge.style.fontSize = '11px';
+    shiftBadge.textContent = 'Confirmed';
+  }
+
+  // Reset and hide form
+  select.selectedIndex = 0;
+  if (roleSelect) roleSelect.selectedIndex = 0;
+  toggleAddStaffForm(shiftKey, false);
+
+  updateShiftCoverageStatus();
+  showToast(`Assigned ${name} (${roleTag}) successfully!`);
 }
 
 function removeShiftStaff(btn) {
   const userRow = btn.closest('.shift-slot-user-row');
+  const usersList = userRow?.closest('.shift-slot-users-list');
+  const slotCard = userRow?.closest('.shift-slot-card');
+
   if (userRow) {
     userRow.style.opacity = '0';
     userRow.style.transform = 'scale(0.95)';
     userRow.style.transition = 'all 0.2s ease';
     setTimeout(() => {
       userRow.remove();
+
+      if (usersList && usersList.querySelectorAll('.shift-slot-user-row').length === 0) {
+        usersList.innerHTML = `<div class="shift-empty-placeholder">No staff currently assigned</div>`;
+        const badge = slotCard?.querySelector('.shift-slot-card-head .penpot-badge');
+        if (badge) {
+          badge.className = 'penpot-badge badge-absent';
+          badge.textContent = 'Uncovered';
+        }
+      }
+
+      updateShiftCoverageStatus();
       showToast('Employee removed from shift slot.');
     }, 200);
   }
 }
 
-function handleQuickAssignShift(e) {
-  e.preventDefault();
-  const shift = document.getElementById('qaShiftSelect').value;
-  const employee = document.getElementById('qaEmployeeSelect').value;
-  const role = document.getElementById('qaRoleSelect').value;
+function updateShiftCoverageStatus() {
+  const slots = ['morning', 'evening', 'night'];
+  let coveredCount = 0;
 
-  showToast(`Assigned ${employee} (${role}) to ${shift} successfully!`);
-  e.target.reset();
+  slots.forEach(s => {
+    const list = document.getElementById(`shiftUsers-${s}`);
+    if (list && list.querySelectorAll('.shift-slot-user-row').length > 0) {
+      coveredCount++;
+    }
+  });
+
+  const overallBadge = document.getElementById('shiftOverallCoverage');
+  if (overallBadge) {
+    const pct = Math.round((coveredCount / slots.length) * 100);
+    overallBadge.textContent = `● ${pct}% Covered`;
+    if (pct === 100) {
+      overallBadge.className = 'penpot-badge badge-present';
+    } else if (pct >= 50) {
+      overallBadge.className = 'penpot-badge badge-late';
+    } else {
+      overallBadge.className = 'penpot-badge badge-absent';
+    }
+  }
 }
 
 // ==========================================================================
