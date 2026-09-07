@@ -76,6 +76,23 @@ class AuditLogTests(TestCase):
         )
 
 
+class PaginationOrderingTests(TestCase):
+    def test_paginated_views_use_stable_ordering(self):
+        from .views import (
+            EmployeeListCreateView,
+            ShiftRosterListCreateView,
+            PayrollRunListCreateView,
+            PayrollItemListCreateView,
+            PerformanceReviewListCreateView,
+        )
+
+        self.assertEqual(EmployeeListCreateView.queryset.query.order_by, ('id',))
+        self.assertEqual(ShiftRosterListCreateView.queryset.query.order_by, ('id',))
+        self.assertEqual(PayrollRunListCreateView.queryset.query.order_by, ('id',))
+        self.assertEqual(PayrollItemListCreateView.queryset.query.order_by, ('id',))
+        self.assertEqual(PerformanceReviewListCreateView.queryset.query.order_by, ('id',))
+
+
 class PageViewTests(TestCase):
     def test_dashboard_view_renders_successfully(self):
         response = self.client.get('/')

@@ -58,7 +58,7 @@ class DepartmentDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = DepartmentSerializer
 
 class EmployeeListCreateView(generics.ListCreateAPIView):
-    queryset = Employee.objects.all()
+    queryset = Employee.objects.all().order_by('id')
     serializer_class = EmployeeSerializer
 
     def post(self, request, *args, **kwargs):
@@ -136,7 +136,7 @@ class LeaveRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = LeaveRequestSerializer
 
 class ShiftRosterListCreateView(generics.ListCreateAPIView):
-    queryset = ShiftRoster.objects.all()
+    queryset = ShiftRoster.objects.all().order_by('id')
     serializer_class = ShiftRosterSerializer
 
 class ShiftRosterDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -144,7 +144,7 @@ class ShiftRosterDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ShiftRosterSerializer
 
 class PayrollRunListCreateView(generics.ListCreateAPIView):
-    queryset = PayrollRun.objects.all()
+    queryset = PayrollRun.objects.all().order_by('id')
     serializer_class = PayrollRunSerializer
 
 class PayrollRunDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -152,7 +152,7 @@ class PayrollRunDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PayrollRunSerializer
 
 class PayrollItemListCreateView(generics.ListCreateAPIView):
-    queryset = PayrollItem.objects.all()
+    queryset = PayrollItem.objects.all().order_by('id')
     serializer_class = PayrollItemSerializer
 
 class PayrollItemDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -160,7 +160,7 @@ class PayrollItemDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PayrollItemSerializer
 
 class PerformanceReviewListCreateView(generics.ListCreateAPIView):
-    queryset = PerformanceReview.objects.all()
+    queryset = PerformanceReview.objects.all().order_by('id')
     serializer_class = PerformanceReviewSerializer
 
 class PerformanceReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
