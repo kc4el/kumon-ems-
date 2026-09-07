@@ -831,51 +831,6 @@
           </div>
         </div>
 
-        <!-- New Employee Onboarding Wizard Card -->
-        <div class="white-card card-wizard">
-          <div class="wizard-top-row">
-            <h2 class="card-title">New Employee Onboarding Wizard</h2>
-            <span class="step-guide-txt">Step 1 of 4: Enter profile & provisions • 1. Personal Info 2. Role & Dept 3. IT
-              Assets 4. Send Invite</span>
-          </div>
-
-          <form onsubmit="handleOnboarding(event)">
-            <div class="inputs-4grid">
-              <div class="input-cell">
-                <label>FULL LEGAL NAME</label>
-                <input type="text" placeholder="e.g. Samantha Vance" required />
-              </div>
-              <div class="input-cell">
-                <label>CORPORATE EMAIL ADDRESS</label>
-                <input type="email" placeholder="samantha.vance@kumon-ems.com" required />
-              </div>
-              <div class="input-cell">
-                <label>DEPARTMENT & ROLE</label>
-                <input type="text" placeholder="Engineering • Senior Full Stack Developer" required />
-              </div>
-              <div class="input-cell">
-                <label>ASSIGNED MANAGER & START DATE</label>
-                <select class="penpot-select-full">
-                  <option>Alex Rivera • Starting Aug 25, 2025</option>
-                  <option>Marcus Williams • Starting Sep 01, 2025</option>
-                  <option>James O'Brien • Starting Sep 15, 2025</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="provisions-strip">
-              <div class="provisions-chips">
-                <strong class="prov-label">IT ASSETS & PROVISIONS:</strong>
-                <span class="chip">[x] Apple MacBook Pro 16"</span>
-                <span class="chip">[x] Workspace & Slack</span>
-                <span class="chip">[x] Penpot & Figma Suite</span>
-                <span class="chip">[x] Keycard #KC-994</span>
-              </div>
-              <button type="submit" class="btn btn-navy-cta">Create Employee Profile & Issue Credentials</button>
-            </div>
-          </form>
-        </div>
-
         <!-- Promote / Transfer Switchable Card -->
         <div class="white-card card-promotetransfer">
           <div class="pt-segmented-head">
@@ -928,7 +883,6 @@
             </div>
 
             <div class="pt-footer-row">
-              <span class="pt-log-note">Log: Elena Rostova • Promoted to Lead UX Strategist</span>
               <div class="pt-actions">
                 <button type="button" class="btn btn-outline-gray">Cancel</button>
                 <button type="button" class="btn btn-orange-cta"
@@ -985,7 +939,6 @@
             </div>
 
             <div class="pt-footer-row">
-              <span class="pt-log-note">Log: Amara Okafor • Transferred to Lagos Product Pod</span>
               <div class="pt-actions">
                 <button type="button" class="btn btn-outline-gray">Cancel</button>
                 <button type="button" class="btn btn-orange-cta"
@@ -1058,37 +1011,45 @@
                 <div class="asset-recovery-3grid">
                   <label class="asset-check-item">
                     <input type="checkbox" checked />
-                    <span>💻 Laptop (16" MacBook Pro) and Power Adapter</span>
+                    <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="20" x2="22" y2="20"></line></svg>
+                    <span>Laptop (16" MacBook Pro) and Power Adapter</span>
                   </label>
                   <label class="asset-check-item">
                     <input type="checkbox" />
-                    <span>🖥️ External Monitor (27" 4K)</span>
+                    <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                    <span>External Monitor (27" 4K)</span>
                   </label>
                   <label class="asset-check-item">
                     <input type="checkbox" />
-                    <span>🔌 Company-Issued Accessories</span>
+                    <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+                    <span>Company-Issued Accessories</span>
                   </label>
 
                   <label class="asset-check-item">
                     <input type="checkbox" />
-                    <span>☎️ Desk Phone/Desk Accessories</span>
+                    <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    <span>Desk Phone/Desk Accessories</span>
                   </label>
                   <label class="asset-check-item">
                     <input type="checkbox" checked />
-                    <span>🪪 Company-Issued Keycard</span>
+                    <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><line x1="15" y1="8" x2="17" y2="8"></line><line x1="15" y1="12" x2="17" y2="12"></line></svg>
+                    <span>Company-Issued Keycard</span>
                   </label>
                   <label class="asset-check-item">
                     <input type="checkbox" checked />
-                    <span>📱 Figma Phone License (Revoked)</span>
+                    <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                    <span>Figma Phone License (Revoked)</span>
                   </label>
 
                   <label class="asset-check-item">
                     <input type="checkbox" checked />
-                    <span>🔒 Slack & Google Workspace Access Revoked</span>
+                    <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <span>Slack & Google Workspace Access Revoked</span>
                   </label>
                   <label class="asset-check-item">
                     <input type="checkbox" checked />
-                    <span>🎨 Figma Enterprise License</span>
+                    <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    <span>Figma Enterprise License</span>
                   </label>
                   <div class="it-clearance-status-badge">
                     <span>Status: IT Clearance Confirmed</span>
@@ -1151,6 +1112,17 @@
               </div>
             </form>
           </div>
+        </div>
+
+        <!-- Dedicated Onboard Action Row below the white box -->
+        <div class="onboard-bottom-row">
+          <button type="button" class="btn-onboard-dedicated" onclick="openOnboardingModal()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Onboard New Employee</span>
+          </button>
         </div>
       </section>
 
@@ -3391,6 +3363,196 @@
         <div class="modal-foot">
           <button type="button" class="btn btn-outline-gray" onclick="closeAdvanceModal()">Cancel</button>
           <button type="submit" class="btn btn-navy-cta">Submit Advance Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       NEW EMPLOYEE ONBOARDING WIZARD MODAL POP-UP
+       ====================================================================== -->
+  <div id="onboardingModal" class="modal-backdrop" style="display:none;" onclick="if(event.target===this) closeOnboardingModal()">
+    <div class="modal-dialog-wizard" role="dialog" aria-modal="true" aria-labelledby="onboardingModalTitle">
+      <div class="modal-wizard-header">
+        <h2 id="onboardingModalTitle" class="modal-wizard-title">NEW EMPLOYEE ONBOARDING WIZARD</h2>
+        <p class="modal-wizard-sub">Complete the following sections to generate a new employee profile.</p>
+        <button type="button" class="modal-close-btn" onclick="closeOnboardingModal()" aria-label="Close dialog">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <form onsubmit="handleOnboarding(event)" class="onboard-modal-form">
+        <!-- STEP 1: EMPLOYEE INFORMATION -->
+        <div>
+          <h3 class="wizard-section-head">STEP 1: EMPLOYEE INFORMATION</h3>
+          <div class="inputs-3grid">
+            <div class="input-cell">
+              <label>Full Legal Name <span class="req-star">*</span></label>
+              <input type="text" placeholder="e.g., Samantha Vance" required />
+            </div>
+            <div class="input-cell">
+              <label>Corporate Email Address <span class="req-star">*</span></label>
+              <input type="email" value="samantha.v@kumon-ems.com" required />
+            </div>
+            <div class="input-cell">
+              <label>Department <span class="req-star">*</span></label>
+              <select class="penpot-select-full">
+                <option selected>Engineering</option>
+                <option>Design & UX</option>
+                <option>Human Resources</option>
+                <option>Operations</option>
+                <option>Finance</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="inputs-3grid">
+            <div class="input-cell">
+              <label>Job Role <span class="req-star">*</span></label>
+              <select class="penpot-select-full">
+                <option selected>Senior Dev • Engineering</option>
+                <option>Frontend Engineer • Engineering</option>
+                <option>Backend Engineer • Engineering</option>
+                <option>Lead UX Strategist • Design</option>
+                <option>HR Generalist • HR</option>
+              </select>
+            </div>
+            <div class="input-cell">
+              <label>Assigned Manager <span class="req-star">*</span></label>
+              <select class="penpot-select-full">
+                <option selected>Alex Rivera • Starting Aug 25, 2025</option>
+                <option>Marcus Williams • Starting Sep 01, 2025</option>
+                <option>Elena Rodriguez • Starting Sep 15, 2025</option>
+              </select>
+            </div>
+            <div class="input-cell">
+              <label>Start Date <span class="req-star">*</span></label>
+              <input type="date" value="2025-08-25" required />
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: IT INVENTORY & ASSET ALLOCATION (Multi-Select) -->
+        <div>
+          <h3 class="wizard-section-head">STEP 2: IT INVENTORY & ASSET ALLOCATION (Multi-Select)</h3>
+          <div class="it-inventory-3grid">
+            <!-- Col 1: Hardware -->
+            <div class="it-category-col">
+              <label class="it-category-header">
+                <input type="checkbox" checked />
+                <span>HARDWARE</span>
+              </label>
+              <label class="it-asset-item">
+                <input type="checkbox" checked />
+                <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="20" x2="22" y2="20"></line></svg>
+                <span>16" Apple MacBook Pro</span>
+              </label>
+              <label class="it-asset-item">
+                <input type="checkbox" />
+                <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 8h18M5 8v10M19 8v10M2 18h20"></path></svg>
+                <span>Ergonomic Standing Desk</span>
+              </label>
+            </div>
+
+            <!-- Col 2: Displays & Cloud -->
+            <div class="it-category-col">
+              <label class="it-category-header" style="visibility:hidden; height:18px;">
+                <span>OTHER</span>
+              </label>
+              <label class="it-asset-item">
+                <input type="checkbox" />
+                <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                <span>27" 4K Monitor</span>
+              </label>
+              <label class="it-asset-item">
+                <input type="checkbox" checked />
+                <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>
+                <span>Slack & Google Workspace (SaaS)</span>
+              </label>
+            </div>
+
+            <!-- Col 3: Software Licenses -->
+            <div class="it-category-col">
+              <label class="it-category-header">
+                <input type="checkbox" />
+                <span>SOFTWARE LICENSES</span>
+              </label>
+              <label class="it-asset-item">
+                <input type="checkbox" checked />
+                <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <span>Slack & Google Workspace</span>
+              </label>
+              <label class="it-asset-item">
+                <input type="checkbox" checked />
+                <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <span>Figma Enterprise</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: COMPLIANCE & STATUTORY DOCUMENTATION -->
+        <div>
+          <h3 class="wizard-section-head">STEP 3: COMPLIANCE & STATUTORY DOCUMENTATION</h3>
+          <div class="compliance-2col-grid">
+            <div class="compliance-doc-cell">
+              <span class="compliance-doc-title">NBI Clearance</span>
+              <button type="button" class="btn-upload-clean" onclick="showToast('Upload dialog opened for NBI Clearance')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                <span>Upload File</span>
+              </button>
+            </div>
+            <div class="compliance-doc-cell">
+              <span class="compliance-doc-title">BIR Form 2316 (Tax Record)</span>
+              <button type="button" class="btn-upload-clean" onclick="showToast('Upload dialog opened for BIR Form 2316')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                <span>Upload File</span>
+              </button>
+            </div>
+
+            <div class="compliance-doc-cell">
+              <span class="compliance-doc-title">PSA Birth Certificate</span>
+              <button type="button" class="btn-upload-clean" onclick="showToast('Upload dialog opened for PSA Birth Certificate')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                <span>Upload File</span>
+              </button>
+            </div>
+            <div class="compliance-doc-cell">
+              <span class="compliance-doc-title">Signed Employment Contract</span>
+              <button type="button" class="btn-upload-clean" onclick="showToast('Upload dialog opened for Signed Employment Contract')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                <span>Upload File</span>
+              </button>
+            </div>
+
+            <div class="compliance-doc-cell">
+              <span class="compliance-doc-title">SSS / PhilHealth / Pag-IBIG Records</span>
+              <button type="button" class="btn-upload-clean" onclick="showToast('Upload dialog opened for SSS / PhilHealth / Pag-IBIG Records')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                <span>Upload File</span>
+              </button>
+            </div>
+            <div class="compliance-attached-banner">
+              <div class="attached-file-meta">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                <span>svance_contract.pdf</span>
+                <span class="exit-file-remove" onclick="this.parentElement.style.opacity='0.5'; showToast('Contract removed');" title="Remove contract">✕</span>
+              </div>
+              <button type="button" class="btn-reupload" onclick="showToast('Re-upload dialog opened for svance_contract.pdf')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                <span>Re-Upload</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- FOOTER ACTIONS -->
+        <div class="wizard-footer-actions">
+          <button type="button" class="btn btn-outline-gray" onclick="closeOnboardingModal()">Cancel</button>
+          <button type="submit" class="btn-create-profile">Create Profile & Issue Credentials</button>
         </div>
       </form>
     </div>

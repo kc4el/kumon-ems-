@@ -217,11 +217,35 @@ function handleOffboardingSubmit(e) {
   showToast('Offboarding finalized and exit clearance issued successfully!');
 }
 
-// Onboarding handler
+// Onboarding modal open / close handlers
+function openOnboardingModal() {
+  const modal = document.getElementById('onboardingModal');
+  if (modal) {
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeOnboardingModal() {
+  const modal = document.getElementById('onboardingModal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+}
+
+// Global escape key listener for modals
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    closeOnboardingModal();
+  }
+});
+
+// Onboarding form submit handler
 function handleOnboarding(e) {
   e.preventDefault();
-  showToast('New employee profile created & credentials issued successfully!');
-  e.target.reset();
+  showToast('Employee profile created & credentials issued for Samantha Vance!');
+  closeOnboardingModal();
 }
 
 // Grievance handler
