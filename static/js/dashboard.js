@@ -175,30 +175,46 @@ function filterDirectory() {
   });
 }
 
-// Promote vs Transfer mode switch
+// Promote vs Transfer vs Remove Employee mode switch
 function setPtMode(mode) {
   const btnPromote = document.getElementById('btnModePromote');
   const btnTransfer = document.getElementById('btnModeTransfer');
+  const btnRemove = document.getElementById('btnModeRemove');
   const title = document.getElementById('ptCardTitle');
   const subtitle = document.getElementById('ptCardSubtitle');
   const promoteContainer = document.getElementById('promoteFormContainer');
   const transferContainer = document.getElementById('transferFormContainer');
+  const removeContainer = document.getElementById('removeFormContainer');
+
+  if (btnPromote) btnPromote.classList.toggle('active', mode === 'promote');
+  if (btnTransfer) btnTransfer.classList.toggle('active', mode === 'transfer');
+  if (btnRemove) btnRemove.classList.toggle('active', mode === 'remove');
 
   if (mode === 'promote') {
-    btnPromote.classList.add('active');
-    btnTransfer.classList.remove('active');
-    title.textContent = 'Promote Employee';
-    subtitle.textContent = 'Record the next role and pay-grade step with a clear effective date and promotion rationale.';
-    promoteContainer.style.display = 'block';
-    transferContainer.style.display = 'none';
-  } else {
-    btnTransfer.classList.add('active');
-    btnPromote.classList.remove('active');
-    title.textContent = 'Transfer employee';
-    subtitle.textContent = 'Move a person to a new team or work location and keep the effective date and rationale on the record.';
-    promoteContainer.style.display = 'none';
-    transferContainer.style.display = 'block';
+    if (title) title.textContent = 'Promote Employee';
+    if (subtitle) subtitle.textContent = 'Record the next role and pay-grade step with a clear effective date and promotion rationale.';
+    if (promoteContainer) promoteContainer.style.display = 'block';
+    if (transferContainer) transferContainer.style.display = 'none';
+    if (removeContainer) removeContainer.style.display = 'none';
+  } else if (mode === 'transfer') {
+    if (title) title.textContent = 'Transfer employee';
+    if (subtitle) subtitle.textContent = 'Move a person to a new team or work location and keep the effective date and rationale on the record.';
+    if (promoteContainer) promoteContainer.style.display = 'none';
+    if (transferContainer) transferContainer.style.display = 'block';
+    if (removeContainer) removeContainer.style.display = 'none';
+  } else if (mode === 'remove') {
+    if (title) title.textContent = 'Employee Offboarding Processing Wizard';
+    if (subtitle) subtitle.textContent = 'Complete the following exit procedures for the departing employee.';
+    if (promoteContainer) promoteContainer.style.display = 'none';
+    if (transferContainer) transferContainer.style.display = 'none';
+    if (removeContainer) removeContainer.style.display = 'block';
   }
+}
+
+// Offboarding handler
+function handleOffboardingSubmit(e) {
+  e.preventDefault();
+  showToast('Offboarding finalized and exit clearance issued successfully!');
 }
 
 // Onboarding handler

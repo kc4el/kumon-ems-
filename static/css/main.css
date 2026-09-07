@@ -1264,6 +1264,197 @@ body {
 }
 
 /* --------------------------------------------------------------------------
+   Offboarding Processing Wizard (Exact Mockup Design)
+   -------------------------------------------------------------------------- */
+.offboard-wizard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wizard-section-head {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #0f172a;
+  margin-top: 2px;
+  margin-bottom: 8px;
+}
+
+.req-star {
+  color: #ef4444;
+}
+
+.radio-inline-group {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 38px;
+}
+
+.radio-inline-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  cursor: pointer;
+}
+
+.radio-inline-label input[type="radio"] {
+  accent-color: #0f172a;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.asset-recovery-3grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px 16px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.asset-check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+}
+
+.asset-check-item input[type="checkbox"] {
+  accent-color: #0f172a;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.it-clearance-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #166534;
+}
+
+.docs-compliance-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+}
+
+.doc-upload-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 7px 12px;
+}
+
+.doc-upload-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.btn-upload-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-upload-file:hover {
+  background-color: #e2e8f0;
+  color: #0f172a;
+}
+
+.exit-clearance-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  padding: 9px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #166534;
+}
+
+.exit-file-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exit-file-remove {
+  cursor: pointer;
+  color: #15803d;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+.exit-file-remove:hover {
+  color: #b91c1c;
+}
+
+.hr-cleared-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  font-size: 12px;
+  color: #15803d;
+}
+
+.wizard-footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.btn-finalize-offboard {
+  background-color: #0f1e2e;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-finalize-offboard:hover {
+  background-color: #1e293b;
+}
+
+/* --------------------------------------------------------------------------
    Grievance Tracker (employee - grievance exact design)
    -------------------------------------------------------------------------- */
 .grievance-split-grid {

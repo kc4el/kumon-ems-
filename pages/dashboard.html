@@ -414,30 +414,6 @@
           </div>
         </div>
 
-        <!-- 4 KPI Cards -->
-        <div class="kpi-cards-4grid">
-          <div class="kpi-card">
-            <div class="kpi-head"><span>TOTAL DIRECTORY HEADCOUNT</span></div>
-            <div class="kpi-value">128</div>
-            <div class="kpi-subtext">116 Active • 7 PTO</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-head"><span>DEPARTMENTS & TEAMS</span></div>
-            <div class="kpi-value">06</div>
-            <div class="kpi-subtext">Engineering, Sales, etc.</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-head"><span>PROBATIONARY EMPLOYEES</span></div>
-            <div class="kpi-value">04</div>
-            <div class="kpi-subtext">In 90-Day Review</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-head"><span>ORGANIZATIONAL RETENTION</span></div>
-            <div class="kpi-value">67.67%</div>
-            <div class="kpi-subtext">Annual Score</div>
-          </div>
-        </div>
-
         <!-- Corporate Employee Roster Card -->
         <div class="white-card card-roster">
           <div class="roster-top-bar">
@@ -911,6 +887,7 @@
             <div class="segmented-switch">
               <button class="seg-btn active" id="btnModePromote" onclick="setPtMode('promote')">Promotion</button>
               <button class="seg-btn" id="btnModeTransfer" onclick="setPtMode('transfer')">Transfer</button>
+              <button class="seg-btn" id="btnModeRemove" onclick="setPtMode('remove')">Remove Employee</button>
             </div>
           </div>
 
@@ -1016,51 +993,163 @@
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Offboarding & Exit Card -->
-        <div class="white-card card-offboarding">
-          <div class="offboarding-header">
-            <h2 class="card-title">Employee Offboarding & Exit Management</h2>
-            <span class="card-sub-tag">Manage departure checklists, asset recovery, and security access
-              revocation</span>
-          </div>
+          <!-- Remove Employee / Offboarding Container -->
+          <div id="removeFormContainer" style="display:none;">
+            <form onsubmit="handleOffboardingSubmit(event)" class="offboard-wizard-container">
+              <!-- STEP 1: EMPLOYEE EXIT INFORMATION -->
+              <div>
+                <h3 class="wizard-section-head">STEP 1: EMPLOYEE EXIT INFORMATION</h3>
+                <div class="inputs-3grid">
+                  <div class="input-cell">
+                    <label>Full Legal Name <span class="req-star">*</span></label>
+                    <input type="text" value="Samantha Vance" required />
+                  </div>
+                  <div class="input-cell">
+                    <label>Corporate Email Address <span class="req-star">*</span></label>
+                    <input type="email" value="samantha.v@kumon-ems.com" required />
+                  </div>
+                  <div class="input-cell">
+                    <label>Department & Role <span class="req-star">*</span></label>
+                    <select class="penpot-select-full">
+                      <option selected>Senior Dev • Engineering</option>
+                      <option>Product Designer • Design</option>
+                      <option>Lead UX Strategist • Design</option>
+                      <option>HR Specialist • HR</option>
+                      <option>Ops Manager • Operations</option>
+                    </select>
+                  </div>
+                </div>
 
-          <div class="offboarding-2col-grid">
-            <div class="active-departure-panel">
-              <h3 class="departure-title">Thomas Wright • Frontend Developer <span class="badge-lastday">(Last Day: Aug
-                  2)</span></h3>
-              <p class="departure-meta">Reason: Resignation | Department: Engineering</p>
-              <p class="departure-checklist">[x] Exit Interview Conducted by HR • [ ] Hardware Returned • [ ] Corporate
-                Access Revoked</p>
-              <div class="departure-buttons">
-                <button class="btn btn-outline-white-sm">View Exit Survey</button>
-                <button class="btn btn-burgundy-cta"
-                  onclick="showToast('Security access revoked for Thomas Wright.')">Revoke Access Now</button>
+                <div class="inputs-3grid">
+                  <div class="input-cell">
+                    <label>Last Working Day <span class="req-star">*</span></label>
+                    <input type="date" value="2026-10-31" required />
+                  </div>
+                  <div class="input-cell">
+                    <label>Reason for Leaving <span class="req-star">*</span></label>
+                    <select class="penpot-select-full">
+                      <option selected>Voluntary Resignation - Better Career</option>
+                      <option>Voluntary Resignation - Relocation</option>
+                      <option>Career Transition</option>
+                      <option>End of Contract</option>
+                      <option>Retirement</option>
+                    </select>
+                  </div>
+                  <div class="input-cell">
+                    <label>Notice Period Met? <span class="req-star">*</span></label>
+                    <div class="radio-inline-group">
+                      <label class="radio-inline-label">
+                        <input type="radio" name="noticePeriodMet" value="yes" checked />
+                        <span>Yes</span>
+                      </label>
+                      <label class="radio-inline-label">
+                        <input type="radio" name="noticePeriodMet" value="no" />
+                        <span>No</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div class="initiate-departure-panel">
-              <h3 class="initiate-title">Initiate New Employee Offboarding</h3>
-              <div class="input-cell">
-                <label>SELECT EMPLOYEE</label>
-                <select class="penpot-select-full">
-                  <option>Search & select active employee...</option>
-                  <option>David Kim (Finance)</option>
-                  <option>Elena Rodriguez (HR)</option>
-                </select>
+              <!-- STEP 2: ASSET RECOVERY & ACCESS REVOCATION -->
+              <div>
+                <h3 class="wizard-section-head">STEP 2: ASSET RECOVERY & ACCESS REVOCATION</h3>
+                <div class="asset-recovery-3grid">
+                  <label class="asset-check-item">
+                    <input type="checkbox" checked />
+                    <span>💻 Laptop (16" MacBook Pro) and Power Adapter</span>
+                  </label>
+                  <label class="asset-check-item">
+                    <input type="checkbox" />
+                    <span>🖥️ External Monitor (27" 4K)</span>
+                  </label>
+                  <label class="asset-check-item">
+                    <input type="checkbox" />
+                    <span>🔌 Company-Issued Accessories</span>
+                  </label>
+
+                  <label class="asset-check-item">
+                    <input type="checkbox" />
+                    <span>☎️ Desk Phone/Desk Accessories</span>
+                  </label>
+                  <label class="asset-check-item">
+                    <input type="checkbox" checked />
+                    <span>🪪 Company-Issued Keycard</span>
+                  </label>
+                  <label class="asset-check-item">
+                    <input type="checkbox" checked />
+                    <span>📱 Figma Phone License (Revoked)</span>
+                  </label>
+
+                  <label class="asset-check-item">
+                    <input type="checkbox" checked />
+                    <span>🔒 Slack & Google Workspace Access Revoked</span>
+                  </label>
+                  <label class="asset-check-item">
+                    <input type="checkbox" checked />
+                    <span>🎨 Figma Enterprise License</span>
+                  </label>
+                  <div class="it-clearance-status-badge">
+                    <span>Status: IT Clearance Confirmed</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: #16a34a;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </div>
+                </div>
               </div>
-              <div class="input-cell">
-                <label>SEPARATION REASON & DATE</label>
-                <select class="penpot-select-full">
-                  <option>Resignation • Effective Aug 31, 2025</option>
-                  <option>End of Contract • Effective Sep 15, 2025</option>
-                </select>
+
+              <!-- STEP 3: EXIT DOCUMENTS & COMPLIANCE -->
+              <div>
+                <h3 class="wizard-section-head">STEP 3: EXIT DOCUMENTS & COMPLIANCE</h3>
+                <div class="docs-compliance-grid">
+                  <div class="doc-upload-cell">
+                    <span class="doc-upload-title">Resignation Letter</span>
+                    <button type="button" class="btn-upload-file" onclick="showToast('Upload dialog opened for Resignation Letter')">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                      <span>Upload File</span>
+                    </button>
+                  </div>
+                  <div class="doc-upload-cell">
+                    <span class="doc-upload-title">Exit Interview Form</span>
+                    <button type="button" class="btn-upload-file" onclick="showToast('Upload dialog opened for Exit Interview Form')">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                      <span>Upload File</span>
+                    </button>
+                  </div>
+                  <div class="doc-upload-cell">
+                    <span class="doc-upload-title">Confidentiality Agreement Renewal</span>
+                    <button type="button" class="btn-upload-file" onclick="showToast('Upload dialog opened for Confidentiality Agreement Renewal')">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                      <span>Upload File</span>
+                    </button>
+                  </div>
+                  <div class="doc-upload-cell">
+                    <span class="doc-upload-title">Final Pay Calculation</span>
+                    <button type="button" class="btn-upload-file" onclick="showToast('Upload dialog opened for Final Pay Calculation')">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                      <span>Upload File</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="exit-clearance-banner">
+                  <div class="exit-file-info">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                    <span>Samantha Vance - Exit Clearance Agreement.pdf</span>
+                    <span class="exit-file-remove" onclick="this.parentElement.style.opacity='0.5'; showToast('File removed');" title="Remove attachment">✕</span>
+                  </div>
+                  <span class="hr-cleared-tag">
+                    <span>HR Cleared</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </span>
+                </div>
               </div>
-              <button class="btn btn-burgundy-full"
-                onclick="showToast('Offboarding initiated & HR survey sent.')">Initiate Offboarding & Send HR
-                Survey</button>
-            </div>
+
+              <!-- FOOTER ACTIONS -->
+              <div class="wizard-footer-actions">
+                <button type="button" class="btn btn-outline-gray" onclick="setPtMode('promote')">Cancel</button>
+                <button type="submit" class="btn-finalize-offboard">Finalize Offboarding & Issue Clearance</button>
+              </div>
+            </form>
           </div>
         </div>
       </section>
