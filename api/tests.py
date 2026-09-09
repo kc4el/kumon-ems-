@@ -122,5 +122,7 @@ class ApiTests(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()["status"], "Pending")
         self.assertTrue(
-            LeaveRequest.objects.filter(employee=employee, reason="Annual leave").exists()
+            LeaveRequest.objects.filter(
+                employee=employee, reason="Annual leave"
+            ).exists()
         )

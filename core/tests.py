@@ -8,11 +8,11 @@ from .models import Attendance, Department, Employee, EmployeeAuditLog, LeaveReq
 
 class AuditLogTests(TestCase):
     def setUp(self):
-        self.department = Department.objects.create(name='Operations', code='OPS')
+        self.department = Department.objects.create(name="Operations", code="OPS")
         self.employee = Employee.objects.create(
-            first_name='Ada',
-            last_name='Lovelace',
-            email='ada@example.com',
+            first_name="Ada",
+            last_name="Lovelace",
+            email="ada@example.com",
             department=self.department,
         )
 
@@ -20,7 +20,7 @@ class AuditLogTests(TestCase):
         self.assertTrue(
             EmployeeAuditLog.objects.filter(
                 employee=self.employee,
-                action__icontains='created',
+                action__icontains="created",
             ).exists()
         )
 
@@ -34,7 +34,7 @@ class AuditLogTests(TestCase):
         self.assertTrue(
             EmployeeAuditLog.objects.filter(
                 employee=self.employee,
-                action__icontains='Clocked IN',
+                action__icontains="Clocked IN",
             ).exists()
         )
 
@@ -44,34 +44,34 @@ class AuditLogTests(TestCase):
         self.assertTrue(
             EmployeeAuditLog.objects.filter(
                 employee=self.employee,
-                action__icontains='Clocked OUT',
+                action__icontains="Clocked OUT",
             ).exists()
         )
 
     def test_leave_status_updates_are_logged(self):
         leave = LeaveRequest.objects.create(
             employee=self.employee,
-            leave_type='Annual',
+            leave_type="Annual",
             start_date=date.today(),
             end_date=date.today() + timedelta(days=2),
-            reason='Family leave',
-            status='Pending',
+            reason="Family leave",
+            status="Pending",
         )
 
         self.assertTrue(
             EmployeeAuditLog.objects.filter(
                 employee=self.employee,
-                action__icontains='Submitted leave request',
+                action__icontains="Submitted leave request",
             ).exists()
         )
 
-        leave.status = 'Approved'
+        leave.status = "Approved"
         leave.save()
 
         self.assertTrue(
             EmployeeAuditLog.objects.filter(
                 employee=self.employee,
-                action__icontains='Approved',
+                action__icontains="Approved",
             ).exists()
         )
 
@@ -80,37 +80,42 @@ class PaginationOrderingTests(TestCase):
     def test_paginated_views_use_stable_ordering(self):
         from .views import (
             EmployeeListCreateView,
-            ShiftRosterListCreateView,
-            PayrollRunListCreateView,
             PayrollItemListCreateView,
+            PayrollRunListCreateView,
             PerformanceReviewListCreateView,
+            ShiftRosterListCreateView,
         )
 
-        self.assertEqual(EmployeeListCreateView.queryset.query.order_by, ('id',))
-        self.assertEqual(ShiftRosterListCreateView.queryset.query.order_by, ('id',))
-        self.assertEqual(PayrollRunListCreateView.queryset.query.order_by, ('id',))
-        self.assertEqual(PayrollItemListCreateView.queryset.query.order_by, ('id',))
-        self.assertEqual(PerformanceReviewListCreateView.queryset.query.order_by, ('id',))
+        self.assertEqual(EmployeeListCreateView.queryset.query.order_by, ("id",))
+        self.assertEqual(ShiftRosterListCreateView.queryset.query.order_by, ("id",))
+        self.assertEqual(PayrollRunListCreateView.queryset.query.order_by, ("id",))
+        self.assertEqual(PayrollItemListCreateView.queryset.query.order_by, ("id",))
+        self.assertEqual(
+            PerformanceReviewListCreateView.queryset.query.order_by, ("id",)
+        )
 
 
 class PageViewTests(TestCase):
     def test_dashboard_view_renders_successfully(self):
-        response = self.client.get('/')
+        response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Kumon EMS')
-        self.assertContains(response, 'view-dashboard')
-
+        self.assertContains(response, "Kumon EMS")
+        self.assertContains(response, "view-dashboard")
 
     def test_login_view_renders_successfully(self):
-        for path in ['/login/', '/signup/', '/auth/']:
+        for path in ["/login/", "/signup/", "/auth/"]:
             response = self.client.get(path)
             self.assertEqual(response.status_code, 200)
-            self.assertContains(response, 'Sign In to Portal')
-            self.assertContains(response, 'Complete Registration')
+            self.assertContains(response, "Sign In to Portal")
+            self.assertContains(response, "Complete Registration")
 
     def test_static_assets_serve_successfully(self):
-        for static_path in ['/static/css/main.css', '/static/js/dashboard.js', '/static/images/kumon-logo.png']:
+        for static_path in [
+            "/static/css/main.css",
+            "/static/js/dashboard.js",
+            "/static/images/kumon-logo.png",
+        ]:
             response = self.client.get(static_path)
-            self.assertEqual(response.status_code, 200, f"Static asset {static_path} failed to load.")
-
-
+            self.assertEqual(
+                response.status_code, 200, f"Static asset {static_path} failed to load."
+            )
