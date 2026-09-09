@@ -6,6 +6,8 @@
 document.addEventListener('DOMContentLoaded', () => {
   initBrandLogo();
   initNavigation();
+  loadClaimStatuses();
+  loadMessagesForConversation('sarah');
 });
 
 // Automatic Logo Path Resolver for file:// and http:// protocols
@@ -107,6 +109,9 @@ function switchView(viewName) {
   const targetPanel = document.getElementById(`view-${viewName}`);
   if (targetPanel) {
     targetPanel.classList.add('active');
+    if (viewName === 'messages') {
+      loadMessagesForConversation(activeConversationKey);
+    }
   } else {
     // Show placeholder view with specific title
     const placeholderPanel = document.getElementById('view-placeholder');
@@ -454,6 +459,23 @@ function updateShiftCoverageStatus() {
 // ==========================================================================
 // Claims & Reimbursements Handlers
 // ==========================================================================
+function showToast(message) {
+  const container = document.getElementById('toastContainer');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(10px)';
+    toast.style.transition = 'all 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
 function switchClaimsTab(tabKey) {
   // Update tabs
   document.getElementById('claimsTabBtnPending')?.classList.toggle('active', tabKey === 'pending');
@@ -479,39 +501,68 @@ function filterClaimsTable(input, tableBodyId) {
   });
 }
 
-function handleClaimAction(id, action) {
+function renderClaimStatus(id, status) {
   const statusElem = document.getElementById(`status-${id}`);
   const actionsElem = document.getElementById(`actions-${id}`);
 
-  if (action === 'Approve') {
-    if (statusElem) {
-      statusElem.className = 'claims-status-pill approved';
-      statusElem.textContent = 'Approved';
-    }
-    showToast(`Claim ${id} approved for reimbursement settlement.`);
-  } else {
-    if (statusElem) {
-      statusElem.className = 'claims-status-pill rejected';
-      statusElem.textContent = 'Rejected';
-    }
-    showToast(`Claim ${id} flagged and marked as rejected.`);
-  }
+  if (!statusElem) return;
 
+  statusElem.className = `claims-status-pill ${status.toLowerCase()}`;
+  statusElem.textContent = status;
   if (actionsElem) {
     actionsElem.innerHTML = `<span style="font-size:12px; color:#64748b; font-weight:600;">Processed</span>`;
   }
 }
 
-function batchApproveClaims() {
+async function loadClaimStatuses() {
+  try {
+    const response = await fetch('/api/claim-statuses/', { cache: 'no-store' });
+    if (!response.ok) throw new Error('Unable to load claim statuses.');
+    const payload = await response.json();
+    const statuses = Array.isArray(payload) ? payload : payload.results || [];
+    statuses.forEach(({ claim_id, status }) => renderClaimStatus(claim_id, status));
+  } catch (error) {
+    showToast('Claim statuses could not be loaded.');
+  }
+}
+
+async function saveClaimStatus(id, status) {
+  const response = await fetch('/api/claim-statuses/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ claim_id: id, status })
+  });
+  if (!response.ok) throw new Error('Unable to save claim status.');
+}
+
+async function handleClaimAction(id, action) {
+  const status = action === 'Approve' ? 'Approved' : 'Rejected';
+  try {
+    await saveClaimStatus(id, status);
+    renderClaimStatus(id, status);
+  } catch (error) {
+    showToast('Claim status could not be saved.');
+    return;
+  }
+
+  const message = status === 'Approved'
+    ? `Claim ${id} approved for reimbursement settlement.`
+    : `Claim ${id} flagged and marked as rejected.`;
+  showToast(message);
+}
+
+async function batchApproveClaims() {
   const pendingBadges = document.querySelectorAll('#pendingClaimsTableBody .claims-status-pill.pending');
-  pendingBadges.forEach(b => {
-    b.className = 'claims-status-pill approved';
-    b.textContent = 'Approved';
-  });
-  const actionCells = document.querySelectorAll('#pendingClaimsTableBody .claims-actions-cell');
-  actionCells.forEach(ac => {
-    ac.innerHTML = `<span style="font-size:12px; color:#16a34a; font-weight:700;">Approved</span>`;
-  });
+  for (const b of pendingBadges) {
+    const id = b.id.replace('status-', '');
+    try {
+      await saveClaimStatus(id, 'Approved');
+      renderClaimStatus(id, 'Approved');
+    } catch (error) {
+      showToast('Claim status could not be saved.');
+      return;
+    }
+  }
   showToast('Batch approved all active pending expense claims.');
 }
 
@@ -555,6 +606,40 @@ function handleApplyLeave(e) {
 // ==========================================================================
 // Messages & Channels Handlers
 // ==========================================================================
+let activeConversationKey = 'sarah';
+let messagesLoadVersion = 0;
+let mentionInputCursor = 0;
+
+function toggleMentionPicker(event) {
+  event.stopPropagation();
+  const picker = document.getElementById('mentionPicker');
+  const input = document.getElementById('chatTextInput');
+  if (!picker || !input) return;
+
+  mentionInputCursor = input.selectionStart ?? input.value.length;
+  picker.hidden = !picker.hidden;
+}
+
+function insertMention(name) {
+  const picker = document.getElementById('mentionPicker');
+  const input = document.getElementById('chatTextInput');
+  if (!input) return;
+
+  const mention = `@${name}`;
+  const cursor = mentionInputCursor || input.value.length;
+  input.value = `${input.value.slice(0, cursor)}${mention} ${input.value.slice(cursor)}`;
+  input.focus();
+  input.setSelectionRange(cursor + mention.length + 1, cursor + mention.length + 1);
+  if (picker) picker.hidden = true;
+}
+
+document.addEventListener('click', event => {
+  const picker = document.getElementById('mentionPicker');
+  if (picker && !picker.contains(event.target) && !event.target.closest('.composer-tool-btn')) {
+    picker.hidden = true;
+  }
+});
+
 function filterInboxes(input) {
   const q = input.value.toLowerCase();
   const tiles = document.querySelectorAll('#inboxConversationsList .inbox-user-tile');
@@ -565,6 +650,7 @@ function filterInboxes(input) {
 }
 
 function selectChannel(elem, channelKey) {
+  activeConversationKey = channelKey;
   document.querySelectorAll('.channel-list-item, .inbox-user-tile').forEach(el => el.classList.remove('active'));
   elem.classList.add('active');
 
@@ -580,10 +666,12 @@ function selectChannel(elem, channelKey) {
   if (name) name.textContent = 'Company Announcements';
   if (status) status.textContent = '● Broadcast Channel • All Staff';
   if (input) input.placeholder = 'Post an announcement to the team...';
+  loadMessagesForConversation(channelKey);
   showToast('Switched to # Company Announcements channel.');
 }
 
 function selectInboxUser(elem, userName, initials, userRole, key) {
+  activeConversationKey = key;
   document.querySelectorAll('.channel-list-item, .inbox-user-tile').forEach(el => el.classList.remove('active'));
   elem.classList.add('active');
   elem.classList.remove('unread');
@@ -602,33 +690,99 @@ function selectInboxUser(elem, userName, initials, userRole, key) {
   if (name) name.textContent = userName;
   if (status) status.textContent = `● ${userRole} • Online Now`;
   if (input) input.placeholder = `Type a message to ${userName}...`;
+  loadMessagesForConversation(key);
   showToast(`Active chat: ${userName}`);
 }
 
-function handleSendChatMessage(e) {
+async function loadMessagesForConversation(conversationKey) {
+  const stream = document.getElementById('chatStreamMessages');
+  if (!stream) return;
+
+  const loadVersion = ++messagesLoadVersion;
+  document.querySelectorAll('[data-persisted-message="true"]').forEach(message => message.remove());
+  try {
+    const response = await fetch(`/api/messages/?conversation=${encodeURIComponent(conversationKey)}`, {
+      cache: 'no-store'
+    });
+    if (!response.ok) throw new Error('Unable to load messages.');
+    const payload = await response.json();
+    const messages = Array.isArray(payload) ? payload : payload.results || [];
+    if (loadVersion !== messagesLoadVersion) return;
+    messages.forEach(message => appendPersistedMessage(stream, message));
+    stream.scrollTop = stream.scrollHeight;
+  } catch (error) {
+    showToast('Messages could not be loaded.');
+  }
+}
+
+function appendPersistedMessage(stream, message) {
+  const row = document.createElement('div');
+  row.className = 'chat-msg-row outgoing';
+  row.dataset.persistedMessage = 'true';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-bubble outgoing';
+  if (message.text) {
+    const text = document.createElement('p');
+    text.textContent = message.text;
+    bubble.appendChild(text);
+  }
+  if (message.attachment_url) {
+    const link = document.createElement('a');
+    link.href = message.attachment_url;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = `Attachment: ${message.attachment_url.split('/').pop()}`;
+    bubble.appendChild(link);
+  }
+  const timestamp = document.createElement('span');
+  timestamp.className = 'chat-time-stamp outgoing-stamp';
+  timestamp.textContent = `${new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Sent`;
+  bubble.appendChild(timestamp);
+  row.appendChild(bubble);
+  stream.appendChild(row);
+}
+
+function handleChatFileSelected(input) {
+  const file = input.files[0];
+  if (file) showToast(`${file.name} attached. Add a message or press Send Message.`);
+}
+
+async function handleSendChatMessage(e) {
   e.preventDefault();
   const input = document.getElementById('chatTextInput');
   const text = input.value.trim();
-  if (!text) return;
+  const fileInput = document.getElementById('chatFileInput');
+  const imageInput = document.getElementById('chatImageInput');
+  const file = fileInput.files[0] || imageInput.files[0];
+  if (!text && !file) return;
+  messagesLoadVersion += 1;
+
+  const formData = new FormData();
+  formData.append('conversation_key', activeConversationKey);
+  formData.append('sender_name', 'Marcus Williams');
+  formData.append('text', text);
+  if (file) formData.append('attachment', file);
+
+  let savedMessage;
+  try {
+    const response = await fetch('/api/messages/', { method: 'POST', body: formData });
+    if (!response.ok) throw new Error('Unable to save message.');
+    savedMessage = await response.json();
+  } catch (error) {
+    showToast('Message could not be saved.');
+    return;
+  }
 
   const stream = document.getElementById('chatStreamMessages');
-  if (stream) {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    const row = document.createElement('div');
-    row.className = 'chat-msg-row outgoing';
-    row.innerHTML = `
-      <div class="chat-bubble outgoing">
-        <p>${escapeHtml(text)}</p>
-        <span class="chat-time-stamp outgoing-stamp">${timeStr} • Sent</span>
-      </div>
-    `;
-    stream.appendChild(row);
+  if (stream && savedMessage) {
+    appendPersistedMessage(stream, savedMessage);
     stream.scrollTop = stream.scrollHeight;
   }
 
   input.value = '';
+  fileInput.value = '';
+  imageInput.value = '';
   showToast('Message sent.');
 }
 
