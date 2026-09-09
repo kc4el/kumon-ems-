@@ -19,6 +19,8 @@ from core.views import (
     PerformanceReviewListCreateView,
     PerformanceReviewDetailView,
     EmployeeAuditLogListView,
+    MessageListCreateView,
+    ClaimStatusListCreateView,
 )
 
 urlpatterns = [
@@ -50,4 +52,6 @@ urlpatterns = [
     path('performance/<uuid:pk>/', PerformanceReviewDetailView.as_view(), name='performance-detail'),
 
     path('audit-logs/', EmployeeAuditLogListView.as_view(), name='audit-log-list'),
+    path('messages/', MessageListCreateView.as_view(), name='message-list-create'),
+    path('claim-statuses/', ClaimStatusListCreateView.as_view(), name='claim-status-list-create'),
 ]
