@@ -8,12 +8,13 @@ from django.utils import timezone
 
 from .models import (
     Department, Employee, Attendance, LeaveRequest, 
-    ShiftRoster, PayrollRun, PayrollItem, PerformanceReview, EmployeeAuditLog
+    ShiftRoster, PayrollRun, PayrollItem, PerformanceReview, ExpenseClaim, EmployeeAuditLog, Message, ClaimStatus
 )
 from .serializers import (
     DepartmentSerializer, EmployeeSerializer, AttendanceSerializer, 
-    LeaveRequestSerializer, ShiftRosterSerializer, PayrollRunSerializer, 
-    PayrollItemSerializer, PerformanceReviewSerializer, EmployeeAuditLogSerializer
+    LeaveRequestSerializer, ShiftRosterSerializer, PayrollRunSerializer,
+    PayrollItemSerializer, PerformanceReviewSerializer, ExpenseClaimSerializer, EmployeeAuditLogSerializer,
+    MessageSerializer, ClaimStatusSerializer
 )
 
 from .supabase_client import supabase
@@ -170,3 +171,36 @@ class PerformanceReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
 class EmployeeAuditLogListView(generics.ListAPIView):
     queryset = EmployeeAuditLog.objects.all().order_by('-timestamp')
     serializer_class = EmployeeAuditLogSerializer
+
+class MessageListCreateView(generics.ListCreateAPIView):
+    serializer_class = MessageSerializer
+
+    def get_queryset(self):
+        conversation_key = self.request.query_params.get('conversation', 'sarah')
+        return Message.objects.filter(conversation_key=conversation_key)
+
+    def perform_create(self, serializer):
+        serializer.save(
+            conversation_key=self.request.data.get('conversation_key', 'sarah'),
+            sender_name=self.request.data.get('sender_name', 'Marcus Williams'),
+        )
+
+class ClaimStatusListCreateView(generics.ListCreateAPIView):
+    queryset = ClaimStatus.objects.all().order_by('claim_id')
+    serializer_class = ClaimStatusSerializer
+
+    def perform_create(self, serializer):
+        claim_id = self.request.data.get('claim_id')
+        status_value = self.request.data.get('status')
+        serializer.instance, _ = ClaimStatus.objects.update_or_create(
+            claim_id=claim_id,
+            defaults={'status': status_value},
+        )
+
+class ExpenseClaimListCreateView(generics.ListCreateAPIView):
+    queryset = ExpenseClaim.objects.all().order_by('-created_at')
+    serializer_class = ExpenseClaimSerializer
+
+class ExpenseClaimDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = ExpenseClaim.objects.all()
+    serializer_class = ExpenseClaimSerializer
