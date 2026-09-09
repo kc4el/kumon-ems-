@@ -3160,6 +3160,39 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  position: relative;
+}
+
+.mention-picker {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  z-index: 10;
+  display: grid;
+  min-width: 180px;
+  padding: 6px;
+  background: #ffffff;
+  border: 1px solid #d9e0ea;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+}
+
+.mention-picker[hidden] {
+  display: none;
+}
+
+.mention-picker button {
+  padding: 8px 10px;
+  border: 0;
+  background: transparent;
+  color: #24324a;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mention-picker button:hover {
+  background: #eef3f8;
 }
 
 .composer-tool-btn {
