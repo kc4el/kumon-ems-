@@ -336,6 +336,22 @@ class ApiTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["status"], "Approved")
 
+    def test_employee_delete_is_soft_delete(self):
+        employee = Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        other = Employee.objects.create(
+            first_name="John", last_name="Smith", email="john@example.com"
+        )
+        response = self.client.delete(f"/api/employees/{employee.id}/")
+        self.assertEqual(response.status_code, 204)
+        employee.refresh_from_db()
+        self.assertFalse(employee.is_active)
+        self.assertEqual(employee.resigned_at, date.today())
+        summary = self.client.get("/api/dashboard-summary/").json()
+        self.assertEqual(summary["total_employees"], 2)
+        self.assertEqual(summary["active_employees"], 1)
+
     def test_leave_create_persists_leave_request(self):
         employee = Employee.objects.create(
             first_name="Jane",

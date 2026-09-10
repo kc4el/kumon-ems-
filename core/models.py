@@ -32,6 +32,7 @@ class Employee(models.Model):
     )
     date_hired = models.DateField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
+    resigned_at = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

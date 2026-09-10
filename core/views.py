@@ -153,6 +153,11 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
 
+    def perform_destroy(self, instance):
+        instance.is_active = False
+        instance.resigned_at = timezone.now().date()
+        instance.save(update_fields=["is_active", "resigned_at"])
+
 
 class AttendanceListCreateView(generics.ListCreateAPIView):
     queryset = Attendance.objects.all().order_by("-date", "-clock_in")
