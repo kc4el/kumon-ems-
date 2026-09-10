@@ -352,6 +352,101 @@ class ApiTests(TestCase):
         self.assertEqual(summary["total_employees"], 2)
         self.assertEqual(summary["active_employees"], 1)
 
+    def test_shift_overlap_returns_400(self):
+        employee = Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        base = {
+            "employee": str(employee.id),
+            "work_date": "2026-09-01",
+            "start_time": "09:00:00",
+            "end_time": "17:00:00",
+        }
+        first = self.client.post("/api/shift-rosters/", base, format="json")
+        self.assertEqual(first.status_code, 201)
+        overlap = self.client.post(
+            "/api/shift-rosters/",
+            {
+                "employee": str(employee.id),
+                "work_date": "2026-09-01",
+                "start_time": "13:00:00",
+                "end_time": "18:00:00",
+            },
+            format="json",
+        )
+        self.assertEqual(overlap.status_code, 400)
+
+    def test_shift_adjacent_times_allowed(self):
+        employee = Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        self.client.post(
+            "/api/shift-rosters/",
+            {
+                "employee": str(employee.id),
+                "work_date": "2026-09-01",
+                "start_time": "09:00:00",
+                "end_time": "13:00:00",
+            },
+            format="json",
+        )
+        response = self.client.post(
+            "/api/shift-rosters/",
+            {
+                "employee": str(employee.id),
+                "work_date": "2026-09-01",
+                "start_time": "13:00:00",
+                "end_time": "17:00:00",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+
+    def test_shift_same_slot_different_employee_allowed(self):
+        emp_a = Employee.objects.create(
+            first_name="Ada", last_name="A", email="a@example.com"
+        )
+        emp_b = Employee.objects.create(
+            first_name="Bo", last_name="B", email="b@example.com"
+        )
+        self.client.post(
+            "/api/shift-rosters/",
+            {
+                "employee": str(emp_a.id),
+                "work_date": "2026-09-01",
+                "start_time": "09:00:00",
+                "end_time": "17:00:00",
+            },
+            format="json",
+        )
+        response = self.client.post(
+            "/api/shift-rosters/",
+            {
+                "employee": str(emp_b.id),
+                "work_date": "2026-09-01",
+                "start_time": "09:00:00",
+                "end_time": "17:00:00",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+
+    def test_shift_start_after_end_returns_400(self):
+        employee = Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        response = self.client.post(
+            "/api/shift-rosters/",
+            {
+                "employee": str(employee.id),
+                "work_date": "2026-09-01",
+                "start_time": "17:00:00",
+                "end_time": "09:00:00",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
     def test_leave_create_persists_leave_request(self):
         employee = Employee.objects.create(
             first_name="Jane",

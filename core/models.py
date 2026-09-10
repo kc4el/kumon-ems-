@@ -63,6 +63,10 @@ class LeaveRequest(models.Model):
 class ShiftRoster(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, null=True, blank=True)
+    employee = models.ForeignKey(
+        Employee, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    work_date = models.DateField(null=True, blank=True)
     shift_type = models.CharField(max_length=50, default="General")
     start_time = models.TimeField()
     end_time = models.TimeField()

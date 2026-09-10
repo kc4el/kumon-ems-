@@ -72,6 +72,33 @@ class ShiftRosterSerializer(serializers.ModelSerializer):
         model = ShiftRoster
         fields = "__all__"
 
+    def validate(self, data):
+        def val(name):
+            return data.get(name, getattr(self.instance, name, None))
+
+        employee, day, start, end = (
+            val("employee"),
+            val("work_date"),
+            val("start_time"),
+            val("end_time"),
+        )
+        if employee and day and start and end:
+            if start >= end:
+                raise serializers.ValidationError("start_time must be before end_time.")
+            clash = ShiftRoster.objects.filter(
+                employee=employee,
+                work_date=day,
+                start_time__lt=end,
+                end_time__gt=start,
+            )
+            if self.instance:
+                clash = clash.exclude(pk=self.instance.pk)
+            if clash.exists():
+                raise serializers.ValidationError(
+                    "Shift overlaps an existing assignment."
+                )
+        return data
+
 
 class PayrollRunSerializer(serializers.ModelSerializer):
     class Meta:
