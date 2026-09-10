@@ -3,6 +3,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, path
+from django.views.generic import RedirectView
 
 from core.views import dashboard_view, login_view
 
@@ -10,8 +11,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", dashboard_view, name="dashboard"),
     path("login/", login_view, name="login"),
-    path("signup/", login_view, name="signup"),
-    path("auth/", login_view, name="auth"),
+    path("signup/", RedirectView.as_view(pattern_name="login", permanent=False)),
+    path("auth/", RedirectView.as_view(pattern_name="login", permanent=False)),
     path("core/", include("core.urls")),
     path("api/", include("api.urls")),
 ]

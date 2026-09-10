@@ -161,11 +161,16 @@ class PageViewTests(TestCase):
         self.assertContains(response, "view-dashboard")
 
     def test_login_view_renders_successfully(self):
-        for path in ["/login/", "/signup/", "/auth/"]:
+        response = self.client.get("/login/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Sign In to Portal")
+        self.assertContains(response, "Complete Registration")
+
+    def test_signup_and_auth_redirect_to_login(self):
+        for path in ["/signup/", "/auth/"]:
             response = self.client.get(path)
-            self.assertEqual(response.status_code, 200)
-            self.assertContains(response, "Sign In to Portal")
-            self.assertContains(response, "Complete Registration")
+            self.assertEqual(response.status_code, 302)
+            self.assertTrue(response["Location"].endswith("/login/"))
 
     def test_static_assets_serve_successfully(self):
         for static_path in [
