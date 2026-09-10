@@ -4,10 +4,10 @@ import uuid
 from django.shortcuts import render
 from django.utils import timezone
 from rest_framework import generics, status
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from supabase_auth.errors import AuthApiError
 
 from .models import (
     Attendance,
@@ -98,13 +98,21 @@ class EmployeeListCreateView(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         payload = request.data.copy()
         email = str(payload.get("email", "")).strip()
-
         if not email:
             return Response(
                 {"error": "An employee email address is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
+        serializer = self.get_serializer(data=payload)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except DRFValidationError as exc:
+            return Response({"error": exc.detail}, status=status.HTTP_400_BAD_REQUEST)
+        if Employee.objects.filter(email__iexact=email).exists():
+            return Response(
+                {"error": "An employee with this email already exists."},
+                status=status.HTTP_409_CONFLICT,
+            )
         created_user_id = None
         try:
             record_id = str(uuid.uuid4())
@@ -119,27 +127,22 @@ class EmployeeListCreateView(generics.ListCreateAPIView):
                     },
                 }
             )
-
             created_user_id = str(auth_response.user.id)
-            payload["id"] = created_user_id
-
-            serializer = self.get_serializer(data=payload)
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-
+            serializer.save(id=created_user_id)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
         except Exception as error:
             if created_user_id:
                 try:
                     supabase.auth.admin.delete_user(created_user_id)
-                except AuthApiError:
+                except Exception:
                     logger.exception(
                         f"Unable to roll back Supabase Auth user {created_user_id}"
                     )
-
             logger.warning(f"Unable to create employee: {error}")
-            return Response({"error": str(error)}, status=status.HTTP_502_BAD_GATEWAY)
+            return Response(
+                {"error": "Unable to create employee upstream. Try again later."},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
 
 
 class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):

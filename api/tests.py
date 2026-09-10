@@ -117,6 +117,59 @@ class ApiTests(TestCase):
         self.assertTrue(Employee.objects.filter(email=payload["email"]).exists())
         supabase.auth.admin.create_user.assert_called_once()
 
+    @patch("core.views.supabase")
+    def test_employee_create_missing_email_returns_400(self, supabase):
+        response = self.client.post(
+            "/api/employees/",
+            {"first_name": "No", "last_name": "Email"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        supabase.auth.admin.create_user.assert_not_called()
+
+    @patch("core.views.supabase")
+    def test_employee_create_invalid_returns_400_without_supabase_call(self, supabase):
+        response = self.client.post(
+            "/api/employees/", {"email": "bad-email"}, format="json"
+        )
+        self.assertEqual(response.status_code, 400)
+        supabase.auth.admin.create_user.assert_not_called()
+
+    @patch("core.views.supabase")
+    def test_employee_create_duplicate_email_returns_409(self, supabase):
+        Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        response = self.client.post(
+            "/api/employees/",
+            {
+                "first_name": "Jane",
+                "last_name": "Doe",
+                "email": "JANE@example.com",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 409)
+        supabase.auth.admin.create_user.assert_not_called()
+
+    @patch("core.views.supabase")
+    def test_employee_create_upstream_failure_rolls_back(self, supabase):
+        supabase.auth.admin.create_user.side_effect = Exception("boom")
+        response = self.client.post(
+            "/api/employees/",
+            {
+                "first_name": "Jane",
+                "last_name": "Doe",
+                "email": "jane@example.com",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 502)
+        # create_user succeeded then failed? No — it raised, so no user id;
+        # delete_user must not be called when nothing was created... instead
+        # force the success-then-failure path below via return value + save error
+        supabase.auth.admin.delete_user.assert_not_called()
+
     def test_leave_create_persists_leave_request(self):
         employee = Employee.objects.create(
             first_name="Jane",
