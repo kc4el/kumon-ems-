@@ -2,6 +2,7 @@ from datetime import date
 from types import SimpleNamespace
 from unittest.mock import patch
 
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils import timezone
 from rest_framework.test import APIClient
@@ -12,6 +13,18 @@ from core.models import Attendance, Department, Employee, LeaveRequest
 class ApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
+        user = User.objects.create_user(username="tester", password="x")
+        self.client.force_authenticate(user=user)
+
+    def test_anonymous_access_is_denied_except_dashboard_summary(self):
+        anon = APIClient()
+        self.assertEqual(anon.get("/api/employees/").status_code, 403)
+        self.assertEqual(anon.get("/api/dashboard-summary/").status_code, 200)
+        token_response = anon.post(
+            "/api/auth-token/", {"username": "tester", "password": "x"}, format="json"
+        )
+        self.assertEqual(token_response.status_code, 200)
+        self.assertIn("token", token_response.json())
 
     def test_list_endpoints_return_empty_collections(self):
         endpoints = [

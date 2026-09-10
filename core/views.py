@@ -4,6 +4,7 @@ import uuid
 from django.shortcuts import render
 from django.utils import timezone
 from rest_framework import generics, status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from supabase_auth.errors import AuthApiError
@@ -45,6 +46,9 @@ def login_view(request):
 
 class DashboardSummaryView(APIView):
     """Return the aggregate counts required by the dashboard landing page."""
+
+    # Public aggregate counts for the landing page (intentional; see B10)
+    permission_classes = [AllowAny]
 
     def get(self, request):
         try:
