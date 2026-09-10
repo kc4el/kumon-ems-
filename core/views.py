@@ -1,6 +1,8 @@
 import logging
 import uuid
+from datetime import timedelta
 
+from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, transaction
 from django.shortcuts import render
@@ -305,3 +307,29 @@ class PerformanceReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
 class EmployeeAuditLogListView(generics.ListAPIView):
     queryset = EmployeeAuditLog.objects.all().order_by("-timestamp")
     serializer_class = EmployeeAuditLogSerializer
+
+
+class SessionLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        user = authenticate(
+            request,
+            username=request.data.get("username"),
+            password=request.data.get("password"),
+        )
+        if user is None:
+            return Response(
+                {"error": "Invalid credentials."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        login(request, user)
+        return Response({"message": "Signed in."}, status=status.HTTP_200_OK)
+
+
+class SessionLogoutView(APIView):
+    def post(self, request):
+        if request.auth:
+            request.auth.delete()
+        logout(request)
+        return Response({"message": "Signed out."}, status=status.HTTP_200_OK)

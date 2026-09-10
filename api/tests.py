@@ -485,3 +485,31 @@ class ApiTests(TestCase):
 
         self.assertEqual(api_settings.DEFAULT_THROTTLE_RATES["anon"], "100/day")
         self.assertEqual(api_settings.DEFAULT_THROTTLE_RATES["user"], "1000/day")
+
+
+class SessionAuthTests(TestCase):
+    def test_session_login_wrong_credentials_returns_401(self):
+        User.objects.create_user(username="sess", password="right")
+        anon = APIClient()
+        response = anon.post(
+            "/api/session-login/",
+            {"username": "sess", "password": "wrong"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_session_login_logout_round_trip(self):
+        User.objects.create_user(username="sess", password="right")
+        client = APIClient()
+        login = client.post(
+            "/api/session-login/",
+            {"username": "sess", "password": "right"},
+            format="json",
+        )
+        self.assertEqual(login.status_code, 200)
+        self.assertIn("sessionid", login.cookies)
+        authed = client.get("/api/employees/")
+        self.assertEqual(authed.status_code, 200)
+        logout = client.post("/api/session-logout/")
+        self.assertEqual(logout.status_code, 200)
+        self.assertEqual(client.get("/api/employees/").status_code, 403)

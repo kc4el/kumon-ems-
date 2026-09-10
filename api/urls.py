@@ -19,6 +19,8 @@ from core.views import (
     PayrollRunListCreateView,
     PerformanceReviewDetailView,
     PerformanceReviewListCreateView,
+    SessionLoginView,
+    SessionLogoutView,
     ShiftRosterDetailView,
     ShiftRosterListCreateView,
 )
@@ -96,4 +98,6 @@ urlpatterns = [
     ),
     path("audit-logs/", EmployeeAuditLogListView.as_view(), name="audit-log-list"),
     path("auth-token/", obtain_auth_token, name="api-token"),
+    path("session-login/", SessionLoginView.as_view(), name="session-login"),
+    path("session-logout/", SessionLogoutView.as_view(), name="session-logout"),
 ]
