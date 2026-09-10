@@ -85,6 +85,9 @@ class PayrollItem(models.Model):
     deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     net_pay = models.DecimalField(max_digits=10, decimal_places=2)
 
+    class Meta:
+        unique_together = ("payroll_run", "employee")
+
 
 class PerformanceReview(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

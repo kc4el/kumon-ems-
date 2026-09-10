@@ -9,7 +9,14 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from core.exceptions import Conflict409
-from core.models import Attendance, Department, Employee, LeaveRequest
+from core.models import (
+    Attendance,
+    Department,
+    Employee,
+    LeaveRequest,
+    PayrollItem,
+    PayrollRun,
+)
 
 
 class ApiTests(TestCase):
@@ -250,6 +257,47 @@ class ApiTests(TestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 400)
+
+    def test_payroll_duplicate_line_returns_400(self):
+        employee = Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        run = PayrollRun.objects.create(
+            pay_period_start=date(2026, 8, 1), pay_period_end=date(2026, 8, 31)
+        )
+        payload = {
+            "payroll_run": str(run.id),
+            "employee": str(employee.id),
+            "base_pay": "1000.00",
+            "deductions": "100.00",
+        }
+        first = self.client.post("/api/payroll-items/", payload, format="json")
+        self.assertEqual(first.status_code, 201)
+        second = self.client.post("/api/payroll-items/", payload, format="json")
+        self.assertEqual(second.status_code, 400)
+
+    def test_payroll_net_pay_is_server_computed(self):
+        employee = Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        run = PayrollRun.objects.create(
+            pay_period_start=date(2026, 8, 1), pay_period_end=date(2026, 8, 31)
+        )
+        response = self.client.post(
+            "/api/payroll-items/",
+            {
+                "payroll_run": str(run.id),
+                "employee": str(employee.id),
+                "base_pay": "1000.00",
+                "deductions": "100.00",
+                "net_pay": "999999.00",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(str(response.json()["net_pay"]), "900.00")
+        item = PayrollItem.objects.get(payroll_run=run, employee=employee)
+        self.assertEqual(str(item.net_pay), "900.00")
 
     def test_leave_create_persists_leave_request(self):
         employee = Employee.objects.create(

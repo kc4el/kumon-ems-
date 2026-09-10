@@ -62,7 +62,8 @@ class PayrollRunSerializer(serializers.ModelSerializer):
 class PayrollItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = PayrollItem
-        fields = "__all__"
+        fields = ["id", "payroll_run", "employee", "base_pay", "deductions", "net_pay"]
+        read_only_fields = ["id", "net_pay"]
 
 
 class PerformanceReviewSerializer(serializers.ModelSerializer):

@@ -262,10 +262,28 @@ class PayrollItemListCreateView(generics.ListCreateAPIView):
     queryset = PayrollItem.objects.all().order_by("id")
     serializer_class = PayrollItemSerializer
 
+    def perform_create(self, serializer):
+        self._save_computed(serializer)
+
+    @staticmethod
+    def _save_computed(serializer):
+        base = serializer.validated_data["base_pay"]
+        deductions = serializer.validated_data.get("deductions", 0)
+        try:
+            with transaction.atomic():
+                serializer.save(net_pay=base - deductions)
+        except IntegrityError:
+            raise DRFValidationError(
+                "Duplicate payroll line for this run and employee."
+            )
+
 
 class PayrollItemDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = PayrollItem.objects.all()
     serializer_class = PayrollItemSerializer
+
+    def perform_update(self, serializer):
+        PayrollItemListCreateView._save_computed(serializer)
 
 
 class PerformanceReviewListCreateView(generics.ListCreateAPIView):
