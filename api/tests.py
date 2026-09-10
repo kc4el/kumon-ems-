@@ -299,6 +299,43 @@ class ApiTests(TestCase):
         item = PayrollItem.objects.get(payroll_run=run, employee=employee)
         self.assertEqual(str(item.net_pay), "900.00")
 
+    def test_employee_date_hired_is_read_only(self):
+        with patch("core.views.supabase") as supabase:
+            from types import SimpleNamespace as NS
+
+            supabase.auth.admin.create_user.return_value = NS(
+                user=NS(id="22222222-2222-4222-8222-222222222222")
+            )
+            response = self.client.post(
+                "/api/employees/",
+                {
+                    "first_name": "Jane",
+                    "last_name": "Doe",
+                    "email": "jane@example.com",
+                    "date_hired": "2000-01-01",
+                },
+                format="json",
+            )
+        self.assertEqual(response.status_code, 201)
+        self.assertNotEqual(response.json()["date_hired"], "2000-01-01")
+        self.assertEqual(response.json()["date_hired"], str(date.today()))
+
+    def test_leave_status_patch_still_works(self):
+        employee = Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        leave = LeaveRequest.objects.create(
+            employee=employee,
+            start_date=date(2026, 8, 24),
+            end_date=date(2026, 8, 25),
+            reason="Annual leave",
+        )
+        response = self.client.patch(
+            f"/api/leaves/{leave.id}/", {"status": "Approved"}, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "Approved")
+
     def test_leave_create_persists_leave_request(self):
         employee = Employee.objects.create(
             first_name="Jane",

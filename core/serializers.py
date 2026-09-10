@@ -22,7 +22,17 @@ class DepartmentSerializer(serializers.ModelSerializer):
 class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
-        fields = "__all__"
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "email",
+            "role",
+            "department",
+            "date_hired",
+            "is_active",
+        ]
+        read_only_fields = ["id", "date_hired"]
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
@@ -44,7 +54,17 @@ class AttendanceSerializer(serializers.ModelSerializer):
 class LeaveRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = LeaveRequest
-        fields = "__all__"
+        fields = [
+            "id",
+            "employee",
+            "leave_type",
+            "start_date",
+            "end_date",
+            "reason",
+            "status",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]
 
 
 class ShiftRosterSerializer(serializers.ModelSerializer):
