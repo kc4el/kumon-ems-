@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,10 +26,12 @@ load_dotenv(BASE_DIR / ".env")
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # Keep production secrets and deployment settings in environment variables.
-SECRET_KEY = os.getenv(
-    "SECRET_KEY",
-    "django-insecure-=sze1ngwx1jz$1t$mvi^)g=%b-olv1z5!(x_a$t3%+t7m(=*&^",
-)
+SECRET_KEY = os.getenv("SECRET_KEY", "")
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "django-insecure-dev-only-key"
+    else:
+        raise ImproperlyConfigured("SECRET_KEY env var is required when DEBUG is off.")
 DEBUG = os.getenv("DEBUG", "False").strip().lower() in {"1", "true", "yes", "on"}
 ALLOWED_HOSTS = [
     host.strip()
