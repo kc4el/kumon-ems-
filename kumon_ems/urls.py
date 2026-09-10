@@ -11,8 +11,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", dashboard_view, name="dashboard"),
     path("login/", login_view, name="login"),
-    path("signup/", RedirectView.as_view(pattern_name="login", permanent=False)),
-    path("auth/", RedirectView.as_view(pattern_name="login", permanent=False)),
+    path("signup/", RedirectView.as_view(url="/login/", permanent=False)),
+    path("auth/", RedirectView.as_view(url="/login/", permanent=False)),
     path("core/", include("core.urls")),
     path("api/", include("api.urls")),
 ]

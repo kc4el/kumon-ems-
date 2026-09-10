@@ -170,7 +170,7 @@ class PageViewTests(TestCase):
         for path in ["/signup/", "/auth/"]:
             response = self.client.get(path)
             self.assertEqual(response.status_code, 302)
-            self.assertTrue(response["Location"].endswith("/login/"))
+            self.assertEqual(response["Location"], "/login/")
 
     def test_static_assets_serve_successfully(self):
         for static_path in [
