@@ -211,11 +211,47 @@ class ApiTests(TestCase):
             with self.assertRaises(Conflict409):
                 view.perform_create(serializer=None)
 
+    def test_two_open_attendances_rejected_by_database(self):
+        employee = Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        Attendance.objects.create(
+            employee=employee, date=date.today(), clock_in=timezone.now()
+        )
+        with self.assertRaises(IntegrityError):
+            Attendance.objects.create(
+                employee=employee,
+                date=date.today() + timezone.timedelta(days=1),
+                clock_in=timezone.now(),
+            )
+
+    @patch("core.views.supabase")
+    def test_employee_create_race_maps_to_409(self, supabase):
+        from types import SimpleNamespace as NS
+
+        supabase.auth.admin.create_user.return_value = NS(
+            user=NS(id="33333333-3333-4333-8333-333333333333")
+        )
+        with patch(
+            "core.serializers.EmployeeSerializer.save",
+            side_effect=IntegrityError("race"),
+        ):
+            response = self.client.post(
+                "/api/employees/",
+                {
+                    "first_name": "Jane",
+                    "last_name": "Doe",
+                    "email": "race@example.com",
+                },
+                format="json",
+            )
+        self.assertEqual(response.status_code, 409)
+
     def test_clock_out_requires_employee_id(self):
         response = self.client.post("/api/attendance/clock-out/", {}, format="json")
         self.assertEqual(response.status_code, 400)
 
-    def test_clock_out_multiple_open_rows_returns_409(self):
+    def test_clock_out_second_open_rejected_by_database(self):
         employee = Employee.objects.create(
             first_name="Jane", last_name="Doe", email="jane@example.com"
         )
@@ -224,17 +260,12 @@ class ApiTests(TestCase):
             date=date.today(),
             clock_in=timezone.now() - timezone.timedelta(hours=3),
         )
-        Attendance.objects.create(
-            employee=employee,
-            date=date.today() + timezone.timedelta(days=1),
-            clock_in=timezone.now() - timezone.timedelta(hours=1),
-        )
-        response = self.client.post(
-            "/api/attendance/clock-out/",
-            {"employee_id": str(employee.id)},
-            format="json",
-        )
-        self.assertEqual(response.status_code, 409)
+        with self.assertRaises(IntegrityError):
+            Attendance.objects.create(
+                employee=employee,
+                date=date.today() + timezone.timedelta(days=1),
+                clock_in=timezone.now() - timezone.timedelta(hours=1),
+            )
 
     def test_clock_out_before_clock_in_returns_400(self):
         employee = Employee.objects.create(

@@ -120,21 +120,28 @@ class EmployeeListCreateView(generics.ListCreateAPIView):
             )
         created_user_id = None
         try:
-            record_id = str(uuid.uuid4())
-            auth_response = supabase.auth.admin.create_user(
-                {
-                    "id": record_id,
-                    "email": email,
-                    "email_confirm": True,
-                    "user_metadata": {
-                        "first_name": payload.get("first_name", ""),
-                        "last_name": payload.get("last_name", ""),
-                    },
-                }
-            )
-            created_user_id = str(auth_response.user.id)
-            serializer.save(id=created_user_id)
+            with transaction.atomic():
+                record_id = str(uuid.uuid4())
+                auth_response = supabase.auth.admin.create_user(
+                    {
+                        "id": record_id,
+                        "email": email,
+                        "email_confirm": True,
+                        "user_metadata": {
+                            "first_name": payload.get("first_name", ""),
+                            "last_name": payload.get("last_name", ""),
+                        },
+                    }
+                )
+                created_user_id = str(auth_response.user.id)
+                serializer.save(id=created_user_id)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except IntegrityError:
+            logger.warning(f"Duplicate employee race for {email}")
+            return Response(
+                {"error": "An employee with this email already exists."},
+                status=status.HTTP_409_CONFLICT,
+            )
         except Exception as error:
             if created_user_id:
                 try:
@@ -175,6 +182,13 @@ class AttendanceListCreateView(generics.ListCreateAPIView):
 class AttendanceDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
+
+    def perform_update(self, serializer):
+        try:
+            with transaction.atomic():
+                serializer.save()
+        except IntegrityError:
+            raise Conflict409("This change conflicts with an existing record.")
 
 
 class AttendanceClockOutView(APIView):

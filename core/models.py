@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+from django.db.models import Q
 
 
 class Department(models.Model):
@@ -47,6 +48,13 @@ class Attendance(models.Model):
 
     class Meta:
         unique_together = ("employee", "date")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["employee"],
+                condition=Q(clock_out__isnull=True),
+                name="one_open_attendance_per_employee",
+            )
+        ]
 
 
 class LeaveRequest(models.Model):
