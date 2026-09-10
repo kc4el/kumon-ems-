@@ -2,6 +2,7 @@ from datetime import date, timedelta
 from unittest.mock import patch
 
 from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.test import TestCase
 from django.utils import timezone
 
@@ -151,6 +152,44 @@ class PurgeResignedTests(TestCase):
         self.assertTrue(Employee.objects.filter(pk=old.pk).exists())
         supabase.auth.admin.delete_user.assert_not_called()
         self.assertIn("would purge", out.getvalue())
+
+    @patch("core.management.commands.purge_resigned.supabase")
+    def test_purge_failure_keeps_row(self, supabase):
+        from io import StringIO
+
+        supabase.auth.admin.delete_user.side_effect = Exception("boom")
+        old = Employee.objects.create(
+            first_name="Old",
+            last_name="Gone",
+            email="failkeep@example.com",
+            is_active=False,
+            resigned_at=date.today() - timedelta(days=31),
+        )
+        call_command("purge_resigned", stdout=StringIO())
+        self.assertTrue(Employee.objects.filter(pk=old.pk).exists())
+
+    def test_purge_negative_days_rejected(self):
+        from io import StringIO
+
+        with self.assertRaises(CommandError):
+            call_command("purge_resigned", "--days", "-5", stdout=StringIO())
+
+    @patch("core.management.commands.purge_resigned.supabase")
+    def test_purge_success_writes_audit(self, supabase):
+        from io import StringIO
+
+        old = Employee.objects.create(
+            first_name="Old",
+            last_name="Audit",
+            email="auditme@example.com",
+            is_active=False,
+            resigned_at=date.today() - timedelta(days=31),
+        )
+        call_command("purge_resigned", stdout=StringIO())
+        self.assertFalse(Employee.objects.filter(pk=old.pk).exists())
+        self.assertEqual(
+            EmployeeAuditLog.objects.filter(action__icontains="purged").count(), 1
+        )
 
 
 class PageViewTests(TestCase):
