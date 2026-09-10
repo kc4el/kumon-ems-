@@ -243,11 +243,47 @@ document.addEventListener('keydown', function (e) {
   }
 });
 
-// Onboarding form submit handler
+// Onboarding form submit handler: POST the wizard fields to the live API.
 function handleOnboarding(e) {
   e.preventDefault();
-  showToast('Employee profile created & credentials issued for Samantha Vance!');
-  closeOnboardingModal();
+  const form = e.target;
+  const fullName = (form.querySelector('input[type="text"]')?.value || '').trim();
+  const email = (form.querySelector('input[type="email"]')?.value || '').trim();
+  const parts = fullName.split(/\s+/).filter(Boolean);
+  const payload = {
+    first_name: parts[0] || '',
+    last_name: parts.slice(1).join(' ') || '',
+    email,
+  };
+  fetch('/api/employees/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(payload),
+  })
+    .then(async (res) => {
+      if (res.status === 403) {
+        window.location.href = '/login/';
+        return null;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const err =
+          typeof data.error === 'string'
+            ? data.error
+            : 'Unable to create employee. Check the form and try again.';
+        showToast(err);
+        return null;
+      }
+      return data;
+    })
+    .then((data) => {
+      if (!data) return;
+      showToast(`Employee ${fullName || email} created & credentials issued!`);
+      closeOnboardingModal();
+      form.reset();
+      loadEmployeeDirectory();
+    })
+    .catch(() => showToast('Unable to create employee upstream. Try again later.'));
 }
 
 // Grievance handler
@@ -549,8 +585,53 @@ function closeLeaveModal() {
 
 function handleApplyLeave(e) {
   e.preventDefault();
-  closeLeaveModal();
-  showToast('Leave request submitted for HR approval.');
+  const form = e.target;
+  const selects = form.querySelectorAll('select');
+  const dates = form.querySelectorAll('input[type="date"]');
+  const reason = form.querySelector('textarea')?.value || '';
+  const applicantName = (selects[0]?.value || '')
+    .replace(/\s*\(.*\)\s*/, '')
+    .trim()
+    .toLowerCase();
+  const employeeId = employeeNameIndex[applicantName];
+  if (!employeeId) {
+    showToast('Applicant is not in the live employee directory yet.');
+    return;
+  }
+  fetch('/api/leaves/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({
+      employee: employeeId,
+      leave_type: selects[1]?.value || 'Personal',
+      start_date: dates[0]?.value || null,
+      end_date: dates[1]?.value || null,
+      reason,
+    }),
+  })
+    .then(async (res) => {
+      if (res.status === 403) {
+        window.location.href = '/login/';
+        return null;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const err =
+          typeof data.error === 'string'
+            ? data.error
+            : 'Unable to file leave. Check the dates and try again.';
+        showToast(err);
+        return null;
+      }
+      return data;
+    })
+    .then((data) => {
+      if (!data) return;
+      closeLeaveModal();
+      showToast('Leave request submitted for HR approval.');
+      form.reset();
+    })
+    .catch(() => showToast('Unable to file leave. Try again later.'));
 }
 
 
