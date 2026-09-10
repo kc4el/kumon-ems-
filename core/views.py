@@ -175,6 +175,13 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
         purge_on = (
             instance.resigned_at + timedelta(days=30) if instance.resigned_at else None
         )
+        if not EmployeeAuditLog.objects.filter(
+            employee=instance, action__icontains="resigned"
+        ).exists():
+            EmployeeAuditLog.objects.create(
+                employee=instance,
+                action=f"resigned {instance.resigned_at}, purge on {purge_on}",
+            )
         return Response(
             {
                 "id": str(instance.id),

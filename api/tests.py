@@ -424,6 +424,19 @@ class ApiTests(TestCase):
         self.assertEqual(summary["total_employees"], 2)
         self.assertEqual(summary["active_employees"], 1)
 
+    def test_employee_delete_writes_single_resignation_audit(self):
+        from core.models import EmployeeAuditLog
+
+        employee = Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        before = EmployeeAuditLog.objects.filter(employee=employee).count()
+        response = self.client.delete(f"/api/employees/{employee.id}/")
+        self.assertEqual(response.status_code, 200)
+        logs = EmployeeAuditLog.objects.filter(employee=employee)
+        self.assertEqual(logs.count() - before, 1)
+        self.assertEqual(logs.filter(action__icontains="resigned").count(), 1)
+
     def test_employee_delete_is_idempotent(self):
         employee = Employee.objects.create(
             first_name="Jane", last_name="Doe", email="jane@example.com"

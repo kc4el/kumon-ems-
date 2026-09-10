@@ -51,6 +51,11 @@ def log_employee_action(sender, instance, created, **kwargs):
             f"Employee profile created for {instance.first_name} {instance.last_name}.",
         )
     else:
+        # Soft-delete (EmployeeDetailView.destroy) writes its own distinct
+        # "resigned ..." row; skip the generic update log for that save so
+        # exactly one audit row results.
+        if set(kwargs.get("update_fields") or []) == {"is_active", "resigned_at"}:
+            return
         create_audit_log(
             instance,
             f"Employee profile updated for {instance.first_name} {instance.last_name}.",
