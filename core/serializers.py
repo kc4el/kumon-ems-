@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from .exceptions import Conflict409
 from .models import (
     Attendance,
     Department,
@@ -39,15 +40,16 @@ class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
         fields = "__all__"
+        # No auto unique-together validator: the fast-path Conflict409 below
+        # plus the DB constraint are the single enforcement path (409 rule).
+        validators = []
 
     def validate(self, data):
         if not self.instance and "employee" in data and "date" in data:
             if Attendance.objects.filter(
                 employee=data["employee"], date=data["date"]
             ).exists():
-                raise serializers.ValidationError(
-                    "This employee has already clocked in today."
-                )
+                raise Conflict409("This employee has already clocked in today.")
         return data
 
 
@@ -94,9 +96,7 @@ class ShiftRosterSerializer(serializers.ModelSerializer):
             if self.instance:
                 clash = clash.exclude(pk=self.instance.pk)
             if clash.exists():
-                raise serializers.ValidationError(
-                    "Shift overlaps an existing assignment."
-                )
+                raise Conflict409("Shift overlaps an existing assignment.")
         return data
 
 

@@ -166,6 +166,25 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
         instance.resigned_at = timezone.now().date()
         instance.save(update_fields=["is_active", "resigned_at"])
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.is_active:
+            instance.is_active = False
+            instance.resigned_at = timezone.now().date()
+            instance.save(update_fields=["is_active", "resigned_at"])
+        purge_on = (
+            instance.resigned_at + timedelta(days=30) if instance.resigned_at else None
+        )
+        return Response(
+            {
+                "id": str(instance.id),
+                "is_active": False,
+                "resigned_at": instance.resigned_at,
+                "purge_on": purge_on,
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
 class AttendanceListCreateView(generics.ListCreateAPIView):
     queryset = Attendance.objects.all().order_by("-date", "-clock_in")

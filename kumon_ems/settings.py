@@ -173,6 +173,7 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.UserRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {"anon": "100/day", "user": "1000/day"},
+    "EXCEPTION_HANDLER": "core.exception_handler.api_errors",
 }
 
 LOGGING = {

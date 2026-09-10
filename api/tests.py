@@ -189,7 +189,7 @@ class ApiTests(TestCase):
         # force the success-then-failure path below via return value + save error
         supabase.auth.admin.delete_user.assert_not_called()
 
-    def test_attendance_duplicate_returns_400_fast_path(self):
+    def test_attendance_duplicate_returns_409_fast_path(self):
         employee = Employee.objects.create(
             first_name="Jane", last_name="Doe", email="jane@example.com"
         )
@@ -201,7 +201,17 @@ class ApiTests(TestCase):
             {"employee": str(employee.id), "date": str(date.today())},
             format="json",
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(set(response.json().keys()), {"error"})
+
+    def test_error_bodies_use_single_error_key(self):
+        anon = APIClient()
+        denied = anon.get("/api/employees/")
+        self.assertEqual(denied.status_code, 403)
+        self.assertEqual(set(denied.json().keys()), {"error"})
+        bad = self.client.post("/api/leaves/", {}, format="json")
+        self.assertEqual(bad.status_code, 400)
+        self.assertEqual(set(bad.json().keys()), {"error"})
 
     def test_attendance_race_maps_to_409(self):
         from core.views import AttendanceListCreateView
@@ -401,7 +411,12 @@ class ApiTests(TestCase):
             first_name="John", last_name="Smith", email="john@example.com"
         )
         response = self.client.delete(f"/api/employees/{employee.id}/")
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual(body["id"], str(employee.id))
+        self.assertFalse(body["is_active"])
+        self.assertEqual(body["resigned_at"], str(date.today()))
+        self.assertIn("purge_on", body)
         employee.refresh_from_db()
         self.assertFalse(employee.is_active)
         self.assertEqual(employee.resigned_at, date.today())
@@ -409,7 +424,19 @@ class ApiTests(TestCase):
         self.assertEqual(summary["total_employees"], 2)
         self.assertEqual(summary["active_employees"], 1)
 
-    def test_shift_overlap_returns_400(self):
+    def test_employee_delete_is_idempotent(self):
+        employee = Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        first = self.client.delete(f"/api/employees/{employee.id}/")
+        second = self.client.delete(f"/api/employees/{employee.id}/")
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(first.json(), second.json())
+        employee.refresh_from_db()
+        self.assertEqual(employee.resigned_at, date.today())
+
+    def test_shift_overlap_returns_409(self):
         employee = Employee.objects.create(
             first_name="Jane", last_name="Doe", email="jane@example.com"
         )
@@ -431,7 +458,8 @@ class ApiTests(TestCase):
             },
             format="json",
         )
-        self.assertEqual(overlap.status_code, 400)
+        self.assertEqual(overlap.status_code, 409)
+        self.assertEqual(set(overlap.json().keys()), {"error"})
 
     def test_shift_adjacent_times_allowed(self):
         employee = Employee.objects.create(
