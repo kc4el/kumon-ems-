@@ -289,15 +289,19 @@ class PayrollItemListCreateView(generics.ListCreateAPIView):
 
     @staticmethod
     def _save_computed(serializer):
-        base = serializer.validated_data["base_pay"]
-        deductions = serializer.validated_data.get("deductions", 0)
+        base = serializer.validated_data.get(
+            "base_pay", getattr(serializer.instance, "base_pay", None)
+        )
+        deductions = serializer.validated_data.get(
+            "deductions", getattr(serializer.instance, "deductions", 0)
+        )
+        if base is None:
+            raise DRFValidationError({"base_pay": "This field is required."})
         try:
             with transaction.atomic():
                 serializer.save(net_pay=base - deductions)
         except IntegrityError:
-            raise DRFValidationError(
-                "Duplicate payroll line for this run and employee."
-            )
+            raise Conflict409("Duplicate payroll line for this run and employee.")
 
 
 class PayrollItemDetailView(generics.RetrieveUpdateDestroyAPIView):

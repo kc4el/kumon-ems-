@@ -299,7 +299,7 @@ class ApiTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_payroll_duplicate_line_returns_400(self):
+    def test_payroll_duplicate_line_returns_409(self):
         employee = Employee.objects.create(
             first_name="Jane", last_name="Doe", email="jane@example.com"
         )
@@ -315,7 +315,23 @@ class ApiTests(TestCase):
         first = self.client.post("/api/payroll-items/", payload, format="json")
         self.assertEqual(first.status_code, 201)
         second = self.client.post("/api/payroll-items/", payload, format="json")
-        self.assertEqual(second.status_code, 400)
+        self.assertEqual(second.status_code, 409)
+
+    def test_payroll_partial_update_recomputes_net_pay(self):
+        employee = Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        run = PayrollRun.objects.create(
+            pay_period_start=date(2026, 8, 1), pay_period_end=date(2026, 8, 31)
+        )
+        item = PayrollItem.objects.create(
+            payroll_run=run, employee=employee, base_pay="1000.00", net_pay="900.00"
+        )
+        response = self.client.patch(
+            f"/api/payroll-items/{item.id}/", {"deductions": "50.00"}, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(str(response.json()["net_pay"]), "950.00")
 
     def test_payroll_net_pay_is_server_computed(self):
         employee = Employee.objects.create(

@@ -111,6 +111,9 @@ class PayrollItemSerializer(serializers.ModelSerializer):
         model = PayrollItem
         fields = ["id", "payroll_run", "employee", "base_pay", "deductions", "net_pay"]
         read_only_fields = ["id", "net_pay"]
+        # No auto unique-together validator: the DB is the single enforcer and
+        # IntegrityError maps to 409 (unified conflict rule), race included.
+        validators = []
 
 
 class PerformanceReviewSerializer(serializers.ModelSerializer):
