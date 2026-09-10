@@ -27,6 +27,7 @@ class Employee(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
+    # ADDED: Frontend relies on displaying the employee's role/job title
     role = models.CharField(max_length=100, blank=True, null=True)
     department = models.ForeignKey(
         Department, on_delete=models.SET_NULL, null=True, blank=True
@@ -46,6 +47,7 @@ class Attendance(models.Model):
     clock_in = models.DateTimeField(null=True, blank=True)
     clock_out = models.DateTimeField(null=True, blank=True)
 
+    # ADDED: Enforce at the Database level that an employee can only have 1 record per day
     class Meta:
         unique_together = ("employee", "date")
         constraints = [
@@ -79,7 +81,8 @@ class ShiftRoster(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
     break_mins = models.IntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    # FIX: Added auto_now_add and auto_now so Django handles these automatically
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
 
@@ -110,8 +113,40 @@ class PerformanceReview(models.Model):
     comments = models.TextField()
 
 
+class ExpenseClaim(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    category = models.CharField(max_length=100, default="General Expense")
+    status = models.CharField(
+        max_length=50, default="Pending"
+    )  # Pending, Approved, Rejected
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class EmployeeAuditLog(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True)
     action = models.CharField(max_length=255)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+
+class Message(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    conversation_key = models.CharField(max_length=100, default="sarah", db_index=True)
+    sender_name = models.CharField(max_length=255, default="Marcus Williams")
+    text = models.TextField(blank=True)
+    attachment = models.FileField(
+        upload_to="message-attachments/%Y/%m/%d/", blank=True, null=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("created_at",)
+
+
+class ClaimStatus(models.Model):
+    claim_id = models.CharField(max_length=100, unique=True)
+    status = models.CharField(max_length=50)
+    updated_at = models.DateTimeField(auto_now=True)

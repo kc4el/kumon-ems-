@@ -17,10 +17,13 @@ from rest_framework.views import APIView
 from .exceptions import Conflict409
 from .models import (
     Attendance,
+    ClaimStatus,
     Department,
     Employee,
     EmployeeAuditLog,
+    ExpenseClaim,
     LeaveRequest,
+    Message,
     PayrollItem,
     PayrollRun,
     PerformanceReview,
@@ -28,10 +31,13 @@ from .models import (
 )
 from .serializers import (
     AttendanceSerializer,
+    ClaimStatusSerializer,
     DepartmentSerializer,
     EmployeeAuditLogSerializer,
     EmployeeSerializer,
+    ExpenseClaimSerializer,
     LeaveRequestSerializer,
+    MessageSerializer,
     PayrollItemSerializer,
     PayrollRunSerializer,
     PerformanceReviewSerializer,
@@ -87,7 +93,7 @@ class DashboardSummaryView(APIView):
 
 
 class DepartmentListCreateView(generics.ListCreateAPIView):
-    queryset = Department.objects.all()
+    queryset = Department.objects.all().order_by("name")
     serializer_class = DepartmentSerializer
 
 
@@ -377,3 +383,40 @@ class SessionLogoutView(APIView):
             request.auth.delete()
         logout(request)
         return Response({"message": "Signed out."}, status=status.HTTP_200_OK)
+
+
+class MessageListCreateView(generics.ListCreateAPIView):
+    serializer_class = MessageSerializer
+
+    def get_queryset(self):
+        conversation_key = self.request.query_params.get("conversation", "sarah")
+        return Message.objects.filter(conversation_key=conversation_key)
+
+    def perform_create(self, serializer):
+        serializer.save(
+            conversation_key=self.request.data.get("conversation_key", "sarah"),
+            sender_name=self.request.data.get("sender_name", "Marcus Williams"),
+        )
+
+
+class ClaimStatusListCreateView(generics.ListCreateAPIView):
+    queryset = ClaimStatus.objects.all().order_by("claim_id")
+    serializer_class = ClaimStatusSerializer
+
+    def perform_create(self, serializer):
+        claim_id = self.request.data.get("claim_id")
+        status_value = self.request.data.get("status")
+        serializer.instance, _ = ClaimStatus.objects.update_or_create(
+            claim_id=claim_id,
+            defaults={"status": status_value},
+        )
+
+
+class ExpenseClaimListCreateView(generics.ListCreateAPIView):
+    queryset = ExpenseClaim.objects.all().order_by("-created_at")
+    serializer_class = ExpenseClaimSerializer
+
+
+class ExpenseClaimDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = ExpenseClaim.objects.all()
+    serializer_class = ExpenseClaimSerializer

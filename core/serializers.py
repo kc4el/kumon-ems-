@@ -3,10 +3,13 @@ from rest_framework import serializers
 from .exceptions import Conflict409
 from .models import (
     Attendance,
+    ClaimStatus,
     Department,
     Employee,
     EmployeeAuditLog,
+    ExpenseClaim,
     LeaveRequest,
+    Message,
     PayrollItem,
     PayrollRun,
     PerformanceReview,
@@ -44,6 +47,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
         # plus the DB constraint are the single enforcement path (409 rule).
         validators = []
 
+    # CUSTOM VALIDATOR: Prevents duplicate clock-ins on the same day
     def validate(self, data):
         if not self.instance and "employee" in data and "date" in data:
             if Attendance.objects.filter(
@@ -122,7 +126,53 @@ class PerformanceReviewSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ExpenseClaimSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExpenseClaim
+        fields = "__all__"
+
+
 class EmployeeAuditLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployeeAuditLog
         fields = "__all__"
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    attachment = serializers.FileField(write_only=True, required=False, allow_null=True)
+    attachment_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Message
+        fields = (
+            "id",
+            "conversation_key",
+            "sender_name",
+            "text",
+            "attachment",
+            "attachment_url",
+            "created_at",
+        )
+        read_only_fields = ("id", "created_at", "attachment_url")
+
+    def get_attachment_url(self, obj):
+        if not obj.attachment:
+            return None
+        request = self.context.get("request")
+        url = obj.attachment.url
+        return request.build_absolute_uri(url) if request else url
+
+    def validate(self, attrs):
+        if not attrs.get("text") and not self.context["request"].FILES.get(
+            "attachment"
+        ):
+            raise serializers.ValidationError("A message or attachment is required.")
+        return attrs
+
+
+class ClaimStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClaimStatus
+        fields = ("claim_id", "status", "updated_at")
+        read_only_fields = ("updated_at",)
+        extra_kwargs = {"claim_id": {"validators": []}}

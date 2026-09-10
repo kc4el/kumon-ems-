@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0005_employee_resigned_at"),
+        ("core", "0008_employee_resigned_at"),
     ]
 
     operations = [

@@ -5,6 +5,7 @@ from core.views import (
     AttendanceClockOutView,
     AttendanceDetailView,
     AttendanceListCreateView,
+    ClaimStatusListCreateView,
     DashboardSummaryView,
     DepartmentDetailView,
     DepartmentListCreateView,
@@ -13,6 +14,7 @@ from core.views import (
     EmployeeListCreateView,
     LeaveRequestDetailView,
     LeaveRequestListCreateView,
+    MessageListCreateView,
     PayrollItemDetailView,
     PayrollItemListCreateView,
     PayrollRunDetailView,
@@ -100,4 +102,10 @@ urlpatterns = [
     path("auth-token/", obtain_auth_token, name="api-token"),
     path("session-login/", SessionLoginView.as_view(), name="session-login"),
     path("session-logout/", SessionLogoutView.as_view(), name="session-logout"),
+    path("messages/", MessageListCreateView.as_view(), name="message-list-create"),
+    path(
+        "claim-statuses/",
+        ClaimStatusListCreateView.as_view(),
+        name="claim-status-list-create",
+    ),
 ]
