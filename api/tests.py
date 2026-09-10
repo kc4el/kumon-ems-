@@ -194,6 +194,63 @@ class ApiTests(TestCase):
             with self.assertRaises(Conflict409):
                 view.perform_create(serializer=None)
 
+    def test_clock_out_requires_employee_id(self):
+        response = self.client.post("/api/attendance/clock-out/", {}, format="json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_clock_out_multiple_open_rows_returns_409(self):
+        employee = Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        Attendance.objects.create(
+            employee=employee,
+            date=date.today(),
+            clock_in=timezone.now() - timezone.timedelta(hours=3),
+        )
+        Attendance.objects.create(
+            employee=employee,
+            date=date.today() + timezone.timedelta(days=1),
+            clock_in=timezone.now() - timezone.timedelta(hours=1),
+        )
+        response = self.client.post(
+            "/api/attendance/clock-out/",
+            {"employee_id": str(employee.id)},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 409)
+
+    def test_clock_out_before_clock_in_returns_400(self):
+        employee = Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        clock_in = timezone.now()
+        Attendance.objects.create(
+            employee=employee, date=date.today(), clock_in=clock_in
+        )
+        response = self.client.post(
+            "/api/attendance/clock-out/",
+            {
+                "employee_id": str(employee.id),
+                "clock_out": (clock_in - timezone.timedelta(hours=1)).isoformat(),
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_clock_out_invalid_datetime_returns_400(self):
+        employee = Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        Attendance.objects.create(
+            employee=employee, date=date.today(), clock_in=timezone.now()
+        )
+        response = self.client.post(
+            "/api/attendance/clock-out/",
+            {"employee_id": str(employee.id), "clock_out": "not-a-date"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
     def test_leave_create_persists_leave_request(self):
         employee = Employee.objects.create(
             first_name="Jane",

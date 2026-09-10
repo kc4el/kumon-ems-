@@ -1,9 +1,11 @@
 import logging
 import uuid
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, transaction
 from django.shortcuts import render
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.permissions import AllowAny
@@ -172,22 +174,57 @@ class AttendanceDetailView(generics.RetrieveUpdateDestroyAPIView):
 class AttendanceClockOutView(APIView):
     def post(self, request):
         emp_id = request.data.get("employee_id")
-        clock_out_time = request.data.get("clock_out") or timezone.now()
-
+        if not emp_id:
+            return Response(
+                {"error": "employee_id is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        raw_out = request.data.get("clock_out")
+        if raw_out:
+            clock_out_time = parse_datetime(str(raw_out))
+            if clock_out_time is None:
+                return Response(
+                    {"error": "clock_out must be an ISO-8601 datetime."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if timezone.is_naive(clock_out_time):
+                clock_out_time = timezone.make_aware(clock_out_time)
+        else:
+            clock_out_time = timezone.now()
         try:
-            attendance = Attendance.objects.get(
-                employee_id=emp_id, clock_out__isnull=True
-            )
-            attendance.clock_out = clock_out_time
-            attendance.save()
-
+            with transaction.atomic():
+                open_rows = (
+                    Attendance.objects.select_for_update()
+                    .filter(employee_id=emp_id, clock_out__isnull=True)
+                    .order_by("clock_in")
+                )
+                count = open_rows.count()
+                if count == 0:
+                    return Response(
+                        {"error": "No open clock-in found for this employee."},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+                if count > 1:
+                    return Response(
+                        {"error": "Multiple open clock-ins; resolve manually."},
+                        status=status.HTTP_409_CONFLICT,
+                    )
+                attendance = open_rows.first()
+                if attendance.clock_in and clock_out_time < attendance.clock_in:
+                    return Response(
+                        {"error": "clock_out cannot precede clock_in."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                attendance.clock_out = clock_out_time
+                attendance.save()
+                return Response(
+                    {"message": "Clocked out successfully."},
+                    status=status.HTTP_200_OK,
+                )
+        except (DjangoValidationError, ValueError):
             return Response(
-                {"message": "Clocked out successfully."}, status=status.HTTP_200_OK
-            )
-        except Attendance.DoesNotExist:
-            return Response(
-                {"error": "No open clock-in found for this employee."},
-                status=status.HTTP_404_NOT_FOUND,
+                {"error": "Invalid employee_id."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
 
