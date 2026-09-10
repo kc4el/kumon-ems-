@@ -1,5 +1,7 @@
 from datetime import date, timedelta
+from unittest.mock import patch
 
+from django.core.management import call_command
 from django.test import TestCase
 from django.utils import timezone
 
@@ -93,6 +95,49 @@ class PaginationOrderingTests(TestCase):
         self.assertEqual(
             PerformanceReviewListCreateView.queryset.query.order_by, ("id",)
         )
+
+
+class PurgeResignedTests(TestCase):
+    @patch("core.management.commands.purge_resigned.supabase")
+    def test_purge_removes_only_old_resignations(self, supabase):
+        from io import StringIO
+
+        old = Employee.objects.create(
+            first_name="Old",
+            last_name="Gone",
+            email="old@example.com",
+            is_active=False,
+            resigned_at=date.today() - timedelta(days=31),
+        )
+        recent = Employee.objects.create(
+            first_name="New",
+            last_name="Kept",
+            email="recent@example.com",
+            is_active=False,
+            resigned_at=date.today() - timedelta(days=10),
+        )
+        out = StringIO()
+        call_command("purge_resigned", stdout=out)
+        self.assertFalse(Employee.objects.filter(pk=old.pk).exists())
+        self.assertTrue(Employee.objects.filter(pk=recent.pk).exists())
+        supabase.auth.admin.delete_user.assert_called_once_with(str(old.id))
+
+    @patch("core.management.commands.purge_resigned.supabase")
+    def test_purge_dry_run_keeps_everyone(self, supabase):
+        from io import StringIO
+
+        old = Employee.objects.create(
+            first_name="Old",
+            last_name="Gone",
+            email="old@example.com",
+            is_active=False,
+            resigned_at=date.today() - timedelta(days=31),
+        )
+        out = StringIO()
+        call_command("purge_resigned", "--dry-run", stdout=out)
+        self.assertTrue(Employee.objects.filter(pk=old.pk).exists())
+        supabase.auth.admin.delete_user.assert_not_called()
+        self.assertIn("would purge", out.getvalue())
 
 
 class PageViewTests(TestCase):
