@@ -867,6 +867,12 @@ body {
   color: var(--badge-blue-txt);
 }
 
+/* API live/demo mode badge (dashboard.js setApiMode) */
+#apiModeBadge {
+  margin-right: 8px;
+  letter-spacing: 0.04em;
+}
+
 .penpot-leave-pill {
   padding: 4px 10px;
   border-radius: 12px;

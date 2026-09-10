@@ -10,6 +10,35 @@ document.addEventListener('DOMContentLoaded', () => {
   loadEmployeeDirectory();
 });
 
+// ==========================================================================
+// Session auth + API mode badge (R2/R8)
+// Same-origin dashboard calls use session auth + CSRF; DRF tokens stay for
+// scripts/operator use. apiFetch is the single helper for ALL API calls:
+// it sends cookies + CSRF and bounces logged-out users to /login/?next=.
+// setApiMode drives the #apiModeBadge (LIVE green / DEMO DATA amber).
+// ==========================================================================
+function apiFetch(url, options = {}) {
+  const csrf = document.cookie.split('; ').find((c) => c.startsWith('csrftoken='))?.split('=')[1];
+  return fetch(url, {
+    credentials: 'same-origin',
+    ...options,
+    headers: { 'Content-Type': 'application/json', ...(csrf ? { 'X-CSRFToken': csrf } : {}), ...(options.headers || {}) },
+  }).then((res) => {
+    if (res.status === 403) { window.location.href = '/login/?next=' + encodeURIComponent(window.location.pathname); throw new Error('auth'); }
+    return res;
+  });
+}
+
+function setApiMode(mode) {
+  document.body.dataset.api = mode;
+  const badge = document.getElementById('apiModeBadge');
+  if (badge) {
+    const live = mode === 'live';
+    badge.textContent = live ? 'LIVE' : 'DEMO DATA';
+    badge.className = 'penpot-badge ' + (live ? 'badge-present' : 'badge-pending');
+  }
+}
+
 // Automatic Logo Path Resolver for file:// and http:// protocols
 function initBrandLogo() {
   const isFileProtocol = window.location.protocol === 'file:';
@@ -255,16 +284,11 @@ function handleOnboarding(e) {
     last_name: parts.slice(1).join(' ') || '',
     email,
   };
-  fetch('/api/employees/', {
+  apiFetch('/api/employees/', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify(payload),
   })
     .then(async (res) => {
-      if (res.status === 403) {
-        window.location.href = '/login/';
-        return null;
-      }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         const err =
@@ -283,7 +307,7 @@ function handleOnboarding(e) {
       form.reset();
       loadEmployeeDirectory();
     })
-    .catch(() => showToast('Unable to create employee upstream. Try again later.'));
+    .catch(() => showToast('Unable to create employee upstream. Try again later.', 'error'));
 }
 
 // Grievance handler
@@ -335,7 +359,7 @@ function handleShiftDateChange(dateVal) {
     const label = formatShiftDisplayDate(d);
     const displayEl = document.getElementById('shiftDateDisplay');
     if (displayEl) {
-      displayEl.textContent = `Live allocation for ${label}`;
+      displayEl.textContent = `Allocation (demo) for ${label}`;
     }
     showToast(`Roster updated for ${label}`);
   }
@@ -410,10 +434,10 @@ function confirmAddStaff(shiftKey) {
   userRow.className = 'shift-slot-user-row';
   userRow.innerHTML = `
     <div class="shift-slot-user-left">
-      <div class="shift-staff-avatar" style="width:28px; height:28px; font-size:11px;">${initials}</div>
+      <div class="shift-staff-avatar" style="width:28px; height:28px; font-size:11px;">${escapeHtml(initials)}</div>
       <div>
-        <strong style="font-size:13px; color:#0f172a;">${name}</strong>
-        <div style="font-size:11px; color:#64748b;">${jobTitle} &bull; ${roleTag}</div>
+        <strong style="font-size:13px; color:#0f172a;">${escapeHtml(name)}</strong>
+        <div style="font-size:11px; color:#64748b;">${escapeHtml(jobTitle)} &bull; ${escapeHtml(roleTag)}</div>
       </div>
     </div>
     <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
@@ -425,7 +449,7 @@ function confirmAddStaff(shiftKey) {
   if (shiftBadge) {
     shiftBadge.className = 'penpot-badge badge-present';
     shiftBadge.style.fontSize = '11px';
-    shiftBadge.textContent = 'Confirmed';
+    shiftBadge.textContent = 'Draft';
   }
 
   // Reset and hide form
@@ -598,9 +622,8 @@ function handleApplyLeave(e) {
     showToast('Applicant is not in the live employee directory yet.');
     return;
   }
-  fetch('/api/leaves/', {
+  apiFetch('/api/leaves/', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({
       employee: employeeId,
       leave_type: selects[1]?.value || 'Personal',
@@ -610,10 +633,6 @@ function handleApplyLeave(e) {
     }),
   })
     .then(async (res) => {
-      if (res.status === 403) {
-        window.location.href = '/login/';
-        return null;
-      }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         const err =
@@ -631,7 +650,7 @@ function handleApplyLeave(e) {
       showToast('Leave request submitted for HR approval.');
       form.reset();
     })
-    .catch(() => showToast('Unable to file leave. Try again later.'));
+    .catch(() => showToast('Unable to file leave. Try again later.', 'error'));
 }
 
 
@@ -759,39 +778,38 @@ function togglePasswordVisibility(inputId, btn) {
 
 function handleAuthLogin(e) {
   if (e) e.preventDefault();
-  const empId = document.getElementById('loginEmployeeId')?.value || 'Marcus Williams';
-  showToast(`Welcome back, ${empId}! Authenticated to Kumon EMS.`);
-  sessionStorage.setItem('kumon_ems_auth_user', empId);
-
-  const currentPath = window.location.pathname.toLowerCase();
-  const isFileProtocol = window.location.protocol === 'file:';
-
-  if (isFileProtocol || currentPath.includes('login') || currentPath.includes('auth') || currentPath.includes('signup')) {
-    setTimeout(() => {
-      if (isFileProtocol || currentPath.endsWith('.html')) {
-        window.location.href = 'dashboard.html';
-      } else {
-        window.location.href = '/';
+  const username = (document.getElementById('loginEmployeeId')?.value || '').trim();
+  const password = document.getElementById('loginPasswordInput')?.value || '';
+  // Real session login — deliberately NOT via apiFetch: a failed login must
+  // stay on the page and show the error, never bounce with ?next=.
+  const csrf = document.cookie.split('; ').find((c) => c.startsWith('csrftoken='))?.split('=')[1];
+  fetch('/api/session-login/', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json', ...(csrf ? { 'X-CSRFToken': csrf } : {}) },
+    body: JSON.stringify({ username, password }),
+  })
+    .then(async (res) => {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        showToast(typeof data.error === 'string' ? data.error : 'Invalid credentials.', 'error');
+        return null;
       }
-    }, 400);
-  } else if (currentPath.includes('dashboard')) {
-    switchView('dashboard');
-  } else {
-    setTimeout(() => {
-      if (isFileProtocol || currentPath.endsWith('.html')) {
-        window.location.href = 'index.html';
-      } else {
-        window.location.href = '/';
-      }
-    }, 400);
-  }
+      return data;
+    })
+    .then((data) => {
+      if (!data) return;
+      showToast(`Welcome back, ${username}! Signed in.`);
+      const next = new URLSearchParams(window.location.search).get('next') || '/';
+      window.location.href = next;
+    })
+    .catch(() => showToast('Sign-in service unreachable. Try again later.', 'error'));
 }
 
 function handleAuthSignup(e) {
   if (e) e.preventDefault();
   const empId = document.getElementById('signupEmployeeId')?.value || 'New Employee';
   showToast(`Account registered successfully! Welcome to Kumon EMS, ${empId}.`);
-  sessionStorage.setItem('kumon_ems_auth_user', empId);
 
   const currentPath = window.location.pathname.toLowerCase();
   const isFileProtocol = window.location.protocol === 'file:';
@@ -830,11 +848,9 @@ function navigateToLogin(mode = 'login') {
 
 function signOut() {
   showToast('Signing out of corporate session...');
-  sessionStorage.removeItem('kumon_ems_auth_user');
-
-  setTimeout(() => {
-    navigateToLogin('login');
-  }, 400);
+  apiFetch('/api/session-logout/', { method: 'POST' })
+    .catch(() => {})
+    .finally(() => navigateToLogin('login'));
 }
 
 // ==========================================================================
@@ -926,7 +942,7 @@ function exportAuditLogs() {
 // Minimal toast (showToast is called across this file but had no definition;
 // keep the static demo values on screen when the API is unreachable).
 if (typeof window.showToast !== 'function') {
-  window.showToast = function (message) {
+  window.showToast = function (message, type) {
     let toast = document.getElementById('liveToast');
     if (!toast) {
       toast = document.createElement('div');
@@ -938,6 +954,7 @@ if (typeof window.showToast !== 'function') {
       document.body.appendChild(toast);
     }
     toast.textContent = message;
+    toast.style.background = type === 'error' ? '#991b1b' : '#0f172a';
     toast.style.display = 'block';
     clearTimeout(window.__liveToastTimer);
     window.__liveToastTimer = setTimeout(() => {
@@ -947,14 +964,15 @@ if (typeof window.showToast !== 'function') {
 }
 
 // Public aggregate counts for the landing page; on failure the static demo
-// values in the template stay untouched (graceful offline/demo fallback).
+// values stay but the badge + error toast say so LOUDLY (no silent fallback).
 function loadDashboardSummary() {
-  fetch('/api/dashboard-summary/', { headers: { Accept: 'application/json' } })
+  apiFetch('/api/dashboard-summary/', { headers: { Accept: 'application/json' } })
     .then((res) => {
       if (!res.ok) throw new Error('summary unavailable');
       return res.json();
     })
     .then((data) => {
+      setApiMode('live');
       const values = document.querySelectorAll(
         '#view-dashboard .kpi-cards-4grid .kpi-card .kpi-value'
       );
@@ -967,8 +985,10 @@ function loadDashboardSummary() {
         values[3].textContent = String(data.pending_leaves || 0).padStart(2, '0');
       }
     })
-    .catch(() => {
-      /* leave static demo values */
+    .catch((err) => {
+      if (err && err.message === 'auth') return; // apiFetch already redirected
+      setApiMode('demo');
+      showToast('API unreachable — showing demo data', 'error');
     });
 }
 
@@ -980,17 +1000,13 @@ const employeeNameIndex = {};
 function loadEmployeeDirectory() {
   const list = document.getElementById('employeeRosterList');
   if (!list) return;
-  fetch('/api/employees/', { headers: { Accept: 'application/json' } })
+  apiFetch('/api/employees/', { headers: { Accept: 'application/json' } })
     .then((res) => {
-      if (res.status === 403) {
-        window.location.href = '/login/';
-        return null;
-      }
       if (!res.ok) throw new Error('directory unavailable');
       return res.json();
     })
     .then((data) => {
-      if (!data) return;
+      setApiMode('live');
       const rows = Array.isArray(data) ? data : data.results || [];
       list.innerHTML = '';
       rows.forEach((emp) => {
@@ -1019,8 +1035,10 @@ function loadEmployeeDirectory() {
       });
       if (typeof filterDirectory === 'function') filterDirectory();
     })
-    .catch(() => {
-      /* leave static demo cards */
+    .catch((err) => {
+      if (err && err.message === 'auth') return; // apiFetch already redirected
+      setApiMode('demo');
+      showToast('API unreachable — showing demo data', 'error');
     });
 }
 

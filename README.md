@@ -13,6 +13,35 @@ Kumon EMS is a Django-based employee-management dashboard. The server-rendered d
 | Employee onboarding | `POST /api/employees/` | Creates an employee profile from the onboarding form. |
 | Leave application | `POST /api/leaves/` | Submits a pending leave request from the modal form. |
 
+### Auth contract
+
+- Browser dashboard (`static/js/dashboard.js`, via `apiFetch`) uses **session auth + CSRF**: sign in with `POST /api/session-login/` (`{"username", "password"}` → `200` + session cookie; wrong creds → `401`), sign out with `POST /api/session-logout/`. Logged-out API calls get `403` and the JS bounces to `/login/?next=<page>`.
+- Scripts/operator use uses tokens: `POST /api/auth-token/` (`{"username", "password"}` → `{"token"}`), then `Authorization: Token <token>`.
+- Logged-out rule: everything returns `403` except the public `GET /api/dashboard-summary/` aggregate.
+
+### Error envelope
+
+Every API error body is `{"error": "<string>"}` (statuses untouched). **409 = the request is well-formed but conflicts with current resource state** (duplicate email, double clock-in, overlapping shift, duplicate payroll line); malformed input stays `400`.
+
+### Ops
+
+Preview what the retention purge would delete, then run it:
+
+```bash
+python manage.py purge_resigned --dry-run
+python manage.py purge_resigned --days 30
+```
+
+Run weekly as the operator (example cron — do not install from here):
+
+```cron
+0 2 * * 0 cd /path/to/kumon-ems- && .venv/bin/python manage.py purge_resigned >> purge.log 2>&1
+```
+
+On Windows use the Task Scheduler equivalent (weekly, same command). Payroll lines are posted manually per pay run — never auto-derived from attendance (overtime/leave-pay rules are unspecified product decisions).
+
+List endpoints are paginated (`results` key, 10 per page).
+
 ## Local setup
 
 Create and activate a virtual environment, then install the project packages with valid package names:
