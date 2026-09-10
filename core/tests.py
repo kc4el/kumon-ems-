@@ -88,12 +88,25 @@ class PaginationOrderingTests(TestCase):
             ShiftRosterListCreateView,
         )
 
-        self.assertEqual(EmployeeListCreateView.queryset.query.order_by, ("id",))
-        self.assertEqual(ShiftRosterListCreateView.queryset.query.order_by, ("id",))
-        self.assertEqual(PayrollRunListCreateView.queryset.query.order_by, ("id",))
-        self.assertEqual(PayrollItemListCreateView.queryset.query.order_by, ("id",))
         self.assertEqual(
-            PerformanceReviewListCreateView.queryset.query.order_by, ("id",)
+            EmployeeListCreateView.queryset.query.order_by,
+            ("last_name", "first_name"),
+        )
+        self.assertEqual(
+            ShiftRosterListCreateView.queryset.query.order_by,
+            ("work_date", "start_time"),
+        )
+        self.assertEqual(
+            PayrollRunListCreateView.queryset.query.order_by,
+            ("-pay_period_start",),
+        )
+        self.assertEqual(
+            PayrollItemListCreateView.queryset.query.order_by,
+            ("payroll_run__pay_period_start", "employee__last_name"),
+        )
+        self.assertEqual(
+            PerformanceReviewListCreateView.queryset.query.order_by,
+            ("-review_date",),
         )
 
 

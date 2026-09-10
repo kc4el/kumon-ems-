@@ -53,10 +53,20 @@ class ApiTests(TestCase):
                 response = self.client.get(endpoint)
                 self.assertEqual(response.status_code, 200)
                 results = response.json()
-                if isinstance(results, dict):
-                    self.assertEqual(results["results"], [])
-                else:
-                    self.assertEqual(results, [])
+                self.assertIsInstance(results, dict)
+                self.assertEqual(results["results"], [])
+
+    def test_employee_list_is_ordered_by_last_name(self):
+        Employee.objects.create(
+            first_name="Zed", last_name="Zulu", email="zulu@example.com"
+        )
+        Employee.objects.create(
+            first_name="Amy", last_name="Alba", email="alba@example.com"
+        )
+        response = self.client.get("/api/employees/")
+        self.assertEqual(response.status_code, 200)
+        last_names = [row["last_name"] for row in response.json()["results"]]
+        self.assertEqual(last_names, ["Alba", "Zulu"])
 
     def test_dashboard_summary_aggregates_database_records(self):
         department = Department.objects.create(name="Operations", code="OPS")

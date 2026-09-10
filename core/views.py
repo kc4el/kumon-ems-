@@ -87,7 +87,6 @@ class DashboardSummaryView(APIView):
 class DepartmentListCreateView(generics.ListCreateAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
-    pagination_class = None
 
 
 class DepartmentDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -96,7 +95,7 @@ class DepartmentDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class EmployeeListCreateView(generics.ListCreateAPIView):
-    queryset = Employee.objects.all().order_by("id")
+    queryset = Employee.objects.all().order_by("last_name", "first_name")
     serializer_class = EmployeeSerializer
 
     def post(self, request, *args, **kwargs):
@@ -244,7 +243,7 @@ class LeaveRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class ShiftRosterListCreateView(generics.ListCreateAPIView):
-    queryset = ShiftRoster.objects.all().order_by("id")
+    queryset = ShiftRoster.objects.all().order_by("work_date", "start_time")
     serializer_class = ShiftRosterSerializer
 
 
@@ -254,7 +253,7 @@ class ShiftRosterDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class PayrollRunListCreateView(generics.ListCreateAPIView):
-    queryset = PayrollRun.objects.all().order_by("id")
+    queryset = PayrollRun.objects.all().order_by("-pay_period_start")
     serializer_class = PayrollRunSerializer
 
 
@@ -264,7 +263,9 @@ class PayrollRunDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class PayrollItemListCreateView(generics.ListCreateAPIView):
-    queryset = PayrollItem.objects.all().order_by("id")
+    queryset = PayrollItem.objects.all().order_by(
+        "payroll_run__pay_period_start", "employee__last_name"
+    )
     serializer_class = PayrollItemSerializer
 
     def perform_create(self, serializer):
@@ -292,7 +293,7 @@ class PayrollItemDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class PerformanceReviewListCreateView(generics.ListCreateAPIView):
-    queryset = PerformanceReview.objects.all().order_by("id")
+    queryset = PerformanceReview.objects.all().order_by("-review_date")
     serializer_class = PerformanceReviewSerializer
 
 
