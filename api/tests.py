@@ -479,3 +479,9 @@ class ApiTests(TestCase):
                 employee=employee, reason="Annual leave"
             ).exists()
         )
+
+    def test_api_throttle_rates_are_configured(self):
+        from rest_framework.settings import api_settings
+
+        self.assertEqual(api_settings.DEFAULT_THROTTLE_RATES["anon"], "100/day")
+        self.assertEqual(api_settings.DEFAULT_THROTTLE_RATES["user"], "1000/day")
