@@ -3137,15 +3137,15 @@ body {
 
 .composer-input-row {
   display: flex;
-  gap: 10px;
-  margin-bottom: 8px;
+  align-items: center;
+  gap: 8px;
 }
 
 .composer-input-row input {
   flex: 1;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
-  padding: 10px 14px;
+  padding: 9px 14px;
   font-family: inherit;
   font-size: 13.5px;
   color: #0f172a;
@@ -3156,64 +3156,26 @@ body {
   border-color: #2563eb;
 }
 
-.composer-tools-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  position: relative;
-}
-
-.mention-picker {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  right: 0;
-  z-index: 10;
-  display: grid;
-  min-width: 180px;
-  padding: 6px;
-  background: #ffffff;
-  border: 1px solid #d9e0ea;
-  border-radius: 6px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
-}
-
-.mention-picker[hidden] {
-  display: none;
-}
-
-.mention-picker button {
-  padding: 8px 10px;
-  border: 0;
-  background: transparent;
-  color: #24324a;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.mention-picker button:hover {
-  background: #eef3f8;
-}
-
 .composer-tool-btn {
   background: transparent;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  padding: 4px 10px;
-  font-family: inherit;
-  font-size: 11.5px;
-  font-weight: 600;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   color: #475569;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  flex-shrink: 0;
   transition: all 0.15s ease;
 }
 
 .composer-tool-btn:hover {
   background-color: #f1f5f9;
   color: #0f172a;
+  border-color: #cbd5e1;
 }
 
 /* --------------------------------------------------------------------------
