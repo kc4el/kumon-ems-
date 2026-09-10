@@ -6,6 +6,8 @@
 document.addEventListener('DOMContentLoaded', () => {
   initBrandLogo();
   initNavigation();
+  loadDashboardSummary();
+  loadEmployeeDirectory();
 });
 
 // Automatic Logo Path Resolver for file:// and http:// protocols
@@ -834,6 +836,111 @@ function exportAuditLogs() {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+}
+
+// ==========================================================================
+// Live API wiring: dashboard summary + employee directory
+// ==========================================================================
+
+// Minimal toast (showToast is called across this file but had no definition;
+// keep the static demo values on screen when the API is unreachable).
+if (typeof window.showToast !== 'function') {
+  window.showToast = function (message) {
+    let toast = document.getElementById('liveToast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'liveToast';
+      toast.style.cssText =
+        'position:fixed;bottom:24px;right:24px;z-index:9999;' +
+        'background:#0f172a;color:#fff;padding:12px 16px;border-radius:8px;' +
+        'font-size:14px;max-width:320px;box-shadow:0 8px 24px rgba(0,0,0,.25);';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.style.display = 'block';
+    clearTimeout(window.__liveToastTimer);
+    window.__liveToastTimer = setTimeout(() => {
+      toast.style.display = 'none';
+    }, 4000);
+  };
+}
+
+// Public aggregate counts for the landing page; on failure the static demo
+// values in the template stay untouched (graceful offline/demo fallback).
+function loadDashboardSummary() {
+  fetch('/api/dashboard-summary/', { headers: { Accept: 'application/json' } })
+    .then((res) => {
+      if (!res.ok) throw new Error('summary unavailable');
+      return res.json();
+    })
+    .then((data) => {
+      const values = document.querySelectorAll(
+        '#view-dashboard .kpi-cards-4grid .kpi-card .kpi-value'
+      );
+      if (values.length >= 4) {
+        values[0].textContent = data.total_employees;
+        // values[1] (applicants) has no API source; leave the demo value.
+        values[2].textContent = String(
+          (data.approved_leaves || 0) + (data.pending_leaves || 0)
+        ).padStart(2, '0');
+        values[3].textContent = String(data.pending_leaves || 0).padStart(2, '0');
+      }
+    })
+    .catch(() => {
+      /* leave static demo values */
+    });
+}
+
+// Live employee directory keyed by lowercase full name (reused by the leave
+// modal to resolve an applicant to an employee id). Auth-only endpoint:
+// logged-out visitors are sent to the canonical login page.
+const employeeNameIndex = {};
+
+function loadEmployeeDirectory() {
+  const list = document.getElementById('employeeRosterList');
+  if (!list) return;
+  fetch('/api/employees/', { headers: { Accept: 'application/json' } })
+    .then((res) => {
+      if (res.status === 403) {
+        window.location.href = '/login/';
+        return null;
+      }
+      if (!res.ok) throw new Error('directory unavailable');
+      return res.json();
+    })
+    .then((data) => {
+      if (!data) return;
+      const rows = Array.isArray(data) ? data : data.results || [];
+      list.innerHTML = '';
+      rows.forEach((emp) => {
+        const fullName = `${emp.first_name || ''} ${emp.last_name || ''}`.trim();
+        employeeNameIndex[fullName.toLowerCase()] = emp.id;
+        const card = document.createElement('div');
+        card.className = 'roster-accordion-card';
+        card.setAttribute('data-live', 'true');
+        card.setAttribute('data-dept', emp.department_name || '');
+        card.setAttribute('data-role', emp.role || '');
+        card.setAttribute(
+          'data-status',
+          emp.is_active === false ? 'On Leave' : 'Present Today'
+        );
+        card.innerHTML =
+          `<div class="acc-summary" onclick="toggleAccordion(this)">` +
+          `<div class="acc-left">` +
+          `<strong class="acc-name">${escapeHtml(fullName)}</strong>` +
+          `<span class="acc-role">${escapeHtml(emp.role || '')} &bull; ${escapeHtml(emp.email || '')}</span>` +
+          `</div>` +
+          `<div class="acc-right">` +
+          `<span class="penpot-badge ${emp.is_active === false ? 'badge-leave' : 'badge-present'}">` +
+          `${emp.is_active === false ? 'Inactive' : 'Active'}</span>` +
+          `</div></div>`;
+        list.appendChild(card);
+      });
+      if (typeof filterDirectory === 'function') filterDirectory();
+    })
+    .catch(() => {
+      /* leave static demo cards */
+    });
 }
 
 
