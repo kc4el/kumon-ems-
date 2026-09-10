@@ -1,6 +1,7 @@
 import logging
 import uuid
 
+from django.db import IntegrityError, transaction
 from django.shortcuts import render
 from django.utils import timezone
 from rest_framework import generics, status
@@ -9,6 +10,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .exceptions import Conflict409
 from .models import (
     Attendance,
     Department,
@@ -153,6 +155,13 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
 class AttendanceListCreateView(generics.ListCreateAPIView):
     queryset = Attendance.objects.all().order_by("-date", "-clock_in")
     serializer_class = AttendanceSerializer
+
+    def perform_create(self, serializer):
+        try:
+            with transaction.atomic():
+                serializer.save()
+        except IntegrityError:
+            raise Conflict409("This employee has already clocked in on this date.")
 
 
 class AttendanceDetailView(generics.RetrieveUpdateDestroyAPIView):

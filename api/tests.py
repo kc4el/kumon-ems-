@@ -3,10 +3,12 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
+from django.db import IntegrityError
 from django.test import TestCase
 from django.utils import timezone
 from rest_framework.test import APIClient
 
+from core.exceptions import Conflict409
 from core.models import Attendance, Department, Employee, LeaveRequest
 
 
@@ -169,6 +171,28 @@ class ApiTests(TestCase):
         # delete_user must not be called when nothing was created... instead
         # force the success-then-failure path below via return value + save error
         supabase.auth.admin.delete_user.assert_not_called()
+
+    def test_attendance_duplicate_returns_400_fast_path(self):
+        employee = Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        Attendance.objects.create(
+            employee=employee, date=date.today(), clock_in=timezone.now()
+        )
+        response = self.client.post(
+            "/api/attendance/",
+            {"employee": str(employee.id), "date": str(date.today())},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_attendance_race_maps_to_409(self):
+        from core.views import AttendanceListCreateView
+
+        view = AttendanceListCreateView()
+        with patch("core.views.transaction.atomic", side_effect=IntegrityError("race")):
+            with self.assertRaises(Conflict409):
+                view.perform_create(serializer=None)
 
     def test_leave_create_persists_leave_request(self):
         employee = Employee.objects.create(
