@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadMessagesForConversation('sarah');
   loadAttendanceView();
   loadShiftRosterView();
+  loadAuditView();
 });
 
 // ==========================================================================
@@ -266,10 +267,33 @@ function setPtMode(mode) {
   }
 }
 
-// Offboarding handler
-function handleOffboardingSubmit(e) {
+// Offboarding handler — resolves the employee by corporate email, then
+// DELETEs via the existing soft-delete (resign) flow.
+async function handleOffboardingSubmit(e) {
   e.preventDefault();
-  showToast('Offboarding finalized and exit clearance issued successfully!');
+  const form = e.target;
+  const email = form.querySelector('input[type="email"]')?.value.trim() || '';
+  if (!email) {
+    showToast('Corporate email is required to offboard.', 'error');
+    return;
+  }
+  try {
+    const listRes = await apiFetch('/api/employees/?page_size=50');
+    if (!listRes.ok) throw new Error('lookup failed');
+    const payload = await listRes.json();
+    const rows = Array.isArray(payload) ? payload : payload.results || [];
+    const match = rows.find((emp) => (emp.email || '').toLowerCase() === email.toLowerCase());
+    if (!match) {
+      showToast(`No employee found for ${email}.`, 'error');
+      return;
+    }
+    const delRes = await apiFetch(`/api/employees/${match.id}/`, { method: 'DELETE' });
+    if (!delRes.ok) throw new Error('offboard failed');
+    showToast('Offboarding finalized and exit clearance issued successfully!');
+    form.reset();
+  } catch (error) {
+    showToast('Offboarding could not be completed. Try again later.', 'error');
+  }
 }
 
 // Onboarding modal open / close handlers
@@ -1346,6 +1370,43 @@ async function loadPayrollView() {
     setApiMode('demo');
     showToast('Payroll unreachable — showing demo data', 'error');
   }
+}
+
+async function loadAuditView() {
+  const body = document.getElementById('auditLogsTableBody');
+  if (!body) return;
+  const demo = body.innerHTML;
+  body.innerHTML = '<tr><td colspan="7">Loading…</td></tr>';
+  try {
+    const res = await apiFetch('/api/audit-logs/?page_size=50');
+    if (!res.ok) throw new Error('load failed');
+    const payload = await res.json();
+    const rows = Array.isArray(payload) ? payload : payload.results || [];
+    let names = {};
+    try { names = await liveEmployeeNames(); } catch (_) { /* fall back to System */ }
+    body.innerHTML = '';
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="7">No records yet.</td></tr>';
+    } else {
+      rows.forEach((log) => {
+        const who = names[log.employee] || 'System';
+        const when = log.timestamp ? new Date(log.timestamp).toLocaleString() : '—';
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-live', 'true');
+        tr.setAttribute('data-category', 'General');
+        tr.setAttribute('data-admin', who);
+        tr.innerHTML =
+          `<td><div class="claims-applicant-cell"><div class="claims-applicant-info">` +
+          `<strong>${escapeHtml(String(who))}</strong></div></div></td>` +
+          `<td>General</td><td>${escapeHtml(String(when))}</td>` +
+          `<td>${escapeHtml(String(log.action || ''))}</td><td>—</td>` +
+          `<td><span class="penpot-badge badge-present">Logged</span></td>` +
+          `<td style="text-align: right;">${escapeHtml(String(log.id || '').slice(0, 8))}</td>`;
+        body.appendChild(tr);
+      });
+    }
+    setApiMode('live');
+  } catch (e) { body.innerHTML = demo; setApiMode('demo'); showToast('Audit log unreachable — showing demo data', 'error'); }
 }
 
 
