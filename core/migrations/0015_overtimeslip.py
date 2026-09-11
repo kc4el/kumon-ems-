@@ -10,7 +10,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0013_notification"),
+        ("core", "0014_leaveallocation"),
     ]
 
     operations = [
