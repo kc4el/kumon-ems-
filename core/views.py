@@ -403,13 +403,23 @@ class ClaimStatusListCreateView(generics.ListCreateAPIView):
     queryset = ClaimStatus.objects.all().order_by("claim_id")
     serializer_class = ClaimStatusSerializer
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def perform_create(self, serializer):
-        claim_id = self.request.data.get("claim_id")
-        status_value = self.request.data.get("status")
-        serializer.instance, _ = ClaimStatus.objects.update_or_create(
-            claim_id=claim_id,
-            defaults={"status": status_value},
-        )
+        data = serializer.validated_data
+        with transaction.atomic():
+            obj, _ = ClaimStatus.objects.select_for_update().get_or_create(
+                claim_id=data["claim_id"],
+                defaults={"status": data["status"]},
+            )
+            if obj.status != data["status"]:
+                obj.status = data["status"]
+                obj.save(update_fields=["status"])
+            serializer.instance = obj
 
 
 class ExpenseClaimListCreateView(generics.ListCreateAPIView):

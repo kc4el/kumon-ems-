@@ -592,6 +592,43 @@ class ApiTests(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()["conversation_key"], "general")
 
+    def test_claim_status_empty_payload_returns_400(self):
+        response = self.client.post("/api/claim-statuses/", {}, format="json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_claim_status_blank_claim_id_returns_400(self):
+        response = self.client.post(
+            "/api/claim-statuses/",
+            {"claim_id": "  ", "status": "ok"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_claim_status_unknown_status_returns_400(self):
+        response = self.client.post(
+            "/api/claim-statuses/",
+            {"claim_id": "C-1", "status": "Exploded"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_claim_status_upsert_is_idempotent(self):
+        from core.models import ClaimStatus
+
+        first = self.client.post(
+            "/api/claim-statuses/",
+            {"claim_id": "C-1", "status": "Pending"},
+            format="json",
+        )
+        second = self.client.post(
+            "/api/claim-statuses/",
+            {"claim_id": "C-1", "status": "Pending"},
+            format="json",
+        )
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(ClaimStatus.objects.filter(claim_id="C-1").count(), 1)
+
 
 class SessionAuthTests(TestCase):
     def test_session_login_wrong_credentials_returns_401(self):

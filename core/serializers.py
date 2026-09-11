@@ -177,8 +177,17 @@ class MessageSerializer(serializers.ModelSerializer):
 
 
 class ClaimStatusSerializer(serializers.ModelSerializer):
+    STATUS_CHOICES = ("Pending", "Approved", "Rejected")
+    status = serializers.ChoiceField(choices=STATUS_CHOICES)
+
     class Meta:
         model = ClaimStatus
         fields = ("claim_id", "status", "updated_at")
         read_only_fields = ("updated_at",)
-        extra_kwargs = {"claim_id": {"validators": []}}
+        extra_kwargs = {
+            "claim_id": {
+                "validators": [],
+                "allow_blank": False,
+                "trim_whitespace": True,
+            }
+        }
