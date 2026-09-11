@@ -160,6 +160,15 @@ function switchView(viewName) {
     if (placeholderPanel && placeholderTitle) {
       placeholderTitle.textContent = viewName.replace('-', ' ').toUpperCase();
       placeholderPanel.classList.add('active');
+      const payrollWrap = document.getElementById('payrollLiveWrap');
+      if (payrollWrap) {
+        if (viewName.includes('payroll')) {
+          payrollWrap.style.display = 'block';
+          loadPayrollView();
+        } else {
+          payrollWrap.style.display = 'none';
+        }
+      }
     }
   }
 
@@ -1295,6 +1304,48 @@ async function loadShiftRosterView() {
     }
     setApiMode('live');
   } catch (e) { setApiMode('demo'); showToast('Shift roster unreachable — showing demo data', 'error'); }
+}
+
+async function loadPayrollView() {
+  const body = document.getElementById('payrollRunsTableBody');
+  if (!body) return;
+  try {
+    const res = await apiFetch('/api/payroll-runs/?page_size=50');
+    if (!res.ok) throw new Error('load failed');
+    const payload = await res.json();
+    const runs = Array.isArray(payload) ? payload : payload.results || [];
+    let items = [];
+    try {
+      const itemRes = await apiFetch('/api/payroll-items/?page_size=50');
+      if (itemRes.ok) {
+        const itemPayload = await itemRes.json();
+        items = Array.isArray(itemPayload) ? itemPayload : itemPayload.results || [];
+      }
+    } catch (_) { /* lines stay zeroed */ }
+    body.innerHTML = '';
+    if (!runs.length) {
+      body.innerHTML = '<tr><td colspan="4">No records yet.</td></tr>';
+    } else {
+      runs.forEach((run) => {
+        const lines = items.filter((i) => i.payroll_run === run.id);
+        const total = lines.reduce((sum, i) => sum + Number(i.net_pay || 0), 0);
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-live', 'true');
+        tr.innerHTML =
+          `<td>${escapeHtml(String(run.pay_period_start || ''))} – ${escapeHtml(String(run.pay_period_end || ''))}</td>` +
+          `<td>${run.is_processed ? 'Yes' : 'No'}</td>` +
+          `<td>${lines.length}</td>` +
+          `<td>${escapeHtml(total.toFixed(2))}</td>`;
+        body.appendChild(tr);
+      });
+    }
+    setApiMode('live');
+  } catch (e) {
+    const wrap = document.getElementById('payrollLiveWrap');
+    if (wrap) wrap.style.display = 'none';
+    setApiMode('demo');
+    showToast('Payroll unreachable — showing demo data', 'error');
+  }
 }
 
 

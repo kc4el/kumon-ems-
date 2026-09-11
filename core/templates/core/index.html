@@ -3715,6 +3715,22 @@
           <h3 style="font-size:22px; font-weight:800; color:#0f172a; margin-bottom:8px;">Production Module Active</h3>
           <p style="color:#64748b; max-width:480px; margin:0 auto 24px auto;">This module connects directly with
             Kumon EMS records and HR analytics.</p>
+          <!-- Live payroll runs (H7c: filled from /api/payroll-runs/ when a payroll view opens) -->
+          <div id="payrollLiveWrap" style="display:none; text-align:left; max-width:720px; margin:0 auto 24px auto;">
+            <table class="penpot-table">
+              <thead>
+                <tr>
+                  <th>PAY PERIOD</th>
+                  <th>PROCESSED</th>
+                  <th>LINES</th>
+                  <th>TOTAL NET</th>
+                </tr>
+              </thead>
+              <tbody id="payrollRunsTableBody">
+                <tr><td colspan="4">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
           <button class="btn btn-navy-cta" onclick="switchView('dashboard')">Back to Overview</button>
         </div>
       </section>
