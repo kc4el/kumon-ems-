@@ -31,6 +31,7 @@ from .models import (
     PayrollRun,
     PerformanceReview,
     ShiftRoster,
+    ShiftSwap,
 )
 from .serializers import (
     AttendanceSerializer,
@@ -48,6 +49,7 @@ from .serializers import (
     PayrollRunSerializer,
     PerformanceReviewSerializer,
     ShiftRosterSerializer,
+    ShiftSwapSerializer,
 )
 from .supabase_client import supabase
 
@@ -455,6 +457,98 @@ class ShiftRosterListCreateView(generics.ListCreateAPIView):
 class ShiftRosterDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = ShiftRoster.objects.all()
     serializer_class = ShiftRosterSerializer
+
+
+class ShiftSwapListCreateView(generics.ListCreateAPIView):
+    queryset = ShiftSwap.objects.all().order_by("-created_at")
+    serializer_class = ShiftSwapSerializer
+
+
+class ShiftSwapDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = ShiftSwap.objects.all()
+    serializer_class = ShiftSwapSerializer
+
+    def perform_update(self, serializer):
+        # Status-only update: any other patched fields are ignored.
+        instance = serializer.instance
+        serializer.save(
+            requester_roster=instance.requester_roster,
+            target_roster=instance.target_roster,
+            reason=instance.reason,
+            status=serializer.validated_data.get("status", instance.status),
+        )
+
+    def patch(self, request, *args, **kwargs):
+        swap = self.get_object()
+        serializer = self.get_serializer(swap, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        new_status = serializer.validated_data.get("status", swap.status)
+        if swap.status != "Pending" and new_status != swap.status:
+            return Response(
+                {"error": "This swap has already been decided."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if new_status == "Approved" and swap.status == "Pending":
+            self._approve_swap(swap)
+        elif new_status == "Rejected" and swap.status == "Pending":
+            with transaction.atomic():
+                swap.status = "Rejected"
+                swap.save(update_fields=["status"])
+                Notification.objects.create(
+                    employee=swap.requester_roster.employee,
+                    kind="shift",
+                    text=(
+                        "Swap rejected for "
+                        f"{swap.requester_roster.work_date} "
+                        f"({swap.requester_roster.shift_type} / "
+                        f"{swap.target_roster.shift_type})"
+                    ),
+                )
+        else:
+            self.perform_update(serializer)
+        return Response(
+            self.get_serializer(self.get_object()).data,
+            status=status.HTTP_200_OK,
+        )
+
+    @staticmethod
+    def _approve_swap(swap):
+        with transaction.atomic():
+            requester = ShiftRoster.objects.select_for_update().get(
+                pk=swap.requester_roster_id
+            )
+            target = ShiftRoster.objects.select_for_update().get(
+                pk=swap.target_roster_id
+            )
+            if not requester.employee_id or not target.employee_id:
+                raise DRFValidationError("Both rosters must have an assigned employee.")
+            new_requester_emp = target.employee_id
+            new_target_emp = requester.employee_id
+            # Re-run the roster overlap guard for each holder's new slot;
+            # a Conflict409 here rolls back the whole swap.
+            for roster, new_emp in (
+                (requester, new_requester_emp),
+                (target, new_target_emp),
+            ):
+                guard = ShiftRosterSerializer(
+                    instance=roster, data={"employee": new_emp}, partial=True
+                )
+                guard.is_valid(raise_exception=True)
+            requester.employee_id = new_requester_emp
+            target.employee_id = new_target_emp
+            requester.save(update_fields=["employee"])
+            target.save(update_fields=["employee"])
+            swap.status = "Approved"
+            swap.save(update_fields=["status"])
+            for roster in (requester, target):
+                Notification.objects.create(
+                    employee_id=roster.employee_id,
+                    kind="shift",
+                    text=(
+                        f"You are now on {roster.shift_type} "
+                        f"{roster.work_date} (swap approved)"
+                    ),
+                )
 
 
 class PayrollRunListCreateView(generics.ListCreateAPIView):
