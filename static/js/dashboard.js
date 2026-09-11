@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadAuditView();
   initDashboardWidgets();
   loadActivityFeed();
+  initTour();
 });
 
 // ==========================================================================
@@ -207,7 +208,7 @@ document.addEventListener("keydown", (e) => {
   const tag = (e.target.tagName || "").toLowerCase();
   if (tag === "input" || tag === "textarea" || e.target.isContentEditable) return;
   if (e.key === "?") { toggleShortcutHelp(); return; }
-  if (e.key === "Escape") { hideShortcutHelp(); kumonKeyPrefix = null; return; }
+  if (e.key === "Escape") { hideShortcutHelp(); if (kumonTourIndex >= 0) endTour(); kumonKeyPrefix = null; return; }
   const seq = kumonKeyPrefix ? kumonKeyPrefix + " " + e.key.toLowerCase() : null;
   kumonKeyPrefix = null;
   if (seq && KUMON_SHORTCUTS[seq]) { switchView(KUMON_SHORTCUTS[seq]); return; }
@@ -331,6 +332,73 @@ async function loadActivityFeed() {
       ? rows.map((r) => `<li>${escapeHtml(String(r.action || "update"))} <span>${escapeHtml(String(r.timestamp || "").slice(0, 16).replace("T", " "))}</span></li>`).join("")
       : "<li>No activity yet today.</li>";
   } catch (e) { list.innerHTML = "<li>Activity unavailable.</li>"; }
+}
+
+// D10: 5-step first-run tour. Steps target view panels that exist
+// (dashboard, attendance-leave, attendance-shift, claims,
+// employee-directory — all verified present in index.html).
+const KUMON_TOUR_KEY = "kumon.tourSeen.v1";
+const KUMON_TOUR_STEPS = [
+  { view: "dashboard", text: "Start here: headcount, leaves and pending actions at a glance." },
+  { view: "attendance-leave", text: "Leaves live here: file, approve, track status." },
+  { view: "attendance-shift", text: "Rosters live here: who works which shift, with conflict flags." },
+  { view: "claims", text: "Claims and reimbursements, with live statuses." },
+  { view: "employee-directory", text: "Everyone in one searchable directory. Press ? anytime for keyboard shortcuts. Tour done — press Esc to close." },
+];
+let kumonTourIndex = -1;
+function startTour() {
+  try { localStorage.removeItem(KUMON_TOUR_KEY); } catch (e) {}
+  kumonTourIndex = -1; nextTourStep();
+}
+function nextTourStep() {
+  kumonTourIndex += 1;
+  if (kumonTourIndex >= KUMON_TOUR_STEPS.length) { endTour(); return; }
+  const step = KUMON_TOUR_STEPS[kumonTourIndex];
+  switchView(step.view);
+  showTourBubble(step, kumonTourIndex + 1, KUMON_TOUR_STEPS.length);
+}
+function endTour() {
+  kumonTourIndex = -1;
+  const b = document.getElementById("tourBubble");
+  if (b) b.remove();
+  try { localStorage.setItem(KUMON_TOUR_KEY, "1"); } catch (e) {}
+}
+function showTourBubble(step, n, total) {
+  const old = document.getElementById("tourBubble");
+  if (old) old.remove();
+  const b = document.createElement("div");
+  b.id = "tourBubble";
+  const p = document.createElement("p");
+  p.textContent = "Step " + n + " of " + total + ": " + step.text;
+  const next = document.createElement("button");
+  next.type = "button";
+  next.textContent = n >= total ? "Finish" : "Next";
+  next.addEventListener("click", nextTourStep);
+  const skip = document.createElement("button");
+  skip.type = "button";
+  skip.textContent = "Skip";
+  skip.addEventListener("click", endTour);
+  b.appendChild(p);
+  b.appendChild(next);
+  b.appendChild(skip);
+  document.body.appendChild(b);
+}
+function initTour() {
+  const view = document.getElementById("view-dashboard");
+  const settings = document.getElementById("widgetSettings");
+  if (view && !document.getElementById("replayTourBtn")) {
+    const btn = document.createElement("button");
+    btn.id = "replayTourBtn";
+    btn.type = "button";
+    btn.textContent = "Replay tour";
+    btn.addEventListener("click", startTour);
+    if (settings && settings.nextSibling) settings.parentElement.insertBefore(btn, settings.nextSibling);
+    else if (settings) settings.parentElement.appendChild(btn);
+    else view.prepend(btn);
+  }
+  let seen = null;
+  try { seen = localStorage.getItem(KUMON_TOUR_KEY); } catch (e) { seen = null; }
+  if (!seen && view) setTimeout(startTour, 800);
 }
 
 // Accordion toggle for Employee Directory
