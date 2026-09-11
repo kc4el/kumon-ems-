@@ -905,6 +905,82 @@ class LeaveAllocationTests(TestCase):
         self.assertEqual(anon.get("/api/leave-allocations/").status_code, 403)
 
 
+class LeaveBalanceTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        user = User.objects.create_user(username="tester", password="x")
+        self.client.force_authenticate(user=user)
+        self.employee = Employee.objects.create(
+            first_name="Bal", last_name="Ance", email="balance@example.com"
+        )
+
+    def test_balance_subtracts_approved_leave(self):
+        LeaveAllocation.objects.create(
+            employee=self.employee,
+            leave_type="Vacation",
+            year=2026,
+            days_total="5.0",
+        )
+        LeaveRequest.objects.create(
+            employee=self.employee,
+            leave_type="Vacation",
+            start_date=date(2026, 5, 1),
+            end_date=date(2026, 5, 2),
+            reason="Trip",
+            status="Approved",
+        )
+        response = self.client.get(
+            f"/api/leave-balances/?employee={self.employee.id}&year=2026"
+        )
+        self.assertEqual(response.status_code, 200)
+        balance = response.json()["balances"]["Vacation"]
+        self.assertEqual(balance["allocated"], 5.0)
+        self.assertEqual(balance["used"], 2)
+        self.assertEqual(balance["remaining"], 3.0)
+
+    def test_balance_without_allocation_uses_defaults(self):
+        response = self.client.get(
+            f"/api/leave-balances/?employee={self.employee.id}&year=2026"
+        )
+        self.assertEqual(response.status_code, 200)
+        balances = response.json()["balances"]
+        self.assertEqual(balances["Vacation"]["allocated"], 5.0)
+        self.assertEqual(balances["Sick"]["allocated"], 5.0)
+
+    def test_balance_requires_params(self):
+        self.assertEqual(self.client.get("/api/leave-balances/").status_code, 400)
+        self.assertEqual(
+            self.client.get(
+                f"/api/leave-balances/?employee={self.employee.id}&year=soon"
+            ).status_code,
+            400,
+        )
+
+    def test_over_balance_approval_still_creates_leave(self):
+        LeaveAllocation.objects.create(
+            employee=self.employee,
+            leave_type="Vacation",
+            year=2026,
+            days_total="5.0",
+        )
+        leave = LeaveRequest.objects.create(
+            employee=self.employee,
+            leave_type="Vacation",
+            start_date=date(2026, 6, 1),
+            end_date=date(2026, 6, 6),
+            reason="Long trip",
+            status="Pending",
+        )
+        response = self.client.patch(
+            f"/api/leaves/{leave.id}/", {"status": "Approved"}, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        balance = self.client.get(
+            f"/api/leave-balances/?employee={self.employee.id}&year=2026"
+        ).json()["balances"]["Vacation"]
+        self.assertEqual(balance["remaining"], -1.0)
+
+
 class SessionAuthTests(TestCase):
     def test_session_login_wrong_credentials_returns_401(self):
         User.objects.create_user(username="sess", password="right")

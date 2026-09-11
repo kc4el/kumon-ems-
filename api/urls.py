@@ -16,6 +16,7 @@ from core.views import (
     ExpenseClaimListCreateView,
     LeaveAllocationDetailView,
     LeaveAllocationListCreateView,
+    LeaveBalanceView,
     LeaveRequestDetailView,
     LeaveRequestListCreateView,
     MessageListCreateView,
@@ -76,6 +77,7 @@ urlpatterns = [
         LeaveAllocationDetailView.as_view(),
         name="leave-allocation-detail",
     ),
+    path("leave-balances/", LeaveBalanceView.as_view(), name="leave-balances"),
     path(
         "shift-rosters/",
         ShiftRosterListCreateView.as_view(),

@@ -332,6 +332,59 @@ class LeaveAllocationDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = LeaveAllocationSerializer
 
 
+def leave_balance(employee_id, leave_type, year):
+    from datetime import date
+
+    from .models import LEAVE_DEFAULTS
+
+    allocated = LeaveAllocation.objects.filter(
+        employee_id=employee_id, leave_type=leave_type, year=year
+    ).first()
+    total = allocated.days_total if allocated else LEAVE_DEFAULTS.get(leave_type, 0)
+    used = 0
+    for leave in LeaveRequest.objects.filter(
+        employee_id=employee_id,
+        leave_type=leave_type,
+        status="Approved",
+        start_date__year__lte=year,
+        end_date__year__gte=year,
+    ):
+        start = max(leave.start_date, date(year, 1, 1))
+        end = min(leave.end_date, date(year, 12, 31))
+        used += (end - start).days + 1
+    return {"allocated": float(total), "used": used, "remaining": float(total) - used}
+
+
+class LeaveBalanceView(APIView):
+    def get(self, request):
+        emp = request.query_params.get("employee")
+        year = request.query_params.get("year")
+        if not emp or not year:
+            return Response(
+                {"error": "employee and year are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            year = int(year)
+        except (TypeError, ValueError):
+            return Response(
+                {"error": "year must be an integer."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        types = list(
+            LeaveAllocation.objects.filter(employee_id=emp, year=year)
+            .values_list("leave_type", flat=True)
+            .distinct()
+        ) or ["Vacation", "Sick"]
+        return Response(
+            {
+                "employee": emp,
+                "year": year,
+                "balances": {t: leave_balance(emp, t, year) for t in types},
+            }
+        )
+
+
 class ShiftConflictView(APIView):
     def get(self, request):
         emp = request.query_params.get("employee")
