@@ -982,3 +982,87 @@ class ShiftSwapTests(TestCase):
         )
         self.assertEqual(second.status_code, 409)
         self.assertEqual(set(second.json().keys()), {"error"})
+
+    def test_approve_swaps_holders_and_notifies_both(self):
+        from core.models import Notification
+
+        emp_a, emp_b, roster_a, roster_b = self._pair()
+        swap = self.client.post(
+            "/api/shift-swaps/",
+            {
+                "requester_roster": str(roster_a.id),
+                "target_roster": str(roster_b.id),
+            },
+            format="json",
+        ).json()
+        response = self.client.patch(
+            f"/api/shift-swaps/{swap['id']}/",
+            {"status": "Approved"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        roster_a.refresh_from_db()
+        roster_b.refresh_from_db()
+        self.assertEqual(roster_a.employee_id, emp_b.id)
+        self.assertEqual(roster_b.employee_id, emp_a.id)
+        for emp in (emp_a, emp_b):
+            self.assertTrue(
+                Notification.objects.filter(
+                    employee=emp, kind="shift", text__icontains="swap approved"
+                ).exists()
+            )
+
+    def test_approve_causing_overlap_returns_409_and_keeps_rows(self):
+        emp_a, emp_b, roster_a, roster_b = self._pair()
+        # emp_a holds an extra shift overlapping roster_b's slot, so handing
+        # roster_b to emp_a must clash and roll back.
+        self._roster(emp_a, date(2026, 9, 1), "14:30:00", "19:00:00")
+        swap = self.client.post(
+            "/api/shift-swaps/",
+            {
+                "requester_roster": str(roster_a.id),
+                "target_roster": str(roster_b.id),
+            },
+            format="json",
+        ).json()
+        response = self.client.patch(
+            f"/api/shift-swaps/{swap['id']}/",
+            {"status": "Approved"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 409)
+        roster_a.refresh_from_db()
+        roster_b.refresh_from_db()
+        self.assertEqual(roster_a.employee.email, "a@example.com")
+        self.assertEqual(roster_b.employee.email, "b@example.com")
+        from core.models import ShiftSwap
+
+        self.assertEqual(ShiftSwap.objects.get(pk=swap["id"]).status, "Pending")
+
+    def test_reject_leaves_rows_and_notifies_requester(self):
+        from core.models import Notification
+
+        emp_a, _, roster_a, roster_b = self._pair()
+        swap = self.client.post(
+            "/api/shift-swaps/",
+            {
+                "requester_roster": str(roster_a.id),
+                "target_roster": str(roster_b.id),
+            },
+            format="json",
+        ).json()
+        response = self.client.patch(
+            f"/api/shift-swaps/{swap['id']}/",
+            {"status": "Rejected"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        roster_a.refresh_from_db()
+        roster_b.refresh_from_db()
+        self.assertEqual(roster_a.employee.email, "a@example.com")
+        self.assertEqual(roster_b.employee.email, "b@example.com")
+        self.assertTrue(
+            Notification.objects.filter(
+                employee=emp_a, kind="shift", text__icontains="reject"
+            ).exists()
+        )
