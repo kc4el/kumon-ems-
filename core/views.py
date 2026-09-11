@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError as DRFValidationError
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -501,3 +501,35 @@ class NotificationMarkReadView(APIView):
         note.is_read = True
         note.save(update_fields=["is_read"])
         return Response(NotificationSerializer(note).data, status=status.HTTP_200_OK)
+
+
+class PurgeRunView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        try:
+            days = int(request.data.get("days", 30))
+        except (TypeError, ValueError):
+            return Response(
+                {"error": "days must be an integer."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        dry = bool(request.data.get("dry_run", True))
+        out, err = StringIO(), StringIO()
+        call_command("purge_resigned", days=days, dry_run=dry, stdout=out, stderr=err)
+        log = out.getvalue() + err.getvalue()
+        lines = log.splitlines()
+        return Response(
+            {
+                "dry_run": dry,
+                "would_purge": sum(
+                    1 for line in lines if line.startswith("would purge ")
+                ),
+                "purged": sum(1 for line in lines if line.startswith("purged ")),
+                "log": log,
+            }
+        )

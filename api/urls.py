@@ -25,6 +25,7 @@ from core.views import (
     PayrollRunListCreateView,
     PerformanceReviewDetailView,
     PerformanceReviewListCreateView,
+    PurgeRunView,
     SessionLoginView,
     SessionLogoutView,
     ShiftConflictView,
@@ -138,4 +139,5 @@ urlpatterns = [
         NotificationMarkReadView.as_view(),
         name="notification-mark-read",
     ),
+    path("purge-run/", PurgeRunView.as_view(), name="purge-run"),
 ]

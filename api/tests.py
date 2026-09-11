@@ -789,6 +789,72 @@ class ApiTests(TestCase):
         response = self.client.get("/api/shift-rosters/conflicts/")
         self.assertEqual(response.status_code, 400)
 
+    def test_purge_run_requires_staff(self):
+        response = self.client.post(
+            "/api/purge-run/", {"days": 30, "dry_run": True}, format="json"
+        )
+        self.assertEqual(response.status_code, 403)
+
+    @patch("core.management.commands.purge_resigned.supabase")
+    def test_purge_run_dry_run_counts_candidates(self, supabase):
+        from datetime import timedelta
+
+        staff = User.objects.create_user(username="boss", password="x", is_staff=True)
+        client = APIClient()
+        client.force_authenticate(user=staff)
+        Employee.objects.create(
+            first_name="Old",
+            last_name="Gone",
+            email="oldgone@example.com",
+            is_active=False,
+            resigned_at=timezone.now().date() - timedelta(days=40),
+        )
+        response = client.post(
+            "/api/purge-run/", {"days": 30, "dry_run": True}, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["would_purge"], 1)
+        self.assertEqual(response.json()["purged"], 0)
+        self.assertTrue(Employee.objects.filter(email="oldgone@example.com").exists())
+
+    @patch("core.management.commands.purge_resigned.supabase")
+    def test_purge_run_real_deletes_and_audits(self, supabase):
+        from datetime import timedelta
+
+        from core.models import EmployeeAuditLog
+
+        staff = User.objects.create_user(username="boss2", password="x", is_staff=True)
+        client = APIClient()
+        client.force_authenticate(user=staff)
+        Employee.objects.create(
+            first_name="Old",
+            last_name="Gone",
+            email="reallygone@example.com",
+            is_active=False,
+            resigned_at=timezone.now().date() - timedelta(days=40),
+        )
+        response = client.post(
+            "/api/purge-run/", {"days": 30, "dry_run": False}, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(
+            Employee.objects.filter(email="reallygone@example.com").exists()
+        )
+        self.assertTrue(
+            EmployeeAuditLog.objects.filter(
+                action__icontains="reallygone@example.com"
+            ).exists()
+        )
+
+    def test_purge_run_rejects_non_integer_days(self):
+        staff = User.objects.create_user(username="boss3", password="x", is_staff=True)
+        client = APIClient()
+        client.force_authenticate(user=staff)
+        response = client.post(
+            "/api/purge-run/", {"days": "abc", "dry_run": True}, format="json"
+        )
+        self.assertEqual(response.status_code, 400)
+
 
 class SessionAuthTests(TestCase):
     def test_session_login_wrong_credentials_returns_401(self):
