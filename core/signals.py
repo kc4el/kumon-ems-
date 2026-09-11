@@ -10,6 +10,7 @@ from .models import (
     EmployeeAuditLog,
     LeaveRequest,
     Notification,
+    OvertimeSlip,
     PayrollItem,
     PayrollRun,
     PerformanceReview,
@@ -185,3 +186,26 @@ def notify_shift_assignment(sender, instance, created, **kwargs):
             text=f"You were assigned {instance.shift_type} on {instance.work_date}",
             kind="shift",
         )
+
+
+@receiver(pre_save, sender=OvertimeSlip)
+def cache_overtime_status(sender, instance, **kwargs):
+    if instance.pk:
+        instance._previous_status = (
+            OvertimeSlip.objects.filter(pk=instance.pk)
+            .values_list("status", flat=True)
+            .first()
+        )
+
+
+@receiver(post_save, sender=OvertimeSlip)
+def notify_overtime_approval(sender, instance, created, **kwargs):
+    if instance.status != "Approved":
+        return
+    if not created and getattr(instance, "_previous_status", None) == "Approved":
+        return
+    Notification.objects.create(
+        employee=instance.employee,
+        text=f"Overtime approved: {instance.hours}h × {instance.multiplier} on {instance.date}",
+        kind="payroll",
+    )

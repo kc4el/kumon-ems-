@@ -12,6 +12,7 @@ from .models import (
     LeaveRequest,
     Message,
     Notification,
+    OvertimeSlip,
     PayrollItem,
     PayrollRun,
     PerformanceReview,
@@ -80,6 +81,22 @@ class LeaveAllocationSerializer(serializers.ModelSerializer):
         model = LeaveAllocation
         fields = ("id", "employee", "leave_type", "year", "days_total")
         read_only_fields = ("id",)
+
+
+class OvertimeSlipSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OvertimeSlip
+        fields = (
+            "id",
+            "employee",
+            "attendance",
+            "date",
+            "hours",
+            "multiplier",
+            "status",
+            "created_at",
+        )
+        read_only_fields = ("id", "hours", "created_at")
 
 
 class ShiftRosterSerializer(serializers.ModelSerializer):

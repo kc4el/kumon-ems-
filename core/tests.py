@@ -275,3 +275,51 @@ class PageViewTests(TestCase):
             self.assertEqual(
                 response.status_code, 200, f"Static asset {static_path} failed to load."
             )
+
+
+class OvertimeNotificationTests(TestCase):
+    def setUp(self):
+        self.employee = Employee.objects.create(
+            first_name="Over", last_name="Time", email="ot-notify@example.com"
+        )
+        clock_in = timezone.now() - timezone.timedelta(hours=10)
+        self.attendance = Attendance.objects.create(
+            employee=self.employee,
+            date=clock_in.date(),
+            clock_in=clock_in,
+            clock_out=clock_in + timezone.timedelta(hours=9),
+        )
+
+    def _slip(self, status="Pending"):
+        from .models import OvertimeSlip
+
+        return OvertimeSlip.objects.create(
+            employee=self.employee,
+            attendance=self.attendance,
+            date=self.attendance.date,
+            hours="1.00",
+            status=status,
+        )
+
+    def test_overtime_approval_creates_payroll_notification(self):
+        from .models import Notification
+
+        slip = self._slip()
+        self.assertFalse(
+            Notification.objects.filter(employee=self.employee, kind="payroll").exists()
+        )
+        slip.status = "Approved"
+        slip.save()
+        note = Notification.objects.filter(
+            employee=self.employee, kind="payroll"
+        ).latest("created_at")
+        self.assertIn("Overtime approved", note.text)
+        self.assertIn("1.00h", note.text)
+
+    def test_overtime_pending_create_sends_no_notification(self):
+        from .models import Notification
+
+        self._slip()
+        self.assertFalse(
+            Notification.objects.filter(employee=self.employee, kind="payroll").exists()
+        )
