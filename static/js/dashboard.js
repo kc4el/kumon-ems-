@@ -21,11 +21,19 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================================================
 function apiFetch(url, options = {}) {
   const csrf = document.cookie.split('; ').find((c) => c.startsWith('csrftoken='))?.split('=')[1];
+  const headers = { ...(options.headers || {}) };
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+    if (csrf) headers['X-CSRFToken'] = headers['X-CSRFToken'] || csrf;
+  } else if (csrf) {
+    headers['X-CSRFToken'] = headers['X-CSRFToken'] || csrf;
+  }
   return fetch(url, {
     credentials: 'same-origin',
     ...options,
-    headers: { 'Content-Type': 'application/json', ...(csrf ? { 'X-CSRFToken': csrf } : {}), ...(options.headers || {}) },
+    headers,
   }).then((res) => {
+    if (res.status === 401) { window.location.href = "/login/?next=" + encodeURIComponent(window.location.pathname); throw new Error("auth"); }
     if (res.status === 403) { window.location.href = '/login/?next=' + encodeURIComponent(window.location.pathname); throw new Error('auth'); }
     return res;
   });
@@ -578,7 +586,7 @@ function renderClaimStatus(id, status) {
 
 async function loadClaimStatuses() {
   try {
-    const response = await fetch('/api/claim-statuses/', { cache: 'no-store' });
+    const response = await apiFetch('/api/claim-statuses/', { cache: 'no-store' });
     if (!response.ok) throw new Error('Unable to load claim statuses.');
     const payload = await response.json();
     const statuses = Array.isArray(payload) ? payload : payload.results || [];
@@ -589,7 +597,7 @@ async function loadClaimStatuses() {
 }
 
 async function saveClaimStatus(id, status) {
-  const response = await fetch('/api/claim-statuses/', {
+  const response = await apiFetch('/api/claim-statuses/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ claim_id: id, status })
@@ -803,7 +811,7 @@ async function loadMessagesForConversation(conversationKey) {
   const loadVersion = ++messagesLoadVersion;
   document.querySelectorAll('[data-persisted-message="true"]').forEach(message => message.remove());
   try {
-    const response = await fetch(`/api/messages/?conversation=${encodeURIComponent(conversationKey)}`, {
+    const response = await apiFetch(`/api/messages/?conversation=${encodeURIComponent(conversationKey)}`, {
       cache: 'no-store'
     });
     if (!response.ok) throw new Error('Unable to load messages.');
@@ -868,7 +876,7 @@ async function handleSendChatMessage(e) {
 
   let savedMessage;
   try {
-    const response = await fetch('/api/messages/', { method: 'POST', body: formData });
+    const response = await apiFetch('/api/messages/', { method: 'POST', body: formData });
     if (!response.ok) throw new Error('Unable to save message.');
     savedMessage = await response.json();
   } catch (error) {
