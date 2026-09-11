@@ -335,16 +335,23 @@ async function loadActivityFeed() {
   } catch (e) { list.innerHTML = "<li>Activity unavailable.</li>"; }
 }
 
-// D10: 5-step first-run tour. Steps target view panels that exist
-// (dashboard, attendance-leave, attendance-shift, claims,
-// employee-directory — all verified present in index.html).
+// Full-coverage guided tour: one stop per view, demo-only controls disclosed.
+// (Two dashboard stops in a row are deliberate — second covers Customize +
+// feed + badge. Final step returns to the directory as the natural home.)
 const KUMON_TOUR_KEY = "kumon.tourSeen.v1";
 const KUMON_TOUR_STEPS = [
-  { view: "dashboard", text: "Start here: headcount, leaves and pending actions at a glance." },
-  { view: "attendance-leave", text: "Leaves live here: file, approve, track status." },
-  { view: "attendance-shift", text: "Rosters live here: who works which shift, with conflict flags." },
-  { view: "claims", text: "Claims and reimbursements, with live statuses." },
-  { view: "employee-directory", text: "Everyone in one searchable directory. Press ? anytime for keyboard shortcuts. Tour done — press Esc to close." },
+  { view: "dashboard", text: "Start here: headcount, leaves and pending actions at a glance. The Review / Action / Track buttons jump straight to the right tab." },
+  { view: "dashboard", text: "This dashboard is yours: Customize shows or reorders these cards, Today lists the latest audit activity, and the LIVE / DEMO DATA badge tells you when numbers come from the server." },
+  { view: "employee-directory", text: "Everyone in one searchable directory. Open a row's accordion for details.", demo: "Full profiles and Slack messaging are coming soon." },
+  { view: "employee-manage", text: "Personnel actions: the Promotion / Transfer / Remove switcher changes the form below it. The offboarding section with notice-period radios files a resignation." },
+  { view: "employee-grievance", text: "Grievance intake and mediation tracking live on this tab.", demo: "Online filing is coming soon — please file with HR directly for now." },
+  { view: "attendance-daily", text: "Daily attendance grid with the calendar arrows to move between days.", demo: "CSV export is coming soon." },
+  { view: "attendance-shift", text: "Rosters: pick a date (or Today), then Assign per shift block. A ⚠ flag means an approved leave overlaps that assignment." },
+  { view: "attendance-leave", text: "+ Apply for Leave files a real request; approve or reject it from the same list and the requester gets a notification." },
+  { view: "claims", text: "Reimbursements: search and Batch Approve are fully working against the server.", demo: "More pages are coming soon." },
+  { view: "messages", text: "Team inbox: filter channels on the left, post on the right. Messages are posted as you, automatically." },
+  { view: "logs", text: "Audit trail: the pills filter All / Personnel / Leaves / Claims / Shifts / Grievance right on this page.", demo: "More pages are coming soon." },
+  { view: "employee-directory", text: "That's the full loop. Press ? anytime for keyboard shortcuts, Esc closes this tour, Replay restarts it from the dashboard." },
 ];
 let kumonTourIndex = -1;
 function startTour() {
@@ -408,6 +415,12 @@ function showTourBubble(step, n, total) {
   foot.appendChild(next);
   b.appendChild(head);
   b.appendChild(p);
+  if (step.demo) {
+    const note = document.createElement("p");
+    note.className = "tour-demo";
+    note.textContent = step.demo;
+    b.appendChild(note);
+  }
   b.appendChild(dots);
   b.appendChild(foot);
   document.body.appendChild(b);
