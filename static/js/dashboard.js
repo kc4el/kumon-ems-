@@ -230,7 +230,8 @@ function initDashboardWidgets() {
   if (!cards.length) return;
   cards.forEach((card, i) => {
     if (!card.dataset.widget) {
-      const label = (card.innerText.split("\n")[0] || ("card-" + i)).trim();
+      const text = (card.innerText != null ? card.innerText : card.textContent) || "";
+      const label = (text.split("\n")[0] || ("card-" + i)).trim();
       card.dataset.widget = label.toLowerCase().replace(/[^a-z0-9]+/g, "-");
     }
   });
