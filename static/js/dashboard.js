@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadAttendanceView();
   loadShiftRosterView();
   loadAuditView();
+  initDashboardWidgets();
 });
 
 // ==========================================================================
@@ -218,6 +219,100 @@ function toggleShortcutHelp() {
 function hideShortcutHelp() {
   const el = document.getElementById("shortcutHelp");
   if (el) el.classList.remove("active");
+}
+
+// D5: dashboard widget visibility + order, persisted in localStorage.
+const KUMON_WIDGETS_KEY = "kumon.dashboardWidgets.v1";
+function initDashboardWidgets() {
+  const cards = [...document.querySelectorAll("#view-dashboard .kpi-card")];
+  if (!cards.length) return;
+  cards.forEach((card, i) => {
+    if (!card.dataset.widget) {
+      const label = (card.innerText.split("\n")[0] || ("card-" + i)).trim();
+      card.dataset.widget = label.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    }
+  });
+  const saved = readWidgetPrefs();
+  if (saved) {
+    const byId = Object.fromEntries(cards.map((c) => [c.dataset.widget, c]));
+    const grid = cards[0].parentElement;
+    saved.order.forEach((id) => { if (byId[id]) grid.appendChild(byId[id]); });
+    (saved.hidden || []).forEach((id) => { if (byId[id]) byId[id].style.display = "none"; });
+  }
+  renderWidgetSettings();
+}
+function readWidgetPrefs() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(KUMON_WIDGETS_KEY));
+    if (saved && Array.isArray(saved.order)) return { order: saved.order, hidden: saved.hidden || [] };
+  } catch (e) { /* private mode: fall back to default layout */ }
+  return null;
+}
+function writeWidgetPrefs() {
+  const cards = [...document.querySelectorAll("#view-dashboard .kpi-card")];
+  const prefs = {
+    order: cards.map((c) => c.dataset.widget),
+    hidden: cards.filter((c) => c.style.display === "none").map((c) => c.dataset.widget),
+  };
+  try { localStorage.setItem(KUMON_WIDGETS_KEY, JSON.stringify(prefs)); } catch (e) { /* degrade silently */ }
+}
+function renderWidgetSettings() {
+  const view = document.getElementById("view-dashboard");
+  if (!view || document.getElementById("widgetSettings")) return;
+  const details = document.createElement("details");
+  details.id = "widgetSettings";
+  const summary = document.createElement("summary");
+  summary.textContent = "Customize dashboard";
+  details.appendChild(summary);
+  const list = document.createElement("div");
+  list.id = "widgetSettingsList";
+  details.appendChild(list);
+  view.prepend(details);
+  refreshWidgetSettings();
+}
+function refreshWidgetSettings() {
+  const list = document.getElementById("widgetSettingsList");
+  if (!list) return;
+  list.innerHTML = "";
+  const cards = [...document.querySelectorAll("#view-dashboard .kpi-card")];
+  cards.forEach((card) => {
+    const id = card.dataset.widget;
+    const row = document.createElement("div");
+    const label = document.createElement("label");
+    const box = document.createElement("input");
+    box.type = "checkbox";
+    box.checked = card.style.display !== "none";
+    box.setAttribute("aria-label", "Show " + id);
+    box.addEventListener("change", () => {
+      card.style.display = box.checked ? "" : "none";
+      writeWidgetPrefs();
+      refreshWidgetSettings();
+    });
+    label.appendChild(box);
+    label.appendChild(document.createTextNode(" " + id));
+    row.appendChild(label);
+    const up = document.createElement("button");
+    up.type = "button";
+    up.textContent = "↑";
+    up.setAttribute("aria-label", "Move " + id + " up");
+    up.addEventListener("click", () => { moveWidget(card, -1); });
+    const down = document.createElement("button");
+    down.type = "button";
+    down.textContent = "↓";
+    down.setAttribute("aria-label", "Move " + id + " down");
+    down.addEventListener("click", () => { moveWidget(card, 1); });
+    row.appendChild(up);
+    row.appendChild(down);
+    list.appendChild(row);
+  });
+}
+function moveWidget(card, dir) {
+  const grid = card.parentElement;
+  const sib = dir < 0 ? card.previousElementSibling : card.nextElementSibling;
+  if (!sib || !sib.classList.contains("kpi-card")) return;
+  grid.insertBefore(card, dir < 0 ? sib : sib.nextElementSibling);
+  writeWidgetPrefs();
+  refreshWidgetSettings();
 }
 
 // Accordion toggle for Employee Directory
