@@ -13,6 +13,7 @@ from core.models import (
     Attendance,
     Department,
     Employee,
+    LeaveAllocation,
     LeaveRequest,
     PayrollItem,
     PayrollRun,
@@ -854,6 +855,54 @@ class ApiTests(TestCase):
             "/api/purge-run/", {"days": "abc", "dry_run": True}, format="json"
         )
         self.assertEqual(response.status_code, 400)
+
+
+class LeaveAllocationTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        user = User.objects.create_user(username="tester", password="x")
+        self.client.force_authenticate(user=user)
+        self.employee = Employee.objects.create(
+            first_name="Allo", last_name="Cation", email="alloc@example.com"
+        )
+
+    def test_create_allocation_returns_201(self):
+        response = self.client.post(
+            "/api/leave-allocations/",
+            {
+                "employee": str(self.employee.id),
+                "leave_type": "Vacation",
+                "year": 2026,
+                "days_total": "5.0",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(
+            LeaveAllocation.objects.filter(
+                employee=self.employee, leave_type="Vacation", year=2026
+            ).exists()
+        )
+
+    def test_duplicate_allocation_returns_400(self):
+        payload = {
+            "employee": str(self.employee.id),
+            "leave_type": "Sick",
+            "year": 2026,
+            "days_total": "5.0",
+        }
+        self.assertEqual(
+            self.client.post(
+                "/api/leave-allocations/", payload, format="json"
+            ).status_code,
+            201,
+        )
+        response = self.client.post("/api/leave-allocations/", payload, format="json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_anonymous_allocation_list_is_denied(self):
+        anon = APIClient()
+        self.assertEqual(anon.get("/api/leave-allocations/").status_code, 403)
 
 
 class SessionAuthTests(TestCase):

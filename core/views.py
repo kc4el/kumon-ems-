@@ -22,6 +22,7 @@ from .models import (
     Employee,
     EmployeeAuditLog,
     ExpenseClaim,
+    LeaveAllocation,
     LeaveRequest,
     Message,
     Notification,
@@ -37,6 +38,7 @@ from .serializers import (
     EmployeeAuditLogSerializer,
     EmployeeSerializer,
     ExpenseClaimSerializer,
+    LeaveAllocationSerializer,
     LeaveRequestSerializer,
     MessageSerializer,
     NotificationSerializer,
@@ -318,6 +320,16 @@ class LeaveRequestListCreateView(generics.ListCreateAPIView):
 class LeaveRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = LeaveRequest.objects.all()
     serializer_class = LeaveRequestSerializer
+
+
+class LeaveAllocationListCreateView(generics.ListCreateAPIView):
+    queryset = LeaveAllocation.objects.all().order_by("-year", "leave_type")
+    serializer_class = LeaveAllocationSerializer
+
+
+class LeaveAllocationDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = LeaveAllocation.objects.all()
+    serializer_class = LeaveAllocationSerializer
 
 
 class ShiftConflictView(APIView):

@@ -8,6 +8,7 @@ from .models import (
     Employee,
     EmployeeAuditLog,
     ExpenseClaim,
+    LeaveAllocation,
     LeaveRequest,
     Message,
     Notification,
@@ -72,6 +73,13 @@ class LeaveRequestSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "created_at"]
+
+
+class LeaveAllocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LeaveAllocation
+        fields = ("id", "employee", "leave_type", "year", "days_total")
+        read_only_fields = ("id",)
 
 
 class ShiftRosterSerializer(serializers.ModelSerializer):

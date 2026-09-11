@@ -72,6 +72,21 @@ class LeaveRequest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
 
+LEAVE_DEFAULTS = {"Vacation": 5, "Sick": 5}
+
+
+class LeaveAllocation(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    leave_type = models.CharField(max_length=50)
+    year = models.IntegerField()
+    days_total = models.DecimalField(max_digits=5, decimal_places=1)
+
+    class Meta:
+        unique_together = ("employee", "leave_type", "year")
+        ordering = ("-year", "leave_type")
+
+
 class ShiftRoster(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, null=True, blank=True)
