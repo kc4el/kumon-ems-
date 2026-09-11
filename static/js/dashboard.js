@@ -340,18 +340,18 @@ async function loadActivityFeed() {
 // feed + badge. Final step returns to the directory as the natural home.)
 const KUMON_TOUR_KEY = "kumon.tourSeen.v1";
 const KUMON_TOUR_STEPS = [
-  { view: "dashboard", text: "Start here: headcount, leaves and pending actions at a glance. The Review / Action / Track buttons jump straight to the right tab." },
-  { view: "dashboard", text: "This dashboard is yours: Customize shows or reorders these cards, Today lists the latest audit activity, and the LIVE / DEMO DATA badge tells you when numbers come from the server." },
-  { view: "employee-directory", text: "Everyone in one searchable directory. Open a row's accordion for details.", demo: "Full profiles and Slack messaging are coming soon." },
-  { view: "employee-manage", text: "Personnel actions: the Promotion / Transfer / Remove switcher changes the form below it. The offboarding section with notice-period radios files a resignation." },
-  { view: "employee-grievance", text: "Grievance intake and mediation tracking live on this tab.", demo: "Online filing is coming soon — please file with HR directly for now." },
-  { view: "attendance-daily", text: "Daily attendance grid with the calendar arrows to move between days.", demo: "CSV export is coming soon." },
-  { view: "attendance-shift", text: "Rosters: pick a date (or Today), then Assign per shift block. A ⚠ flag means an approved leave overlaps that assignment." },
-  { view: "attendance-leave", text: "+ Apply for Leave files a real request; approve or reject it from the same list and the requester gets a notification." },
-  { view: "claims", text: "Reimbursements: search and Batch Approve are fully working against the server.", demo: "More pages are coming soon." },
-  { view: "messages", text: "Team inbox: filter channels on the left, post on the right. Messages are posted as you, automatically." },
-  { view: "logs", text: "Audit trail: the pills filter All / Personnel / Leaves / Claims / Shifts / Grievance right on this page.", demo: "More pages are coming soon." },
-  { view: "employee-directory", text: "That's the full loop. Press ? anytime for keyboard shortcuts, Esc closes this tour, Replay restarts it from the dashboard." },
+  { view: "dashboard", text: "Welcome! This is your home screen. Here you can see at a glance how many employees you have, who is on leave, and what needs your attention today. Those little arrow buttons jump you straight to the right page." },
+  { view: "dashboard", text: "Make this screen yours! Press Customize to show, hide, or reorder these cards however you like. The Today box shows the latest goings-on, and the little badge tells you whether the numbers are fresh from the system or just samples." },
+  { view: "employee-directory", text: "This is your people list — everyone who works here, all in one place you can search. Tap any name to open their details.", demo: "Full staff profiles and chat messaging are on the way soon!" },
+  { view: "employee-manage", text: "This is where people changes happen. The three tabs at the top switch between promoting someone, moving them to another team, or removing them. Further down, the leaving form with its simple yes-or-no questions files a resignation." },
+  { view: "employee-grievance", text: "If someone raises a concern, this is where it gets looked after — you can track each case and schedule sit-downs to sort things out.", demo: "Online filing is coming soon — please bring concerns to HR directly for now." },
+  { view: "attendance-daily", text: "This is the daily time sheet. Use the little arrows to hop between days and see who clocked in and out, and when.", demo: "Downloading this as a file is coming soon." },
+  { view: "attendance-shift", text: "This is the roster board. Pick a date (or just press Today), then press Assign to place someone on the morning, evening, or night shift. If you see a little warning flag, it means that person already has an approved leave that day." },
+  { view: "attendance-leave", text: "Time-off requests live here. Press the big button to file one yourself, and you can approve or say no to other people's requests from the same list — they will get a message telling them what you decided." },
+  { view: "claims", text: "Money stuff! This is where repayment requests land. You can search for any request and approve a whole bunch at once with one press.", demo: "More pages are coming soon." },
+  { view: "messages", text: "This is the team chat. Pick a conversation on the left, type on the right — whatever you send goes out under your own name, automatically." },
+  { view: "logs", text: "Think of this as the diary of everything that happens in the system. Those little category buttons let you look at just people changes, leaves, money, rosters, or concerns.", demo: "More pages are coming soon." },
+  { view: "employee-directory", text: "And that's the whole tour — well done! Remember, you can press the ? key anytime to see handy keyboard shortcuts, and there's a Replay button back on the home screen whenever you want a refresher." },
 ];
 let kumonTourIndex = -1;
 function startTour() {
