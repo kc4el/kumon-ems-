@@ -940,3 +940,62 @@ class AttendanceCorrectionTests(TestCase):
     def test_anonymous_corrections_are_denied(self):
         anon = APIClient()
         self.assertEqual(anon.get("/api/attendance-corrections/").status_code, 403)
+
+    def test_approve_updates_row_creates_audit_and_notifies(self):
+        from core.models import EmployeeAuditLog, Notification
+
+        correction_id = self._propose().json()["id"]
+        response = self.client.patch(
+            f"/api/attendance-corrections/{correction_id}/",
+            {"status": "Approved", "reason": "tampered"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "Approved")
+        self.attendance.refresh_from_db()
+        self.assertEqual(
+            self.attendance.clock_in,
+            timezone.make_aware(datetime(2026, 9, 10, 8, 30)),
+        )
+        self.assertEqual(
+            self.attendance.clock_out,
+            timezone.make_aware(datetime(2026, 9, 10, 17, 30)),
+        )
+        # Status-only update: other fields are ignored.
+        self.assertIn("Forgot morning clock-in.", response.json()["reason"])
+        self.assertTrue(
+            EmployeeAuditLog.objects.filter(
+                employee=self.employee, action__icontains="attendance corrected"
+            ).exists()
+        )
+        self.assertTrue(
+            Notification.objects.filter(
+                employee=self.employee, kind="attendance"
+            ).exists()
+        )
+
+    def test_reject_changes_nothing(self):
+        from core.models import EmployeeAuditLog
+
+        correction_id = self._propose().json()["id"]
+        response = self.client.patch(
+            f"/api/attendance-corrections/{correction_id}/",
+            {"status": "Rejected"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "Rejected")
+        self.attendance.refresh_from_db()
+        self.assertEqual(
+            self.attendance.clock_in,
+            timezone.make_aware(datetime(2026, 9, 10, 9, 0)),
+        )
+        self.assertEqual(
+            self.attendance.clock_out,
+            timezone.make_aware(datetime(2026, 9, 10, 17, 0)),
+        )
+        self.assertFalse(
+            EmployeeAuditLog.objects.filter(
+                employee=self.employee, action__icontains="attendance corrected"
+            ).exists()
+        )
