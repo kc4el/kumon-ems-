@@ -755,6 +755,40 @@ class ApiTests(TestCase):
             ).exists()
         )
 
+    def test_shift_conflict_endpoint_names_roster_and_leave(self):
+        from core.models import LeaveRequest, ShiftRoster
+
+        employee = Employee.objects.create(
+            first_name="Con", last_name="Flict", email="conflict@example.com"
+        )
+        roster = ShiftRoster.objects.create(
+            employee=employee,
+            work_date=date(2026, 10, 1),
+            shift_type="Morning",
+            start_time="08:00:00",
+            end_time="16:00:00",
+        )
+        leave = LeaveRequest.objects.create(
+            employee=employee,
+            start_date=date(2026, 10, 1),
+            end_date=date(2026, 10, 2),
+            reason="Approved trip",
+            status="Approved",
+        )
+        response = self.client.get(
+            f"/api/shift-rosters/conflicts/?employee={employee.id}&date=2026-10-01"
+        )
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual(body["date"], "2026-10-01")
+        self.assertEqual(len(body["conflicts"]), 1)
+        self.assertEqual(body["conflicts"][0]["roster"], str(roster.id))
+        self.assertEqual(body["conflicts"][0]["leave"], str(leave.id))
+
+    def test_shift_conflict_endpoint_requires_params(self):
+        response = self.client.get("/api/shift-rosters/conflicts/")
+        self.assertEqual(response.status_code, 400)
+
 
 class SessionAuthTests(TestCase):
     def test_session_login_wrong_credentials_returns_401(self):

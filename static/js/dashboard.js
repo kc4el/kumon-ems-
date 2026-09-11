@@ -1317,6 +1317,8 @@ async function loadShiftRosterView() {
       rows.forEach((r) => {
         const tr = document.createElement('tr');
         tr.setAttribute('data-live', 'true');
+        tr.dataset.employee = r.employee || '';
+        tr.dataset.workDate = r.work_date || '';
         tr.innerHTML =
           `<td><div class="bold-title">${escapeHtml(String(names[r.employee] || r.employee || 'Unassigned'))}</div></td>` +
           `<td>${escapeHtml(String(r.work_date || '—'))}</td>` +
@@ -1327,7 +1329,27 @@ async function loadShiftRosterView() {
       });
     }
     setApiMode('live');
+    refreshShiftConflictBadges();
   } catch (e) { setApiMode('demo'); showToast('Shift roster unreachable — showing demo data', 'error'); }
+}
+
+async function refreshShiftConflictBadges() {
+  const body = document.getElementById('shiftRosterTableBody');
+  if (!body) return;
+  for (const tr of body.querySelectorAll('tr[data-live="true"]')) {
+    const emp = tr.dataset.employee;
+    const day = tr.dataset.workDate;
+    if (!emp || !day) continue;
+    try {
+      const res = await apiFetch(`/api/shift-rosters/conflicts/?employee=${encodeURIComponent(emp)}&date=${encodeURIComponent(day)}`);
+      if (!res.ok) continue;
+      const payload = await res.json();
+      if ((payload.conflicts || []).length) {
+        const cell = tr.querySelector('[data-conflict-for]');
+        if (cell) cell.textContent = `⚠ ${payload.conflicts.length} leave clash`;
+      }
+    } catch (_) { /* badge stays clear */ }
+  }
 }
 
 async function loadPayrollView() {

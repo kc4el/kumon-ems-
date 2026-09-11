@@ -320,6 +320,34 @@ class LeaveRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = LeaveRequestSerializer
 
 
+class ShiftConflictView(APIView):
+    def get(self, request):
+        emp = request.query_params.get("employee")
+        date = request.query_params.get("date")
+        if not emp or not date:
+            return Response(
+                {"error": "employee and date are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        rosters = ShiftRoster.objects.filter(employee_id=emp, work_date=date)
+        leaves = LeaveRequest.objects.filter(
+            employee_id=emp,
+            start_date__lte=date,
+            end_date__gte=date,
+            status="Approved",
+        )
+        return Response(
+            {
+                "date": date,
+                "conflicts": [
+                    {"roster": str(r.id), "leave": str(l.id)}
+                    for r in rosters
+                    for l in leaves
+                ],
+            }
+        )
+
+
 class ShiftRosterListCreateView(generics.ListCreateAPIView):
     queryset = ShiftRoster.objects.all().order_by("work_date", "start_time")
     serializer_class = ShiftRosterSerializer
