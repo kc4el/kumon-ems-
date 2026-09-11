@@ -14,6 +14,7 @@ from .models import (
     LeaveAllocation,
     LeaveRequest,
     Notification,
+    OvertimeSlip,
 )
 
 
@@ -322,4 +323,49 @@ class OvertimeNotificationTests(TestCase):
         self._slip()
         self.assertFalse(
             Notification.objects.filter(employee=self.employee, kind="payroll").exists()
+        )
+
+
+class NewFeatureAuditTests(TestCase):
+    def test_allocation_create_writes_audit_row(self):
+        employee = Employee.objects.create(
+            first_name="Al", last_name="Loc", email="al-loc@example.com"
+        )
+        LeaveAllocation.objects.create(
+            employee=employee, leave_type="Vacation", year=2026, days_total=5
+        )
+        self.assertTrue(
+            EmployeeAuditLog.objects.filter(
+                employee=employee, action__icontains="allocation"
+            ).exists()
+        )
+
+    def test_overtime_request_and_approve_write_audit_rows(self):
+        employee = Employee.objects.create(
+            first_name="Ot", last_name="Aud", email="ot-aud@example.com"
+        )
+        clock_in = timezone.now() - timezone.timedelta(hours=10)
+        attendance = Attendance.objects.create(
+            employee=employee,
+            date=clock_in.date(),
+            clock_in=clock_in,
+            clock_out=clock_in + timezone.timedelta(hours=9),
+        )
+        slip = OvertimeSlip.objects.create(
+            employee=employee,
+            attendance=attendance,
+            date=attendance.date,
+            hours="1.00",
+        )
+        self.assertTrue(
+            EmployeeAuditLog.objects.filter(
+                employee=employee, action__icontains="overtime requested"
+            ).exists()
+        )
+        slip.status = "Approved"
+        slip.save()
+        self.assertTrue(
+            EmployeeAuditLog.objects.filter(
+                employee=employee, action__icontains="overtime approved"
+            ).exists()
         )

@@ -126,6 +126,9 @@ class LeaveAllocationSerializer(serializers.ModelSerializer):
         model = LeaveAllocation
         fields = ("id", "employee", "leave_type", "year", "days_total")
         read_only_fields = ("id",)
+        # No auto unique-together validator: duplicate allocation is a 409
+        # conflict (raised by the view), not a malformed request.
+        validators = []
 
 
 class OvertimeSlipSerializer(serializers.ModelSerializer):

@@ -5,9 +5,11 @@ from django.dispatch import receiver
 
 from .models import (
     Attendance,
+    AttendanceCorrection,
     Department,
     Employee,
     EmployeeAuditLog,
+    LeaveAllocation,
     LeaveRequest,
     Notification,
     OvertimeSlip,
@@ -15,6 +17,7 @@ from .models import (
     PayrollRun,
     PerformanceReview,
     ShiftRoster,
+    ShiftSwap,
 )
 
 logger = logging.getLogger(__name__)
@@ -209,3 +212,50 @@ def notify_overtime_approval(sender, instance, created, **kwargs):
         text=f"Overtime approved: {instance.hours}h × {instance.multiplier} on {instance.date}",
         kind="payroll",
     )
+
+
+@receiver(post_save, sender=LeaveAllocation)
+def log_allocation_action(sender, instance, created, **kwargs):
+    if created:
+        create_audit_log(
+            instance.employee,
+            f"Leave allocation set: {instance.days_total} {instance.leave_type} days for {instance.year}.",
+        )
+
+
+@receiver(post_save, sender=OvertimeSlip)
+def log_overtime_action(sender, instance, created, **kwargs):
+    if created:
+        create_audit_log(
+            instance.employee,
+            f"Overtime requested: {instance.hours}h on {instance.date}.",
+        )
+    elif getattr(instance, "_previous_status", None) not in (None, instance.status):
+        create_audit_log(
+            instance.employee,
+            f"Overtime {instance.status.lower()}: {instance.hours}h on {instance.date}.",
+        )
+
+
+@receiver(pre_save, sender=ShiftSwap)
+def cache_swap_status(sender, instance, **kwargs):
+    if instance.pk:
+        instance._previous_status = (
+            ShiftSwap.objects.filter(pk=instance.pk)
+            .values_list("status", flat=True)
+            .first()
+        )
+
+
+@receiver(post_save, sender=ShiftSwap)
+def log_swap_action(sender, instance, created, **kwargs):
+    if created:
+        create_audit_log(
+            instance.requester_roster.employee,
+            f"Shift swap requested for {instance.requester_roster.work_date}.",
+        )
+    elif getattr(instance, "_previous_status", None) not in (None, instance.status):
+        create_audit_log(
+            instance.requester_roster.employee,
+            f"Shift swap {instance.status.lower()} for {instance.requester_roster.work_date}.",
+        )

@@ -392,6 +392,15 @@ class LeaveAllocationListCreateView(generics.ListCreateAPIView):
     queryset = LeaveAllocation.objects.all().order_by("-year", "leave_type")
     serializer_class = LeaveAllocationSerializer
 
+    def perform_create(self, serializer):
+        try:
+            with transaction.atomic():
+                serializer.save()
+        except IntegrityError:
+            raise Conflict409(
+                "An allocation for this employee, type and year already exists."
+            )
+
 
 class LeaveAllocationDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = LeaveAllocation.objects.all()
@@ -548,7 +557,7 @@ class ShiftSwapDetailView(generics.RetrieveUpdateDestroyAPIView):
         if swap.status != "Pending" and new_status != swap.status:
             return Response(
                 {"error": "This swap has already been decided."},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_409_CONFLICT,
             )
         if new_status == "Approved" and swap.status == "Pending":
             self._approve_swap(swap)

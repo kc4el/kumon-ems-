@@ -885,7 +885,7 @@ class LeaveAllocationTests(TestCase):
             ).exists()
         )
 
-    def test_duplicate_allocation_returns_400(self):
+    def test_duplicate_allocation_returns_409(self):
         payload = {
             "employee": str(self.employee.id),
             "leave_type": "Sick",
@@ -899,7 +899,8 @@ class LeaveAllocationTests(TestCase):
             201,
         )
         response = self.client.post("/api/leave-allocations/", payload, format="json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(set(response.json().keys()), {"error"})
 
     def test_anonymous_allocation_list_is_denied(self):
         anon = APIClient()
@@ -1323,6 +1324,48 @@ class ShiftSwapTests(TestCase):
             Notification.objects.filter(
                 employee=emp_a, kind="shift", text__icontains="reject"
             ).exists()
+        )
+
+    def test_redecide_closed_swap_returns_409(self):
+        _, _, roster_a, roster_b = self._pair()
+        swap_id = self.client.post(
+            "/api/shift-swaps/",
+            {
+                "requester_roster": str(roster_a.id),
+                "target_roster": str(roster_b.id),
+            },
+            format="json",
+        ).json()["id"]
+        first = self.client.patch(
+            f"/api/shift-swaps/{swap_id}/", {"status": "Rejected"}, format="json"
+        )
+        self.assertEqual(first.status_code, 200)
+        second = self.client.patch(
+            f"/api/shift-swaps/{swap_id}/", {"status": "Approved"}, format="json"
+        )
+        self.assertEqual(second.status_code, 409)
+        self.assertEqual(set(second.json().keys()), {"error"})
+
+    def test_swap_request_and_approve_write_audit_rows(self):
+        from core.models import EmployeeAuditLog
+
+        _, _, roster_a, roster_b = self._pair()
+        swap_id = self.client.post(
+            "/api/shift-swaps/",
+            {
+                "requester_roster": str(roster_a.id),
+                "target_roster": str(roster_b.id),
+            },
+            format="json",
+        ).json()["id"]
+        self.assertTrue(
+            EmployeeAuditLog.objects.filter(action__icontains="swap requested").exists()
+        )
+        self.client.patch(
+            f"/api/shift-swaps/{swap_id}/", {"status": "Approved"}, format="json"
+        )
+        self.assertTrue(
+            EmployeeAuditLog.objects.filter(action__icontains="swap approved").exists()
         )
 
 
