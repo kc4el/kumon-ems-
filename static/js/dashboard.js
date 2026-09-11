@@ -968,32 +968,36 @@ function handleAuthLogin(e) {
     .catch(() => showToast('Sign-in service unreachable. Try again later.', 'error'));
 }
 
-function handleAuthSignup(e) {
+async function handleAuthSignup(e) {
   if (e) e.preventDefault();
-  const empId = document.getElementById('signupEmployeeId')?.value || 'New Employee';
-  showToast(`Account registered successfully! Welcome to Kumon EMS, ${empId}.`);
-
-  const currentPath = window.location.pathname.toLowerCase();
-  const isFileProtocol = window.location.protocol === 'file:';
-
-  if (isFileProtocol || currentPath.includes('login') || currentPath.includes('auth') || currentPath.includes('signup')) {
-    setTimeout(() => {
-      if (isFileProtocol || currentPath.endsWith('.html')) {
-        window.location.href = 'dashboard.html';
-      } else {
-        window.location.href = '/';
-      }
-    }, 400);
-  } else if (currentPath.includes('dashboard')) {
-    switchView('dashboard');
-  } else {
-    setTimeout(() => {
-      if (isFileProtocol || currentPath.endsWith('.html')) {
-        window.location.href = 'index.html';
-      } else {
-        window.location.href = '/';
-      }
-    }, 400);
+  const firstName = document.getElementById('signupFirstName')?.value.trim() || '';
+  const lastName = document.getElementById('signupLastName')?.value.trim() || '';
+  const email = document.getElementById('signupEmail')?.value.trim() || '';
+  const password = document.getElementById('signupPasswordInput')?.value || '';
+  // Raw fetch on purpose: signup is anonymous and apiFetch would bounce its
+  // 403/401 straight back to /login/.
+  const csrf = document.cookie.split('; ').find((c) => c.startsWith('csrftoken='))?.split('=')[1];
+  try {
+    const res = await fetch('/api/employees/', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', ...(csrf ? { 'X-CSRFToken': csrf } : {}) },
+      body: JSON.stringify({ first_name: firstName, last_name: lastName, email, password }),
+    });
+    if (!res.ok) {
+      let detail = 'Registration failed. Check your details and try again.';
+      try {
+        const data = await res.json();
+        detail = data.error || detail;
+        if (Array.isArray(detail)) detail = detail.join(' ');
+        else if (typeof detail === 'object') detail = JSON.stringify(detail);
+      } catch (_) { /* keep default */ }
+      showToast(detail, 'error');
+      return;
+    }
+    window.location.href = '/login/?next=/';
+  } catch (err) {
+    showToast('Sign-up service unreachable. Try again later.', 'error');
   }
 }
 

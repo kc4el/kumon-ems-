@@ -657,6 +657,64 @@ class ApiTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
+    @patch("core.views.supabase")
+    def test_employee_create_with_password_provisions_django_user(self, supabase):
+        supabase.auth.admin.create_user.return_value = SimpleNamespace(
+            user=SimpleNamespace(id="22222222-2222-4222-8222-222222222222")
+        )
+        response = self.client.post(
+            "/api/employees/",
+            {
+                "first_name": "New",
+                "last_name": "Staff",
+                "email": "newstaff@example.com",
+                "password": "Sup3rSecret!",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(User.objects.filter(username="newstaff@example.com").exists())
+        login_response = self.client.post(
+            "/api/session-login/",
+            {"username": "newstaff@example.com", "password": "Sup3rSecret!"},
+            format="json",
+        )
+        self.assertEqual(login_response.status_code, 200)
+
+    @patch("core.views.supabase")
+    def test_employee_create_without_password_creates_no_django_user(self, supabase):
+        supabase.auth.admin.create_user.return_value = SimpleNamespace(
+            user=SimpleNamespace(id="33333333-3333-4333-8333-333333333333")
+        )
+        response = self.client.post(
+            "/api/employees/",
+            {
+                "first_name": "Op",
+                "last_name": "Provisioned",
+                "email": "opprovisioned@example.com",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertFalse(
+            User.objects.filter(username="opprovisioned@example.com").exists()
+        )
+
+    @patch("core.views.supabase")
+    def test_employee_create_weak_password_returns_400(self, supabase):
+        response = self.client.post(
+            "/api/employees/",
+            {
+                "first_name": "Weak",
+                "last_name": "Password",
+                "email": "weak@example.com",
+                "password": "x",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        supabase.auth.admin.create_user.assert_not_called()
+
 
 class SessionAuthTests(TestCase):
     def test_session_login_wrong_credentials_returns_401(self):

@@ -106,6 +106,13 @@ class EmployeeListCreateView(generics.ListCreateAPIView):
     queryset = Employee.objects.all().order_by("last_name", "first_name")
     serializer_class = EmployeeSerializer
 
+    def get_permissions(self):
+        # Self-service signup posts here logged-out; everything else stays
+        # behind the default IsAuthenticated permission.
+        if self.request.method == "POST":
+            return [AllowAny()]
+        return super().get_permissions()
+
     def post(self, request, *args, **kwargs):
         payload = request.data.copy()
         email = str(payload.get("email", "")).strip()
@@ -114,6 +121,17 @@ class EmployeeListCreateView(generics.ListCreateAPIView):
                 {"error": "An employee email address is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        password = str(payload.get("password", "") or "")
+        if password:
+            from django.contrib.auth.password_validation import validate_password
+
+            try:
+                validate_password(password)
+            except DjangoValidationError as exc:
+                return Response(
+                    {"error": exc.messages},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         serializer = self.get_serializer(data=payload)
         try:
             serializer.is_valid(raise_exception=True)
@@ -141,6 +159,16 @@ class EmployeeListCreateView(generics.ListCreateAPIView):
                 )
                 created_user_id = str(auth_response.user.id)
                 serializer.save(id=created_user_id)
+                if password:
+                    from django.contrib.auth.models import User
+
+                    User.objects.create_user(
+                        username=email,
+                        email=email,
+                        password=password,
+                        first_name=payload.get("first_name", ""),
+                        last_name=payload.get("last_name", ""),
+                    )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except IntegrityError:
             logger.warning(f"Duplicate employee race for {email}")

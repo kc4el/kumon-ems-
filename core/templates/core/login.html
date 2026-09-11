@@ -43,6 +43,7 @@
               <div class="penpot-input-wrap">
                 <input type="text" id="loginEmployeeId" class="penpot-input" placeholder="e.g. EMP-10482" value="EMP-10482" required />
               </div>
+              <small class="penpot-field-hint">(or corporate email for newly onboarded staff)</small>
             </div>
 
             <div class="penpot-form-group">
@@ -78,6 +79,20 @@
           <p class="penpot-auth-sub">Register your corporate credentials for system onboarding</p>
 
           <form class="penpot-auth-form" onsubmit="handleAuthSignup(event)">
+            <div class="penpot-form-group">
+              <label class="penpot-form-label" for="signupFirstName">First Name</label>
+              <div class="penpot-input-wrap">
+                <input type="text" id="signupFirstName" class="penpot-input" placeholder="e.g. Jane" required />
+              </div>
+            </div>
+
+            <div class="penpot-form-group">
+              <label class="penpot-form-label" for="signupLastName">Last Name</label>
+              <div class="penpot-input-wrap">
+                <input type="text" id="signupLastName" class="penpot-input" placeholder="e.g. Doe" required />
+              </div>
+            </div>
+
             <div class="penpot-form-group">
               <label class="penpot-form-label" for="signupEmployeeId">Employee ID Number</label>
               <div class="penpot-input-wrap">
