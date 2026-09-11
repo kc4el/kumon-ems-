@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadEmployeeDirectory();
   loadClaimStatuses();
   loadMessagesForConversation('sarah');
+  loadAttendanceView();
 });
 
 // ==========================================================================
@@ -1206,6 +1207,63 @@ function loadEmployeeDirectory() {
       setApiMode('demo');
       showToast('API unreachable — showing demo data', 'error');
     });
+}
+
+// ==========================================================================
+// Live view wiring (H7): each loader below replaces its static demo tbody
+// with live API rows, keeping the demo markup as the offline fallback.
+// ==========================================================================
+let liveEmployeeNameCache = null;
+async function liveEmployeeNames() {
+  if (liveEmployeeNameCache) return liveEmployeeNameCache;
+  const res = await apiFetch('/api/employees/?page_size=50');
+  if (!res.ok) throw new Error('load failed');
+  const payload = await res.json();
+  const rows = Array.isArray(payload) ? payload : payload.results || [];
+  liveEmployeeNameCache = {};
+  rows.forEach((e) => {
+    liveEmployeeNameCache[e.id] = `${e.first_name || ''} ${e.last_name || ''}`.trim() || e.email || e.id;
+  });
+  return liveEmployeeNameCache;
+}
+
+function fmtTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return isNaN(d) ? '—' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+async function loadAttendanceView() {
+  const body = document.getElementById('attendanceTableBody');
+  if (!body) return;
+  const demo = body.innerHTML;
+  body.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
+  try {
+    const res = await apiFetch('/api/attendance/?page_size=50');
+    if (!res.ok) throw new Error('load failed');
+    const payload = await res.json();
+    const rows = Array.isArray(payload) ? payload : payload.results || [];
+    let names = {};
+    try { names = await liveEmployeeNames(); } catch (_) { /* fall back to ids */ }
+    body.innerHTML = '';
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="5">No records yet.</td></tr>';
+    } else {
+      rows.forEach((a) => {
+        const open = !a.clock_out;
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-live', 'true');
+        tr.innerHTML =
+          `<td><div class="bold-title">${escapeHtml(String(names[a.employee] || a.employee || ''))}</div>` +
+          `<div class="sub-role">${escapeHtml(String(a.date || ''))}</div></td>` +
+          `<td>—</td><td>${escapeHtml(fmtTime(a.clock_in))}</td><td>${escapeHtml(fmtTime(a.clock_out))}</td>` +
+          `<td><span class="penpot-badge ${open ? 'badge-present' : 'badge-pending'}">` +
+          `${open ? '● Clocked in' : 'Complete'}</span></td>`;
+        body.appendChild(tr);
+      });
+    }
+    setApiMode('live');
+  } catch (e) { body.innerHTML = demo; setApiMode('demo'); showToast('Attendance unreachable — showing demo data', 'error'); }
 }
 
 
