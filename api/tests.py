@@ -882,3 +882,103 @@ class SessionAuthTests(TestCase):
         logout = client.post("/api/session-logout/")
         self.assertEqual(logout.status_code, 200)
         self.assertEqual(client.get("/api/employees/").status_code, 403)
+
+
+class ShiftSwapTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        user = User.objects.create_user(username="tester", password="x")
+        self.client.force_authenticate(user=user)
+
+    def _roster(self, employee, work_date, start, end):
+        from core.models import ShiftRoster
+
+        return ShiftRoster.objects.create(
+            employee=employee,
+            work_date=work_date,
+            shift_type="General",
+            start_time=start,
+            end_time=end,
+        )
+
+    def _pair(self, day=date(2026, 9, 1)):
+        emp_a = Employee.objects.create(
+            first_name="Ada", last_name="A", email="a@example.com"
+        )
+        emp_b = Employee.objects.create(
+            first_name="Bo", last_name="B", email="b@example.com"
+        )
+        roster_a = self._roster(emp_a, day, "09:00:00", "13:00:00")
+        roster_b = self._roster(emp_b, day, "14:00:00", "18:00:00")
+        return emp_a, emp_b, roster_a, roster_b
+
+    def test_valid_swap_request_returns_201(self):
+        _, _, roster_a, roster_b = self._pair()
+        response = self.client.post(
+            "/api/shift-swaps/",
+            {
+                "requester_roster": str(roster_a.id),
+                "target_roster": str(roster_b.id),
+                "reason": "Prefer afternoon",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["status"], "Pending")
+
+    def test_same_employee_swap_returns_400(self):
+        emp = Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        roster_a = self._roster(emp, date(2026, 9, 1), "09:00:00", "13:00:00")
+        roster_b = self._roster(emp, date(2026, 9, 1), "14:00:00", "18:00:00")
+        response = self.client.post(
+            "/api/shift-swaps/",
+            {
+                "requester_roster": str(roster_a.id),
+                "target_roster": str(roster_b.id),
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_different_dates_swap_returns_400(self):
+        emp_a = Employee.objects.create(
+            first_name="Ada", last_name="A", email="a@example.com"
+        )
+        emp_b = Employee.objects.create(
+            first_name="Bo", last_name="B", email="b@example.com"
+        )
+        roster_a = self._roster(emp_a, date(2026, 9, 1), "09:00:00", "13:00:00")
+        roster_b = self._roster(emp_b, date(2026, 9, 2), "09:00:00", "13:00:00")
+        response = self.client.post(
+            "/api/shift-swaps/",
+            {
+                "requester_roster": str(roster_a.id),
+                "target_roster": str(roster_b.id),
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_second_pending_swap_on_same_roster_returns_409(self):
+        _, _, roster_a, roster_b = self._pair()
+        first = self.client.post(
+            "/api/shift-swaps/",
+            {
+                "requester_roster": str(roster_a.id),
+                "target_roster": str(roster_b.id),
+            },
+            format="json",
+        )
+        self.assertEqual(first.status_code, 201)
+        second = self.client.post(
+            "/api/shift-swaps/",
+            {
+                "requester_roster": str(roster_b.id),
+                "target_roster": str(roster_a.id),
+            },
+            format="json",
+        )
+        self.assertEqual(second.status_code, 409)
+        self.assertEqual(set(second.json().keys()), {"error"})

@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import serializers
 
 from .exceptions import Conflict409
@@ -15,6 +16,7 @@ from .models import (
     PayrollRun,
     PerformanceReview,
     ShiftRoster,
+    ShiftSwap,
 )
 
 
@@ -102,6 +104,45 @@ class ShiftRosterSerializer(serializers.ModelSerializer):
                 clash = clash.exclude(pk=self.instance.pk)
             if clash.exists():
                 raise Conflict409("Shift overlaps an existing assignment.")
+        return data
+
+
+class ShiftSwapSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ShiftSwap
+        fields = (
+            "id",
+            "requester_roster",
+            "target_roster",
+            "reason",
+            "status",
+            "created_at",
+        )
+        read_only_fields = ("id", "created_at")
+
+    def validate(self, data):
+        def val(name):
+            return data.get(name, getattr(self.instance, name, None))
+
+        requester = val("requester_roster")
+        target = val("target_roster")
+        if requester and target:
+            if requester.pk == target.pk:
+                raise serializers.ValidationError("Cannot swap a roster with itself.")
+            if requester.employee_id == target.employee_id:
+                raise serializers.ValidationError(
+                    "Swaps must be between different employees."
+                )
+            if requester.work_date != target.work_date:
+                raise serializers.ValidationError("Swaps must be for the same date.")
+            pending = ShiftSwap.objects.filter(status="Pending").filter(
+                Q(requester_roster__in=[requester.pk, target.pk])
+                | Q(target_roster__in=[requester.pk, target.pk])
+            )
+            if self.instance:
+                pending = pending.exclude(pk=self.instance.pk)
+            if pending.exists():
+                raise Conflict409("A swap is already pending for this roster.")
         return data
 
 

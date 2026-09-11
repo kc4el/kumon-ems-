@@ -29,6 +29,7 @@ from .models import (
     PayrollRun,
     PerformanceReview,
     ShiftRoster,
+    ShiftSwap,
 )
 from .serializers import (
     AttendanceSerializer,
@@ -44,6 +45,7 @@ from .serializers import (
     PayrollRunSerializer,
     PerformanceReviewSerializer,
     ShiftRosterSerializer,
+    ShiftSwapSerializer,
 )
 from .supabase_client import supabase
 
@@ -356,6 +358,26 @@ class ShiftRosterListCreateView(generics.ListCreateAPIView):
 class ShiftRosterDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = ShiftRoster.objects.all()
     serializer_class = ShiftRosterSerializer
+
+
+class ShiftSwapListCreateView(generics.ListCreateAPIView):
+    queryset = ShiftSwap.objects.all().order_by("-created_at")
+    serializer_class = ShiftSwapSerializer
+
+
+class ShiftSwapDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = ShiftSwap.objects.all()
+    serializer_class = ShiftSwapSerializer
+
+    def perform_update(self, serializer):
+        # Status-only update: any other patched fields are ignored.
+        instance = serializer.instance
+        serializer.save(
+            requester_roster=instance.requester_roster,
+            target_roster=instance.target_roster,
+            reason=instance.reason,
+            status=serializer.validated_data.get("status", instance.status),
+        )
 
 
 class PayrollRunListCreateView(generics.ListCreateAPIView):

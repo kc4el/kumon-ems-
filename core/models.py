@@ -88,6 +88,27 @@ class ShiftRoster(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
+class ShiftSwap(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    requester_roster = models.ForeignKey(
+        ShiftRoster, on_delete=models.CASCADE, related_name="swap_requests"
+    )
+    target_roster = models.ForeignKey(
+        ShiftRoster, on_delete=models.CASCADE, related_name="swap_targets"
+    )
+    reason = models.TextField(blank=True)
+    status = models.CharField(
+        max_length=50,
+        choices=[
+            ("Pending", "Pending"),
+            ("Approved", "Approved"),
+            ("Rejected", "Rejected"),
+        ],
+        default="Pending",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class PayrollRun(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     pay_period_start = models.DateField()

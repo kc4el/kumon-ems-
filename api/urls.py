@@ -31,6 +31,8 @@ from core.views import (
     ShiftConflictView,
     ShiftRosterDetailView,
     ShiftRosterListCreateView,
+    ShiftSwapDetailView,
+    ShiftSwapListCreateView,
 )
 
 urlpatterns = [
@@ -78,6 +80,16 @@ urlpatterns = [
         "shift-rosters/<uuid:pk>/",
         ShiftRosterDetailView.as_view(),
         name="shift-roster-detail",
+    ),
+    path(
+        "shift-swaps/",
+        ShiftSwapListCreateView.as_view(),
+        name="shift-swap-list-create",
+    ),
+    path(
+        "shift-swaps/<uuid:pk>/",
+        ShiftSwapDetailView.as_view(),
+        name="shift-swap-detail",
     ),
     path(
         "payroll-runs/",
