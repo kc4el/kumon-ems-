@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .exceptions import Conflict409
 from .models import (
     Attendance,
+    AttendanceCorrection,
     ClaimStatus,
     Department,
     Employee,
@@ -55,6 +56,48 @@ class AttendanceSerializer(serializers.ModelSerializer):
                 employee=data["employee"], date=data["date"]
             ).exists():
                 raise Conflict409("This employee has already clocked in today.")
+        return data
+
+
+class AttendanceCorrectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AttendanceCorrection
+        fields = (
+            "id",
+            "attendance",
+            "proposed_clock_in",
+            "proposed_clock_out",
+            "reason",
+            "status",
+            "created_at",
+        )
+        read_only_fields = ("id", "created_at")
+
+    def validate(self, data):
+        def val(name):
+            if name in data:
+                return data[name]
+            return getattr(self.instance, name, None) if self.instance else None
+
+        proposed_in = val("proposed_clock_in")
+        proposed_out = val("proposed_clock_out")
+        if not self.instance and proposed_in is None and proposed_out is None:
+            raise serializers.ValidationError("At least one proposed time is required.")
+        attendance = val("attendance")
+        start = (
+            proposed_in
+            if proposed_in is not None
+            else getattr(attendance, "clock_in", None)
+        )
+        end = (
+            proposed_out
+            if proposed_out is not None
+            else getattr(attendance, "clock_out", None)
+        )
+        if start is not None and end is not None and end <= start:
+            raise serializers.ValidationError(
+                "proposed_clock_out must be after proposed_clock_in."
+            )
         return data
 
 

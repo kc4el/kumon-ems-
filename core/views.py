@@ -17,6 +17,7 @@ from rest_framework.views import APIView
 from .exceptions import Conflict409
 from .models import (
     Attendance,
+    AttendanceCorrection,
     ClaimStatus,
     Department,
     Employee,
@@ -31,6 +32,7 @@ from .models import (
     ShiftRoster,
 )
 from .serializers import (
+    AttendanceCorrectionSerializer,
     AttendanceSerializer,
     ClaimStatusSerializer,
     DepartmentSerializer,
@@ -251,6 +253,16 @@ class AttendanceDetailView(generics.RetrieveUpdateDestroyAPIView):
                 serializer.save()
         except IntegrityError:
             raise Conflict409("This change conflicts with an existing record.")
+
+
+class AttendanceCorrectionListCreateView(generics.ListCreateAPIView):
+    queryset = AttendanceCorrection.objects.all().order_by("-created_at")
+    serializer_class = AttendanceCorrectionSerializer
+
+
+class AttendanceCorrectionDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = AttendanceCorrection.objects.all()
+    serializer_class = AttendanceCorrectionSerializer
 
 
 class AttendanceClockOutView(APIView):

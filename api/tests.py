@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -882,3 +882,61 @@ class SessionAuthTests(TestCase):
         logout = client.post("/api/session-logout/")
         self.assertEqual(logout.status_code, 200)
         self.assertEqual(client.get("/api/employees/").status_code, 403)
+
+
+class AttendanceCorrectionTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        user = User.objects.create_user(username="corr-tester", password="x")
+        self.client.force_authenticate(user=user)
+        self.employee = Employee.objects.create(
+            first_name="Ada", last_name="Lovelace", email="ada-corr@example.com"
+        )
+        self.attendance = Attendance.objects.create(
+            employee=self.employee,
+            date=date(2026, 9, 10),
+            clock_in=timezone.make_aware(datetime(2026, 9, 10, 9, 0)),
+            clock_out=timezone.make_aware(datetime(2026, 9, 10, 17, 0)),
+        )
+
+    def _propose(self, **overrides):
+        payload = {
+            "attendance": str(self.attendance.id),
+            "proposed_clock_in": "2026-09-10T08:30:00Z",
+            "proposed_clock_out": "2026-09-10T17:30:00Z",
+            "reason": "Forgot morning clock-in.",
+        }
+        payload.update(overrides)
+        return self.client.post("/api/attendance-corrections/", payload, format="json")
+
+    def test_create_correction_returns_201_and_leaves_row_untouched(self):
+        response = self._propose()
+        self.assertEqual(response.status_code, 201)
+        self.attendance.refresh_from_db()
+        self.assertEqual(
+            self.attendance.clock_in,
+            timezone.make_aware(datetime(2026, 9, 10, 9, 0)),
+        )
+        self.assertEqual(
+            self.attendance.clock_out,
+            timezone.make_aware(datetime(2026, 9, 10, 17, 0)),
+        )
+
+    def test_empty_proposal_returns_400(self):
+        response = self.client.post(
+            "/api/attendance-corrections/",
+            {"attendance": str(self.attendance.id), "reason": "No times."},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_inverted_times_return_400(self):
+        response = self._propose(
+            proposed_clock_in="2026-09-10T18:00:00Z",
+            proposed_clock_out="2026-09-10T07:00:00Z",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_anonymous_corrections_are_denied(self):
+        anon = APIClient()
+        self.assertEqual(anon.get("/api/attendance-corrections/").status_code, 403)
