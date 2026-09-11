@@ -3743,3 +3743,10 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* --------------------------------------------------------------------------
+   D6: Team activity feed (Today aside on the dashboard)
+   -------------------------------------------------------------------------- */
+#activityFeed{float:right;width:300px;margin:0 0 16px 16px;}
+#activityFeed ul{list-style:none;margin:8px 0 0;padding:0;}
+@media (max-width:768px){#activityFeed{float:none;width:100%;margin:0 0 16px 0;}}

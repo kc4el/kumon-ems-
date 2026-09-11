@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadShiftRosterView();
   loadAuditView();
   initDashboardWidgets();
+  loadActivityFeed();
 });
 
 // ==========================================================================
@@ -313,6 +314,23 @@ function moveWidget(card, dir) {
   grid.insertBefore(card, dir < 0 ? sib : sib.nextElementSibling);
   writeWidgetPrefs();
   refreshWidgetSettings();
+}
+
+// D6: "Today" activity feed from the live audit log. Uses raw fetch (not
+// apiFetch) so a logged-out 401/403 renders "Activity unavailable." instead
+// of triggering apiFetch's login redirect; the feed never bounces to login.
+async function loadActivityFeed() {
+  const list = document.getElementById("activityFeedList");
+  if (!list) return;
+  try {
+    const res = await fetch("/api/audit-logs/?page_size=20", { credentials: "same-origin", headers: { Accept: "application/json" } });
+    if (!res.ok) throw new Error("feed failed");
+    const payload = await res.json();
+    const rows = payload.results || payload || [];
+    list.innerHTML = rows.length
+      ? rows.map((r) => `<li>${escapeHtml(String(r.action || "update"))} <span>${escapeHtml(String(r.timestamp || "").slice(0, 16).replace("T", " "))}</span></li>`).join("")
+      : "<li>No activity yet today.</li>";
+  } catch (e) { list.innerHTML = "<li>Activity unavailable.</li>"; }
 }
 
 // Accordion toggle for Employee Directory
