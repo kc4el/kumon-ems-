@@ -2212,6 +2212,27 @@
             </div>
           </div>
         </div>
+        <!-- Live roster assignments (H7b: live API rows; demo calendar above stays as fallback) -->
+        <div class="white-card" id="shiftLiveWrap">
+          <h2 class="card-title">Live Roster Assignments</h2>
+          <p class="card-sub">Current shift assignments from the API</p>
+          <div class="table-wrap">
+            <table class="penpot-table">
+              <thead>
+                <tr>
+                  <th>EMPLOYEE</th>
+                  <th>WORK DATE</th>
+                  <th>SHIFT</th>
+                  <th>TIME</th>
+                  <th>CONFLICT</th>
+                </tr>
+              </thead>
+              <tbody id="shiftRosterTableBody">
+                <tr><td colspan="5">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
       <!-- ======================================================================

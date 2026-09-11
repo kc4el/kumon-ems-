@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadClaimStatuses();
   loadMessagesForConversation('sarah');
   loadAttendanceView();
+  loadShiftRosterView();
 });
 
 // ==========================================================================
@@ -1264,6 +1265,36 @@ async function loadAttendanceView() {
     }
     setApiMode('live');
   } catch (e) { body.innerHTML = demo; setApiMode('demo'); showToast('Attendance unreachable — showing demo data', 'error'); }
+}
+
+async function loadShiftRosterView() {
+  const body = document.getElementById('shiftRosterTableBody');
+  if (!body) return;
+  try {
+    const res = await apiFetch('/api/shift-rosters/?page_size=50');
+    if (!res.ok) throw new Error('load failed');
+    const payload = await res.json();
+    const rows = Array.isArray(payload) ? payload : payload.results || [];
+    let names = {};
+    try { names = await liveEmployeeNames(); } catch (_) { /* fall back to ids */ }
+    body.innerHTML = '';
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="5">No records yet.</td></tr>';
+    } else {
+      rows.forEach((r) => {
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-live', 'true');
+        tr.innerHTML =
+          `<td><div class="bold-title">${escapeHtml(String(names[r.employee] || r.employee || 'Unassigned'))}</div></td>` +
+          `<td>${escapeHtml(String(r.work_date || '—'))}</td>` +
+          `<td>${escapeHtml(String(r.shift_type || 'General'))}</td>` +
+          `<td>${escapeHtml(String(r.start_time || ''))} – ${escapeHtml(String(r.end_time || ''))}</td>` +
+          `<td><span data-conflict-for="${escapeHtml(String(r.id || ''))}">—</span></td>`;
+        body.appendChild(tr);
+      });
+    }
+    setApiMode('live');
+  } catch (e) { setApiMode('demo'); showToast('Shift roster unreachable — showing demo data', 'error'); }
 }
 
 
