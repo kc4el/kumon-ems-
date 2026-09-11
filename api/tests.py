@@ -629,6 +629,34 @@ class ApiTests(TestCase):
         self.assertEqual(second.status_code, 200)
         self.assertEqual(ClaimStatus.objects.filter(claim_id="C-1").count(), 1)
 
+    def test_expense_claims_require_authentication(self):
+        anon = APIClient()
+        self.assertEqual(anon.get("/api/expense-claims/").status_code, 403)
+
+    def test_expense_claim_negative_amount_returns_400(self):
+        employee = Employee.objects.create(
+            first_name="Exp", last_name="Ense", email="expense@example.com"
+        )
+        response = self.client.post(
+            "/api/expense-claims/",
+            {
+                "employee": str(employee.id),
+                "title": "Taxi",
+                "amount": "-5.00",
+                "category": "Travel",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_expense_claim_missing_employee_returns_400(self):
+        response = self.client.post(
+            "/api/expense-claims/",
+            {"title": "Taxi", "amount": "10.00"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
 
 class SessionAuthTests(TestCase):
     def test_session_login_wrong_credentials_returns_401(self):

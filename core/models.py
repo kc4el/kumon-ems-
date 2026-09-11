@@ -1,5 +1,7 @@
 import uuid
+from decimal import Decimal
 
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Q
 
@@ -117,10 +119,20 @@ class ExpenseClaim(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.01"))],
+    )
     category = models.CharField(max_length=100, default="General Expense")
     status = models.CharField(
-        max_length=50, default="Pending"
+        max_length=50,
+        choices=[
+            ("Pending", "Pending"),
+            ("Approved", "Approved"),
+            ("Rejected", "Rejected"),
+        ],
+        default="Pending",
     )  # Pending, Approved, Rejected
     created_at = models.DateTimeField(auto_now_add=True)
 

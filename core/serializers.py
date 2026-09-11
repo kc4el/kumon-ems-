@@ -129,7 +129,16 @@ class PerformanceReviewSerializer(serializers.ModelSerializer):
 class ExpenseClaimSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExpenseClaim
-        fields = "__all__"
+        fields = (
+            "id",
+            "employee",
+            "title",
+            "amount",
+            "category",
+            "status",
+            "created_at",
+        )
+        read_only_fields = ("id", "created_at")
 
 
 class EmployeeAuditLogSerializer(serializers.ModelSerializer):

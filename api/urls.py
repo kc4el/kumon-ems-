@@ -12,6 +12,8 @@ from core.views import (
     EmployeeAuditLogListView,
     EmployeeDetailView,
     EmployeeListCreateView,
+    ExpenseClaimDetailView,
+    ExpenseClaimListCreateView,
     LeaveRequestDetailView,
     LeaveRequestListCreateView,
     MessageListCreateView,
@@ -107,5 +109,15 @@ urlpatterns = [
         "claim-statuses/",
         ClaimStatusListCreateView.as_view(),
         name="claim-status-list-create",
+    ),
+    path(
+        "expense-claims/",
+        ExpenseClaimListCreateView.as_view(),
+        name="expense-claim-list-create",
+    ),
+    path(
+        "expense-claims/<uuid:pk>/",
+        ExpenseClaimDetailView.as_view(),
+        name="expense-claim-detail",
     ),
 ]
