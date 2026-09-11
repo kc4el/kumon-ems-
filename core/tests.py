@@ -6,7 +6,15 @@ from django.core.management.base import CommandError
 from django.test import TestCase
 from django.utils import timezone
 
-from .models import Attendance, Department, Employee, EmployeeAuditLog, LeaveRequest
+from .models import (
+    Attendance,
+    Department,
+    Employee,
+    EmployeeAuditLog,
+    LeaveAllocation,
+    LeaveRequest,
+    Notification,
+)
 
 
 class AuditLogTests(TestCase):
@@ -75,6 +83,52 @@ class AuditLogTests(TestCase):
             EmployeeAuditLog.objects.filter(
                 employee=self.employee,
                 action__icontains="Approved",
+            ).exists()
+        )
+
+
+class LeaveDeficitTests(TestCase):
+    def setUp(self):
+        self.employee = Employee.objects.create(
+            first_name="Defi", last_name="Cit", email="deficit@example.com"
+        )
+        LeaveAllocation.objects.create(
+            employee=self.employee,
+            leave_type="Vacation",
+            year=2026,
+            days_total="5.0",
+        )
+
+    def test_approval_into_negative_sends_single_deficit_notice(self):
+        leave = LeaveRequest.objects.create(
+            employee=self.employee,
+            leave_type="Vacation",
+            start_date=date(2026, 7, 1),
+            end_date=date(2026, 7, 6),
+            reason="Long trip",
+            status="Pending",
+        )
+        leave.status = "Approved"
+        leave.save()
+        deficit = Notification.objects.filter(
+            employee=self.employee, kind="leave", text__icontains="over balance"
+        )
+        self.assertEqual(deficit.count(), 1)
+
+    def test_approval_within_balance_sends_no_deficit_text(self):
+        leave = LeaveRequest.objects.create(
+            employee=self.employee,
+            leave_type="Vacation",
+            start_date=date(2026, 7, 1),
+            end_date=date(2026, 7, 2),
+            reason="Short trip",
+            status="Pending",
+        )
+        leave.status = "Approved"
+        leave.save()
+        self.assertFalse(
+            Notification.objects.filter(
+                employee=self.employee, text__icontains="over balance"
             ).exists()
         )
 

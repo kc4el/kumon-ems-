@@ -161,9 +161,18 @@ def log_performance_review_action(sender, instance, created, **kwargs):
 def notify_leave_decision(sender, instance, created, **kwargs):
     previous_status = getattr(instance, "_previous_status", None)
     if created or (previous_status and previous_status != instance.status):
+        text = f"Leave {instance.status}: {instance.start_date}–{instance.end_date}"
+        if instance.status == "Approved":
+            from .views import leave_balance
+
+            balance = leave_balance(
+                instance.employee_id, instance.leave_type, instance.start_date.year
+            )
+            if balance["remaining"] < 0:
+                text += f" ({balance['remaining']} days over balance)"
         Notification.objects.create(
             employee=instance.employee,
-            text=f"Leave {instance.status}: {instance.start_date}–{instance.end_date}",
+            text=text,
             kind="leave",
         )
 
