@@ -694,7 +694,9 @@ body {
   color: #ffffff;
   padding: 6px 14px;
   font-size: 12px;
+  border: none;
   border-radius: 6px;
+  cursor: pointer;
 }
 
 .btn-blue-sm {
@@ -702,7 +704,9 @@ body {
   color: #ffffff;
   padding: 6px 14px;
   font-size: 12px;
+  border: none;
   border-radius: 6px;
+  cursor: pointer;
 }
 
 .btn-navy-sm {
@@ -2084,6 +2088,80 @@ body {
 }
 #tourBubble .tour-dot.on {
   background: #0f172a;
+}
+
+/* Recent additions: blend with the system design (no browser-default chrome) */
+#activityFeed {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+#activityFeed h3 {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 8px;
+}
+#activityFeedList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 12.5px;
+  color: #334155;
+}
+#activityFeedList li {
+  padding: 6px 0;
+  border-top: 1px solid #f1f5f9;
+}
+#activityFeedList li:first-child {
+  border-top: none;
+}
+#activityFeedList span {
+  color: #64748b;
+  font-size: 11.5px;
+}
+#widgetSettings {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #0f172a;
+}
+#widgetSettings summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+#widgetSettingsList div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+#widgetSettingsList label {
+  flex: 1;
+  color: #334155;
+}
+#widgetSettingsList button,
+#replayTourBtn {
+  background: #f1f5f9;
+  color: #0f172a;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+#widgetSettingsList button:hover,
+#replayTourBtn:hover {
+  background: #e2e8f0;
+}
+#replayTourBtn {
+  margin-bottom: 16px;
 }
 
 .toast-stack {
