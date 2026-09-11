@@ -574,6 +574,24 @@ class ApiTests(TestCase):
         self.assertEqual(api_settings.DEFAULT_THROTTLE_RATES["anon"], "100/day")
         self.assertEqual(api_settings.DEFAULT_THROTTLE_RATES["user"], "1000/day")
 
+    def test_message_sender_is_bound_to_request_user(self):
+        response = self.client.post(
+            "/api/messages/",
+            {
+                "conversation_key": "x",
+                "sender_name": "Evil",
+                "text": "hi",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["sender_name"], "tester")
+
+    def test_message_create_defaults_conversation_key(self):
+        response = self.client.post("/api/messages/", {"text": "hi"}, format="json")
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["conversation_key"], "general")
+
 
 class SessionAuthTests(TestCase):
     def test_session_login_wrong_credentials_returns_401(self):

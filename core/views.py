@@ -393,10 +393,10 @@ class MessageListCreateView(generics.ListCreateAPIView):
         return Message.objects.filter(conversation_key=conversation_key)
 
     def perform_create(self, serializer):
-        serializer.save(
-            conversation_key=self.request.data.get("conversation_key", "sarah"),
-            sender_name=self.request.data.get("sender_name", "Marcus Williams"),
-        )
+        user = self.request.user
+        name = user.get_full_name() or user.username
+        key = self.request.data.get("conversation_key") or "general"
+        serializer.save(conversation_key=key, sender_name=name)
 
 
 class ClaimStatusListCreateView(generics.ListCreateAPIView):

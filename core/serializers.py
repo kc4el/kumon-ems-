@@ -153,7 +153,13 @@ class MessageSerializer(serializers.ModelSerializer):
             "attachment_url",
             "created_at",
         )
-        read_only_fields = ("id", "created_at", "attachment_url")
+        read_only_fields = (
+            "id",
+            "created_at",
+            "attachment_url",
+            "sender_name",
+            "conversation_key",
+        )
 
     def get_attachment_url(self, obj):
         if not obj.attachment:
