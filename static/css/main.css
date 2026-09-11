@@ -2055,6 +2055,37 @@ body {
   gap: 10px;
 }
 
+/* Onboarding tour bubble: modal-card look, docked bottom-right */
+#tourBubble {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1200;
+  width: 360px;
+}
+#tourBubble .tour-text {
+  color: #334155;
+  font-size: 14px;
+  margin: 0 0 12px;
+}
+#tourBubble .tour-dots {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+#tourBubble .tour-dot {
+  width: 22px;
+  height: 6px;
+  border-radius: 3px;
+  background: #e2e8f0;
+}
+#tourBubble .tour-dot.done {
+  background: #94a3b8;
+}
+#tourBubble .tour-dot.on {
+  background: #0f172a;
+}
+
 .toast-stack {
   position: fixed;
   bottom: 24px;

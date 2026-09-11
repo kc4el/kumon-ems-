@@ -369,20 +369,49 @@ function showTourBubble(step, n, total) {
   if (old) old.remove();
   const b = document.createElement("div");
   b.id = "tourBubble";
+  b.className = "modal-card";
+  b.setAttribute("role", "dialog");
+  b.setAttribute("aria-label", "Onboarding tour step " + n + " of " + total);
+  const head = document.createElement("div");
+  head.className = "modal-head";
+  const badge = document.createElement("span");
+  badge.className = "penpot-badge badge-onduty";
+  badge.textContent = "Step " + n + " of " + total;
+  const title = document.createElement("h3");
+  title.textContent = "Welcome tour";
+  head.appendChild(title);
+  head.appendChild(badge);
   const p = document.createElement("p");
-  p.textContent = "Step " + n + " of " + total + ": " + step.text;
-  const next = document.createElement("button");
-  next.type = "button";
-  next.textContent = n >= total ? "Finish" : "Next";
-  next.addEventListener("click", nextTourStep);
+  p.className = "tour-text";
+  p.textContent = step.text;
+  const dots = document.createElement("div");
+  dots.className = "tour-dots";
+  dots.setAttribute("aria-hidden", "true");
+  for (let i = 1; i <= total; i++) {
+    const d = document.createElement("span");
+    d.className = "tour-dot" + (i === n ? " on" : "") + (i < n ? " done" : "");
+    dots.appendChild(d);
+  }
+  const foot = document.createElement("div");
+  foot.className = "modal-foot";
   const skip = document.createElement("button");
   skip.type = "button";
+  skip.className = "btn-black-sm";
   skip.textContent = "Skip";
   skip.addEventListener("click", endTour);
+  const next = document.createElement("button");
+  next.type = "button";
+  next.className = "btn-blue-sm";
+  next.textContent = n >= total ? "Finish" : "Next";
+  next.addEventListener("click", nextTourStep);
+  foot.appendChild(skip);
+  foot.appendChild(next);
+  b.appendChild(head);
   b.appendChild(p);
-  b.appendChild(next);
-  b.appendChild(skip);
+  b.appendChild(dots);
+  b.appendChild(foot);
   document.body.appendChild(b);
+  next.focus();
 }
 function initTour() {
   const view = document.getElementById("view-dashboard");
