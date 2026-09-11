@@ -882,3 +882,105 @@ class SessionAuthTests(TestCase):
         logout = client.post("/api/session-logout/")
         self.assertEqual(logout.status_code, 200)
         self.assertEqual(client.get("/api/employees/").status_code, 403)
+
+
+class OvertimeSlipTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        user = User.objects.create_user(username="ot-tester", password="x")
+        self.client.force_authenticate(user=user)
+        self.employee = Employee.objects.create(
+            first_name="Over", last_name="Time", email="ot@example.com"
+        )
+
+    def _attendance(self, worked_hours=None):
+        clock_in = timezone.now() - timezone.timedelta(days=1)
+        clock_out = (
+            clock_in + timezone.timedelta(hours=worked_hours)
+            if worked_hours is not None
+            else None
+        )
+        return Attendance.objects.create(
+            employee=self.employee,
+            date=clock_in.date(),
+            clock_in=clock_in,
+            clock_out=clock_out,
+        )
+
+    def _post_slip(self, attendance, **overrides):
+        payload = {
+            "employee": str(self.employee.id),
+            "attendance": str(attendance.id),
+            "date": str(attendance.date),
+        }
+        payload.update(overrides)
+        return self.client.post("/api/overtime/", payload, format="json")
+
+    def test_overtime_long_day_claims_hours_past_eight(self):
+        response = self._post_slip(self._attendance(8.5))
+        self.assertEqual(response.status_code, 201)
+        body = response.json()
+        self.assertEqual(body["hours"], "0.50")
+        self.assertEqual(body["multiplier"], "1.25")
+        self.assertEqual(body["status"], "Pending")
+
+    def test_overtime_short_day_claims_zero(self):
+        response = self._post_slip(self._attendance(7))
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["hours"], "0.00")
+
+    def test_overtime_incomplete_attendance_returns_400(self):
+        response = self._post_slip(self._attendance())
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(set(response.json().keys()), {"error"})
+
+    def test_overtime_posted_hours_are_ignored(self):
+        response = self._post_slip(self._attendance(8.5), hours="99.00")
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["hours"], "0.50")
+
+    def test_overtime_custom_multiplier_is_accepted(self):
+        response = self._post_slip(self._attendance(9), multiplier="2.00")
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["multiplier"], "2.00")
+
+    def test_overtime_approve_returns_200(self):
+        slip_id = self._post_slip(self._attendance(9)).json()["id"]
+        response = self.client.patch(
+            f"/api/overtime/{slip_id}/", {"status": "Approved"}, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "Approved")
+
+    def test_overtime_other_employee_attendance_returns_400(self):
+        other = Employee.objects.create(
+            first_name="Oth", last_name="Er", email="other@example.com"
+        )
+        attendance = Attendance.objects.create(
+            employee=other,
+            date=date.today(),
+            clock_in=timezone.now() - timezone.timedelta(hours=10),
+            clock_out=timezone.now() - timezone.timedelta(hours=1),
+        )
+        response = self._post_slip(attendance)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(set(response.json().keys()), {"error"})
+
+    def test_overtime_missing_attendance_returns_400(self):
+        import uuid
+
+        response = self.client.post(
+            "/api/overtime/",
+            {
+                "employee": str(self.employee.id),
+                "attendance": str(uuid.uuid4()),
+                "date": str(date.today()),
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(set(response.json().keys()), {"error"})
+
+    def test_overtime_anon_is_denied(self):
+        anon = APIClient()
+        self.assertEqual(anon.get("/api/overtime/").status_code, 403)

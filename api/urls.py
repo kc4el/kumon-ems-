@@ -19,6 +19,8 @@ from core.views import (
     MessageListCreateView,
     NotificationListView,
     NotificationMarkReadView,
+    OvertimeSlipDetailView,
+    OvertimeSlipListCreateView,
     PayrollItemDetailView,
     PayrollItemListCreateView,
     PayrollRunDetailView,
@@ -64,6 +66,14 @@ urlpatterns = [
     ),
     path("leaves/", LeaveRequestListCreateView.as_view(), name="leave-list-create"),
     path("leaves/<uuid:pk>/", LeaveRequestDetailView.as_view(), name="leave-detail"),
+    path(
+        "overtime/", OvertimeSlipListCreateView.as_view(), name="overtime-list-create"
+    ),
+    path(
+        "overtime/<uuid:pk>/",
+        OvertimeSlipDetailView.as_view(),
+        name="overtime-detail",
+    ),
     path(
         "shift-rosters/",
         ShiftRosterListCreateView.as_view(),

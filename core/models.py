@@ -61,6 +61,27 @@ class Attendance(models.Model):
         ]
 
 
+class OvertimeSlip(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    attendance = models.ForeignKey(Attendance, on_delete=models.CASCADE)
+    date = models.DateField()
+    hours = models.DecimalField(max_digits=5, decimal_places=2)
+    multiplier = models.DecimalField(
+        max_digits=4, decimal_places=2, default=Decimal("1.25")
+    )
+    status = models.CharField(
+        max_length=50,
+        choices=[
+            ("Pending", "Pending"),
+            ("Approved", "Approved"),
+            ("Rejected", "Rejected"),
+        ],
+        default="Pending",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class LeaveRequest(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)

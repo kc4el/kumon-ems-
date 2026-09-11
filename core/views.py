@@ -25,6 +25,7 @@ from .models import (
     LeaveRequest,
     Message,
     Notification,
+    OvertimeSlip,
     PayrollItem,
     PayrollRun,
     PerformanceReview,
@@ -40,6 +41,7 @@ from .serializers import (
     LeaveRequestSerializer,
     MessageSerializer,
     NotificationSerializer,
+    OvertimeSlipSerializer,
     PayrollItemSerializer,
     PayrollRunSerializer,
     PerformanceReviewSerializer,
@@ -318,6 +320,38 @@ class LeaveRequestListCreateView(generics.ListCreateAPIView):
 class LeaveRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = LeaveRequest.objects.all()
     serializer_class = LeaveRequestSerializer
+
+
+class OvertimeSlipListCreateView(generics.ListCreateAPIView):
+    queryset = OvertimeSlip.objects.all().order_by("-created_at")
+    serializer_class = OvertimeSlipSerializer
+
+    def perform_create(self, serializer):
+        raw_attendance = self.request.data.get("attendance")
+        try:
+            attendance = Attendance.objects.get(pk=raw_attendance)
+        except (Attendance.DoesNotExist, ValueError, TypeError, DjangoValidationError):
+            raise DRFValidationError({"attendance": "Attendance not found."})
+        employee = serializer.validated_data.get("employee")
+        if employee is None or attendance.employee_id != employee.id:
+            raise DRFValidationError(
+                {"attendance": "Attendance does not belong to this employee."}
+            )
+        if not attendance.clock_in or not attendance.clock_out:
+            raise DRFValidationError({"attendance": "Attendance is incomplete."})
+        worked = (attendance.clock_out - attendance.clock_in).total_seconds() / 3600
+        hours = max(0, round(worked - 8, 2))
+        serializer.save(hours=hours)
+
+
+class OvertimeSlipDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = OvertimeSlip.objects.all()
+    serializer_class = OvertimeSlipSerializer
+
+    def perform_update(self, serializer):
+        instance = serializer.instance
+        instance.status = serializer.validated_data.get("status", instance.status)
+        instance.save(update_fields=["status"])
 
 
 class ShiftConflictView(APIView):
