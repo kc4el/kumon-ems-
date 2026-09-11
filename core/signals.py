@@ -9,6 +9,7 @@ from .models import (
     Employee,
     EmployeeAuditLog,
     LeaveRequest,
+    Notification,
     PayrollItem,
     PayrollRun,
     PerformanceReview,
@@ -153,4 +154,25 @@ def log_performance_review_action(sender, instance, created, **kwargs):
     else:
         create_audit_log(
             instance.employee, f"Performance review updated for {instance.employee}."
+        )
+
+
+@receiver(post_save, sender=LeaveRequest)
+def notify_leave_decision(sender, instance, created, **kwargs):
+    previous_status = getattr(instance, "_previous_status", None)
+    if created or (previous_status and previous_status != instance.status):
+        Notification.objects.create(
+            employee=instance.employee,
+            text=f"Leave {instance.status}: {instance.start_date}–{instance.end_date}",
+            kind="leave",
+        )
+
+
+@receiver(post_save, sender=ShiftRoster)
+def notify_shift_assignment(sender, instance, created, **kwargs):
+    if created and instance.employee_id:
+        Notification.objects.create(
+            employee_id=instance.employee_id,
+            text=f"You were assigned {instance.shift_type} on {instance.work_date}",
+            kind="shift",
         )

@@ -715,6 +715,46 @@ class ApiTests(TestCase):
         self.assertEqual(response.status_code, 400)
         supabase.auth.admin.create_user.assert_not_called()
 
+    def test_notifications_list_and_mark_read(self):
+        from core.models import Notification
+
+        employee = Employee.objects.create(
+            first_name="Noti", last_name="Fied", email="notified@example.com"
+        )
+        note = Notification.objects.create(
+            employee=employee, text="Leave Approved: 2026-10-01", kind="leave"
+        )
+        listed = self.client.get("/api/notifications/")
+        self.assertEqual(listed.status_code, 200)
+        self.assertEqual(len(listed.json()["results"]), 1)
+        marked = self.client.patch(
+            f"/api/notifications/{note.id}/read/", {}, format="json"
+        )
+        self.assertEqual(marked.status_code, 200)
+        self.assertTrue(marked.json()["is_read"])
+        note.refresh_from_db()
+        self.assertTrue(note.is_read)
+
+    def test_leave_decision_creates_notification(self):
+        from core.models import Notification
+
+        employee = Employee.objects.create(
+            first_name="Lea", last_name="Ver", email="leaver@example.com"
+        )
+        leave = LeaveRequest.objects.create(
+            employee=employee,
+            start_date=date(2026, 10, 1),
+            end_date=date(2026, 10, 2),
+            reason="Family trip",
+        )
+        leave.status = "Approved"
+        leave.save()
+        self.assertTrue(
+            Notification.objects.filter(
+                employee=employee, kind="leave", is_read=False
+            ).exists()
+        )
+
 
 class SessionAuthTests(TestCase):
     def test_session_login_wrong_credentials_returns_401(self):

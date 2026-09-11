@@ -5,7 +5,7 @@ from datetime import timedelta
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, transaction
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from rest_framework import generics, status
@@ -24,6 +24,7 @@ from .models import (
     ExpenseClaim,
     LeaveRequest,
     Message,
+    Notification,
     PayrollItem,
     PayrollRun,
     PerformanceReview,
@@ -38,6 +39,7 @@ from .serializers import (
     ExpenseClaimSerializer,
     LeaveRequestSerializer,
     MessageSerializer,
+    NotificationSerializer,
     PayrollItemSerializer,
     PayrollRunSerializer,
     PerformanceReviewSerializer,
@@ -458,3 +460,16 @@ class ExpenseClaimListCreateView(generics.ListCreateAPIView):
 class ExpenseClaimDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = ExpenseClaim.objects.all()
     serializer_class = ExpenseClaimSerializer
+
+
+class NotificationListView(generics.ListAPIView):
+    queryset = Notification.objects.all().order_by("-created_at")
+    serializer_class = NotificationSerializer
+
+
+class NotificationMarkReadView(APIView):
+    def patch(self, request, pk):
+        note = get_object_or_404(Notification, pk=pk)
+        note.is_read = True
+        note.save(update_fields=["is_read"])
+        return Response(NotificationSerializer(note).data, status=status.HTTP_200_OK)

@@ -17,6 +17,8 @@ from core.views import (
     LeaveRequestDetailView,
     LeaveRequestListCreateView,
     MessageListCreateView,
+    NotificationListView,
+    NotificationMarkReadView,
     PayrollItemDetailView,
     PayrollItemListCreateView,
     PayrollRunDetailView,
@@ -119,5 +121,15 @@ urlpatterns = [
         "expense-claims/<uuid:pk>/",
         ExpenseClaimDetailView.as_view(),
         name="expense-claim-detail",
+    ),
+    path(
+        "notifications/",
+        NotificationListView.as_view(),
+        name="notification-list",
+    ),
+    path(
+        "notifications/<uuid:pk>/read/",
+        NotificationMarkReadView.as_view(),
+        name="notification-mark-read",
     ),
 ]

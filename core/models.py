@@ -162,3 +162,15 @@ class ClaimStatus(models.Model):
     claim_id = models.CharField(max_length=100, unique=True)
     status = models.CharField(max_length=50)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class Notification(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    text = models.CharField(max_length=255)
+    kind = models.CharField(max_length=50, default="info")
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)

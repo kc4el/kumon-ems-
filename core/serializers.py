@@ -10,6 +10,7 @@ from .models import (
     ExpenseClaim,
     LeaveRequest,
     Message,
+    Notification,
     PayrollItem,
     PayrollRun,
     PerformanceReview,
@@ -145,6 +146,13 @@ class EmployeeAuditLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployeeAuditLog
         fields = "__all__"
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ("id", "employee", "text", "kind", "is_read", "created_at")
+        read_only_fields = ("id", "created_at")
 
 
 class MessageSerializer(serializers.ModelSerializer):
