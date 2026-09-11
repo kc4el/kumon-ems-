@@ -586,20 +586,22 @@ class ShiftSwapDetailView(generics.RetrieveUpdateDestroyAPIView):
                 raise DRFValidationError("Both rosters must have an assigned employee.")
             new_requester_emp = target.employee_id
             new_target_emp = requester.employee_id
-            # Re-run the roster overlap guard for each holder's new slot;
-            # a Conflict409 here rolls back the whole swap.
-            for roster, new_emp in (
-                (requester, new_requester_emp),
-                (target, new_target_emp),
-            ):
-                guard = ShiftRosterSerializer(
-                    instance=roster, data={"employee": new_emp}, partial=True
-                )
-                guard.is_valid(raise_exception=True)
             requester.employee_id = new_requester_emp
             target.employee_id = new_target_emp
             requester.save(update_fields=["employee"])
             target.save(update_fields=["employee"])
+            # Re-run the roster overlap guard against the post-swap state:
+            # each holder has already released their old roster, so the two
+            # swapped rows cannot clash with each other — only a genuine
+            # third overlapping assignment raises Conflict409, which rolls
+            # back the whole swap.
+            for roster in (requester, target):
+                guard = ShiftRosterSerializer(
+                    instance=roster,
+                    data={"employee": roster.employee_id},
+                    partial=True,
+                )
+                guard.is_valid(raise_exception=True)
             swap.status = "Approved"
             swap.save(update_fields=["status"])
             for roster in (requester, target):

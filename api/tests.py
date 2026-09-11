@@ -1268,6 +1268,35 @@ class ShiftSwapTests(TestCase):
 
         self.assertEqual(ShiftSwap.objects.get(pk=swap["id"]).status, "Pending")
 
+    def test_approve_overlapping_same_date_pair_succeeds(self):
+        emp_a = Employee.objects.create(
+            first_name="Ada", last_name="A", email="a@example.com"
+        )
+        emp_b = Employee.objects.create(
+            first_name="Bo", last_name="B", email="b@example.com"
+        )
+        day = date(2026, 9, 1)
+        roster_a = self._roster(emp_a, day, "09:00:00", "17:00:00")
+        roster_b = self._roster(emp_b, day, "09:00:00", "17:00:00")
+        swap = self.client.post(
+            "/api/shift-swaps/",
+            {
+                "requester_roster": str(roster_a.id),
+                "target_roster": str(roster_b.id),
+            },
+            format="json",
+        ).json()
+        response = self.client.patch(
+            f"/api/shift-swaps/{swap['id']}/",
+            {"status": "Approved"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        roster_a.refresh_from_db()
+        roster_b.refresh_from_db()
+        self.assertEqual(roster_a.employee_id, emp_b.id)
+        self.assertEqual(roster_b.employee_id, emp_a.id)
+
     def test_reject_leaves_rows_and_notifies_requester(self):
         from core.models import Notification
 
