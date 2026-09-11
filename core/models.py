@@ -82,6 +82,24 @@ class OvertimeSlip(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+class AttendanceCorrection(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    attendance = models.ForeignKey(Attendance, on_delete=models.CASCADE)
+    proposed_clock_in = models.DateTimeField(null=True, blank=True)
+    proposed_clock_out = models.DateTimeField(null=True, blank=True)
+    reason = models.TextField()
+    status = models.CharField(
+        max_length=50,
+        choices=[
+            ("Pending", "Pending"),
+            ("Approved", "Approved"),
+            ("Rejected", "Rejected"),
+        ],
+        default="Pending",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class LeaveRequest(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)

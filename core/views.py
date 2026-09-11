@@ -17,6 +17,7 @@ from rest_framework.views import APIView
 from .exceptions import Conflict409
 from .models import (
     Attendance,
+    AttendanceCorrection,
     ClaimStatus,
     Department,
     Employee,
@@ -34,6 +35,7 @@ from .models import (
     ShiftSwap,
 )
 from .serializers import (
+    AttendanceCorrectionSerializer,
     AttendanceSerializer,
     ClaimStatusSerializer,
     DepartmentSerializer,
@@ -205,14 +207,14 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_destroy(self, instance):
         instance.is_active = False
-        instance.resigned_at = timezone.now().date()
+        instance.resigned_at = timezone.localdate()
         instance.save(update_fields=["is_active", "resigned_at"])
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance.is_active:
             instance.is_active = False
-            instance.resigned_at = timezone.now().date()
+            instance.resigned_at = timezone.localdate()
             instance.save(update_fields=["is_active", "resigned_at"])
         purge_on = (
             instance.resigned_at + timedelta(days=30) if instance.resigned_at else None
@@ -257,6 +259,66 @@ class AttendanceDetailView(generics.RetrieveUpdateDestroyAPIView):
                 serializer.save()
         except IntegrityError:
             raise Conflict409("This change conflicts with an existing record.")
+
+
+class AttendanceCorrectionListCreateView(generics.ListCreateAPIView):
+    queryset = AttendanceCorrection.objects.all().order_by("-created_at")
+    serializer_class = AttendanceCorrectionSerializer
+
+
+class AttendanceCorrectionDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = AttendanceCorrection.objects.all()
+    serializer_class = AttendanceCorrectionSerializer
+
+    def patch(self, request, *args, **kwargs):
+        if "status" not in request.data:
+            return super().patch(request, *args, **kwargs)
+        correction = self.get_object()
+        new_status = request.data.get("status")
+        if new_status not in ("Approved", "Rejected"):
+            return Response(
+                {"error": "status must be Approved or Rejected."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if new_status == correction.status:
+            return Response(self.get_serializer(correction).data)
+        if new_status == "Rejected":
+            # Status-only update: anything else in the payload is ignored.
+            correction.status = "Rejected"
+            correction.save(update_fields=["status"])
+            return Response(self.get_serializer(correction).data)
+        with transaction.atomic():
+            correction = AttendanceCorrection.objects.select_for_update().get(
+                pk=correction.pk
+            )
+            if correction.status == "Approved":
+                return Response(self.get_serializer(correction).data)
+            row = Attendance.objects.select_for_update().get(
+                pk=correction.attendance_id
+            )
+            update = {}
+            if correction.proposed_clock_in is not None:
+                update["clock_in"] = correction.proposed_clock_in
+            if correction.proposed_clock_out is not None:
+                update["clock_out"] = correction.proposed_clock_out
+            attendance_update = AttendanceSerializer(row, data=update, partial=True)
+            attendance_update.is_valid(raise_exception=True)
+            attendance_update.save()
+            correction.status = "Approved"
+            correction.save(update_fields=["status"])
+            EmployeeAuditLog.objects.create(
+                employee=row.employee,
+                action=(
+                    f"attendance corrected {row.date}: "
+                    f"clock_in {row.clock_in}, clock_out {row.clock_out}"
+                ),
+            )
+            Notification.objects.create(
+                employee=row.employee,
+                kind="attendance",
+                text=f"Attendance corrected for {row.date}",
+            )
+        return Response(self.get_serializer(correction).data)
 
 
 class AttendanceClockOutView(APIView):

@@ -137,7 +137,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Singapore"  # operator UTC+8; business dates (resigned_at, rosters) follow local day
 
 USE_I18N = True
 

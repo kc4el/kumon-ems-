@@ -1,4 +1,5 @@
-from datetime import date
+from datetime import date, datetime
+from datetime import timezone as dt_timezone
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -1292,5 +1293,124 @@ class ShiftSwapTests(TestCase):
         self.assertTrue(
             Notification.objects.filter(
                 employee=emp_a, kind="shift", text__icontains="reject"
+            ).exists()
+        )
+
+
+class AttendanceCorrectionTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        user = User.objects.create_user(username="corr-tester", password="x")
+        self.client.force_authenticate(user=user)
+        self.employee = Employee.objects.create(
+            first_name="Ada", last_name="Lovelace", email="ada-corr@example.com"
+        )
+        self.attendance = Attendance.objects.create(
+            employee=self.employee,
+            date=date(2026, 9, 10),
+            clock_in=timezone.make_aware(datetime(2026, 9, 10, 9, 0)),
+            clock_out=timezone.make_aware(datetime(2026, 9, 10, 17, 0)),
+        )
+
+    def _propose(self, **overrides):
+        payload = {
+            "attendance": str(self.attendance.id),
+            "proposed_clock_in": "2026-09-10T08:30:00Z",
+            "proposed_clock_out": "2026-09-10T17:30:00Z",
+            "reason": "Forgot morning clock-in.",
+        }
+        payload.update(overrides)
+        return self.client.post("/api/attendance-corrections/", payload, format="json")
+
+    def test_create_correction_returns_201_and_leaves_row_untouched(self):
+        response = self._propose()
+        self.assertEqual(response.status_code, 201)
+        self.attendance.refresh_from_db()
+        self.assertEqual(
+            self.attendance.clock_in,
+            timezone.make_aware(datetime(2026, 9, 10, 9, 0)),
+        )
+        self.assertEqual(
+            self.attendance.clock_out,
+            timezone.make_aware(datetime(2026, 9, 10, 17, 0)),
+        )
+
+    def test_empty_proposal_returns_400(self):
+        response = self.client.post(
+            "/api/attendance-corrections/",
+            {"attendance": str(self.attendance.id), "reason": "No times."},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_inverted_times_return_400(self):
+        response = self._propose(
+            proposed_clock_in="2026-09-10T18:00:00Z",
+            proposed_clock_out="2026-09-10T07:00:00Z",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_anonymous_corrections_are_denied(self):
+        anon = APIClient()
+        self.assertEqual(anon.get("/api/attendance-corrections/").status_code, 403)
+
+    def test_approve_updates_row_creates_audit_and_notifies(self):
+        from core.models import EmployeeAuditLog, Notification
+
+        correction_id = self._propose().json()["id"]
+        response = self.client.patch(
+            f"/api/attendance-corrections/{correction_id}/",
+            {"status": "Approved", "reason": "tampered"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "Approved")
+        self.attendance.refresh_from_db()
+        self.assertEqual(
+            self.attendance.clock_in,
+            timezone.make_aware(datetime(2026, 9, 10, 8, 30), timezone=dt_timezone.utc),
+        )
+        self.assertEqual(
+            self.attendance.clock_out,
+            timezone.make_aware(
+                datetime(2026, 9, 10, 17, 30), timezone=dt_timezone.utc
+            ),
+        )
+        # Status-only update: other fields are ignored.
+        self.assertIn("Forgot morning clock-in.", response.json()["reason"])
+        self.assertTrue(
+            EmployeeAuditLog.objects.filter(
+                employee=self.employee, action__icontains="attendance corrected"
+            ).exists()
+        )
+        self.assertTrue(
+            Notification.objects.filter(
+                employee=self.employee, kind="attendance"
+            ).exists()
+        )
+
+    def test_reject_changes_nothing(self):
+        from core.models import EmployeeAuditLog
+
+        correction_id = self._propose().json()["id"]
+        response = self.client.patch(
+            f"/api/attendance-corrections/{correction_id}/",
+            {"status": "Rejected"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "Rejected")
+        self.attendance.refresh_from_db()
+        self.assertEqual(
+            self.attendance.clock_in,
+            timezone.make_aware(datetime(2026, 9, 10, 9, 0)),
+        )
+        self.assertEqual(
+            self.attendance.clock_out,
+            timezone.make_aware(datetime(2026, 9, 10, 17, 0)),
+        )
+        self.assertFalse(
+            EmployeeAuditLog.objects.filter(
+                employee=self.employee, action__icontains="attendance corrected"
             ).exists()
         )

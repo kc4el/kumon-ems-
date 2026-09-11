@@ -3,6 +3,8 @@ from rest_framework.authtoken.views import obtain_auth_token
 
 from core.views import (
     AttendanceClockOutView,
+    AttendanceCorrectionDetailView,
+    AttendanceCorrectionListCreateView,
     AttendanceDetailView,
     AttendanceListCreateView,
     ClaimStatusListCreateView,
@@ -63,6 +65,16 @@ urlpatterns = [
         "attendance/<uuid:pk>/",
         AttendanceDetailView.as_view(),
         name="attendance-detail",
+    ),
+    path(
+        "attendance-corrections/",
+        AttendanceCorrectionListCreateView.as_view(),
+        name="attendance-correction-list-create",
+    ),
+    path(
+        "attendance-corrections/<uuid:pk>/",
+        AttendanceCorrectionDetailView.as_view(),
+        name="attendance-correction-detail",
     ),
     path(
         "attendance/clock-out/",

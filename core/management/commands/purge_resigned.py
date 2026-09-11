@@ -24,7 +24,7 @@ class Command(BaseCommand):
         days = options["days"]
         if days < 0:
             raise CommandError("--days must be >= 0.")
-        cutoff = timezone.now().date() - timedelta(days=days)
+        cutoff = timezone.localdate() - timedelta(days=days)
         query = Employee.objects.filter(is_active=False, resigned_at__lte=cutoff)
         for emp in query:
             if options["dry_run"]:
