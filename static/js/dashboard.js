@@ -188,6 +188,38 @@ function switchView(viewName) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// D4: keyboard shortcuts (view jumps only) + "?" cheat sheet. Single-key
+// map; ignored while typing. NOTE: the cheat-sheet modal reuses the repo's
+// existing .modal-backdrop/.modal-card classes (no plain ".modal" exists).
+const KUMON_SHORTCUTS = {
+  "g d": "dashboard",
+  "g e": "employee-directory",
+  "g a": "attendance-daily",
+  "g s": "attendance-shift",
+  "g l": "attendance-leave",
+  "g c": "claims",
+  "g m": "messages",
+};
+let kumonKeyPrefix = null;
+document.addEventListener("keydown", (e) => {
+  const tag = (e.target.tagName || "").toLowerCase();
+  if (tag === "input" || tag === "textarea" || e.target.isContentEditable) return;
+  if (e.key === "?") { toggleShortcutHelp(); return; }
+  if (e.key === "Escape") { hideShortcutHelp(); kumonKeyPrefix = null; return; }
+  const seq = kumonKeyPrefix ? kumonKeyPrefix + " " + e.key.toLowerCase() : null;
+  kumonKeyPrefix = null;
+  if (seq && KUMON_SHORTCUTS[seq]) { switchView(KUMON_SHORTCUTS[seq]); return; }
+  if (e.key.toLowerCase() === "g" && !e.ctrlKey && !e.metaKey && !e.altKey) kumonKeyPrefix = "g";
+});
+function toggleShortcutHelp() {
+  const el = document.getElementById("shortcutHelp");
+  if (el) el.classList.toggle("active");
+}
+function hideShortcutHelp() {
+  const el = document.getElementById("shortcutHelp");
+  if (el) el.classList.remove("active");
+}
+
 // Accordion toggle for Employee Directory
 function toggleAccordion(summaryElement) {
   const card = summaryElement.closest('.roster-accordion-card');

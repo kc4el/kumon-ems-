@@ -4066,6 +4066,24 @@
     </div>
   </div>
 
+  <!-- D4: keyboard shortcut cheat sheet (opened by "?", closed by Esc) -->
+  <div class="modal-backdrop" id="shortcutHelp">
+    <div class="modal-card" role="dialog" aria-label="Keyboard shortcuts">
+      <div class="modal-head">
+        <h3>Keyboard shortcuts</h3>
+        <button class="modal-close" onclick="hideShortcutHelp()">&times;</button>
+      </div>
+      <ul>
+        <li><b>g then d</b> — dashboard</li>
+        <li><b>g then e</b> — employee directory</li>
+        <li><b>g then a / s / l</b> — attendance daily / shifts / leaves</li>
+        <li><b>g then c / m</b> — claims / messages</li>
+        <li><b>?</b> — this panel · <b>Esc</b> — close</li>
+      </ul>
+      <button class="btn btn-navy-cta" onclick="hideShortcutHelp()">Close</button>
+    </div>
+  </div>
+
   <!-- Toast Container -->
   <div id="toastContainer" class="toast-stack"></div>
 
