@@ -81,6 +81,54 @@ class ApiTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["results"]), 11)
 
+    def test_employee_list_search_filters_by_name_or_email(self):
+        Employee.objects.create(
+            first_name="Ada", last_name="Lovelace", email="ada@example.com"
+        )
+        Employee.objects.create(
+            first_name="Grace", last_name="Hopper", email="grace@example.com"
+        )
+        response = self.client.get("/api/employees/?search=lovelace")
+        self.assertEqual(response.status_code, 200)
+        emails = [row["email"] for row in response.json()["results"]]
+        self.assertEqual(emails, ["ada@example.com"])
+
+    def test_employee_list_filters_by_is_active_and_department(self):
+        from core.models import Department
+
+        dept = Department.objects.create(name="Engineering", code="ENG")
+        active = Employee.objects.create(
+            first_name="Active",
+            last_name="Eng",
+            email="activeeng@example.com",
+            department=dept,
+        )
+        Employee.objects.create(
+            first_name="Inactive",
+            last_name="Eng",
+            email="inactiveeng@example.com",
+            department=dept,
+            is_active=False,
+        )
+        Employee.objects.create(
+            first_name="Active",
+            last_name="Other",
+            email="activeother@example.com",
+        )
+        response = self.client.get("/api/employees/?is_active=false")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [row["email"] for row in response.json()["results"]],
+            ["inactiveeng@example.com"],
+        )
+        response = self.client.get("/api/employees/?department=Engineering")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            {row["email"] for row in response.json()["results"]},
+            {"activeeng@example.com", "inactiveeng@example.com"},
+        )
+        self.assertTrue(active.is_active)
+
     def test_dashboard_summary_aggregates_database_records(self):
         department = Department.objects.create(name="Operations", code="OPS")
         active_employee = Employee.objects.create(

@@ -470,6 +470,7 @@ function filterDirectory() {
   const dept = document.getElementById('deptFilter').value.toLowerCase();
   const role = document.getElementById('roleFilter').value.toLowerCase();
   const status = document.getElementById('statusFilter').value.toLowerCase();
+  const query = (document.getElementById('empSearch')?.value || '').toLowerCase().trim();
 
   const cards = document.querySelectorAll('#employeeRosterList .roster-accordion-card');
   cards.forEach(card => {
@@ -480,8 +481,9 @@ function filterDirectory() {
     const matchesDept = (dept === 'all' || cardDept === dept);
     const matchesRole = (role === 'all' || cardRole === role);
     const matchesStatus = (status === 'all' || cardStatus === status);
+    const matchesQuery = (!query || (card.textContent || '').toLowerCase().includes(query));
 
-    if (matchesDept && matchesRole && matchesStatus) {
+    if (matchesDept && matchesRole && matchesStatus && matchesQuery) {
       card.style.display = 'block';
     } else {
       card.style.display = 'none';

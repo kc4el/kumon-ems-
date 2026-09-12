@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, models, transaction
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -115,6 +115,23 @@ class DepartmentDetailView(generics.RetrieveUpdateDestroyAPIView):
 class EmployeeListCreateView(generics.ListCreateAPIView):
     queryset = Employee.objects.all().order_by("last_name", "first_name")
     serializer_class = EmployeeSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        q = (self.request.query_params.get("search") or "").strip()
+        if q:
+            qs = qs.filter(
+                models.Q(first_name__icontains=q)
+                | models.Q(last_name__icontains=q)
+                | models.Q(email__icontains=q)
+            )
+        dept = (self.request.query_params.get("department") or "").strip()
+        if dept:
+            qs = qs.filter(department__name__iexact=dept)
+        active = (self.request.query_params.get("is_active") or "").strip().lower()
+        if active in ("true", "false"):
+            qs = qs.filter(is_active=(active == "true"))
+        return qs
 
     def get_permissions(self):
         # Self-service signup posts here logged-out; everything else stays
