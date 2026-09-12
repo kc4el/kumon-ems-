@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError as DRFValidationError
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -34,6 +34,7 @@ from .models import (
     ShiftRoster,
     ShiftSwap,
 )
+from .permissions import IsOwnerOrStaff, OwnerQuerysetMixin
 from .serializers import (
     AttendanceCorrectionSerializer,
     AttendanceSerializer,
@@ -112,11 +113,13 @@ class DepartmentDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = DepartmentSerializer
 
 
-class EmployeeListCreateView(generics.ListCreateAPIView):
+class EmployeeListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
     queryset = Employee.objects.all().order_by("last_name", "first_name")
     serializer_class = EmployeeSerializer
+    owner_lookup = "user"
 
     def get_queryset(self):
+        # OwnerQuerysetMixin (via super()) scopes non-staff to their own row.
         qs = super().get_queryset()
         q = (self.request.query_params.get("search") or "").strip()
         if q:
@@ -223,6 +226,7 @@ class EmployeeListCreateView(generics.ListCreateAPIView):
 class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
     def perform_destroy(self, instance):
         instance.is_active = False
@@ -264,7 +268,7 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
         )
 
 
-class AttendanceListCreateView(generics.ListCreateAPIView):
+class AttendanceListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
     queryset = Attendance.objects.all().order_by("-date", "-clock_in")
     serializer_class = AttendanceSerializer
 
@@ -279,6 +283,7 @@ class AttendanceListCreateView(generics.ListCreateAPIView):
 class AttendanceDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
     def perform_update(self, serializer):
         try:
@@ -288,14 +293,18 @@ class AttendanceDetailView(generics.RetrieveUpdateDestroyAPIView):
             raise Conflict409("This change conflicts with an existing record.")
 
 
-class AttendanceCorrectionListCreateView(generics.ListCreateAPIView):
+class AttendanceCorrectionListCreateView(
+    OwnerQuerysetMixin, generics.ListCreateAPIView
+):
     queryset = AttendanceCorrection.objects.all().order_by("-created_at")
     serializer_class = AttendanceCorrectionSerializer
+    owner_lookup = "attendance__employee__user"
 
 
 class AttendanceCorrectionDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = AttendanceCorrection.objects.all()
     serializer_class = AttendanceCorrectionSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
     def patch(self, request, *args, **kwargs):
         if "status" not in request.data:
@@ -405,7 +414,7 @@ class AttendanceClockOutView(APIView):
             )
 
 
-class LeaveRequestListCreateView(generics.ListCreateAPIView):
+class LeaveRequestListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
     queryset = LeaveRequest.objects.all().order_by("-created_at")
     serializer_class = LeaveRequestSerializer
 
@@ -413,9 +422,10 @@ class LeaveRequestListCreateView(generics.ListCreateAPIView):
 class LeaveRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = LeaveRequest.objects.all()
     serializer_class = LeaveRequestSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
 
-class LeaveAllocationListCreateView(generics.ListCreateAPIView):
+class LeaveAllocationListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
     queryset = LeaveAllocation.objects.all().order_by("-year", "leave_type")
     serializer_class = LeaveAllocationSerializer
 
@@ -432,6 +442,7 @@ class LeaveAllocationListCreateView(generics.ListCreateAPIView):
 class LeaveAllocationDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = LeaveAllocation.objects.all()
     serializer_class = LeaveAllocationSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
 
 def leave_balance(employee_id, leave_type, year):
@@ -487,7 +498,7 @@ class LeaveBalanceView(APIView):
         )
 
 
-class OvertimeSlipListCreateView(generics.ListCreateAPIView):
+class OvertimeSlipListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
     queryset = OvertimeSlip.objects.all().order_by("-created_at")
     serializer_class = OvertimeSlipSerializer
 
@@ -512,6 +523,7 @@ class OvertimeSlipListCreateView(generics.ListCreateAPIView):
 class OvertimeSlipDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = OvertimeSlip.objects.all()
     serializer_class = OvertimeSlipSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
     def perform_update(self, serializer):
         instance = serializer.instance
@@ -547,7 +559,7 @@ class ShiftConflictView(APIView):
         )
 
 
-class ShiftRosterListCreateView(generics.ListCreateAPIView):
+class ShiftRosterListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
     queryset = ShiftRoster.objects.all().order_by("work_date", "start_time")
     serializer_class = ShiftRosterSerializer
 
@@ -555,16 +567,19 @@ class ShiftRosterListCreateView(generics.ListCreateAPIView):
 class ShiftRosterDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = ShiftRoster.objects.all()
     serializer_class = ShiftRosterSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
 
-class ShiftSwapListCreateView(generics.ListCreateAPIView):
+class ShiftSwapListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
     queryset = ShiftSwap.objects.all().order_by("-created_at")
     serializer_class = ShiftSwapSerializer
+    owner_lookup = "__swap_parties__"
 
 
 class ShiftSwapDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = ShiftSwap.objects.all()
     serializer_class = ShiftSwapSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
     def perform_update(self, serializer):
         # Status-only update: any other patched fields are ignored.
@@ -661,7 +676,7 @@ class PayrollRunDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PayrollRunSerializer
 
 
-class PayrollItemListCreateView(generics.ListCreateAPIView):
+class PayrollItemListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
     queryset = PayrollItem.objects.all().order_by(
         "payroll_run__pay_period_start", "employee__last_name"
     )
@@ -690,12 +705,13 @@ class PayrollItemListCreateView(generics.ListCreateAPIView):
 class PayrollItemDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = PayrollItem.objects.all()
     serializer_class = PayrollItemSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
     def perform_update(self, serializer):
         PayrollItemListCreateView._save_computed(serializer)
 
 
-class PerformanceReviewListCreateView(generics.ListCreateAPIView):
+class PerformanceReviewListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
     queryset = PerformanceReview.objects.all().order_by("-review_date")
     serializer_class = PerformanceReviewSerializer
 
@@ -703,6 +719,7 @@ class PerformanceReviewListCreateView(generics.ListCreateAPIView):
 class PerformanceReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = PerformanceReview.objects.all()
     serializer_class = PerformanceReviewSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
 
 class EmployeeAuditLogListView(generics.ListAPIView):
@@ -777,7 +794,7 @@ class ClaimStatusListCreateView(generics.ListCreateAPIView):
             serializer.instance = obj
 
 
-class ExpenseClaimListCreateView(generics.ListCreateAPIView):
+class ExpenseClaimListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
     queryset = ExpenseClaim.objects.all().order_by("-created_at")
     serializer_class = ExpenseClaimSerializer
 
@@ -785,9 +802,10 @@ class ExpenseClaimListCreateView(generics.ListCreateAPIView):
 class ExpenseClaimDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = ExpenseClaim.objects.all()
     serializer_class = ExpenseClaimSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
 
-class NotificationListView(generics.ListAPIView):
+class NotificationListView(OwnerQuerysetMixin, generics.ListAPIView):
     queryset = Notification.objects.all().order_by("-created_at")
     serializer_class = NotificationSerializer
 
@@ -795,6 +813,9 @@ class NotificationListView(generics.ListAPIView):
 class NotificationMarkReadView(APIView):
     def patch(self, request, pk):
         note = get_object_or_404(Notification, pk=pk)
+        user = request.user
+        if not user.is_staff and getattr(note.employee, "user", None) != user:
+            return Response({"error": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         note.is_read = True
         note.save(update_fields=["is_read"])
         return Response(NotificationSerializer(note).data, status=status.HTTP_200_OK)

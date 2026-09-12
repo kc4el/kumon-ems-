@@ -24,7 +24,9 @@ from core.models import (
 class ApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        user = User.objects.create_user(username="tester", password="x")
+        # Staff by default: these tests exercise business logic, not
+        # permissions, and staff bypass owner-scoping (see OwnerScopingTests).
+        user = User.objects.create_user(username="tester", password="x", is_staff=True)
         self.client.force_authenticate(user=user)
 
     def test_anonymous_access_is_denied_except_dashboard_summary(self):
@@ -908,7 +910,10 @@ class ApiTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_purge_run_requires_staff(self):
-        response = self.client.post(
+        non_staff = User.objects.create_user(username="nonboss", password="x")
+        client = APIClient()
+        client.force_authenticate(user=non_staff)
+        response = client.post(
             "/api/purge-run/", {"days": 30, "dry_run": True}, format="json"
         )
         self.assertEqual(response.status_code, 403)
@@ -977,7 +982,7 @@ class ApiTests(TestCase):
 class LeaveAllocationTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        user = User.objects.create_user(username="tester", password="x")
+        user = User.objects.create_user(username="tester", password="x", is_staff=True)
         self.client.force_authenticate(user=user)
         self.employee = Employee.objects.create(
             first_name="Allo", last_name="Cation", email="alloc@example.com"
@@ -1026,7 +1031,7 @@ class LeaveAllocationTests(TestCase):
 class LeaveBalanceTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        user = User.objects.create_user(username="tester", password="x")
+        user = User.objects.create_user(username="tester", password="x", is_staff=True)
         self.client.force_authenticate(user=user)
         self.employee = Employee.objects.create(
             first_name="Bal", last_name="Ance", email="balance@example.com"
@@ -1130,7 +1135,9 @@ class SessionAuthTests(TestCase):
 class OvertimeSlipTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        user = User.objects.create_user(username="ot-tester", password="x")
+        user = User.objects.create_user(
+            username="ot-tester", password="x", is_staff=True
+        )
         self.client.force_authenticate(user=user)
         self.employee = Employee.objects.create(
             first_name="Over", last_name="Time", email="ot@example.com"
@@ -1273,10 +1280,112 @@ class EmployeeUserLinkTests(TestCase):
         self.assertEqual(unmatched_count, 2)
 
 
+class OwnerScopingTests(TestCase):
+    def setUp(self):
+        from core.models import LeaveRequest
+
+        self.owner = User.objects.create_user(username="scope-owner", password="x")
+        self.other = User.objects.create_user(username="scope-other", password="x")
+        self.staff = User.objects.create_user(
+            username="scope-boss", password="x", is_staff=True
+        )
+        self.owner_emp = Employee.objects.create(
+            first_name="Own", last_name="Er", email="owner-scope@example.com"
+        )
+        self.owner_emp.user = self.owner
+        self.owner_emp.save(update_fields=["user"])
+        self.other_emp = Employee.objects.create(
+            first_name="Oth", last_name="Er", email="other-scope@example.com"
+        )
+        self.other_emp.user = self.other
+        self.other_emp.save(update_fields=["user"])
+        self.leave = LeaveRequest.objects.create(
+            employee=self.owner_emp,
+            start_date=date(2026, 8, 24),
+            end_date=date(2026, 8, 25),
+            reason="Annual leave",
+        )
+
+    def _client(self, user):
+        client = APIClient()
+        client.force_authenticate(user=user)
+        return client
+
+    def test_non_owner_patch_employee_denied(self):
+        response = self._client(self.other).patch(
+            f"/api/employees/{self.owner_emp.id}/",
+            {"first_name": "Hax"},
+            format="json",
+        )
+        self.assertIn(response.status_code, (403, 404))
+
+    def test_owner_patch_self_allowed(self):
+        response = self._client(self.owner).patch(
+            f"/api/employees/{self.owner_emp.id}/",
+            {"first_name": "OwnNew"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_staff_patch_anyone_allowed(self):
+        response = self._client(self.staff).patch(
+            f"/api/employees/{self.owner_emp.id}/",
+            {"first_name": "StaffEdit"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_leave_list_scoped_to_owner(self):
+        response = self._client(self.other).get("/api/leaves/")
+        self.assertEqual(response.status_code, 200)
+        ids = [row["id"] for row in response.json()["results"]]
+        self.assertNotIn(str(self.leave.id), ids)
+
+    def test_non_owner_leave_detail_denied(self):
+        response = self._client(self.other).get(f"/api/leaves/{self.leave.id}/")
+        self.assertIn(response.status_code, (403, 404))
+
+    def test_correction_scoped_via_attendance_owner(self):
+        from core.models import Attendance, AttendanceCorrection
+
+        attendance = Attendance.objects.create(
+            employee=self.owner_emp,
+            date=date(2026, 9, 10),
+            clock_in=timezone.make_aware(datetime(2026, 9, 10, 9, 0)),
+            clock_out=timezone.make_aware(datetime(2026, 9, 10, 17, 0)),
+        )
+        correction = AttendanceCorrection.objects.create(
+            attendance=attendance, reason="Fix me."
+        )
+        denied = self._client(self.other).get(
+            f"/api/attendance-corrections/{correction.id}/"
+        )
+        self.assertIn(denied.status_code, (403, 404))
+        allowed = self._client(self.owner).get(
+            f"/api/attendance-corrections/{correction.id}/"
+        )
+        self.assertEqual(allowed.status_code, 200)
+
+    def test_notification_mark_read_scoped_to_owner(self):
+        from core.models import Notification
+
+        note = Notification.objects.create(
+            employee=self.owner_emp, kind="info", text="Hello owner"
+        )
+        denied = self._client(self.other).patch(
+            f"/api/notifications/{note.id}/read/", {}, format="json"
+        )
+        self.assertIn(denied.status_code, (403, 404))
+        allowed = self._client(self.owner).patch(
+            f"/api/notifications/{note.id}/read/", {}, format="json"
+        )
+        self.assertEqual(allowed.status_code, 200)
+
+
 class ShiftSwapTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        user = User.objects.create_user(username="tester", password="x")
+        user = User.objects.create_user(username="tester", password="x", is_staff=True)
         self.client.force_authenticate(user=user)
 
     def _roster(self, employee, work_date, start, end):
@@ -1532,7 +1641,9 @@ class ShiftSwapTests(TestCase):
 class AttendanceCorrectionTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        user = User.objects.create_user(username="corr-tester", password="x")
+        user = User.objects.create_user(
+            username="corr-tester", password="x", is_staff=True
+        )
         self.client.force_authenticate(user=user)
         self.employee = Employee.objects.create(
             first_name="Ada", last_name="Lovelace", email="ada-corr@example.com"
