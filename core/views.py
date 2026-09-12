@@ -537,7 +537,11 @@ class OvertimeSlipListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView)
             raise DRFValidationError({"attendance": "Attendance is incomplete."})
         worked = (attendance.clock_out - attendance.clock_in).total_seconds() / 3600
         hours = max(0, round(worked - 8, 2))
-        serializer.save(hours=hours)
+        try:
+            with transaction.atomic():
+                serializer.save(hours=hours)
+        except IntegrityError:
+            raise Conflict409("An overtime slip already exists for this attendance.")
 
 
 class OvertimeSlipDetailView(generics.RetrieveUpdateDestroyAPIView):

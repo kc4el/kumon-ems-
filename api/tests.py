@@ -1352,6 +1352,13 @@ class OvertimeSlipTests(TestCase):
         anon = APIClient()
         self.assertEqual(anon.get("/api/overtime/").status_code, 403)
 
+    def test_overtime_second_slip_for_same_attendance_rejected(self):
+        attendance = self._attendance(9)
+        first = self._post_slip(attendance)
+        self.assertEqual(first.status_code, 201)
+        second = self._post_slip(attendance)
+        self.assertIn(second.status_code, (400, 409))
+
 
 class EmployeeUserLinkTests(TestCase):
     def setUp(self):
