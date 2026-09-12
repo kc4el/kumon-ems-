@@ -577,7 +577,7 @@ document.addEventListener('keydown', function (e) {
 });
 
 // Onboarding form submit handler: POST the wizard fields to the live API.
-function handleOnboarding(e) {
+async function handleOnboarding(e) {
   e.preventDefault();
   const form = e.target;
   const fullName = (form.querySelector('input[type="text"]')?.value || '').trim();
@@ -588,6 +588,15 @@ function handleOnboarding(e) {
     last_name: parts.slice(1).join(' ') || '',
     email,
   };
+  const deptName = (form.querySelector('#onboardDepartment')?.value || '').trim();
+  const roleVal = (form.querySelector('#onboardRole')?.value || '').trim();
+  if (roleVal) payload.role = roleVal.split('•')[0].trim();
+  if (deptName) {
+    const depots = await apiFetch('/api/departments/').then((r) => r.json()).catch(() => []);
+    const rows = Array.isArray(depots) ? depots : depots.results || [];
+    const hit = rows.find((d) => (d.name || '').toLowerCase() === deptName.toLowerCase());
+    if (hit) payload.department = hit.id;
+  }
   apiFetch('/api/employees/', {
     method: 'POST',
     body: JSON.stringify(payload),

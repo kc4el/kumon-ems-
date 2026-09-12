@@ -150,6 +150,29 @@ class ApiTests(TestCase):
         supabase.auth.admin.create_user.assert_called_once()
 
     @patch("core.views.supabase")
+    def test_employee_create_persists_role_and_department(self, supabase):
+        from core.models import Department
+
+        supabase.auth.admin.create_user.return_value = SimpleNamespace(
+            user=SimpleNamespace(id="22222222-2222-4222-8222-222222222222")
+        )
+        dept = Department.objects.create(name="Engineering", code="ENG")
+        payload = {
+            "first_name": "Role",
+            "last_name": "Dept",
+            "email": "roledept@example.com",
+            "role": "Backend Engineer",
+            "department": str(dept.id),
+        }
+
+        response = self.client.post("/api/employees/", payload, format="json")
+
+        self.assertEqual(response.status_code, 201)
+        emp = Employee.objects.get(email="roledept@example.com")
+        self.assertEqual(emp.role, "Backend Engineer")
+        self.assertEqual(emp.department_id, dept.id)
+
+    @patch("core.views.supabase")
     def test_employee_create_missing_email_returns_400(self, supabase):
         response = self.client.post(
             "/api/employees/",
