@@ -185,17 +185,19 @@ class EmployeeListCreateView(generics.ListCreateAPIView):
                     }
                 )
                 created_user_id = str(auth_response.user.id)
-                serializer.save(id=created_user_id)
+                employee = serializer.save(id=created_user_id)
                 if password:
                     from django.contrib.auth.models import User
 
-                    User.objects.create_user(
+                    django_user = User.objects.create_user(
                         username=email,
                         email=email,
                         password=password,
                         first_name=payload.get("first_name", ""),
                         last_name=payload.get("last_name", ""),
                     )
+                    employee.user = django_user
+                    employee.save(update_fields=["user"])
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except IntegrityError:
             logger.warning(f"Duplicate employee race for {email}")

@@ -1,6 +1,7 @@
 import uuid
 from decimal import Decimal
 
+from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Q
@@ -37,6 +38,13 @@ class Employee(models.Model):
     date_hired = models.DateField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     resigned_at = models.DateField(null=True, blank=True)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="employee_profile",
+    )
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

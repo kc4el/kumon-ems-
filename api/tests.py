@@ -1229,6 +1229,50 @@ class OvertimeSlipTests(TestCase):
         self.assertEqual(anon.get("/api/overtime/").status_code, 403)
 
 
+class EmployeeUserLinkTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        staff = User.objects.create_user(username="linker", password="x", is_staff=True)
+        self.client.force_authenticate(user=staff)
+
+    @patch("core.views.supabase")
+    def test_employee_create_with_password_links_user(self, supabase):
+        supabase.auth.admin.create_user.return_value = SimpleNamespace(
+            user=SimpleNamespace(id="44444444-4444-4444-8444-444444444444")
+        )
+        response = self.client.post(
+            "/api/employees/",
+            {
+                "first_name": "Link",
+                "last_name": "Me",
+                "email": "linkme@example.com",
+                "password": "Sup3rSecret!",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        user = User.objects.get(username="linkme@example.com")
+        self.assertEqual(Employee.objects.get(email="linkme@example.com").user, user)
+
+    def test_backfill_links_matched_user_and_leaves_orphan(self):
+        from core.migrations_compat import backfill_employee_users
+
+        matched = Employee.objects.create(
+            first_name="Match", last_name="Ed", email="match@example.com"
+        )
+        user = User.objects.create_user(
+            username="match@example.com", email="MATCH@example.com", password="x"
+        )
+        orphan = User.objects.create_user(username="orphan", password="x")
+        matched_count, unmatched_count = backfill_employee_users()
+        matched.refresh_from_db()
+        self.assertEqual(matched.user, user)
+        self.assertEqual(matched_count, 1)
+        self.assertFalse(Employee.objects.filter(user=orphan).exists())
+        # unmatched = orphan + the staff user from setUp (no matching employee)
+        self.assertEqual(unmatched_count, 2)
+
+
 class ShiftSwapTests(TestCase):
     def setUp(self):
         self.client = APIClient()
