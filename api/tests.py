@@ -1382,6 +1382,69 @@ class OwnerScopingTests(TestCase):
         self.assertEqual(allowed.status_code, 200)
 
 
+class ResignLocalKillTests(TestCase):
+    def setUp(self):
+        from django.contrib.auth.models import User
+        from rest_framework.authtoken.models import Token
+
+        self.staff = User.objects.create_user(
+            username="resign-boss", password="x", is_staff=True
+        )
+        self.staff_client = APIClient()
+        self.staff_client.force_authenticate(user=self.staff)
+        self.employee = Employee.objects.create(
+            first_name="Gone", last_name="Soon", email="goner@example.com"
+        )
+        self.victim = User.objects.create_user(
+            username="goner@example.com", email="goner@example.com", password="x"
+        )
+        self.token = Token.objects.create(user=self.victim)
+        self.victim_client = APIClient()
+        self.victim_client.force_login(self.victim)
+        self.session_key = self.victim_client.session.session_key
+
+    def test_resign_kills_local_user_token_and_session(self):
+        from django.contrib.auth.models import User
+        from django.contrib.sessions.models import Session
+        from rest_framework.authtoken.models import Token
+
+        from core.models import EmployeeAuditLog
+
+        with patch("core.views.supabase"):
+            response = self.staff_client.delete(f"/api/employees/{self.employee.id}/")
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertTrue(body["deauthed"])
+        self.assertTrue(body["local_killed"])
+        self.assertFalse(User.objects.filter(pk=self.victim.pk).exists())
+        self.assertFalse(Token.objects.filter(user_id=self.victim.pk).exists())
+        self.assertFalse(Session.objects.filter(session_key=self.session_key).exists())
+        audit = EmployeeAuditLog.objects.get(
+            employee=self.employee, action__icontains="resigned"
+        )
+        self.assertIn("deauthed=True", audit.action)
+        self.assertIn("local_killed=True", audit.action)
+        anon = APIClient()
+        anon.credentials(HTTP_AUTHORIZATION=f"Token {self.token.key}")
+        # Dead token authenticates nothing: the codebase answers 403 (see
+        # test_expense_claims_require_authentication).
+        self.assertEqual(anon.get("/api/employees/").status_code, 403)
+
+    def test_resign_supabase_outage_still_kills_local(self):
+        from django.contrib.auth.models import User
+        from rest_framework.authtoken.models import Token
+
+        with patch("core.views.supabase") as supabase:
+            supabase.auth.admin.delete_user.side_effect = Exception("boom")
+            response = self.staff_client.delete(f"/api/employees/{self.employee.id}/")
+        body = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(body["deauthed"])
+        self.assertTrue(body["local_killed"])
+        self.assertFalse(User.objects.filter(pk=self.victim.pk).exists())
+        self.assertFalse(Token.objects.filter(user_id=self.victim.pk).exists())
+
+
 class ShiftSwapTests(TestCase):
     def setUp(self):
         self.client = APIClient()

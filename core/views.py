@@ -3,12 +3,15 @@ import uuid
 from datetime import timedelta
 
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.contrib.sessions.models import Session
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, models, transaction
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from rest_framework import generics, status
+from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
@@ -190,8 +193,6 @@ class EmployeeListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
                 created_user_id = str(auth_response.user.id)
                 employee = serializer.save(id=created_user_id)
                 if password:
-                    from django.contrib.auth.models import User
-
                     django_user = User.objects.create_user(
                         username=email,
                         email=email,
@@ -249,12 +250,30 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
         except Exception:
             deauthed = False
             logger.exception("resign: Supabase deauth failed for %s", instance.id)
+        # Fail-open local kill: resigned staff must lose the Django user row,
+        # DRF tokens, and sessions even when Supabase is down (and always —
+        # the local credential must not survive a successful remote delete).
+        local_killed = True
+        try:
+            users = User.objects.filter(email__iexact=instance.email)
+            Token.objects.filter(user__in=users).delete()
+            victim_ids = {str(u.pk) for u in users}
+            for session in Session.objects.all():
+                if session.get_decoded().get("_auth_user_id") in victim_ids:
+                    session.delete()
+            users.delete()
+        except Exception:
+            local_killed = False
+            logger.exception("resign: local credential kill failed for %s", instance.id)
         if not EmployeeAuditLog.objects.filter(
             employee=instance, action__icontains="resigned"
         ).exists():
             EmployeeAuditLog.objects.create(
                 employee=instance,
-                action=f"resigned {instance.resigned_at}, purge on {purge_on}, deauthed={deauthed}",
+                action=(
+                    f"resigned {instance.resigned_at}, purge on {purge_on}, "
+                    f"deauthed={deauthed}, local_killed={local_killed}"
+                ),
             )
         return Response(
             {
@@ -263,6 +282,7 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
                 "resigned_at": instance.resigned_at,
                 "purge_on": purge_on,
                 "deauthed": deauthed,
+                "local_killed": local_killed,
             },
             status=status.HTTP_200_OK,
         )
