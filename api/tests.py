@@ -485,6 +485,40 @@ class ApiTests(TestCase):
         employee.refresh_from_db()
         self.assertEqual(employee.resigned_at, date.today())
 
+    @patch("core.views.supabase")
+    def test_employee_delete_deauths_supabase_user(self, supabase):
+        from core.models import EmployeeAuditLog
+
+        employee = Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        response = self.client.delete(f"/api/employees/{employee.id}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["deauthed"])
+        supabase.auth.admin.delete_user.assert_called_once_with(str(employee.id))
+        audit = EmployeeAuditLog.objects.get(
+            employee=employee, action__icontains="resigned"
+        )
+        self.assertIn("deauthed=True", audit.action)
+
+    @patch("core.views.supabase")
+    def test_employee_delete_supabase_outage_still_resigns(self, supabase):
+        from core.models import EmployeeAuditLog
+
+        supabase.auth.admin.delete_user.side_effect = Exception("boom")
+        employee = Employee.objects.create(
+            first_name="Jane", last_name="Doe", email="jane@example.com"
+        )
+        response = self.client.delete(f"/api/employees/{employee.id}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()["deauthed"])
+        employee.refresh_from_db()
+        self.assertFalse(employee.is_active)
+        audit = EmployeeAuditLog.objects.get(
+            employee=employee, action__icontains="resigned"
+        )
+        self.assertIn("deauthed=False", audit.action)
+
     def test_shift_overlap_returns_409(self):
         employee = Employee.objects.create(
             first_name="Jane", last_name="Doe", email="jane@example.com"

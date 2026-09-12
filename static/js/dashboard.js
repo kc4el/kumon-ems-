@@ -547,7 +547,12 @@ async function handleOffboardingSubmit(e) {
     }
     const delRes = await apiFetch(`/api/employees/${match.id}/`, { method: 'DELETE' });
     if (!delRes.ok) throw new Error('offboard failed');
-    showToast('Offboarding finalized and exit clearance issued successfully!');
+    const delData = await delRes.json().catch(() => ({}));
+    if (delData.deauthed === false) {
+      showToast('Offboarded, but chat/login revocation needs retry — purge will complete it.', 'error');
+    } else {
+      showToast('Offboarding finalized and exit clearance issued successfully!');
+    }
     form.reset();
   } catch (error) {
     showToast('Offboarding could not be completed. Try again later.', 'error');

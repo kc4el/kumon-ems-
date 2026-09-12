@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     help = (
         "Hard-delete employees resigned 30+ days ago (local row + Supabase auth user)."
+        " Doubles as the retry for resign-time deauth failures."
     )
 
     def add_arguments(self, parser):

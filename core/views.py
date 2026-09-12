@@ -219,12 +219,19 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
         purge_on = (
             instance.resigned_at + timedelta(days=30) if instance.resigned_at else None
         )
+        # Fail-open: the resignation stands even if Supabase is down; purge retries.
+        deauthed = True
+        try:
+            supabase.auth.admin.delete_user(str(instance.id))
+        except Exception:
+            deauthed = False
+            logger.exception("resign: Supabase deauth failed for %s", instance.id)
         if not EmployeeAuditLog.objects.filter(
             employee=instance, action__icontains="resigned"
         ).exists():
             EmployeeAuditLog.objects.create(
                 employee=instance,
-                action=f"resigned {instance.resigned_at}, purge on {purge_on}",
+                action=f"resigned {instance.resigned_at}, purge on {purge_on}, deauthed={deauthed}",
             )
         return Response(
             {
@@ -232,6 +239,7 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
                 "is_active": False,
                 "resigned_at": instance.resigned_at,
                 "purge_on": purge_on,
+                "deauthed": deauthed,
             },
             status=status.HTTP_200_OK,
         )
