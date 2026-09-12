@@ -1471,9 +1471,16 @@ function loadEmployeeDirectory() {
       if (!res.ok) throw new Error('directory unavailable');
       return res.json();
     })
-    .then((data) => {
+    .then(async (data) => {
       setApiMode('live');
       const rows = Array.isArray(data) ? data : data.results || [];
+      let deptById = {};
+      try {
+        const dRes = await apiFetch('/api/departments/');
+        const dData = await dRes.json();
+        const dRows = Array.isArray(dData) ? dData : dData.results || [];
+        dRows.forEach((d) => { deptById[d.id] = d.name || ''; });
+      } catch (_) { /* dept filter falls back to blank */ }
       list.innerHTML = '';
       rows.forEach((emp) => {
         const fullName = `${emp.first_name || ''} ${emp.last_name || ''}`.trim();
@@ -1481,7 +1488,7 @@ function loadEmployeeDirectory() {
         const card = document.createElement('div');
         card.className = 'roster-accordion-card';
         card.setAttribute('data-live', 'true');
-        card.setAttribute('data-dept', emp.department_name || '');
+        card.setAttribute('data-dept', deptById[emp.department] || '');
         card.setAttribute('data-role', emp.role || '');
         card.setAttribute(
           'data-status',
@@ -1495,7 +1502,7 @@ function loadEmployeeDirectory() {
           `</div>` +
           `<div class="acc-right">` +
           `<span class="penpot-badge ${emp.is_active === false ? 'badge-leave' : 'badge-present'}">` +
-          `${emp.is_active === false ? 'Inactive' : 'Active'}</span>` +
+          `${emp.is_active === false ? 'On Leave' : 'Present Today'}</span>` +
           `</div></div>`;
         list.appendChild(card);
       });
