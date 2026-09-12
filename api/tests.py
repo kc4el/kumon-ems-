@@ -1590,6 +1590,37 @@ class ShiftSwapTests(TestCase):
         roster_b = self._roster(emp_b, day, "14:00:00", "18:00:00")
         return emp_a, emp_b, roster_a, roster_b
 
+    def test_put_after_reject_stays_rejected_without_swap(self):
+        from core.models import ShiftRoster, ShiftSwap
+
+        emp_a, emp_b, roster_a, roster_b = self._pair()
+        swap_id = self.client.post(
+            "/api/shift-swaps/",
+            {
+                "requester_roster": str(roster_a.id),
+                "target_roster": str(roster_b.id),
+            },
+            format="json",
+        ).json()["id"]
+        reject = self.client.patch(
+            f"/api/shift-swaps/{swap_id}/", {"status": "Rejected"}, format="json"
+        )
+        self.assertEqual(reject.status_code, 200)
+        put = self.client.put(
+            f"/api/shift-swaps/{swap_id}/",
+            {
+                "requester_roster": str(roster_a.id),
+                "target_roster": str(roster_b.id),
+                "status": "Approved",
+            },
+            format="json",
+        )
+        self.assertIn(put.status_code, (400, 403, 404, 409))
+        swap = ShiftSwap.objects.get(pk=swap_id)
+        self.assertEqual(swap.status, "Rejected")
+        self.assertEqual(ShiftRoster.objects.get(pk=roster_a.pk).employee_id, emp_a.id)
+        self.assertEqual(ShiftRoster.objects.get(pk=roster_b.pk).employee_id, emp_b.id)
+
     def test_valid_swap_request_returns_201(self):
         _, _, roster_a, roster_b = self._pair()
         response = self.client.post(

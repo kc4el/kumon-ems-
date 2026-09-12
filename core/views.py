@@ -611,6 +611,13 @@ class ShiftSwapDetailView(generics.RetrieveUpdateDestroyAPIView):
             status=serializer.validated_data.get("status", instance.status),
         )
 
+    def put(self, request, *args, **kwargs):
+        # PUT goes through the same decision guard as PATCH: a decided swap
+        # cannot be flipped, and approval always swaps holders with
+        # notifications. (The default update path would save the status
+        # field directly, bypassing all of that.)
+        return self.patch(request, *args, **kwargs)
+
     def patch(self, request, *args, **kwargs):
         swap = self.get_object()
         serializer = self.get_serializer(swap, data=request.data, partial=True)
