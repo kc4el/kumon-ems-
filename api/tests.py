@@ -978,6 +978,52 @@ class ApiTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
+    def _old_resigned(self, email):
+        from datetime import timedelta
+
+        return Employee.objects.create(
+            first_name="Old",
+            last_name="Gone",
+            email=email,
+            is_active=False,
+            resigned_at=timezone.now().date() - timedelta(days=40),
+        )
+
+    def _staff_client(self, name):
+        staff = User.objects.create_user(username=name, password="x", is_staff=True)
+        client = APIClient()
+        client.force_authenticate(user=staff)
+        return client
+
+    @patch("core.management.commands.purge_resigned.supabase")
+    def test_purge_run_string_false_stays_dry(self, supabase):
+        self._old_resigned("dryfalse@example.com")
+        for fmt in ("json", "multipart"):
+            client = self._staff_client(f"dryboss-{fmt}")
+            response = client.post(
+                "/api/purge-run/",
+                {"days": 30, "dry_run": "false"},
+                format=fmt,
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertIs(response.json()["dry_run"], True)
+            self.assertEqual(response.json()["purged"], 0)
+            self.assertTrue(
+                Employee.objects.filter(email="dryfalse@example.com").exists()
+            )
+        supabase.auth.admin.delete_user.assert_not_called()
+
+    @patch("core.management.commands.purge_resigned.supabase")
+    def test_purge_run_string_zero_means_real(self, supabase):
+        self._old_resigned("zeroreal@example.com")
+        client = self._staff_client("zeroboss")
+        response = client.post(
+            "/api/purge-run/", {"days": 30, "dry_run": "0"}, format="multipart"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIs(response.json()["dry_run"], False)
+        self.assertFalse(Employee.objects.filter(email="zeroreal@example.com").exists())
+
 
 class LeaveAllocationTests(TestCase):
     def setUp(self):

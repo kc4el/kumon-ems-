@@ -856,14 +856,28 @@ class PurgeRunView(APIView):
                 {"error": "days must be an integer."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        dry = bool(request.data.get("dry_run", True))
+        raw = request.data.get("dry_run", True)
+        # Explicit parse: a bare bool() treats every non-empty string as
+        # dry, so form-encoded "0"/"no"/"off" could never trigger a real
+        # purge. Strings stay dry except an explicit "0"/"no"/"off";
+        # bools/numbers follow bool(); missing/null stays dry.
+        if raw is None:
+            dry_run = True
+        elif isinstance(raw, bool):
+            dry_run = raw
+        elif isinstance(raw, str):
+            dry_run = raw.strip().lower() not in ("0", "no", "off")
+        else:
+            dry_run = bool(raw)
         out, err = StringIO(), StringIO()
-        call_command("purge_resigned", days=days, dry_run=dry, stdout=out, stderr=err)
+        call_command(
+            "purge_resigned", days=days, dry_run=dry_run, stdout=out, stderr=err
+        )
         log = out.getvalue() + err.getvalue()
         lines = log.splitlines()
         return Response(
             {
-                "dry_run": dry,
+                "dry_run": dry_run,
                 "would_purge": sum(
                     1 for line in lines if line.startswith("would purge ")
                 ),
