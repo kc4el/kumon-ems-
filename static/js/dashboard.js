@@ -451,11 +451,13 @@ function toggleAccordion(summaryElement) {
   
   if (card.classList.contains('open')) {
     card.classList.remove('open');
+    card.querySelector('.acc-expanded-body')?.setAttribute('hidden', '');
     if (tag) {
       tag.innerHTML = `<svg class="chevron-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg> <span>Expand Profile</span>`;
     }
   } else {
     card.classList.add('open');
+    card.querySelector('.acc-expanded-body')?.removeAttribute('hidden');
     if (tag) {
       tag.innerHTML = `<svg class="chevron-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg> <span>Collapse Profile</span>`;
     }
@@ -1080,6 +1082,16 @@ function selectChannel(elem, channelKey) {
   showToast('Switched to # Company Announcements channel.');
 }
 
+// Slack is not integrated: route profile "Message on Slack" into the chat tab.
+function messageOnSlack(fullName) {
+  switchView('messages');
+  const tiles = document.querySelectorAll('.inbox-user-tile');
+  const hit = Array.from(tiles).find((t) =>
+    (t.textContent || '').toLowerCase().includes((fullName || '').toLowerCase().split(' ')[0])
+  );
+  if (hit) hit.click();
+  else showToast('Slack is not connected — continue here in the chat tab.');
+}
 function selectInboxUser(elem, userName, initials, userRole, key) {
   activeConversationKey = key;
   document.querySelectorAll('.channel-list-item, .inbox-user-tile').forEach(el => el.classList.remove('active'));
@@ -1503,7 +1515,14 @@ function loadEmployeeDirectory() {
           `<div class="acc-right">` +
           `<span class="penpot-badge ${emp.is_active === false ? 'badge-leave' : 'badge-present'}">` +
           `${emp.is_active === false ? 'On Leave' : 'Present Today'}</span>` +
-          `</div></div>`;
+          `</div></div>` +
+          `<div class="acc-expanded-body" hidden>` +
+          `<div class="acc-col"><span class="col-head">CONTACT</span>` +
+          `<div class="perf-text">${escapeHtml(emp.email || '')}</div>` +
+          `<div class="acc-btn-row">` +
+          `<button class="btn btn-black-sm" onclick="switchView('employee-directory')">View Full Profile</button>` +
+          `<button class="btn btn-purple-outline-sm" data-name="${escapeHtml(fullName)}" onclick="messageOnSlack(this.dataset.name)">Message on Slack</button>` +
+          `</div></div></div>`;
         list.appendChild(card);
       });
       if (typeof filterDirectory === 'function') filterDirectory();
