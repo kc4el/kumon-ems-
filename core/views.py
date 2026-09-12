@@ -61,6 +61,12 @@ from .supabase_client import supabase
 
 logger = logging.getLogger(__name__)
 
+# Anonymous signup response: identical whether the email was new or already
+# registered, so the endpoint cannot be used as an account-existence oracle.
+SIGNUP_NEUTRAL_MESSAGE = (
+    "Request received. If this email is new, an employee record will be created."
+)
+
 
 def dashboard_view(request):
     return render(request, "core/index.html")
@@ -154,6 +160,12 @@ class EmployeeListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
                 {"error": "An employee email address is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        anonymous = not request.user.is_authenticated
+        if anonymous:
+            # Anonymous signup cannot set privileged fields: strip role-like
+            # input and force the active default.
+            payload.pop("role", None)
+            payload["is_active"] = True
         password = str(payload.get("password", "") or "")
         if password:
             from django.contrib.auth.password_validation import validate_password
@@ -171,6 +183,11 @@ class EmployeeListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
         except DRFValidationError as exc:
             return Response({"error": exc.detail}, status=status.HTTP_400_BAD_REQUEST)
         if Employee.objects.filter(email__iexact=email).exists():
+            if anonymous:
+                return Response(
+                    {"message": SIGNUP_NEUTRAL_MESSAGE},
+                    status=status.HTTP_202_ACCEPTED,
+                )
             return Response(
                 {"error": "An employee with this email already exists."},
                 status=status.HTTP_409_CONFLICT,
@@ -202,9 +219,19 @@ class EmployeeListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
                     )
                     employee.user = django_user
                     employee.save(update_fields=["user"])
+            if anonymous:
+                return Response(
+                    {"message": SIGNUP_NEUTRAL_MESSAGE},
+                    status=status.HTTP_202_ACCEPTED,
+                )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except IntegrityError:
             logger.warning(f"Duplicate employee race for {email}")
+            if anonymous:
+                return Response(
+                    {"message": SIGNUP_NEUTRAL_MESSAGE},
+                    status=status.HTTP_202_ACCEPTED,
+                )
             return Response(
                 {"error": "An employee with this email already exists."},
                 status=status.HTTP_409_CONFLICT,

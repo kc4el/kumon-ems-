@@ -1096,6 +1096,88 @@ class LeaveValidatorTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
 
+class AnonymousSignupTests(TestCase):
+    def test_anon_known_and_unknown_email_get_identical_response(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch as mock_patch
+
+        Employee.objects.create(
+            first_name="Known", last_name="User", email="known@example.com"
+        )
+        anon = APIClient()
+        with mock_patch("core.views.supabase") as supabase:
+            supabase.auth.admin.create_user.return_value = SimpleNamespace(
+                user=SimpleNamespace(id="55555555-5555-4555-8555-555555555555")
+            )
+            new_resp = anon.post(
+                "/api/employees/",
+                {
+                    "first_name": "New",
+                    "last_name": "User",
+                    "email": "brandnew@example.com",
+                },
+                format="json",
+            )
+            known_resp = anon.post(
+                "/api/employees/",
+                {
+                    "first_name": "Known",
+                    "last_name": "User",
+                    "email": "KNOWN@example.com",
+                },
+                format="json",
+            )
+        self.assertEqual(new_resp.status_code, 202)
+        self.assertEqual(known_resp.status_code, 202)
+        self.assertEqual(new_resp.json(), known_resp.json())
+        self.assertTrue(Employee.objects.filter(email="brandnew@example.com").exists())
+
+    def test_anon_role_is_stripped_and_active_forced(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch as mock_patch
+
+        anon = APIClient()
+        with mock_patch("core.views.supabase") as supabase:
+            supabase.auth.admin.create_user.return_value = SimpleNamespace(
+                user=SimpleNamespace(id="66666666-6666-4666-8666-666666666666")
+            )
+            response = anon.post(
+                "/api/employees/",
+                {
+                    "first_name": "Sneaky",
+                    "last_name": "Admin",
+                    "email": "sneaky@example.com",
+                    "role": "Admin",
+                    "is_active": False,
+                },
+                format="json",
+            )
+        self.assertEqual(response.status_code, 202)
+        emp = Employee.objects.get(email="sneaky@example.com")
+        self.assertNotEqual(emp.role, "Admin")
+        self.assertTrue(emp.is_active)
+
+    def test_authed_duplicate_still_409(self):
+        staff = User.objects.create_user(
+            username="signup-boss", password="x", is_staff=True
+        )
+        client = APIClient()
+        client.force_authenticate(user=staff)
+        Employee.objects.create(
+            first_name="Known", last_name="User", email="known2@example.com"
+        )
+        response = client.post(
+            "/api/employees/",
+            {
+                "first_name": "Known",
+                "last_name": "User",
+                "email": "KNOWN2@example.com",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 409)
+
+
 class LeaveAllocationTests(TestCase):
     def setUp(self):
         self.client = APIClient()
