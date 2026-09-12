@@ -7,13 +7,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0020_alter_leaveallocation_days_total_and_more'),
+        ("core", "0020_alter_leaveallocation_days_total_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='overtimeslip',
-            name='attendance',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='core.attendance'),
+            model_name="overtimeslip",
+            name="attendance",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE, to="core.attendance"
+            ),
         ),
     ]
