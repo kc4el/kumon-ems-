@@ -115,7 +115,15 @@ class LeaveRequest(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     reason = models.TextField()
-    status = models.CharField(max_length=50, default="Pending")
+    status = models.CharField(
+        max_length=50,
+        choices=[
+            ("Pending", "Pending"),
+            ("Approved", "Approved"),
+            ("Rejected", "Rejected"),
+        ],
+        default="Pending",
+    )
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
 
@@ -127,7 +135,9 @@ class LeaveAllocation(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     leave_type = models.CharField(max_length=50)
     year = models.IntegerField()
-    days_total = models.DecimalField(max_digits=5, decimal_places=1)
+    days_total = models.DecimalField(
+        max_digits=5, decimal_places=1, validators=[MinValueValidator(Decimal("0"))]
+    )
 
     class Meta:
         unique_together = ("employee", "leave_type", "year")

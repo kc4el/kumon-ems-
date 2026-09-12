@@ -120,6 +120,19 @@ class LeaveRequestSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at"]
 
+    def validate(self, data):
+        data = super().validate(data)
+
+        def val(name):
+            if name in data:
+                return data[name]
+            return getattr(self.instance, name, None) if self.instance else None
+
+        start, end = val("start_date"), val("end_date")
+        if start is not None and end is not None and end < start:
+            raise serializers.ValidationError("end_date must not precede start_date.")
+        return data
+
 
 class LeaveAllocationSerializer(serializers.ModelSerializer):
     class Meta:

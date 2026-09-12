@@ -1025,6 +1025,77 @@ class ApiTests(TestCase):
         self.assertFalse(Employee.objects.filter(email="zeroreal@example.com").exists())
 
 
+class LeaveValidatorTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        staff = User.objects.create_user(
+            username="leave-val", password="x", is_staff=True
+        )
+        self.client.force_authenticate(user=staff)
+        self.employee = Employee.objects.create(
+            first_name="Val", last_name="Idate", email="validate@example.com"
+        )
+
+    def test_leave_free_text_status_rejected(self):
+        response = self.client.post(
+            "/api/leaves/",
+            {
+                "employee": str(self.employee.id),
+                "leave_type": "Vacation",
+                "start_date": "2026-08-24",
+                "end_date": "2026-08-25",
+                "reason": "Trip",
+                "status": "Whatever",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_leave_end_before_start_rejected(self):
+        response = self.client.post(
+            "/api/leaves/",
+            {
+                "employee": str(self.employee.id),
+                "leave_type": "Vacation",
+                "start_date": "2026-08-25",
+                "end_date": "2026-08-24",
+                "reason": "Trip",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_leave_patch_end_before_start_rejected(self):
+        leave_id = self.client.post(
+            "/api/leaves/",
+            {
+                "employee": str(self.employee.id),
+                "leave_type": "Vacation",
+                "start_date": "2026-08-24",
+                "end_date": "2026-08-25",
+                "reason": "Trip",
+            },
+            format="json",
+        ).json()["id"]
+        response = self.client.patch(
+            f"/api/leaves/{leave_id}/", {"end_date": "2026-08-23"}, format="json"
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_allocation_negative_days_rejected(self):
+        response = self.client.post(
+            "/api/leave-allocations/",
+            {
+                "employee": str(self.employee.id),
+                "leave_type": "Vacation",
+                "year": 2026,
+                "days_total": "-1.0",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+
 class LeaveAllocationTests(TestCase):
     def setUp(self):
         self.client = APIClient()
