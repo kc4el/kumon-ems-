@@ -685,6 +685,10 @@ class EmployeeAuditLogListView(generics.ListAPIView):
 
 class SessionLoginView(APIView):
     permission_classes = [AllowAny]
+    # Login must never 429: one office IP shares the anon quota, and a
+    # throttled login locks everyone out. Brute-force hardening is deferred
+    # to the token-lifecycle work (see round-4 findings).
+    throttle_classes = []
 
     def post(self, request):
         user = authenticate(
