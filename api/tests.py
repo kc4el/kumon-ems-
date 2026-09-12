@@ -70,6 +70,17 @@ class ApiTests(TestCase):
         last_names = [row["last_name"] for row in response.json()["results"]]
         self.assertEqual(last_names, ["Alba", "Zulu"])
 
+    def test_employee_list_honors_page_size_param(self):
+        for i in range(11):
+            Employee.objects.create(
+                first_name=f"Page{i:02d}",
+                last_name=f"Size{i:02d}",
+                email=f"pagesize{i:02d}@example.com",
+            )
+        response = self.client.get("/api/employees/?page_size=50")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["results"]), 11)
+
     def test_dashboard_summary_aggregates_database_records(self):
         department = Department.objects.create(name="Operations", code="OPS")
         active_employee = Employee.objects.create(
