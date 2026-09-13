@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadEmployeeDirectory();
   loadClaimStatuses();
   updateBatchApproveCount();
+  loadAdvancesView();
   loadMessagesForConversation('sarah');
   loadAttendanceView();
   loadShiftRosterView();
@@ -682,11 +683,27 @@ async function handleOnboarding(e) {
     .catch(() => showToast('Unable to create employee upstream. Try again later.', 'error'));
 }
 
-// Grievance handler
-function handleGrievanceSubmit(e) {
+// Grievance handler (D36): files the record to POST /api/messages/ under the
+// frozen grievance conversation key; the demo case list stays untouched.
+async function handleGrievanceSubmit(e) {
   e.preventDefault();
-  showToast('Confidential grievance filed and assigned to HR Mediator.');
-  e.target.reset();
+  const form = e.target;
+  const complainant = document.getElementById('grievComplainant')?.value || 'Anonymous Filing';
+  const category = document.getElementById('grievCategory')?.value || 'Workplace Environment / Workload';
+  const title = document.getElementById('grievTitle')?.value.trim() || '';
+  const details = document.getElementById('grievDetails')?.value.trim() || '';
+  const text = `[${category}] ${title} — ${details} (Complainant: ${complainant})`;
+  try {
+    const res = await apiFetch('/api/messages/', {
+      method: 'POST',
+      body: JSON.stringify({ conversation_key: 'grievance', text }),
+    });
+    if (!res.ok) throw new Error('file failed');
+    showToast('Confidential grievance filed and assigned to HR Mediator.');
+    form.reset();
+  } catch (err) {
+    showToast('Grievance could not be filed. Try again later.', 'error');
+  }
 }
 
 // ==========================================================================
@@ -762,6 +779,26 @@ function setShiftDateToday() {
   showToast('Reset roster view to Today (18 June 2026).');
 }
 
+// Live employee id lookup shared by the advance + roster forms: the
+// directory loaded at startup first, then a fresh /api/employees/ fetch.
+async function resolveEmployeeId(name) {
+  const key = String(name || '').trim().toLowerCase();
+  if (!key) return null;
+  if (employeeNameIndex[key]) return employeeNameIndex[key];
+  try {
+    const res = await apiFetch('/api/employees/?page_size=100');
+    if (!res.ok) return null;
+    const payload = await res.json();
+    const rows = Array.isArray(payload) ? payload : payload.results || [];
+    rows.forEach((e) => {
+      const full = `${e.first_name || ''} ${e.last_name || ''}`.trim().toLowerCase();
+      if (full) employeeNameIndex[full] = e.id;
+      if (e.email) employeeNameIndex[String(e.email).toLowerCase()] = e.id;
+    });
+  } catch (_) { /* directory unreachable */ }
+  return employeeNameIndex[key] || null;
+}
+
 function toggleAddStaffForm(shiftKey, show) {
   const form = document.getElementById(`addStaffForm-${shiftKey}`);
   const addBtn = document.getElementById(`btnAddStaff-${shiftKey}`);
@@ -830,7 +867,53 @@ function confirmAddStaff(shiftKey) {
   toggleAddStaffForm(shiftKey, false);
 
   updateShiftCoverageStatus();
-  showToast(`Assigned ${name} (${roleTag}) successfully!`);
+  persistShiftAssignment(shiftKey, name).then((saved) => {
+    showToast(
+      saved
+        ? `Assigned ${name} (${roleTag}) successfully!`
+        : 'Assigned locally — roster save needs retry.',
+      saved ? undefined : 'error'
+    );
+  });
+}
+
+// Roster persistence (D36): mirrors the slot assignment into
+// POST /api/shift-rosters/ for the date picked in the roster editor,
+// keeping the optimistic card row when the API is unreachable.
+const SHIFT_SLOT_TIMES = {
+  morning: ['08:00:00', '16:00:00'],
+  evening: ['16:00:00', '23:00:00'],
+  night: ['00:00:00', '08:00:00'],
+};
+
+async function persistShiftAssignment(shiftKey, name) {
+  try {
+    const employeeId = await resolveEmployeeId(name);
+    if (!employeeId) return false;
+    const workDate = document.getElementById('shiftDatePicker')?.value || null;
+    const times = SHIFT_SLOT_TIMES[shiftKey] || SHIFT_SLOT_TIMES.morning;
+    const res = await apiFetch('/api/shift-rosters/', {
+      method: 'POST',
+      body: JSON.stringify({
+        employee: employeeId,
+        work_date: workDate,
+        shift_type: shiftKey,
+        start_time: times[0],
+        end_time: times[1],
+      }),
+    });
+    if (res.ok && typeof loadShiftRosterView === 'function') loadShiftRosterView();
+    return res.ok;
+  } catch (_) {
+    return false;
+  }
+}
+
+function focusRosterEditor() {
+  const editor = document.getElementById('shiftSlotsContainer');
+  if (editor && editor.scrollIntoView) editor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  toggleAddStaffForm('morning', true);
+  showToast('Roster editor ready — pick a slot and assign staff.');
 }
 
 function removeShiftStaff(btn) {
@@ -1201,11 +1284,75 @@ function closeAdvanceModal() {
   if (modal) modal.classList.remove('active');
 }
 
-function handleRequestAdvance(e) {
+// Live advances register (D36): replaces the static demo tbody with live
+// /api/advances/ rows, keeping the demo markup as the offline fallback.
+async function loadAdvancesView() {
+  const body = document.getElementById('advanceClaimsTableBody');
+  if (!body) return;
+  const demo = body.dataset.demoHtml || body.innerHTML;
+  body.dataset.demoHtml = demo;
+  try {
+    const res = await apiFetch('/api/advances/?page_size=50');
+    if (!res.ok) throw new Error('load failed');
+    const payload = await res.json();
+    const rows = Array.isArray(payload) ? payload : payload.results || [];
+    let names = {};
+    try { names = await liveEmployeeNames(); } catch (_) { /* fall back to ids */ }
+    body.innerHTML = '';
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="7">No advance applications yet.</td></tr>';
+    } else {
+      rows.forEach((a) => body.appendChild(buildAdvanceRow(a, names)));
+    }
+    setApiMode('live');
+  } catch (e) { body.innerHTML = demo; setApiMode('demo'); showToast('Advances unreachable — showing demo data', 'error'); }
+}
+
+async function handleRequestAdvance(e) {
   e.preventDefault();
-  closeAdvanceModal();
-  showToast('Salary advance application submitted for HR cap verification.');
-  e.target.reset();
+  const form = e.target;
+  const applicantRaw = document.getElementById('advanceApplicant')?.value || '';
+  const applicantName = applicantRaw.replace(/\s*\(.*\)\s*/, '').trim();
+  const amount = document.getElementById('advanceAmount')?.value || '';
+  const terms = document.getElementById('advanceTerms')?.value || 'Next Payroll';
+  const purpose = document.getElementById('advancePurpose')?.value.trim() || '';
+  if (!(Number(amount) > 0)) {
+    showToast('Requested amount must be greater than zero.', 'error');
+    return;
+  }
+  const employeeId = await resolveEmployeeId(applicantName);
+  if (!employeeId) {
+    showToast('Applicant is not in the live employee directory yet.');
+    return;
+  }
+  try {
+    const res = await apiFetch('/api/advances/', {
+      method: 'POST',
+      body: JSON.stringify({
+        employee: employeeId,
+        amount,
+        repayment_terms: terms,
+        purpose,
+      }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      const err =
+        typeof data.error === 'string'
+          ? data.error
+          : typeof data.detail === 'string'
+            ? data.detail
+            : 'Unable to submit advance request. Check the amount and try again.';
+      showToast(err, 'error');
+      return;
+    }
+    closeAdvanceModal();
+    showToast('Salary advance application submitted for HR cap verification.');
+    form.reset();
+    loadAdvancesView();
+  } catch (err) {
+    showToast('Unable to submit advance request. Try again later.', 'error');
+  }
 }
 
 // Leave Application Modal

@@ -1476,7 +1476,7 @@
             <form onsubmit="handleGrievanceSubmit(event)">
               <div class="input-cell" style="margin-bottom:12px;">
                 <label>COMPLAINANT EMPLOYEE</label>
-                <select class="penpot-select-full" required>
+                <select class="penpot-select-full" id="grievComplainant" required>
                   <option value="">Search & select employee</option>
                   <option>Marcus Williams (Sales)</option>
                   <option>Elena Rodriguez (HR)</option>
@@ -1487,7 +1487,7 @@
 
               <div class="input-cell" style="margin-bottom:12px;">
                 <label>GRIEVANCE CATEGORY</label>
-                <select class="penpot-select-full" required>
+                <select class="penpot-select-full" id="grievCategory" required>
                   <option>Workplace Environment / Workload</option>
                   <option>Compensation & Commission</option>
                   <option>Harassment & Conduct</option>
@@ -1497,12 +1497,12 @@
 
               <div class="input-cell" style="margin-bottom:12px;">
                 <label>CASE TITLE / SUMMARY</label>
-                <input type="text" placeholder="e.g. Schedule Overlap & Roster Dispute" required />
+                <input type="text" id="grievTitle" placeholder="e.g. Schedule Overlap & Roster Dispute" required />
               </div>
 
               <div class="input-cell" style="margin-bottom:16px;">
                 <label>DESCRIPTION / EVIDENCE NOTES</label>
-                <textarea rows="4"
+                <textarea rows="4" id="grievDetails"
                   placeholder="Detail the situation, involved parties, dates, and requested resolution..."
                   required></textarea>
               </div>
@@ -1764,7 +1764,7 @@
               <button class="btn btn-outline-gray" id="btnToggleShiftCal" onclick="toggleShiftCalendar()">
                 <span id="shiftCalToggleText">Collapse Calendar</span>
               </button>
-              <button class="btn btn-navy-cta" onclick="showToast('Roster assignment dialog ready.')">+ Assign
+              <button class="btn btn-navy-cta" onclick="focusRosterEditor()">+ Assign
                 Roster</button>
             </div>
           </div>
@@ -3752,7 +3752,7 @@
       <form onsubmit="handleRequestAdvance(event)">
         <div class="input-cell" style="margin-bottom:12px;">
           <label>APPLICANT EMPLOYEE</label>
-          <select class="penpot-select-full" required>
+          <select class="penpot-select-full" id="advanceApplicant" required>
             <option>Sarah Chen (Senior Dev • $8,500/mo)</option>
             <option>Marcus Williams (Senior Dev • $8,500/mo)</option>
             <option>Amanda Vance (Brand Strategist • $6,200/mo)</option>
@@ -3763,11 +3763,11 @@
         <div class="inputs-2grid" style="margin-bottom:12px;">
           <div class="input-cell">
             <label>REQUESTED AMOUNT ($)</label>
-            <input type="number" min="100" max="5000" placeholder="e.g. 1500" required />
+            <input type="number" id="advanceAmount" min="100" max="5000" placeholder="e.g. 1500" required />
           </div>
           <div class="input-cell">
             <label>REPAYMENT TERMS</label>
-            <select class="penpot-select-full" required>
+            <select class="penpot-select-full" id="advanceTerms" required>
               <option>Next Payroll (Full Deduction)</option>
               <option>2 Pay Cycles (50% each)</option>
               <option>3 Pay Cycles (33% each)</option>
@@ -3777,7 +3777,7 @@
         </div>
         <div class="input-cell" style="margin-bottom:20px;">
           <label>PURPOSE & FINANCIAL JUSTIFICATION</label>
-          <textarea rows="3" placeholder="State reason for advance request (subject to HR policy cap review)..."
+          <textarea rows="3" id="advancePurpose" placeholder="State reason for advance request (subject to HR policy cap review)..."
             required></textarea>
         </div>
         <div class="modal-foot">

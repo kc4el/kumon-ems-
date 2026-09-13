@@ -205,6 +205,36 @@ class FrontendFixTests(TestCase):
         self.assertEqual(response.status_code, 201, response.content)
         self.assertEqual(ShiftRoster.objects.count(), 1)
 
+    # -- D36: advances/grievance/roster frontend wiring ----------------------
+    def test_advance_grievance_roster_wiring(self):
+        from django.conf import settings
+
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        for field_id in (
+            'id="advanceApplicant"',
+            'id="advanceAmount"',
+            'id="advanceTerms"',
+            'id="advancePurpose"',
+            'id="grievComplainant"',
+            'id="grievCategory"',
+            'id="grievTitle"',
+            'id="grievDetails"',
+        ):
+            self.assertIn(field_id, html)
+        self.assertIn("focusRosterEditor()", html)
+        js = (settings.BASE_DIR / "static" / "js" / "dashboard.js").read_text()
+        self.assertIn("handleRequestAdvance", js)
+        self.assertIn("/api/advances/", js)
+        self.assertIn("loadAdvancesView", js)
+        self.assertIn("handleGrievanceSubmit", js)
+        self.assertIn("conversation_key", js)
+        self.assertIn("grievance", js)
+        self.assertIn("/api/shift-rosters/", js)
+        self.assertIn("persistShiftAssignment", js)
+        self.assertIn("focusRosterEditor", js)
+
     # -- D34: pagers honor ?page=N -----------------------------------------
     def test_list_pagers_honor_page_param(self):
         for i in range(11):
