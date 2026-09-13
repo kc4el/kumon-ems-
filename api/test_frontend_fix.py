@@ -118,6 +118,30 @@ class FrontendFixTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
     # -- D36: claim decisions --------------------------------------------
+    def test_claim_decision_on_advance_demo_code(self):
+        response = self.client.post(
+            "/api/claims/ADV-2026-018/decision/",
+            {"decision": "Approved"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(
+            ClaimStatus.objects.get(claim_id="ADV-2026-018").status, "Approved"
+        )
+
+    def test_claim_decision_wiring(self):
+        from django.conf import settings
+
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn('id="batchApproveBtn"', html)
+        self.assertIn("data-batch-approve-count", html)
+        js = (settings.BASE_DIR / "static" / "js" / "dashboard.js").read_text()
+        self.assertIn("/decision/", js)
+        self.assertIn("updateBatchApproveCount", js)
+        self.assertIn("data-batch-approve-count", js)
+
     def test_claim_decision_on_expense_claim(self):
         claim = ExpenseClaim.objects.create(
             employee=self.employee, title="Hotel", amount="100.00"

@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadDashboardSummary();
   loadEmployeeDirectory();
   loadClaimStatuses();
+  updateBatchApproveCount();
   loadMessagesForConversation('sarah');
   loadAttendanceView();
   loadShiftRosterView();
@@ -955,12 +956,20 @@ async function loadClaimStatuses() {
 }
 
 async function saveClaimStatus(id, status) {
-  const response = await apiFetch('/api/claim-statuses/', {
+  // Claim decisions go through POST /api/claims/<id>/decision/ (UUID rows
+  // and demo CLM-/ADV- codes alike); the legacy claim-statuses upsert stays
+  // as the offline-shaped fallback.
+  const decision = status === 'Approved' ? 'Approved' : 'Rejected';
+  const res = await apiFetch(`/api/claims/${encodeURIComponent(id)}/decision/`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ claim_id: id, status })
+    body: JSON.stringify({ decision })
   });
-  if (!response.ok) throw new Error('Unable to save claim status.');
+  if (res.ok) return;
+  const legacy = await apiFetch('/api/claim-statuses/', {
+    method: 'POST',
+    body: JSON.stringify({ claim_id: id, status: decision })
+  });
+  if (!legacy.ok) throw new Error('Unable to save claim status.');
 }
 
 async function handleClaimAction(id, action) {
@@ -977,21 +986,38 @@ async function handleClaimAction(id, action) {
     ? `Claim ${id} approved for reimbursement settlement.`
     : `Claim ${id} flagged and marked as rejected.`;
   showToast(message);
+  if (typeof updateBatchApproveCount === 'function') updateBatchApproveCount();
 }
 
 async function batchApproveClaims() {
   const pendingBadges = document.querySelectorAll('#pendingClaimsTableBody .claims-status-pill.pending');
+  let approved = 0;
   for (const b of pendingBadges) {
     const id = b.id.replace('status-', '');
     try {
       await saveClaimStatus(id, 'Approved');
       renderClaimStatus(id, 'Approved');
+      approved += 1;
     } catch (error) {
       showToast('Claim status could not be saved.');
       return;
     }
   }
-  showToast('Batch approved all active pending expense claims.');
+  updateBatchApproveCount();
+  showToast(
+    approved
+      ? `Batch approved ${approved} pending expense claim${approved > 1 ? 's' : ''}.`
+      : 'No pending expense claims to batch approve.'
+  );
+}
+
+// Live batch count (D36): the Batch Approve button always shows the live
+// number of pending rows currently in the pending register.
+function updateBatchApproveCount() {
+  const count = document.querySelectorAll('#pendingClaimsTableBody .claims-status-pill.pending').length;
+  document.querySelectorAll('[data-batch-approve-count]').forEach((btn) => {
+    btn.textContent = `+ Batch Approve (${count})`;
+  });
 }
 
 // ==========================================================================
