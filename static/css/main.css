@@ -694,7 +694,9 @@ body {
   color: #ffffff;
   padding: 6px 14px;
   font-size: 12px;
+  border: none;
   border-radius: 6px;
+  cursor: pointer;
 }
 
 .btn-blue-sm {
@@ -702,7 +704,9 @@ body {
   color: #ffffff;
   padding: 6px 14px;
   font-size: 12px;
+  border: none;
   border-radius: 6px;
+  cursor: pointer;
 }
 
 .btn-navy-sm {
@@ -865,6 +869,12 @@ body {
 .badge-onduty {
   background-color: var(--badge-blue-bg);
   color: var(--badge-blue-txt);
+}
+
+/* API live/demo mode badge (dashboard.js setApiMode) */
+#apiModeBadge {
+  margin-right: 8px;
+  letter-spacing: 0.04em;
 }
 
 .penpot-leave-pill {
@@ -2047,6 +2057,121 @@ body {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+/* Onboarding tour bubble: modal-card look, docked bottom-right */
+#tourBubble {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1200;
+  width: 360px;
+}
+#tourBubble .tour-text {
+  color: #334155;
+  font-size: 14px;
+  margin: 0 0 12px;
+}
+#tourBubble .tour-dots {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+#tourBubble .tour-dot {
+  width: 22px;
+  height: 6px;
+  border-radius: 3px;
+  background: #e2e8f0;
+}
+#tourBubble .tour-dot.done {
+  background: #94a3b8;
+}
+#tourBubble .tour-dot.on {
+  background: #0f172a;
+}
+#tourBubble .tour-demo {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  font-size: 12px;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 0 0 12px;
+}
+
+/* Recent additions: blend with the system design (no browser-default chrome) */
+#activityFeed {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 0 0 16px;
+  max-width: 100%;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+#activityFeed h3 {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 8px;
+}
+#activityFeedList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 12.5px;
+  color: #334155;
+}
+#activityFeedList li {
+  padding: 6px 0;
+  border-top: 1px solid #f1f5f9;
+}
+#activityFeedList li:first-child {
+  border-top: none;
+}
+#activityFeedList span {
+  color: #64748b;
+  font-size: 11.5px;
+}
+#widgetSettings {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #0f172a;
+}
+#widgetSettings summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+#widgetSettingsList div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+#widgetSettingsList label {
+  flex: 1;
+  color: #334155;
+}
+#widgetSettingsList button,
+#replayTourBtn {
+  background: #f1f5f9;
+  color: #0f172a;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+#widgetSettingsList button:hover,
+#replayTourBtn:hover {
+  background: #e2e8f0;
+}
+#replayTourBtn {
+  margin-bottom: 16px;
 }
 
 .toast-stack {
@@ -3737,3 +3862,29 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* --------------------------------------------------------------------------
+   D6: Team activity feed (Today aside on the dashboard)
+   -------------------------------------------------------------------------- */
+#activityFeed{float:right;width:300px;margin:0 0 16px 16px;}
+#activityFeed ul{list-style:none;margin:8px 0 0;padding:0;}
+@media (max-width:768px){#activityFeed{float:none;width:100%;margin:0 0 16px 0;}}
+
+/* D10: guided tour bubble (fixed bottom card) */
+#tourBubble{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:1000;background:#fff;border-radius:12px;box-shadow:0 20px 25px -5px rgba(0,0,0,.2);padding:16px 20px;max-width:480px;width:calc(100vw - 48px);}
+#tourBubble p{margin:0 0 12px;font-size:14px;color:#0f172a;}
+#tourBubble button{margin-right:8px;}
+
+/* Review annotations (2026-09-12): dashboard hero fit at 100% scale.
+   C1: Today feed copies the dark-navy box height (182px outer).
+   C2: let the navy card shrink with its track instead of overflowing
+   onto neighbours; stat rows wrap rather than forcing width. */
+.dashboard-hero-layout > *{min-width:0;}
+.hero-summary-cards-side{min-width:0;max-width:100%;}
+.summary-box{min-width:0;}
+.pulse-stat-row{flex-wrap:wrap;row-gap:2px;}
+#activityFeed{box-sizing:border-box;min-height:182px;}
+/* Both hero boxes share the right column at equal widths. */
+.hero-summary-cards-side .summary-box{flex:1 1 0;}
+.hero-summary-cards-side #activityFeed{float:none;width:auto;flex:1 1 0;margin:0;}
+@media (max-width:768px){.hero-summary-cards-side{flex-direction:column;}}

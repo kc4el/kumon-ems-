@@ -100,12 +100,14 @@
 
 
         <div class="header-right-tools">
+          <span id="apiModeBadge" class="penpot-badge badge-pending" title="Green LIVE = data came from the API; amber DEMO DATA = static fallback values">DEMO DATA</span>
           <button class="header-icon-btn" title="Notifications"
-            onclick="showToast('3 priority employee actions pending.')">
+            onclick="openNotifInbox(event)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
+            <span id="notifUnreadPill" class="unread-count-pill" style="display:none;">0</span>
           </button>
 
           <div class="user-avatar-circle" title="MW • Marcus Williams (Click to Sign Out)" onclick="signOut()">
@@ -143,6 +145,8 @@
           </div>
 
           <div class="hero-summary-cards-side">
+            <!-- D6: team activity feed (filled from /api/audit-logs/) -->
+            <aside id="activityFeed"><h3>Today</h3><ul id="activityFeedList"><li>Loading…</li></ul></aside>
             <!-- June 2026 Card -->
             <div class="summary-box dark-navy-box">
               <span class="summary-tag">JUNE 2026</span>
@@ -181,43 +185,6 @@
               </div>
             </div>
 
-            <!-- People Pulse Card -->
-            <div class="summary-box mint-pulse-box">
-              <span class="summary-tag mint-tag">PEOPLE PULSE</span>
-              <div class="pulse-stat-row">
-                <svg class="pulse-stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-                  <line x1="9" y1="9" x2="9.01" y2="9"></line>
-                  <line x1="15" y1="9" x2="15.01" y2="9"></line>
-                </svg>
-                <span>Attendance</span>
-                <strong>94.2%</strong>
-              </div>
-              <div class="pulse-stat-row">
-                <svg class="pulse-stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-                <span>Retention</span>
-                <strong>98.4%</strong>
-              </div>
-              <div class="pulse-stat-row">
-                <svg class="pulse-stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M3 3v18h18"></path>
-                  <path d="M18 17V9"></path>
-                  <path d="M13 17V5"></path>
-                  <path d="M8 17v-3"></path>
-                </svg>
-                <span>Engagement</span>
-                <strong>High</strong>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -428,6 +395,7 @@
           <div class="roster-top-bar">
             <h2 class="card-title">Corporate Employee Roster & Expandable Profiles</h2>
             <div class="roster-filters">
+              <input id="empSearch" class="penpot-select" placeholder="Search name or email" oninput="filterDirectory()">
               <select class="penpot-select" id="deptFilter" onchange="filterDirectory()">
                 <option value="all">All Departments</option>
                 <option value="Engineering">Engineering</option>
@@ -542,7 +510,7 @@
                     <div class="perf-text">Q2 Performance Rating: <strong>Exceeds (4.8/5.0)</strong></div>
                     <div class="acc-btn-row">
                       <button class="btn btn-black-sm">View Full Profile</button>
-                      <button class="btn btn-purple-outline-sm">Message on Slack</button>
+                      <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('Sarah Chen')">Message on Slack</button>
                     </div>
                   </div>
                 </div>
@@ -635,7 +603,7 @@
                     <div class="perf-text">Q2 Performance Rating: <strong>Exceeds (4.2/5.0)</strong></div>
                     <div class="acc-btn-row">
                       <button class="btn btn-black-sm">View Full Profile</button>
-                      <button class="btn btn-purple-outline-sm">Message on Slack</button>
+                      <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('Marcus Williams')">Message on Slack</button>
                     </div>
                   </div>
                 </div>
@@ -727,7 +695,7 @@
                     <div class="perf-text">90-Day Review: <strong>In Progress</strong></div>
                     <div class="acc-btn-row">
                       <button class="btn btn-black-sm">View Full Profile</button>
-                      <button class="btn btn-purple-outline-sm">Message on Slack</button>
+                      <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('Priya Patel')">Message on Slack</button>
                     </div>
                   </div>
                 </div>
@@ -820,7 +788,7 @@
                     <div class="perf-text">Q2 Performance Rating: <strong>Strong (4.5/5.0)</strong></div>
                     <div class="acc-btn-row">
                       <button class="btn btn-black-sm">View Full Profile</button>
-                      <button class="btn btn-purple-outline-sm">Message on Slack</button>
+                      <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('James O\u0027Brien')">Message on Slack</button>
                     </div>
                   </div>
                 </div>
@@ -912,7 +880,7 @@
                     <div class="perf-text">Q2 Performance Rating: <strong>Exceeds (4.7/5.0)</strong></div>
                     <div class="acc-btn-row">
                       <button class="btn btn-black-sm">View Full Profile</button>
-                      <button class="btn btn-purple-outline-sm">Message on Slack</button>
+                      <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('Elena Rodriguez')">Message on Slack</button>
                     </div>
                   </div>
                 </div>
@@ -1004,7 +972,7 @@
                     <div class="perf-text">Status: <strong>Approved PTO (Returns Aug 20)</strong></div>
                     <div class="acc-btn-row">
                       <button class="btn btn-black-sm">View Full Profile</button>
-                      <button class="btn btn-purple-outline-sm">Message on Slack</button>
+                      <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('David Kim')">Message on Slack</button>
                     </div>
                   </div>
                 </div>
@@ -1110,8 +1078,8 @@
             <div class="pt-footer-row">
               <div class="pt-actions">
                 <button type="button" class="btn btn-outline-gray">Cancel</button>
-                <button type="button" class="btn btn-orange-cta"
-                  onclick="showToast('Promotion recorded successfully!')">Record Promotion</button>
+                <button type="button" class="btn btn-orange-cta" disabled
+                  title="Promotion workflow is not connected yet.">Record Promotion</button>
               </div>
             </div>
           </div>
@@ -1166,8 +1134,8 @@
             <div class="pt-footer-row">
               <div class="pt-actions">
                 <button type="button" class="btn btn-outline-gray">Cancel</button>
-                <button type="button" class="btn btn-orange-cta"
-                  onclick="showToast('Transfer recorded successfully!')">Record Transfer</button>
+                <button type="button" class="btn btn-orange-cta" disabled
+                  title="Transfer workflow is not connected yet.">Record Transfer</button>
               </div>
             </div>
           </div>
@@ -1320,11 +1288,19 @@
               <!-- STEP 3: EXIT DOCUMENTS & COMPLIANCE -->
               <div>
                 <h3 class="wizard-section-head">STEP 3: EXIT DOCUMENTS & COMPLIANCE</h3>
+                <p class="card-sub">Optional attachments, stored as onboarding documents for the employee.</p>
                 <div class="docs-compliance-grid">
                   <div class="doc-upload-cell">
                     <span class="doc-upload-title">Resignation Letter</span>
-                    <button type="button" class="btn-upload-file"
-                      onclick="showToast('Upload dialog opened for Resignation Letter')">
+                    <label class="btn-upload-file" data-offboard-doc="Resignation Letter">
+                      <input type="file" hidden data-offboard-file accept=".pdf,.jpg,.jpeg,.png" />
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                      <span data-offboard-label>Upload File</span>
+                    </label>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -1335,8 +1311,15 @@
                   </div>
                   <div class="doc-upload-cell">
                     <span class="doc-upload-title">Exit Interview Form</span>
-                    <button type="button" class="btn-upload-file"
-                      onclick="showToast('Upload dialog opened for Exit Interview Form')">
+                    <label class="btn-upload-file" data-offboard-doc="Exit Interview Form">
+                      <input type="file" hidden data-offboard-file accept=".pdf,.jpg,.jpeg,.png" />
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                      <span data-offboard-label>Upload File</span>
+                    </label>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -1347,8 +1330,15 @@
                   </div>
                   <div class="doc-upload-cell">
                     <span class="doc-upload-title">Confidentiality Agreement Renewal</span>
-                    <button type="button" class="btn-upload-file"
-                      onclick="showToast('Upload dialog opened for Confidentiality Agreement Renewal')">
+                    <label class="btn-upload-file" data-offboard-doc="Confidentiality Agreement Renewal">
+                      <input type="file" hidden data-offboard-file accept=".pdf,.jpg,.jpeg,.png" />
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                      <span data-offboard-label>Upload File</span>
+                    </label>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -1359,8 +1349,15 @@
                   </div>
                   <div class="doc-upload-cell">
                     <span class="doc-upload-title">Final Pay Calculation</span>
-                    <button type="button" class="btn-upload-file"
-                      onclick="showToast('Upload dialog opened for Final Pay Calculation')">
+                    <label class="btn-upload-file" data-offboard-doc="Final Pay Calculation">
+                      <input type="file" hidden data-offboard-file accept=".pdf,.jpg,.jpeg,.png" />
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                      <span data-offboard-label>Upload File</span>
+                    </label>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -1370,33 +1367,15 @@
                     </button>
                   </div>
                 </div>
-
-                <div class="exit-clearance-banner">
-                  <div class="exit-file-info">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                      <polyline points="14 2 14 8 20 8"></polyline>
-                    </svg>
-                    <span>Samantha Vance - Exit Clearance Agreement.pdf</span>
-                    <span class="exit-file-remove"
-                      onclick="this.parentElement.style.opacity='0.5'; showToast('File removed');"
-                      title="Remove attachment">✕</span>
-                  </div>
-                  <span class="hr-cleared-tag">
-                    <span>HR Cleared</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-                      stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  </span>
-                </div>
               </div>
 
               <!-- FOOTER ACTIONS -->
               <div class="wizard-footer-actions">
                 <button type="button" class="btn btn-outline-gray" onclick="setPtMode('promote')">Cancel</button>
+                <button type="button" class="btn btn-outline-gray" onclick="previewPurge(event)">Preview Purge (30d)</button>
                 <button type="submit" class="btn-finalize-offboard">Finalize Offboarding & Issue Clearance</button>
               </div>
+              <div id="purgePreviewBox" class="card-sub" style="display:none; margin-top:8px;"></div>
             </form>
           </div>
         </div>
@@ -1528,7 +1507,7 @@
             <form onsubmit="handleGrievanceSubmit(event)">
               <div class="input-cell" style="margin-bottom:12px;">
                 <label>COMPLAINANT EMPLOYEE</label>
-                <select class="penpot-select-full" required>
+                <select class="penpot-select-full" id="grievComplainant" required>
                   <option value="">Search & select employee</option>
                   <option>Marcus Williams (Sales)</option>
                   <option>Elena Rodriguez (HR)</option>
@@ -1539,7 +1518,7 @@
 
               <div class="input-cell" style="margin-bottom:12px;">
                 <label>GRIEVANCE CATEGORY</label>
-                <select class="penpot-select-full" required>
+                <select class="penpot-select-full" id="grievCategory" required>
                   <option>Workplace Environment / Workload</option>
                   <option>Compensation & Commission</option>
                   <option>Harassment & Conduct</option>
@@ -1549,12 +1528,12 @@
 
               <div class="input-cell" style="margin-bottom:12px;">
                 <label>CASE TITLE / SUMMARY</label>
-                <input type="text" placeholder="e.g. Schedule Overlap & Roster Dispute" required />
+                <input type="text" id="grievTitle" placeholder="e.g. Schedule Overlap & Roster Dispute" required />
               </div>
 
               <div class="input-cell" style="margin-bottom:16px;">
                 <label>DESCRIPTION / EVIDENCE NOTES</label>
-                <textarea rows="4"
+                <textarea rows="4" id="grievDetails"
                   placeholder="Detail the situation, involved parties, dates, and requested resolution..."
                   required></textarea>
               </div>
@@ -1636,7 +1615,7 @@
               <h2 class="card-title">Daily Attendance & Time Register</h2>
               <p class="card-sub">Thursday, 18 June 2026 • Status: Logged & Verified</p>
             </div>
-            <button class="btn btn-outline-gray" onclick="showToast('Exported attendance register as CSV.')">Export
+            <button class="btn btn-outline-gray" onclick="exportAttendanceRegister()">Export
               Register</button>
           </div>
 
@@ -1680,7 +1659,7 @@
                     <th>STATUS</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody id="attendanceTableBody">
                   <tr>
                     <td>
                       <div class="bold-title">Sarah Chen</div>
@@ -1816,7 +1795,7 @@
               <button class="btn btn-outline-gray" id="btnToggleShiftCal" onclick="toggleShiftCalendar()">
                 <span id="shiftCalToggleText">Collapse Calendar</span>
               </button>
-              <button class="btn btn-navy-cta" onclick="showToast('Roster assignment dialog ready.')">+ Assign
+              <button class="btn btn-navy-cta" onclick="focusRosterEditor()">+ Assign
                 Roster</button>
             </div>
           </div>
@@ -2211,6 +2190,27 @@
             </div>
           </div>
         </div>
+        <!-- Live roster assignments (H7b: live API rows; demo calendar above stays as fallback) -->
+        <div class="white-card" id="shiftLiveWrap">
+          <h2 class="card-title">Live Roster Assignments</h2>
+          <p class="card-sub">Current shift assignments from the API</p>
+          <div class="table-wrap">
+            <table class="penpot-table">
+              <thead>
+                <tr>
+                  <th>EMPLOYEE</th>
+                  <th>WORK DATE</th>
+                  <th>SHIFT</th>
+                  <th>TIME</th>
+                  <th>CONFLICT</th>
+                </tr>
+              </thead>
+              <tbody id="shiftRosterTableBody">
+                <tr><td colspan="5">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
       <!-- ======================================================================
@@ -2476,7 +2476,7 @@
                 <input type="text" placeholder="Search claim ID, applicant, or category..." class="penpot-select-full"
                   style="width:280px; padding:8px 14px; font-size:13px;"
                   onkeyup="filterClaimsTable(this, 'pendingClaimsTableBody')" />
-                <button class="btn btn-navy-cta" onclick="batchApproveClaims()">+ Batch Approve (0)</button>
+                <button class="btn btn-navy-cta" id="batchApproveBtn" data-batch-approve-count onclick="batchApproveClaims()">+ Batch Approve (0)</button>
               </div>
             </div>
 
@@ -2512,7 +2512,7 @@
                       <div class="claims-details-cell">
                         <div class="claims-details-text">Client onsite workshop hotel & flight booking</div>
                         <div class="claims-attachment-text"
-                          onclick="showToast('Downloading Receipt-4092.pdf (1.4 MB)...')"><svg width="12" height="12"
+                          onclick="showToast('Receipt-4092.pdf (1.4 MB)... is a demo sample — no file stored.', 'error')" disabled title="demo sample, no file stored"><svg width="12" height="12"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             style="vertical-align:middle; margin-right:4px;">
                             <path
@@ -2590,7 +2590,7 @@
                       <div class="claims-details-cell">
                         <div class="claims-details-text">Annual Figma Enterprise & Font License renewal</div>
                         <div class="claims-attachment-text"
-                          onclick="showToast('Downloading Receipt-9931.pdf (2.1 MB)...')"><svg width="12" height="12"
+                          onclick="showToast('Receipt-9931.pdf (2.1 MB)... is a demo sample — no file stored.', 'error')" disabled title="demo sample, no file stored"><svg width="12" height="12"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             style="vertical-align:middle; margin-right:4px;">
                             <path
@@ -2629,7 +2629,7 @@
                       <div class="claims-details-cell">
                         <div class="claims-details-text">Dinner with Q2 audit partners</div>
                         <div class="claims-attachment-text"
-                          onclick="showToast('Downloading Receipt-1029.jpg (640 KB)...')"><svg width="12" height="12"
+                          onclick="showToast('Receipt-1029.jpg (640 KB)... is a demo sample — no file stored.', 'error')" disabled title="demo sample, no file stored"><svg width="12" height="12"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             style="vertical-align:middle; margin-right:4px;">
                             <path
@@ -2668,7 +2668,7 @@
                       <div class="claims-details-cell">
                         <div class="claims-details-text">Design workshop stationery & whiteboard set</div>
                         <div class="claims-attachment-text"
-                          onclick="showToast('Downloading Receipt-5521.pdf (410 KB)...')"><svg width="12" height="12"
+                          onclick="showToast('Receipt-5521.pdf (410 KB)... is a demo sample — no file stored.', 'error')" disabled title="demo sample, no file stored"><svg width="12" height="12"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             style="vertical-align:middle; margin-right:4px;">
                             <path
@@ -2731,14 +2731,14 @@
               </table>
             </div>
 
-            <div class="claims-pagination-bar">
-              <span>Showing 1 to 6 of 14 pending expense claims requiring review</span>
+            <div class="claims-pagination-bar" data-pager="claims-pending" data-page="1">
+              <span id="pendingPagerInfo">Showing 1 to 6 of 14 pending expense claims requiring review</span>
               <div class="claims-page-buttons">
-                <button class="btn-page-arr">‹ Prev</button>
-                <button class="btn-page-num active">1</button>
-                <button class="btn-page-num">2</button>
-                <button class="btn-page-num">3</button>
-                <button class="btn-page-arr">Next ›</button>
+                <button class="btn-page-arr" onclick="claimsPagerStep('pending', -1)">‹ Prev</button>
+                <button class="btn-page-num active" data-pagenum="1" onclick="claimsPagerGoto('pending', 1)">1</button>
+                <button class="btn-page-num" data-pagenum="2" onclick="claimsPagerGoto('pending', 2)">2</button>
+                <button class="btn-page-num" data-pagenum="3" onclick="claimsPagerGoto('pending', 3)">3</button>
+                <button class="btn-page-arr" onclick="claimsPagerStep('pending', 1)">Next ›</button>
               </div>
             </div>
           </div>
@@ -2936,14 +2936,14 @@
               </table>
             </div>
 
-            <div class="claims-pagination-bar">
-              <span>Showing 1 to 6 of 182 historical settled claims</span>
+            <div class="claims-pagination-bar" data-pager="claims-history" data-page="1">
+              <span id="historyPagerInfo">Showing 1 to 6 of 182 historical settled claims</span>
               <div class="claims-page-buttons">
-                <button class="btn-page-arr">‹ Prev</button>
-                <button class="btn-page-num active">1</button>
-                <button class="btn-page-num">2</button>
-                <button class="btn-page-num">3</button>
-                <button class="btn-page-arr">Next ›</button>
+                <button class="btn-page-arr" onclick="claimsPagerStep('history', -1)">‹ Prev</button>
+                <button class="btn-page-num active" data-pagenum="1" onclick="claimsPagerGoto('history', 1)">1</button>
+                <button class="btn-page-num" data-pagenum="2" onclick="claimsPagerGoto('history', 2)">2</button>
+                <button class="btn-page-num" data-pagenum="3" onclick="claimsPagerGoto('history', 3)">3</button>
+                <button class="btn-page-arr" onclick="claimsPagerStep('history', 1)">Next ›</button>
               </div>
             </div>
           </div>
@@ -3121,8 +3121,15 @@
               </table>
             </div>
 
-            <div class="claims-pagination-bar">
-              <span>Showing 1 to 4 of 4 submitted advance pay applications</span>
+            <div class="claims-pagination-bar" data-pager="advances" data-page="1">
+              <span id="advancesPagerInfo">Showing 1 to 4 of 4 submitted advance pay applications</span>
+              <div class="claims-page-buttons">
+                <button class="btn-page-arr" onclick="advancesPagerStep(-1)">‹ Prev</button>
+                <button class="btn-page-num active" data-pagenum="1" onclick="advancesPagerGoto(1)">1</button>
+                <button class="btn-page-num" data-pagenum="2" onclick="advancesPagerGoto(2)">2</button>
+                <button class="btn-page-num" data-pagenum="3" onclick="advancesPagerGoto(3)">3</button>
+                <button class="btn-page-arr" onclick="advancesPagerStep(1)">Next ›</button>
+              </div>
             </div>
           </div>
         </div>
@@ -3662,14 +3669,14 @@
           </div>
 
           <!-- Pagination Footer -->
-          <div class="claims-pagination-bar">
+          <div class="claims-pagination-bar" data-pager="audit" data-page="1">
             <span id="auditPaginationInfo">Showing 1 to 10 of 1,482 logged admin events</span>
             <div class="claims-page-buttons">
-              <button class="btn-page-num" disabled style="opacity:0.5; cursor:not-allowed;">&lt;</button>
-              <button class="btn-page-num active">1</button>
-              <button class="btn-page-num" onclick="showToast('Loading page 2...')">2</button>
-              <button class="btn-page-num" onclick="showToast('Loading page 3...')">3</button>
-              <button class="btn-page-num" onclick="showToast('Loading next page...')">&gt;</button>
+              <button class="btn-page-num" id="auditPrevBtn" onclick="auditPagerStep(-1)">&lt;</button>
+              <button class="btn-page-num active" data-pagenum="1" onclick="auditPagerGoto(1)">1</button>
+              <button class="btn-page-num" data-pagenum="2" onclick="auditPagerGoto(2)">2</button>
+              <button class="btn-page-num" data-pagenum="3" onclick="auditPagerGoto(3)">3</button>
+              <button class="btn-page-num" onclick="auditPagerStep(1)">&gt;</button>
             </div>
           </div>
         </div>
@@ -3693,6 +3700,22 @@
           <h3 style="font-size:22px; font-weight:800; color:#0f172a; margin-bottom:8px;">Production Module Active</h3>
           <p style="color:#64748b; max-width:480px; margin:0 auto 24px auto;">This module connects directly with
             Kumon EMS records and HR analytics.</p>
+          <!-- Live payroll runs (H7c: filled from /api/payroll-runs/ when a payroll view opens) -->
+          <div id="payrollLiveWrap" style="display:none; text-align:left; max-width:720px; margin:0 auto 24px auto;">
+            <table class="penpot-table">
+              <thead>
+                <tr>
+                  <th>PAY PERIOD</th>
+                  <th>PROCESSED</th>
+                  <th>LINES</th>
+                  <th>TOTAL NET</th>
+                </tr>
+              </thead>
+              <tbody id="payrollRunsTableBody">
+                <tr><td colspan="4">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
           <button class="btn btn-navy-cta" onclick="switchView('dashboard')">Back to Overview</button>
         </div>
       </section>
@@ -3760,7 +3783,7 @@
       <form onsubmit="handleRequestAdvance(event)">
         <div class="input-cell" style="margin-bottom:12px;">
           <label>APPLICANT EMPLOYEE</label>
-          <select class="penpot-select-full" required>
+          <select class="penpot-select-full" id="advanceApplicant" required>
             <option>Sarah Chen (Senior Dev • $8,500/mo)</option>
             <option>Marcus Williams (Senior Dev • $8,500/mo)</option>
             <option>Amanda Vance (Brand Strategist • $6,200/mo)</option>
@@ -3771,11 +3794,11 @@
         <div class="inputs-2grid" style="margin-bottom:12px;">
           <div class="input-cell">
             <label>REQUESTED AMOUNT ($)</label>
-            <input type="number" min="100" max="5000" placeholder="e.g. 1500" required />
+            <input type="number" id="advanceAmount" min="100" max="5000" placeholder="e.g. 1500" required />
           </div>
           <div class="input-cell">
             <label>REPAYMENT TERMS</label>
-            <select class="penpot-select-full" required>
+            <select class="penpot-select-full" id="advanceTerms" required>
               <option>Next Payroll (Full Deduction)</option>
               <option>2 Pay Cycles (50% each)</option>
               <option>3 Pay Cycles (33% each)</option>
@@ -3785,7 +3808,7 @@
         </div>
         <div class="input-cell" style="margin-bottom:20px;">
           <label>PURPOSE & FINANCIAL JUSTIFICATION</label>
-          <textarea rows="3" placeholder="State reason for advance request (subject to HR policy cap review)..."
+          <textarea rows="3" id="advancePurpose" placeholder="State reason for advance request (subject to HR policy cap review)..."
             required></textarea>
         </div>
         <div class="modal-foot">
@@ -3828,7 +3851,7 @@
             </div>
             <div class="input-cell">
               <label>Department <span class="req-star">*</span></label>
-              <select class="penpot-select-full">
+              <select id="onboardDepartment" class="penpot-select-full">
                 <option selected>Engineering</option>
                 <option>Design & UX</option>
                 <option>Human Resources</option>
@@ -3841,7 +3864,7 @@
           <div class="inputs-3grid">
             <div class="input-cell">
               <label>Job Role <span class="req-star">*</span></label>
-              <select class="penpot-select-full">
+              <select id="onboardRole" class="penpot-select-full">
                 <option selected>Senior Dev • Engineering</option>
                 <option>Frontend Engineer • Engineering</option>
                 <option>Backend Engineer • Engineering</option>
@@ -3947,44 +3970,48 @@
           <div class="compliance-2col-grid">
             <div class="compliance-doc-cell">
               <span class="compliance-doc-title">NBI Clearance</span>
-              <button type="button" class="btn-upload-clean"
-                onclick="showToast('Upload dialog opened for NBI Clearance')">
+              <label class="btn-upload-clean">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <polyline points="18 15 12 9 6 15"></polyline>
                 </svg>
-                <span>Upload File</span>
-              </button>
+                <span data-doc-label="NBI">Upload File</span>
+                <input type="file" data-doc-type="NBI" accept=".pdf,.jpg,.jpeg,.png" hidden
+                  onchange="handleDocFileSelected(this)" />
+              </label>
             </div>
             <div class="compliance-doc-cell">
               <span class="compliance-doc-title">BIR Form 2316 (Tax Record)</span>
-              <button type="button" class="btn-upload-clean"
-                onclick="showToast('Upload dialog opened for BIR Form 2316')">
+              <label class="btn-upload-clean">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <polyline points="18 15 12 9 6 15"></polyline>
                 </svg>
-                <span>Upload File</span>
-              </button>
+                <span data-doc-label="BIR2316">Upload File</span>
+                <input type="file" data-doc-type="BIR2316" accept=".pdf,.jpg,.jpeg,.png" hidden
+                  onchange="handleDocFileSelected(this)" />
+              </label>
             </div>
 
             <div class="compliance-doc-cell">
               <span class="compliance-doc-title">PSA Birth Certificate</span>
-              <button type="button" class="btn-upload-clean"
-                onclick="showToast('Upload dialog opened for PSA Birth Certificate')">
+              <label class="btn-upload-clean">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <polyline points="18 15 12 9 6 15"></polyline>
                 </svg>
-                <span>Upload File</span>
-              </button>
+                <span data-doc-label="PSA">Upload File</span>
+                <input type="file" data-doc-type="PSA" accept=".pdf,.jpg,.jpeg,.png" hidden
+                  onchange="handleDocFileSelected(this)" />
+              </label>
             </div>
             <div class="compliance-doc-cell">
               <span class="compliance-doc-title">Signed Employment Contract</span>
-              <button type="button" class="btn-upload-clean"
-                onclick="showToast('Upload dialog opened for Signed Employment Contract')">
+              <label class="btn-upload-clean">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <polyline points="18 15 12 9 6 15"></polyline>
                 </svg>
-                <span>Upload File</span>
-              </button>
+                <span data-doc-label="contract">Upload File</span>
+                <input type="file" data-doc-type="contract" accept=".pdf,.jpg,.jpeg,.png" hidden
+                  onchange="handleDocFileSelected(this)" />
+              </label>
             </div>
 
             <div class="compliance-doc-cell">
@@ -4025,6 +4052,24 @@
           <button type="submit" class="btn-create-profile">Create Profile & Issue Credentials</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- D4: keyboard shortcut cheat sheet (opened by "?", closed by Esc) -->
+  <div class="modal-backdrop" id="shortcutHelp">
+    <div class="modal-card" role="dialog" aria-label="Keyboard shortcuts">
+      <div class="modal-head">
+        <h3>Keyboard shortcuts</h3>
+        <button class="modal-close" onclick="hideShortcutHelp()">&times;</button>
+      </div>
+      <ul>
+        <li><b>g then d</b> — dashboard</li>
+        <li><b>g then e</b> — employee directory</li>
+        <li><b>g then a / s / l</b> — attendance daily / shifts / leaves</li>
+        <li><b>g then c / m</b> — claims / messages</li>
+        <li><b>?</b> — this panel · <b>Esc</b> — close</li>
+      </ul>
+      <button class="btn btn-navy-cta" onclick="hideShortcutHelp()">Close</button>
     </div>
   </div>
 
