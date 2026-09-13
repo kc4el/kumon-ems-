@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from rest_framework import generics, status
 from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
@@ -66,6 +67,39 @@ logger = logging.getLogger(__name__)
 SIGNUP_NEUTRAL_MESSAGE = (
     "Request received. If this email is new, an employee record will be created."
 )
+
+
+def _request_owner(request):
+    """The Employee row behind the request user, or None."""
+    return Employee.objects.filter(user=request.user).first()
+
+
+class ForceOwnerCreateMixin:
+    """Non-staff creates must belong to the caller.
+
+    Staff may file on anyone's behalf. Non-staff who post another
+    employee's id get 403; omitting the field files under themselves.
+    """
+
+    def _enforce_owner(self, serializer):
+        request = getattr(self, "request", None)
+        if request is None:
+            # Unbound view (direct unit call) — nothing to scope against.
+            return
+        user = request.user
+        if user.is_staff:
+            return
+        employee = _request_owner(request)
+        if employee is None:
+            raise DRFValidationError({"employee": "No linked employee profile."})
+        chosen = serializer.validated_data.get("employee")
+        if chosen is not None and chosen.pk != employee.pk:
+            raise PermissionDenied("Cannot create records for another employee.")
+        serializer.validated_data["employee"] = employee
+
+    def perform_create(self, serializer):
+        self._enforce_owner(serializer)
+        serializer.save()
 
 
 def dashboard_view(request):
@@ -335,11 +369,14 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
         )
 
 
-class AttendanceListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
+class AttendanceListCreateView(
+    ForceOwnerCreateMixin, OwnerQuerysetMixin, generics.ListCreateAPIView
+):
     queryset = Attendance.objects.all().order_by("-date", "-clock_in")
     serializer_class = AttendanceSerializer
 
     def perform_create(self, serializer):
+        self._enforce_owner(serializer)
         try:
             with transaction.atomic():
                 serializer.save()
@@ -481,7 +518,9 @@ class AttendanceClockOutView(APIView):
             )
 
 
-class LeaveRequestListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
+class LeaveRequestListCreateView(
+    ForceOwnerCreateMixin, OwnerQuerysetMixin, generics.ListCreateAPIView
+):
     queryset = LeaveRequest.objects.all().order_by("-created_at")
     serializer_class = LeaveRequestSerializer
 
@@ -514,14 +553,16 @@ class LeaveRequestDetailView(DecidedGuardMixin, generics.RetrieveUpdateDestroyAP
     permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
 
-class LeaveAllocationListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
+class LeaveAllocationListCreateView(
+    ForceOwnerCreateMixin, OwnerQuerysetMixin, generics.ListCreateAPIView
+):
     queryset = LeaveAllocation.objects.all().order_by("-year", "leave_type")
     serializer_class = LeaveAllocationSerializer
 
     def perform_create(self, serializer):
         try:
             with transaction.atomic():
-                serializer.save()
+                super().perform_create(serializer)
         except IntegrityError:
             raise Conflict409(
                 "An allocation for this employee, type and year already exists."
@@ -598,11 +639,14 @@ class LeaveBalanceView(APIView):
         )
 
 
-class OvertimeSlipListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
+class OvertimeSlipListCreateView(
+    ForceOwnerCreateMixin, OwnerQuerysetMixin, generics.ListCreateAPIView
+):
     queryset = OvertimeSlip.objects.all().order_by("-created_at")
     serializer_class = OvertimeSlipSerializer
 
     def perform_create(self, serializer):
+        self._enforce_owner(serializer)
         raw_attendance = self.request.data.get("attendance")
         try:
             attendance = Attendance.objects.get(pk=raw_attendance)
@@ -663,7 +707,9 @@ class ShiftConflictView(APIView):
         )
 
 
-class ShiftRosterListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
+class ShiftRosterListCreateView(
+    ForceOwnerCreateMixin, OwnerQuerysetMixin, generics.ListCreateAPIView
+):
     queryset = ShiftRoster.objects.all().order_by("work_date", "start_time")
     serializer_class = ShiftRosterSerializer
 
@@ -787,13 +833,16 @@ class PayrollRunDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PayrollRunSerializer
 
 
-class PayrollItemListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
+class PayrollItemListCreateView(
+    ForceOwnerCreateMixin, OwnerQuerysetMixin, generics.ListCreateAPIView
+):
     queryset = PayrollItem.objects.all().order_by(
         "payroll_run__pay_period_start", "employee__last_name"
     )
     serializer_class = PayrollItemSerializer
 
     def perform_create(self, serializer):
+        self._enforce_owner(serializer)
         self._save_computed(serializer)
 
     @staticmethod
@@ -822,7 +871,9 @@ class PayrollItemDetailView(generics.RetrieveUpdateDestroyAPIView):
         PayrollItemListCreateView._save_computed(serializer)
 
 
-class PerformanceReviewListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
+class PerformanceReviewListCreateView(
+    ForceOwnerCreateMixin, OwnerQuerysetMixin, generics.ListCreateAPIView
+):
     queryset = PerformanceReview.objects.all().order_by("-review_date")
     serializer_class = PerformanceReviewSerializer
 
@@ -913,7 +964,9 @@ class ClaimStatusListCreateView(generics.ListCreateAPIView):
             serializer.instance = obj
 
 
-class ExpenseClaimListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
+class ExpenseClaimListCreateView(
+    ForceOwnerCreateMixin, OwnerQuerysetMixin, generics.ListCreateAPIView
+):
     queryset = ExpenseClaim.objects.all().order_by("-created_at")
     serializer_class = ExpenseClaimSerializer
 

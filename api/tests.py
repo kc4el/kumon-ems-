@@ -1392,6 +1392,110 @@ class SessionAuthTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
+class ForceOwnerCreateTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="own-a", password="x")
+        self.me = Employee.objects.create(
+            first_name="Own", last_name="A", email="own-a@example.com", user=self.user
+        )
+        self.victim = Employee.objects.create(
+            first_name="Vic", last_name="Tim", email="victim@example.com"
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+    def _leave_payload(self, employee=None):
+        payload = {
+            "leave_type": "Vacation",
+            "start_date": "2026-10-01",
+            "end_date": "2026-10-02",
+            "reason": "rest",
+        }
+        if employee is not None:
+            payload["employee"] = str(employee.id)
+        return payload
+
+    def test_non_staff_cannot_file_for_another_employee(self):
+        response = self.client.post(
+            "/api/leaves/", self._leave_payload(self.victim), format="json"
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(LeaveRequest.objects.count(), 0)
+
+    def test_non_staff_filing_for_self_is_allowed(self):
+        response = self.client.post(
+            "/api/leaves/", self._leave_payload(self.me), format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(LeaveRequest.objects.get().employee, self.me)
+
+    def test_non_staff_omitting_employee_is_rejected(self):
+        # employee is a required serializer field, so a non-staff caller
+        # must name themselves explicitly (the UI always sends the id).
+        response = self.client.post(
+            "/api/leaves/", self._leave_payload(None), format="json"
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(LeaveRequest.objects.count(), 0)
+
+    def test_staff_can_file_for_anyone(self):
+        staff = User.objects.create_user(username="hr2", password="x", is_staff=True)
+        client = APIClient()
+        client.force_authenticate(user=staff)
+        response = client.post(
+            "/api/leaves/", self._leave_payload(self.victim), format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(LeaveRequest.objects.get().employee, self.victim)
+
+    def test_attendance_forced_to_owner(self):
+        response = self.client.post(
+            "/api/attendance/",
+            {"employee": str(self.victim.id), "date": "2026-10-05"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403, response.content)
+
+    def test_roster_forced_to_owner(self):
+        response = self.client.post(
+            "/api/shift-rosters/",
+            {
+                "employee": str(self.victim.id),
+                "work_date": "2026-10-06",
+                "start_time": "09:00",
+                "end_time": "17:00",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403, response.content)
+
+    def test_expense_forced_to_owner(self):
+        response = self.client.post(
+            "/api/expense-claims/",
+            {
+                "employee": str(self.victim.id),
+                "title": "Taxi",
+                "amount": "100.00",
+                "category": "Transport",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403, response.content)
+
+    def test_allocation_forced_to_owner(self):
+        response = self.client.post(
+            "/api/leave-allocations/",
+            {
+                "employee": str(self.victim.id),
+                "leave_type": "Vacation",
+                "year": 2026,
+                "days_total": "5.0",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403, response.content)
+
+
 class PrivilegedFieldTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="selfy", password="x")
