@@ -1,9 +1,11 @@
 from datetime import date, datetime
 from datetime import timezone as dt_timezone
+from io import StringIO
 from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
+from django.core.management import call_command
 from django.db import IntegrityError
 from django.test import TestCase
 from django.utils import timezone
@@ -1422,6 +1424,28 @@ class PurgeValidationTests(TestCase):
 
     def test_unknown_dry_run_string_is_400(self):
         self.assertEqual(self._post(days=30, dry_run="maybe").status_code, 400)
+
+
+class PurgeAttributionTests(TestCase):
+    def test_real_purge_keeps_id_and_email_in_audit(self):
+        # Option 1: throwaway rows inside the test DB only. Destroyed after run.
+        user = User.objects.create_user(username="purge-me", password="x")
+        emp = Employee.objects.create(
+            first_name="Purge",
+            last_name="Me",
+            email="purge-me@example.com",
+            user=user,
+            is_active=False,
+            resigned_at=timezone.localdate() - timezone.timedelta(days=31),
+        )
+        emp_id, emp_email = str(emp.id), emp.email
+        out = StringIO()
+        with patch("core.management.commands.purge_resigned.supabase"):
+            call_command("purge_resigned", days=30, dry_run=False, stdout=out)
+        self.assertFalse(Employee.objects.filter(pk=emp.pk).exists())
+        audit = EmployeeAuditLog.objects.filter(action__icontains=emp_email).first()
+        self.assertIsNotNone(audit)
+        self.assertIn(emp_id, audit.action)
 
 
 class PayrollGuardTests(TestCase):

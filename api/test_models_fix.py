@@ -71,6 +71,25 @@ class AttendanceOpenPerDayTests(TestCase):
         with self.assertRaises(IntegrityError):
             Attendance.objects.create(employee=emp, date=date(2026, 9, 10))
 
+    def test_second_slip_same_attendance_rejected_by_db(self):
+        emp = Employee.objects.create(
+            first_name="Eve", last_name="Ellis", email="att-ot@example.com"
+        )
+        att = Attendance.objects.create(employee=emp, date=date(2026, 9, 12))
+        OvertimeSlip.objects.create(
+            employee=emp,
+            attendance=att,
+            date=date(2026, 9, 12),
+            hours=Decimal("1.00"),
+        )
+        with self.assertRaises(IntegrityError):
+            OvertimeSlip.objects.create(
+                employee=emp,
+                attendance=att,
+                date=date(2026, 9, 12),
+                hours=Decimal("1.00"),
+            )
+
     def test_per_day_open_constraint_definition(self):
         constraints = Attendance._meta.constraints
         match = [
