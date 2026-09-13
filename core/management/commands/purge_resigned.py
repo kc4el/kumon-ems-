@@ -36,7 +36,13 @@ class Command(BaseCommand):
                     supabase.auth.admin.delete_user(str(emp.id))
                     EmployeeAuditLog.objects.create(
                         employee=None,
-                        action=f"purged {emp.email} (resigned {emp.resigned_at})",
+                        # Snapshot BOTH id and email: the row is about to be
+                        # hard-deleted, so the FK cannot carry identity and an
+                        # email alone is reusable/ambiguous.
+                        action=(
+                            f"purged {emp.id} {emp.email} "
+                            f"(resigned {emp.resigned_at})"
+                        ),
                     )
                     emp.delete()
             except Exception:
