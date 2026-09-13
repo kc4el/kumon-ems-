@@ -143,6 +143,11 @@ def log_payroll_item_action(sender, instance, created, **kwargs):
         create_audit_log(
             instance.employee, f"Payroll item created for {instance.employee}."
         )
+        Notification.objects.create(
+            employee=instance.employee,
+            text=f"Payroll posted: net {instance.net_pay} for {instance.payroll_run}",
+            kind="payroll",
+        )
     else:
         create_audit_log(
             instance.employee, f"Payroll item updated for {instance.employee}."
@@ -163,22 +168,28 @@ def log_performance_review_action(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=LeaveRequest)
 def notify_leave_decision(sender, instance, created, **kwargs):
+    # Submit (Pending) stays silent. Decision only.
+    if created:
+        return
     previous_status = getattr(instance, "_previous_status", None)
-    if created or (previous_status and previous_status != instance.status):
-        text = f"Leave {instance.status}: {instance.start_date}–{instance.end_date}"
-        if instance.status == "Approved":
-            from .views import leave_balance
+    if not (previous_status and previous_status != instance.status):
+        return
+    if instance.status == "Pending":
+        return
+    text = f"Leave {instance.status}: {instance.start_date}–{instance.end_date}"
+    if instance.status == "Approved":
+        from .views import leave_balance
 
-            balance = leave_balance(
-                instance.employee_id, instance.leave_type, instance.start_date.year
-            )
-            if balance["remaining"] < 0:
-                text += f" ({balance['remaining']} days over balance)"
-        Notification.objects.create(
-            employee=instance.employee,
-            text=text,
-            kind="leave",
+        balance = leave_balance(
+            instance.employee_id, instance.leave_type, instance.start_date.year
         )
+        if balance["remaining"] < 0:
+            text += f" ({balance['remaining']} days over balance)"
+    Notification.objects.create(
+        employee=instance.employee,
+        text=text,
+        kind="leave",
+    )
 
 
 @receiver(post_save, sender=ShiftRoster)
@@ -249,13 +260,37 @@ def cache_swap_status(sender, instance, **kwargs):
 
 @receiver(post_save, sender=ShiftSwap)
 def log_swap_action(sender, instance, created, **kwargs):
+    parties = {
+        e
+        for e in (
+            getattr(instance.requester_roster, "employee", None),
+            getattr(instance.target_roster, "employee", None),
+        )
+        if e is not None
+    }
     if created:
         create_audit_log(
             instance.requester_roster.employee,
             f"Shift swap requested for {instance.requester_roster.work_date}.",
         )
+        # Both parties learn a swap exists. Silent request = missed shift.
+        for emp in parties:
+            Notification.objects.create(
+                employee=emp,
+                text=f"Shift swap requested for {instance.requester_roster.work_date}",
+                kind="shift",
+            )
     elif getattr(instance, "_previous_status", None) not in (None, instance.status):
         create_audit_log(
             instance.requester_roster.employee,
             f"Shift swap {instance.status.lower()} for {instance.requester_roster.work_date}.",
         )
+        for emp in parties:
+            Notification.objects.create(
+                employee=emp,
+                text=(
+                    f"Shift swap {instance.status.lower()} "
+                    f"for {instance.requester_roster.work_date}"
+                ),
+                kind="shift",
+            )

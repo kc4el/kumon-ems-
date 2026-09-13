@@ -19,8 +19,10 @@ from core.models import (
     EmployeeAuditLog,
     LeaveAllocation,
     LeaveRequest,
+    Notification,
     PayrollItem,
     PayrollRun,
+    ShiftRoster,
 )
 
 
@@ -1423,6 +1425,93 @@ class PurgeValidationTests(TestCase):
 
     def test_unknown_dry_run_string_is_400(self):
         self.assertEqual(self._post(days=30, dry_run="maybe").status_code, 400)
+
+
+class NotificationMatrixTests(TestCase):
+    def setUp(self):
+        self.staff = User.objects.create_user(
+            username="notif-hr", password="x", is_staff=True
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.staff)
+        self.emp = Employee.objects.create(
+            first_name="Not", last_name="Iffy", email="notif@example.com"
+        )
+        self.emp2 = Employee.objects.create(
+            first_name="Not2", last_name="Iffy2", email="notif2@example.com"
+        )
+
+    def _notifs(self, emp):
+        return Notification.objects.filter(employee=emp)
+
+    def test_leave_submit_fires_no_notification(self):
+        self.client.post(
+            "/api/leaves/",
+            {
+                "employee": str(self.emp.id),
+                "leave_type": "Vacation",
+                "start_date": "2026-10-01",
+                "end_date": "2026-10-02",
+                "reason": "rest",
+            },
+            format="json",
+        )
+        self.assertEqual(self._notifs(self.emp).count(), 0)
+
+    def test_leave_approve_fires_one_notification(self):
+        leave = LeaveRequest.objects.create(
+            employee=self.emp,
+            leave_type="Vacation",
+            start_date=date(2026, 10, 1),
+            end_date=date(2026, 10, 2),
+            reason="rest",
+        )
+        self._notifs(self.emp).delete()
+        self.client.patch(
+            f"/api/leaves/{leave.id}/", {"status": "Approved"}, format="json"
+        )
+        self.assertEqual(self._notifs(self.emp).count(), 1)
+
+    def test_swap_create_notifies_both_parties(self):
+        day = date(2026, 10, 5)
+        r1 = ShiftRoster.objects.create(
+            employee=self.emp,
+            work_date=day,
+            start_time="09:00",
+            end_time="17:00",
+        )
+        r2 = ShiftRoster.objects.create(
+            employee=self.emp2,
+            work_date=day,
+            start_time="09:00",
+            end_time="17:00",
+        )
+        self._notifs(self.emp).delete()
+        self._notifs(self.emp2).delete()
+        self.client.post(
+            "/api/shift-swaps/",
+            {"requester_roster": str(r1.id), "target_roster": str(r2.id)},
+            format="json",
+        )
+        self.assertEqual(self._notifs(self.emp).count(), 1)
+        self.assertEqual(self._notifs(self.emp2).count(), 1)
+
+    def test_payroll_post_notifies_employee(self):
+        run = PayrollRun.objects.create(
+            pay_period_start=date(2026, 11, 1), pay_period_end=date(2026, 11, 30)
+        )
+        self._notifs(self.emp).delete()
+        self.client.post(
+            "/api/payroll-items/",
+            {
+                "payroll_run": str(run.id),
+                "employee": str(self.emp.id),
+                "base_pay": "1000.00",
+                "deductions": "0.00",
+            },
+            format="json",
+        )
+        self.assertEqual(self._notifs(self.emp).count(), 1)
 
 
 class PurgeAttributionTests(TestCase):
