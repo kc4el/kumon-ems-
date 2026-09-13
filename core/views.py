@@ -524,6 +524,17 @@ class LeaveAllocationDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = LeaveAllocationSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
+    def perform_update(self, serializer):
+        # Same 409 rule as create: PATCH onto an existing
+        # (employee, type, year) tuple is a conflict, never a 500.
+        try:
+            with transaction.atomic():
+                serializer.save()
+        except IntegrityError:
+            raise Conflict409(
+                "An allocation for this employee, type and year already exists."
+            )
+
 
 def leave_balance(employee_id, leave_type, year):
     from datetime import date
