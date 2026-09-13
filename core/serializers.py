@@ -1,26 +1,14 @@
+from decimal import Decimal
+
 from django.db.models import Q
 from rest_framework import serializers
 
 from .exceptions import Conflict409
-from .models import (
-    Attendance,
-    AttendanceCorrection,
-    ClaimStatus,
-    Department,
-    Employee,
-    EmployeeAuditLog,
-    ExpenseClaim,
-    LeaveAllocation,
-    LeaveRequest,
-    Message,
-    Notification,
-    OvertimeSlip,
-    PayrollItem,
-    PayrollRun,
-    PerformanceReview,
-    ShiftRoster,
-    ShiftSwap,
-)
+from .models import (Attendance, AttendanceCorrection, ClaimStatus, Department,
+                     Employee, EmployeeAuditLog, ExpenseClaim, LeaveAllocation,
+                     LeaveRequest, Message, Notification, OvertimeSlip,
+                     PayrollItem, PayrollRun, PerformanceReview, ShiftRoster,
+                     ShiftSwap)
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
@@ -145,6 +133,18 @@ class LeaveAllocationSerializer(serializers.ModelSerializer):
 
 
 class OvertimeSlipSerializer(serializers.ModelSerializer):
+    STATUS_CHOICES = ("Pending", "Approved", "Rejected")
+    status = serializers.ChoiceField(choices=STATUS_CHOICES, default="Pending")
+    hours = serializers.DecimalField(max_digits=5, decimal_places=2, required=False)
+    multiplier = serializers.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        min_value=Decimal("0.01"),
+        max_value=Decimal("5.00"),
+        default=Decimal("1.25"),
+        required=False,
+    )
+
     class Meta:
         model = OvertimeSlip
         fields = (
@@ -157,7 +157,37 @@ class OvertimeSlipSerializer(serializers.ModelSerializer):
             "status",
             "created_at",
         )
-        read_only_fields = ("id", "hours", "created_at")
+        read_only_fields = ("id", "created_at")
+
+    def validate(self, data):
+        data = super().validate(data)
+
+        def val(name):
+            if name in data:
+                return data[name]
+            return getattr(self.instance, name, None) if self.instance else None
+
+        if self.instance is not None:
+            for field in ("employee", "attendance", "hours"):
+                if field in data and data[field] != getattr(self.instance, field):
+                    raise serializers.ValidationError(
+                        {field: "This field cannot be changed."}
+                    )
+
+        attendance = val("attendance")
+        slip_date = val("date")
+        employee = val("employee")
+        if attendance is not None and slip_date is not None:
+            if slip_date != attendance.date:
+                raise serializers.ValidationError(
+                    {"date": "Date must match the attendance date."}
+                )
+        if attendance is not None and employee is not None:
+            if employee.id != attendance.employee_id:
+                raise serializers.ValidationError(
+                    {"attendance": "Attendance does not belong to this employee."}
+                )
+        return data
 
 
 class ShiftRosterSerializer(serializers.ModelSerializer):
