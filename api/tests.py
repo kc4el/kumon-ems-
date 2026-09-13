@@ -1393,6 +1393,37 @@ class SessionAuthTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
+class PurgeValidationTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        admin = User.objects.create_user(
+            username="purge-admin", password="x", is_staff=True
+        )
+        self.client.force_authenticate(user=admin)
+
+    def _post(self, **payload):
+        return self.client.post("/api/purge-run/", payload, format="json")
+
+    def test_negative_days_is_400(self):
+        self.assertEqual(self._post(days=-5).status_code, 400)
+
+    def test_missing_dry_run_stays_dry(self):
+        response = self._post(days=30)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["dry_run"])
+
+    def test_string_false_triggers_real_purge(self):
+        response = self._post(days=30, dry_run="false")
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()["dry_run"])
+
+    def test_string_zero_triggers_real_purge(self):
+        self.assertEqual(self._post(days=30, dry_run="0").json()["dry_run"], False)
+
+    def test_unknown_dry_run_string_is_400(self):
+        self.assertEqual(self._post(days=30, dry_run="maybe").status_code, 400)
+
+
 class PayrollGuardTests(TestCase):
     def setUp(self):
         self.client = APIClient()

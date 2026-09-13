@@ -1023,17 +1023,33 @@ class PurgeRunView(APIView):
                 {"error": "days must be an integer."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        if days < 0:
+            return Response(
+                {"error": "days must be >= 0."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         raw = request.data.get("dry_run", True)
         # Explicit parse: a bare bool() treats every non-empty string as
-        # dry, so form-encoded "0"/"no"/"off" could never trigger a real
-        # purge. Strings stay dry except an explicit "0"/"no"/"off";
-        # bools/numbers follow bool(); missing/null stays dry.
+        # dry, so form-encoded "false"/"0" could never trigger a real purge.
+        # Only the listed words are accepted; anything else is a 400 rather
+        # than a silent dry run (a real delete must never be a guess).
+        true_words = ("1", "true", "yes", "y", "on")
+        false_words = ("0", "false", "f", "no", "n", "off")
         if raw is None:
             dry_run = True
         elif isinstance(raw, bool):
             dry_run = raw
         elif isinstance(raw, str):
-            dry_run = raw.strip().lower() not in ("0", "no", "off")
+            token = raw.strip().lower()
+            if token in true_words:
+                dry_run = True
+            elif token in false_words:
+                dry_run = False
+            else:
+                return Response(
+                    {"error": "dry_run must be a boolean."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         else:
             dry_run = bool(raw)
         out, err = StringIO(), StringIO()
