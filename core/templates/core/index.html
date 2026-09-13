@@ -102,11 +102,12 @@
         <div class="header-right-tools">
           <span id="apiModeBadge" class="penpot-badge badge-pending" title="Green LIVE = data came from the API; amber DEMO DATA = static fallback values">DEMO DATA</span>
           <button class="header-icon-btn" title="Notifications"
-            onclick="showToast('3 priority employee actions pending.')">
+            onclick="openNotifInbox(event)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
+            <span id="notifUnreadPill" class="unread-count-pill" style="display:none;">0</span>
           </button>
 
           <div class="user-avatar-circle" title="MW • Marcus Williams (Click to Sign Out)" onclick="signOut()">
@@ -1614,7 +1615,7 @@
               <h2 class="card-title">Daily Attendance & Time Register</h2>
               <p class="card-sub">Thursday, 18 June 2026 • Status: Logged & Verified</p>
             </div>
-            <button class="btn btn-outline-gray" onclick="showToast('Exported attendance register as CSV.')">Export
+            <button class="btn btn-outline-gray" onclick="exportAttendanceRegister()">Export
               Register</button>
           </div>
 
@@ -2511,7 +2512,7 @@
                       <div class="claims-details-cell">
                         <div class="claims-details-text">Client onsite workshop hotel & flight booking</div>
                         <div class="claims-attachment-text"
-                          onclick="showToast('Downloading Receipt-4092.pdf (1.4 MB)...')"><svg width="12" height="12"
+                          onclick="showToast('Receipt-4092.pdf (1.4 MB)... is a demo sample — no file stored.', 'error')" disabled title="demo sample, no file stored"><svg width="12" height="12"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             style="vertical-align:middle; margin-right:4px;">
                             <path
@@ -2589,7 +2590,7 @@
                       <div class="claims-details-cell">
                         <div class="claims-details-text">Annual Figma Enterprise & Font License renewal</div>
                         <div class="claims-attachment-text"
-                          onclick="showToast('Downloading Receipt-9931.pdf (2.1 MB)...')"><svg width="12" height="12"
+                          onclick="showToast('Receipt-9931.pdf (2.1 MB)... is a demo sample — no file stored.', 'error')" disabled title="demo sample, no file stored"><svg width="12" height="12"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             style="vertical-align:middle; margin-right:4px;">
                             <path
@@ -2628,7 +2629,7 @@
                       <div class="claims-details-cell">
                         <div class="claims-details-text">Dinner with Q2 audit partners</div>
                         <div class="claims-attachment-text"
-                          onclick="showToast('Downloading Receipt-1029.jpg (640 KB)...')"><svg width="12" height="12"
+                          onclick="showToast('Receipt-1029.jpg (640 KB)... is a demo sample — no file stored.', 'error')" disabled title="demo sample, no file stored"><svg width="12" height="12"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             style="vertical-align:middle; margin-right:4px;">
                             <path
@@ -2667,7 +2668,7 @@
                       <div class="claims-details-cell">
                         <div class="claims-details-text">Design workshop stationery & whiteboard set</div>
                         <div class="claims-attachment-text"
-                          onclick="showToast('Downloading Receipt-5521.pdf (410 KB)...')"><svg width="12" height="12"
+                          onclick="showToast('Receipt-5521.pdf (410 KB)... is a demo sample — no file stored.', 'error')" disabled title="demo sample, no file stored"><svg width="12" height="12"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             style="vertical-align:middle; margin-right:4px;">
                             <path

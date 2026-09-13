@@ -17,8 +17,36 @@ document.addEventListener('DOMContentLoaded', () => {
   loadAuditView();
   initDashboardWidgets();
   loadActivityFeed();
+  refreshNotifBell();
   initTour();
 });
+
+// Bell counts live unread notifications. Same apiFetch + pill style as inbox.
+// Fails quiet on login page: apiFetch already skips redirect there.
+async function refreshNotifBell() {
+  const pill = document.getElementById('notifUnreadPill');
+  try {
+    const res = await apiFetch('/api/notifications/', { headers: { Accept: 'application/json' } });
+    if (!res.ok) throw new Error('notif unavailable');
+    const payload = await res.json();
+    const rows = Array.isArray(payload) ? payload : payload.results || [];
+    const unread = rows.filter((n) => !n.is_read).length;
+    if (pill) {
+      pill.textContent = String(unread);
+      pill.style.display = unread > 0 ? '' : 'none';
+    }
+  } catch (error) {
+    if (pill) pill.style.display = 'none';
+  }
+}
+
+// Bell opens the inbox view. Same navigation pattern as other header tools.
+function openNotifInbox(e) {
+  if (e) e.preventDefault();
+  refreshNotifBell();
+  if (typeof switchView === 'function') switchView('messages');
+  else showToast('Inbox view is not available here.');
+}
 
 // ==========================================================================
 // Session auth + API mode badge (R2/R8)
@@ -349,13 +377,13 @@ const KUMON_TOUR_STEPS = [
   { view: "dashboard", text: "Make this screen yours! Press Customize to show, hide, or reorder these cards however you like. The Today box shows the latest goings-on, and the little badge tells you whether the numbers are fresh from the system or just samples." },
   { view: "employee-directory", text: "This is your people list — everyone who works here, all in one place you can search. Tap any name to open their details.", demo: "Full staff profiles and chat messaging are on the way soon!" },
   { view: "employee-manage", text: "This is where people changes happen. The three tabs at the top switch between promoting someone, moving them to another team, or removing them. Further down, the leaving form with its simple yes-or-no questions files a resignation." },
-  { view: "employee-grievance", text: "If someone raises a concern, this is where it gets looked after — you can track each case and schedule sit-downs to sort things out.", demo: "Online filing is coming soon — please bring concerns to HR directly for now." },
+  { view: "employee-grievance", text: "If someone raises a concern, this is where it gets looked after — you can track each case and schedule sit-downs to sort things out.", demo: "File with the form above; cases land in the team chat thread." },
   { view: "attendance-daily", text: "This is the daily time sheet. Use the little arrows to hop between days and see who clocked in and out, and when.", demo: "Downloading this as a file is coming soon." },
   { view: "attendance-shift", text: "This is the roster board. Pick a date (or just press Today), then press Assign to place someone on the morning, evening, or night shift. If you see a little warning flag, it means that person already has an approved leave that day." },
   { view: "attendance-leave", text: "Time-off requests live here. Press the big button to file one yourself, and you can approve or say no to other people's requests from the same list — they will get a message telling them what you decided." },
-  { view: "claims", text: "Money stuff! This is where repayment requests land. You can search for any request and approve a whole bunch at once with one press.", demo: "More pages are coming soon." },
+  { view: "claims", text: "Money stuff! This is where repayment requests land. You can search for any request and approve a whole bunch at once with one press.", demo: "History pages below load live from the server." },
   { view: "messages", text: "This is the team chat. Pick a conversation on the left, type on the right — whatever you send goes out under your own name, automatically." },
-  { view: "logs", text: "Think of this as the diary of everything that happens in the system. Those little category buttons let you look at just people changes, leaves, money, rosters, or concerns.", demo: "More pages are coming soon." },
+  { view: "logs", text: "Think of this as the diary of everything that happens in the system. Those little category buttons let you look at just people changes, leaves, money, rosters, or concerns.", demo: "Later pages load live from the server." },
   { view: "employee-directory", text: "And that's the whole tour — well done! Remember, you can press the ? key anytime to see handy keyboard shortcuts, and there's a Replay button back on the home screen whenever you want a refresher." },
 ];
 let kumonTourIndex = -1;
@@ -1649,7 +1677,15 @@ function appendPersistedMessage(stream, message) {
 
 function handleChatFileSelected(input) {
   const file = input.files[0];
-  if (file) showToast(`${file.name} attached. Add a message or press Send Message.`);
+  if (!file) return;
+  // Same 10MB + PDF/JPG/PNG rule as onboarding docs, single source.
+  const err = validateOnboardingFile(file);
+  if (err) {
+    showToast(err, 'error');
+    input.value = '';
+    return;
+  }
+  showToast(`${file.name} attached. Add a message or press Send Message.`);
 }
 
 async function handleSendChatMessage(e) {
@@ -1870,11 +1906,39 @@ function filterAuditLogs() {
   }
 }
 
+// Attendance register export: same downloadCsv helper as audit export.
+// Live rows when the table holds them, demo sample otherwise. Same shape.
+function exportAttendanceRegister() {
+  const body = document.getElementById('attendanceTableBody');
+  const live = body ? Array.from(body.querySelectorAll('tr[data-live="true"]')) : [];
+  const rows = [['Date', 'Employee', 'Clock In', 'Clock Out', 'Hours']];
+  if (live.length) {
+    live.forEach((tr) => {
+      rows.push(Array.from(tr.querySelectorAll('td')).map((td) => td.textContent.trim()));
+    });
+  } else {
+    rows.push(['2026-09-13', 'Sample Instructor', '09:00', '17:00', '8.00']);
+  }
+  downloadCsv(`kumon_ems_attendance_${new Date().toISOString().slice(0, 10)}.csv`, rows);
+  showToast(live.length ? 'Attendance register exported.' : 'Attendance register exported (demo sample).');
+}
+
+function downloadCsv(filename, rows) {
+  const csvContent = 'data:text/csv;charset=utf-8,' + rows.map((e) => e.map((i) => `"${i}"`).join(',')).join('\n');
+  const link = document.createElement('a');
+  link.setAttribute('href', encodeURI(csvContent));
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 function exportAuditLogs() {
-  showToast('Exporting admin audit log trail (CSV)...');
-  const csvRows = [
-    ['Timestamp', 'Administrator', 'Action Class', 'Action', 'Target Record', 'Details', 'Status', 'Audit ID'],
-    ['2026-06-09 14:32:00', 'Marcus Williams (Admin)', 'Personnel', 'Added Employee: Sofia Taylor', 'EMP-10482', 'Created employee profile, issued portal credentials', 'Completed', 'LOG-9482'],
+  downloadCsv(
+    `kumon_ems_audit_logs_${new Date().toISOString().slice(0, 10)}.csv`,
+    [
+      ['Timestamp', 'Administrator', 'Action Class', 'Action', 'Target Record', 'Details', 'Status', 'Audit ID'],
+      ['2026-06-09 14:32:00', 'Marcus Williams (Admin)', 'Personnel', 'Added Employee: Sofia Taylor', 'EMP-10482', 'Created employee profile, issued portal credentials', 'Completed', 'LOG-9482'],
     ['2026-06-09 11:15:00', 'Elena Rostova (Admin)', 'Leaves', 'Approved Leave Request', 'EMP-10291', 'Approved 3 days Medical Leave', 'Approved', 'LOG-9481'],
     ['2026-06-08 16:45:00', 'Marcus Williams (Admin)', 'Personnel', 'Promoted Staff: Marcus Chen', 'EMP-10334', 'Promoted to Lead Instructor', 'Completed', 'LOG-9480'],
     ['2026-06-08 10:20:00', 'David Kim (Admin)', 'Claims', 'Approved Expense Claim', 'CLM-2026-088', 'Educational materials reimbursement ($420.50)', 'Disbursed', 'LOG-9479'],
@@ -1884,16 +1948,8 @@ function exportAuditLogs() {
     ['2026-06-06 13:40:00', 'Marcus Williams (Admin)', 'Personnel', 'Transferred Employee Center', 'EMP-10255', 'Transferred to West Campus Center', 'Completed', 'LOG-9475'],
     ['2026-06-05 18:00:00', 'System Bot', 'Leaves', 'Accrued Monthly Leave Balances', 'ALL INSTRUCTORS', 'Automated 1.5 days annual leave accrual', 'Executed', 'LOG-9474'],
     ['2026-06-05 11:25:00', 'David Kim (Admin)', 'Claims', 'Rejected Non-Compliant Claim', 'CLM-2026-079', 'Rejected fuel claim missing tax invoice', 'Rejected', 'LOG-9473']
-  ];
-
-  const csvContent = 'data:text/csv;charset=utf-8,' + csvRows.map(e => e.map(i => `"${i}"`).join(',')).join('\n');
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement('a');
-  link.setAttribute('href', encodedUri);
-  link.setAttribute('download', `kumon_ems_audit_logs_${new Date().toISOString().slice(0, 10)}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+    ]
+  );
 }
 
 // ==========================================================================
@@ -2218,17 +2274,28 @@ function auditPagerStep(delta) {
   auditPagerGoto(auditPagerPage + delta);
 }
 
+function auditCategory(action) {
+  const text = String(action || '').toLowerCase();
+  if (text.includes('leave')) return 'Leave';
+  if (text.includes('payroll') || text.includes('overtime') || text.includes('claim') || text.includes('advance')) return 'Payroll';
+  if (text.includes('roster') || text.includes('shift') || text.includes('swap') || text.includes('attendance') || text.includes('clock')) return 'Roster';
+  if (text.includes('swap') || text.includes('grievance')) return 'Grievance';
+  if (text.includes('employee') || text.includes('department') || text.includes('resign') || text.includes('purged')) return 'People';
+  return 'General';
+}
+
 function buildAuditRow(log, names) {
   const who = names[log.employee] || 'System';
+  const category = auditCategory(log.action);
   const when = log.timestamp ? new Date(log.timestamp).toLocaleString() : '—';
   const tr = document.createElement('tr');
   tr.setAttribute('data-live', 'true');
-  tr.setAttribute('data-category', 'General');
+  tr.setAttribute('data-category', category);
   tr.setAttribute('data-admin', who);
   tr.innerHTML =
     `<td><div class="claims-applicant-cell"><div class="claims-applicant-info">` +
     `<strong>${escapeHtml(String(who))}</strong></div></div></td>` +
-    `<td>General</td><td>${escapeHtml(String(when))}</td>` +
+    `<td>${escapeHtml(category)}</td><td>${escapeHtml(String(when))}</td>` +
     `<td>${escapeHtml(String(log.action || ''))}</td><td>—</td>` +
     `<td><span class="penpot-badge badge-present">Logged</span></td>` +
     `<td style="text-align: right;">${escapeHtml(String(log.id || '').slice(0, 8))}</td>`;
