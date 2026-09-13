@@ -994,6 +994,175 @@ async function batchApproveClaims() {
   showToast('Batch approved all active pending expense claims.');
 }
 
+// ==========================================================================
+// Live pagers (D34): every pager button fetches its list with ?page=N and
+// renders the live rows, keeping the static demo markup as offline fallback.
+// ==========================================================================
+const claimsPagerState = { pending: 1, history: 1 };
+const CLAIMS_PAGE_SIZE = 6;
+
+function claimsPagerStep(which, delta) {
+  claimsPagerGoto(which, (claimsPagerState[which] || 1) + delta);
+}
+
+function markPagerActive(pagerName, page) {
+  const bar = document.querySelector(`[data-pager="${pagerName}"]`);
+  if (!bar) return;
+  bar.dataset.page = String(page);
+  bar.querySelectorAll('[data-pagenum]').forEach((btn) => {
+    btn.classList.toggle('active', Number(btn.dataset.pagenum) === page);
+  });
+}
+
+function claimInitials(name) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '—';
+  return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
+}
+
+function fmtClaimDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return isNaN(d) ? '—' : d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+async function claimsPagerGoto(which, page) {
+  if (page < 1) return;
+  const bodyId = which === 'pending' ? 'pendingClaimsTableBody' : 'historyClaimsTableBody';
+  const infoId = which === 'pending' ? 'pendingPagerInfo' : 'historyPagerInfo';
+  const pagerName = which === 'pending' ? 'claims-pending' : 'claims-history';
+  const body = document.getElementById(bodyId);
+  if (!body) return;
+  const demo = body.dataset.demoHtml || body.innerHTML;
+  body.dataset.demoHtml = demo;
+  try {
+    const res = await apiFetch(`/api/expense-claims/?page=${page}&page_size=${CLAIMS_PAGE_SIZE}`);
+    if (!res.ok) throw new Error('load failed');
+    const payload = await res.json();
+    const rows = Array.isArray(payload) ? payload : payload.results || [];
+    const total = typeof payload.count === 'number' ? payload.count : rows.length;
+    let names = {};
+    try { names = await liveEmployeeNames(); } catch (_) { /* fall back to ids */ }
+    body.innerHTML = '';
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="7">No expense claims on this page yet.</td></tr>';
+    } else {
+      rows.forEach((c) => body.appendChild(buildClaimRow(c, which, names)));
+    }
+    const info = document.getElementById(infoId);
+    if (info) info.textContent = `Showing page ${page} of ${total} live expense claims`;
+    claimsPagerState[which] = page;
+    markPagerActive(pagerName, page);
+    setApiMode('live');
+    if (which === 'pending' && typeof updateBatchApproveCount === 'function') updateBatchApproveCount();
+  } catch (e) {
+    body.innerHTML = demo;
+    showToast('Claims page unreachable — showing demo data', 'error');
+  }
+}
+
+function buildClaimRow(c, which, names) {
+  const id = String(c.id || '');
+  const who = String(names[c.employee] || c.employee || 'Unknown');
+  const statusCls = String(c.status || 'Pending').toLowerCase();
+  const tr = document.createElement('tr');
+  tr.id = `claim-row-${id}`;
+  tr.setAttribute('data-live', 'true');
+  const pill = `<span class="claims-status-pill ${statusCls}" id="status-${id}">${escapeHtml(String(c.status || 'Pending'))}</span>`;
+  const actions =
+    `<div class="claims-actions-cell" id="actions-${id}">` +
+    `<button class="btn-claim-approve" onclick="handleClaimAction('${escapeHtml(id)}', 'Approve')">Approve</button>` +
+    `<button class="btn-claim-reject" onclick="handleClaimAction('${escapeHtml(id)}', 'Reject')">Reject</button>` +
+    `</div>`;
+  if (which === 'history') {
+    tr.innerHTML =
+      `<td><div class="claims-applicant-cell"><div class="claims-avatar">${escapeHtml(claimInitials(who))}</div>` +
+      `<div class="claims-applicant-info"><strong>${escapeHtml(who)} &nbsp;<span style="color:#64748b; font-weight:500;">[${escapeHtml(id.slice(0, 12))}]</span></strong>` +
+      `<span>${escapeHtml(String(c.category || ''))}</span></div></div></td>` +
+      `<td><span class="claims-cat-pill">${escapeHtml(String(c.category || 'General Expense'))}</span></td>` +
+      `<td>${escapeHtml(fmtClaimDate(c.created_at))}</td>` +
+      `<td>${escapeHtml(String(c.title || ''))}</td>` +
+      `<td><span class="claims-amount-txt">$${escapeHtml(Number(c.amount || 0).toFixed(2))}</span></td>` +
+      `<td>${pill}</td><td>—</td>`;
+  } else {
+    tr.innerHTML =
+      `<td><div class="claims-applicant-cell"><div class="claims-avatar">${escapeHtml(claimInitials(who))}</div>` +
+      `<div class="claims-applicant-info"><strong>${escapeHtml(who)} &nbsp;<span style="color:#64748b; font-weight:500;">[${escapeHtml(id.slice(0, 12))}]</span></strong>` +
+      `<span>${escapeHtml(String(c.category || ''))}</span></div></div></td>` +
+      `<td><span class="claims-cat-pill">${escapeHtml(String(c.category || 'General Expense'))}</span></td>` +
+      `<td>${escapeHtml(fmtClaimDate(c.created_at))}</td>` +
+      `<td><div class="claims-details-cell"><div class="claims-details-text">${escapeHtml(String(c.title || ''))}</div></div></td>` +
+      `<td><span class="claims-amount-txt">$${escapeHtml(Number(c.amount || 0).toFixed(2))}</span></td>` +
+      `<td>${pill}</td><td>${actions}</td>`;
+  }
+  return tr;
+}
+
+// Advances pager (D34): ?page=N against /api/advances/, same register row
+// shape as the static demo markup, which stays as the offline fallback.
+let advancesPagerPage = 1;
+const ADVANCES_PAGE_SIZE = 4;
+
+function advancesPagerStep(delta) {
+  advancesPagerGoto(advancesPagerPage + delta);
+}
+
+function buildAdvanceRow(a, names) {
+  const id = String(a.id || '');
+  const who = String(names[a.employee] || a.employee || 'Unknown');
+  const statusCls = String(a.status || 'Pending').toLowerCase();
+  const tr = document.createElement('tr');
+  tr.id = `adv-row-${id}`;
+  tr.setAttribute('data-live', 'true');
+  const pill = `<span class="claims-status-pill ${statusCls}" id="status-${id}">${escapeHtml(String(a.status || 'Pending'))}</span>`;
+  const actions =
+    `<div class="claims-actions-cell" id="actions-${id}">` +
+    `<button class="btn-claim-approve" onclick="handleClaimAction('${escapeHtml(id)}', 'Approve')">Approve</button>` +
+    `<button class="btn-claim-reject" onclick="handleClaimAction('${escapeHtml(id)}', 'Reject')">Reject</button>` +
+    `</div>`;
+  tr.innerHTML =
+    `<td><div class="claims-applicant-cell"><div class="claims-avatar">${escapeHtml(claimInitials(who))}</div>` +
+    `<div class="claims-applicant-info"><strong>${escapeHtml(who)} &nbsp;<span style="color:#64748b; font-weight:500;">[${escapeHtml(id.slice(0, 12))}]</span></strong>` +
+    `<span>Advance request</span></div></div></td>` +
+    `<td><span class="claims-amount-txt">$${escapeHtml(Number(a.amount || 0).toFixed(2))}</span></td>` +
+    `<td><span class="claims-cat-pill">${escapeHtml(String(a.repayment_terms || 'Next Payroll'))}</span></td>` +
+    `<td>${escapeHtml(String(a.purpose || ''))}</td>` +
+    `<td>—</td>` +
+    `<td>${pill}</td><td>${actions}</td>`;
+  return tr;
+}
+
+async function advancesPagerGoto(page) {
+  if (page < 1) return;
+  const body = document.getElementById('advanceClaimsTableBody');
+  if (!body) return;
+  const demo = body.dataset.demoHtml || body.innerHTML;
+  body.dataset.demoHtml = demo;
+  try {
+    const res = await apiFetch(`/api/advances/?page=${page}&page_size=${ADVANCES_PAGE_SIZE}`);
+    if (!res.ok) throw new Error('load failed');
+    const payload = await res.json();
+    const rows = Array.isArray(payload) ? payload : payload.results || [];
+    const total = typeof payload.count === 'number' ? payload.count : rows.length;
+    let names = {};
+    try { names = await liveEmployeeNames(); } catch (_) { /* fall back to ids */ }
+    body.innerHTML = '';
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="7">No advance applications on this page yet.</td></tr>';
+    } else {
+      rows.forEach((a) => body.appendChild(buildAdvanceRow(a, names)));
+    }
+    const info = document.getElementById('advancesPagerInfo');
+    if (info) info.textContent = `Showing page ${page} of ${total} live advance pay applications`;
+    advancesPagerPage = page;
+    markPagerActive('advances', page);
+    setApiMode('live');
+  } catch (e) {
+    body.innerHTML = demo;
+    showToast('Advances page unreachable — showing demo data', 'error');
+  }
+}
+
 
 // Advance Pay Modal
 function openAdvanceModal() {
@@ -1439,7 +1608,8 @@ function filterAuditLogs() {
 
   const paginationInfo = document.getElementById('auditPaginationInfo');
   if (paginationInfo) {
-    paginationInfo.textContent = `Showing ${visibleCount} of 1,482 logged admin events`;
+    const liveTotal = typeof auditLiveTotal !== 'undefined' && auditLiveTotal ? auditLiveTotal : 1482;
+    paginationInfo.textContent = `Showing ${visibleCount} of ${liveTotal.toLocaleString()} logged admin events`;
   }
 }
 
@@ -1751,6 +1921,7 @@ async function loadAuditView() {
     if (!res.ok) throw new Error('load failed');
     const payload = await res.json();
     const rows = Array.isArray(payload) ? payload : payload.results || [];
+    auditLiveTotal = typeof payload.count === 'number' ? payload.count : rows.length;
     let names = {};
     try { names = await liveEmployeeNames(); } catch (_) { /* fall back to System */ }
     body.innerHTML = '';
@@ -1776,6 +1947,74 @@ async function loadAuditView() {
     }
     setApiMode('live');
   } catch (e) { body.innerHTML = demo; setApiMode('demo'); showToast('Audit log unreachable — showing demo data', 'error'); }
+}
+
+// Audit pager (D34): ?page=N against /api/audit-logs/, same live row shape
+// as loadAuditView, demo markup restored when the API is unreachable.
+let auditPagerPage = 1;
+const AUDIT_PAGE_SIZE = 10;
+// Live total from the last audit fetch; filterAuditLogs falls back to the
+// static demo total until the first live page lands.
+let auditLiveTotal = 0;
+
+function auditPagerStep(delta) {
+  auditPagerGoto(auditPagerPage + delta);
+}
+
+function buildAuditRow(log, names) {
+  const who = names[log.employee] || 'System';
+  const when = log.timestamp ? new Date(log.timestamp).toLocaleString() : '—';
+  const tr = document.createElement('tr');
+  tr.setAttribute('data-live', 'true');
+  tr.setAttribute('data-category', 'General');
+  tr.setAttribute('data-admin', who);
+  tr.innerHTML =
+    `<td><div class="claims-applicant-cell"><div class="claims-applicant-info">` +
+    `<strong>${escapeHtml(String(who))}</strong></div></div></td>` +
+    `<td>General</td><td>${escapeHtml(String(when))}</td>` +
+    `<td>${escapeHtml(String(log.action || ''))}</td><td>—</td>` +
+    `<td><span class="penpot-badge badge-present">Logged</span></td>` +
+    `<td style="text-align: right;">${escapeHtml(String(log.id || '').slice(0, 8))}</td>`;
+  return tr;
+}
+
+async function auditPagerGoto(page) {
+  if (page < 1) return;
+  const body = document.getElementById('auditLogsTableBody');
+  if (!body) return;
+  const demo = body.dataset.demoHtml || body.innerHTML;
+  body.dataset.demoHtml = demo;
+  try {
+    const res = await apiFetch(`/api/audit-logs/?page=${page}&page_size=${AUDIT_PAGE_SIZE}`);
+    if (!res.ok) throw new Error('load failed');
+    const payload = await res.json();
+    const rows = Array.isArray(payload) ? payload : payload.results || [];
+    const total = typeof payload.count === 'number' ? payload.count : rows.length;
+    let names = {};
+    try { names = await liveEmployeeNames(); } catch (_) { /* fall back to System */ }
+    body.innerHTML = '';
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="7">No audit events on this page yet.</td></tr>';
+    } else {
+      rows.forEach((log) => body.appendChild(buildAuditRow(log, names)));
+    }
+    const info = document.getElementById('auditPaginationInfo');
+    if (info) info.textContent = `Showing page ${page} of ${total} live logged admin events`;
+    auditPagerPage = page;
+    auditLiveTotal = total;
+    markPagerActive('audit', page);
+    const prev = document.getElementById('auditPrevBtn');
+    if (prev) {
+      prev.disabled = page <= 1;
+      prev.style.opacity = page <= 1 ? '0.5' : '';
+      prev.style.cursor = page <= 1 ? 'not-allowed' : '';
+    }
+    setApiMode('live');
+  } catch (e) {
+    body.innerHTML = demo;
+    setApiMode('demo');
+    showToast('Audit page unreachable — showing demo data', 'error');
+  }
 }
 
 

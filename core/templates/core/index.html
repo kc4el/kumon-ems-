@@ -2700,14 +2700,14 @@
               </table>
             </div>
 
-            <div class="claims-pagination-bar">
-              <span>Showing 1 to 6 of 14 pending expense claims requiring review</span>
+            <div class="claims-pagination-bar" data-pager="claims-pending" data-page="1">
+              <span id="pendingPagerInfo">Showing 1 to 6 of 14 pending expense claims requiring review</span>
               <div class="claims-page-buttons">
-                <button class="btn-page-arr">‹ Prev</button>
-                <button class="btn-page-num active">1</button>
-                <button class="btn-page-num">2</button>
-                <button class="btn-page-num">3</button>
-                <button class="btn-page-arr">Next ›</button>
+                <button class="btn-page-arr" onclick="claimsPagerStep('pending', -1)">‹ Prev</button>
+                <button class="btn-page-num active" data-pagenum="1" onclick="claimsPagerGoto('pending', 1)">1</button>
+                <button class="btn-page-num" data-pagenum="2" onclick="claimsPagerGoto('pending', 2)">2</button>
+                <button class="btn-page-num" data-pagenum="3" onclick="claimsPagerGoto('pending', 3)">3</button>
+                <button class="btn-page-arr" onclick="claimsPagerStep('pending', 1)">Next ›</button>
               </div>
             </div>
           </div>
@@ -2905,14 +2905,14 @@
               </table>
             </div>
 
-            <div class="claims-pagination-bar">
-              <span>Showing 1 to 6 of 182 historical settled claims</span>
+            <div class="claims-pagination-bar" data-pager="claims-history" data-page="1">
+              <span id="historyPagerInfo">Showing 1 to 6 of 182 historical settled claims</span>
               <div class="claims-page-buttons">
-                <button class="btn-page-arr">‹ Prev</button>
-                <button class="btn-page-num active">1</button>
-                <button class="btn-page-num">2</button>
-                <button class="btn-page-num">3</button>
-                <button class="btn-page-arr">Next ›</button>
+                <button class="btn-page-arr" onclick="claimsPagerStep('history', -1)">‹ Prev</button>
+                <button class="btn-page-num active" data-pagenum="1" onclick="claimsPagerGoto('history', 1)">1</button>
+                <button class="btn-page-num" data-pagenum="2" onclick="claimsPagerGoto('history', 2)">2</button>
+                <button class="btn-page-num" data-pagenum="3" onclick="claimsPagerGoto('history', 3)">3</button>
+                <button class="btn-page-arr" onclick="claimsPagerStep('history', 1)">Next ›</button>
               </div>
             </div>
           </div>
@@ -3090,8 +3090,15 @@
               </table>
             </div>
 
-            <div class="claims-pagination-bar">
-              <span>Showing 1 to 4 of 4 submitted advance pay applications</span>
+            <div class="claims-pagination-bar" data-pager="advances" data-page="1">
+              <span id="advancesPagerInfo">Showing 1 to 4 of 4 submitted advance pay applications</span>
+              <div class="claims-page-buttons">
+                <button class="btn-page-arr" onclick="advancesPagerStep(-1)">‹ Prev</button>
+                <button class="btn-page-num active" data-pagenum="1" onclick="advancesPagerGoto(1)">1</button>
+                <button class="btn-page-num" data-pagenum="2" onclick="advancesPagerGoto(2)">2</button>
+                <button class="btn-page-num" data-pagenum="3" onclick="advancesPagerGoto(3)">3</button>
+                <button class="btn-page-arr" onclick="advancesPagerStep(1)">Next ›</button>
+              </div>
             </div>
           </div>
         </div>
@@ -3631,14 +3638,14 @@
           </div>
 
           <!-- Pagination Footer -->
-          <div class="claims-pagination-bar">
+          <div class="claims-pagination-bar" data-pager="audit" data-page="1">
             <span id="auditPaginationInfo">Showing 1 to 10 of 1,482 logged admin events</span>
             <div class="claims-page-buttons">
-              <button class="btn-page-num" disabled style="opacity:0.5; cursor:not-allowed;">&lt;</button>
-              <button class="btn-page-num active">1</button>
-              <button class="btn-page-num" onclick="showToast('Loading page 2...')">2</button>
-              <button class="btn-page-num" onclick="showToast('Loading page 3...')">3</button>
-              <button class="btn-page-num" onclick="showToast('Loading next page...')">&gt;</button>
+              <button class="btn-page-num" id="auditPrevBtn" onclick="auditPagerStep(-1)">&lt;</button>
+              <button class="btn-page-num active" data-pagenum="1" onclick="auditPagerGoto(1)">1</button>
+              <button class="btn-page-num" data-pagenum="2" onclick="auditPagerGoto(2)">2</button>
+              <button class="btn-page-num" data-pagenum="3" onclick="auditPagerGoto(3)">3</button>
+              <button class="btn-page-num" onclick="auditPagerStep(1)">&gt;</button>
             </div>
           </div>
         </div>

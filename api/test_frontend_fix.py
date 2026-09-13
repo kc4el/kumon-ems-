@@ -9,7 +9,13 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from rest_framework.test import APIClient
 
-from core.models import ClaimStatus, Employee, ExpenseClaim, ShiftRoster
+from core.models import (
+    ClaimStatus,
+    Employee,
+    EmployeeAuditLog,
+    ExpenseClaim,
+    ShiftRoster,
+)
 from core.views_docs import OnboardingDocument, SalaryAdvance
 
 PDF = b"%PDF-1.4 fake pdf content"
@@ -199,6 +205,52 @@ class FrontendFixTests(TestCase):
         docs1 = self.client.get("/api/onboarding-docs/?page=1&page_size=10")
         self.assertEqual(docs1.status_code, 200)
         self.assertEqual(docs1.json()["results"], [])
+
+    def test_audit_pager_honors_page_param(self):
+        for i in range(11):
+            EmployeeAuditLog.objects.create(
+                employee=self.employee, action=f"Paged audit event {i:02d}"
+            )
+        page1 = self.client.get("/api/audit-logs/?page=1&page_size=10")
+        page2 = self.client.get("/api/audit-logs/?page=2&page_size=10")
+        self.assertEqual(page1.status_code, 200)
+        self.assertEqual(page2.status_code, 200)
+        total = page1.json()["count"]
+        self.assertGreaterEqual(total, 11)
+        self.assertEqual(len(page1.json()["results"]), 10)
+        self.assertEqual(len(page2.json()["results"]), total - 10)
+
+    # -- D34: every pager button hits a real ?page=N endpoint ----------------
+    def test_dashboard_pagers_wiring(self):
+        from django.conf import settings
+
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        for pager in (
+            'data-pager="claims-pending"',
+            'data-pager="claims-history"',
+            'data-pager="advances"',
+            'data-pager="audit"',
+        ):
+            self.assertIn(pager, html)
+        for info_id in (
+            'id="pendingPagerInfo"',
+            'id="historyPagerInfo"',
+            'id="advancesPagerInfo"',
+            'id="auditPaginationInfo"',
+        ):
+            self.assertIn(info_id, html)
+        # No toast-only pager stubs may remain.
+        self.assertNotIn("Loading page", html)
+        js = (settings.BASE_DIR / "static" / "js" / "dashboard.js").read_text()
+        self.assertIn("/api/expense-claims/?page=", js)
+        self.assertIn("/api/audit-logs/?page=", js)
+        self.assertIn("/api/advances/?page=", js)
+        self.assertIn("claimsPagerGoto", js)
+        self.assertIn("auditPagerGoto", js)
+        self.assertIn("advancesPagerGoto", js)
+        self.assertNotIn("Loading page", js)
 
     # -- frontend wiring present -------------------------------------------
     def test_dashboard_template_wiring_docs(self):
