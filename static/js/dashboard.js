@@ -585,7 +585,44 @@ document.addEventListener('keydown', function (e) {
   }
 });
 
-// Onboarding form submit handler: POST the wizard fields to the live API.
+// Onboarding compliance docs: label shows the picked file name; the files
+// are POSTed as multipart to /api/onboarding-docs/ once the employee row
+// exists (see handleOnboarding).
+function handleDocFileSelected(input) {
+  const file = input.files && input.files[0];
+  const kind = input.dataset.docType;
+  const label = input.closest('label')?.querySelector(`[data-doc-label="${kind}"]`);
+  if (label) label.textContent = file ? file.name : 'Upload File';
+  if (file) showToast(`${file.name} attached for ${kind}.`);
+}
+
+async function uploadOnboardingDocs(form, employeeId) {
+  const inputs = form.querySelectorAll('input[type="file"][data-doc-type]');
+  let saved = 0;
+  for (const input of inputs) {
+    const file = input.files && input.files[0];
+    if (!file) continue;
+    const docType = input.dataset.docType;
+    const docData = new FormData();
+    docData.append('employee', employeeId);
+    docData.append('doc_type', docType);
+    docData.append('file', file);
+    try {
+      const res = await apiFetch('/api/onboarding-docs/', {
+        method: 'POST',
+        body: docData,
+      });
+      if (!res.ok) throw new Error('upload failed');
+      saved += 1;
+    } catch (error) {
+      showToast(`${docType} upload failed — employee created, retry from directory.`, 'error');
+    }
+  }
+  return saved;
+}
+
+// Onboarding form submit handler: POST the wizard fields to the live API,
+// then upload any attached compliance docs against the new employee row.
 async function handleOnboarding(e) {
   e.preventDefault();
   const form = e.target;
@@ -624,10 +661,22 @@ async function handleOnboarding(e) {
     })
     .then((data) => {
       if (!data) return;
-      showToast(`Employee ${fullName || email} created & credentials issued!`);
-      closeOnboardingModal();
-      form.reset();
-      loadEmployeeDirectory();
+      const finish = (docCount) => {
+        const suffix = docCount ? ` (${docCount} compliance doc${docCount > 1 ? 's' : ''} saved)` : '';
+        showToast(`Employee ${fullName || email} created & credentials issued!${suffix}`);
+        closeOnboardingModal();
+        form.reset();
+        form.querySelectorAll('[data-doc-label]').forEach((el) => { el.textContent = 'Upload File'; });
+        loadEmployeeDirectory();
+      };
+      if (data.id) {
+        uploadOnboardingDocs(form, data.id).then(finish);
+      } else {
+        // Anonymous signup returns 202 with no row id: docs stay attached
+        // to the form until the directory record exists.
+        showToast('Signup received — compliance docs upload after HR confirms the profile.');
+        finish(0);
+      }
     })
     .catch(() => showToast('Unable to create employee upstream. Try again later.', 'error'));
 }

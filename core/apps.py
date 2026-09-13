@@ -7,3 +7,4 @@ class CoreConfig(AppConfig):
 
     def ready(self):
         import core.signals
+        import core.views_docs  # noqa: F401  (registers D33/D36 models)

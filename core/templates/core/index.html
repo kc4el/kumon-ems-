@@ -3932,44 +3932,48 @@
           <div class="compliance-2col-grid">
             <div class="compliance-doc-cell">
               <span class="compliance-doc-title">NBI Clearance</span>
-              <button type="button" class="btn-upload-clean"
-                onclick="showToast('Upload dialog opened for NBI Clearance')">
+              <label class="btn-upload-clean">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <polyline points="18 15 12 9 6 15"></polyline>
                 </svg>
-                <span>Upload File</span>
-              </button>
+                <span data-doc-label="NBI">Upload File</span>
+                <input type="file" data-doc-type="NBI" accept=".pdf,.jpg,.jpeg,.png" hidden
+                  onchange="handleDocFileSelected(this)" />
+              </label>
             </div>
             <div class="compliance-doc-cell">
               <span class="compliance-doc-title">BIR Form 2316 (Tax Record)</span>
-              <button type="button" class="btn-upload-clean"
-                onclick="showToast('Upload dialog opened for BIR Form 2316')">
+              <label class="btn-upload-clean">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <polyline points="18 15 12 9 6 15"></polyline>
                 </svg>
-                <span>Upload File</span>
-              </button>
+                <span data-doc-label="BIR2316">Upload File</span>
+                <input type="file" data-doc-type="BIR2316" accept=".pdf,.jpg,.jpeg,.png" hidden
+                  onchange="handleDocFileSelected(this)" />
+              </label>
             </div>
 
             <div class="compliance-doc-cell">
               <span class="compliance-doc-title">PSA Birth Certificate</span>
-              <button type="button" class="btn-upload-clean"
-                onclick="showToast('Upload dialog opened for PSA Birth Certificate')">
+              <label class="btn-upload-clean">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <polyline points="18 15 12 9 6 15"></polyline>
                 </svg>
-                <span>Upload File</span>
-              </button>
+                <span data-doc-label="PSA">Upload File</span>
+                <input type="file" data-doc-type="PSA" accept=".pdf,.jpg,.jpeg,.png" hidden
+                  onchange="handleDocFileSelected(this)" />
+              </label>
             </div>
             <div class="compliance-doc-cell">
               <span class="compliance-doc-title">Signed Employment Contract</span>
-              <button type="button" class="btn-upload-clean"
-                onclick="showToast('Upload dialog opened for Signed Employment Contract')">
+              <label class="btn-upload-clean">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <polyline points="18 15 12 9 6 15"></polyline>
                 </svg>
-                <span>Upload File</span>
-              </button>
+                <span data-doc-label="contract">Upload File</span>
+                <input type="file" data-doc-type="contract" accept=".pdf,.jpg,.jpeg,.png" hidden
+                  onchange="handleDocFileSelected(this)" />
+              </label>
             </div>
 
             <div class="compliance-doc-cell">

@@ -41,6 +41,12 @@ from core.views import (
     ShiftSwapDetailView,
     ShiftSwapListCreateView,
 )
+from core.views_docs import (
+    ClaimDecisionView,
+    OnboardingDocumentListCreateView,
+    SalaryAdvanceDetailView,
+    SalaryAdvanceListCreateView,
+)
 
 urlpatterns = [
     path(
@@ -188,4 +194,24 @@ urlpatterns = [
         name="notification-mark-read",
     ),
     path("purge-run/", PurgeRunView.as_view(), name="purge-run"),
+    path(
+        "onboarding-docs/",
+        OnboardingDocumentListCreateView.as_view(),
+        name="onboarding-doc-list-create",
+    ),
+    path(
+        "advances/",
+        SalaryAdvanceListCreateView.as_view(),
+        name="advance-list-create",
+    ),
+    path(
+        "advances/<uuid:pk>/",
+        SalaryAdvanceDetailView.as_view(),
+        name="advance-detail",
+    ),
+    path(
+        "claims/<str:pk>/decision/",
+        ClaimDecisionView.as_view(),
+        name="claim-decision",
+    ),
 ]
