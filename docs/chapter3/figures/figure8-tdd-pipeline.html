@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:16px;background:#fff;color:#111;font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  h2{margin:0 0 2px;font-size:19px;color:#111}
+  p.sub{margin:0 0 12px;color:#555;font-size:12px}
+  svg{width:100%;height:auto;display:block;background:#fff}
+  .step{fill:#fff;stroke:#333;stroke-width:1.5}
+  .dec{fill:#fff8e6;stroke:#333;stroke-width:1.5}
+  .done{fill:#e8f0e8;stroke:#333;stroke-width:1.5}
+  .t{fill:#111}
+  .mut{fill:#555}
+  .b{font-weight:700}
+  .flow{stroke:#111;stroke-width:1.6;fill:none}
+  .lbl{font-size:12px}
+  .start{fill:#111}
+  .end{fill:#fff;stroke:#111;stroke-width:2}
+  .endc{fill:#111}
+</style></head><body>
+<h2>Figure 8 — Testing &amp; Deployment Pipeline (TDD Loop)</h2>
+<p class="sub">Process model · test-first cycle per task → full suite (47 tests) → format checks → conventional commit → push → PR review → merge</p>
+<svg viewBox="0 0 1120 520" role="img" aria-label="TDD testing and deployment pipeline">
+  <defs>
+    <marker id="ah8" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" style="fill:#111"/>
+    </marker>
+  </defs>
+
+  <circle class="start" cx="50" cy="150" r="10"/>
+  <text class="t lbl" x="50" y="178" text-anchor="middle">new task</text>
+
+  <!-- TDD loop -->
+  <rect class="step" x="110" y="100" width="180" height="100" rx="8"/>
+  <text class="t b" x="200" y="138" font-size="13" text-anchor="middle">1 · Write failing test</text>
+  <text class="mut lbl" x="200" y="160" text-anchor="middle">api/tests.py or</text>
+  <text class="mut lbl" x="200" y="178" text-anchor="middle">core/tests.py — run, see red</text>
+
+  <rect class="step" x="340" y="100" width="180" height="100" rx="8"/>
+  <text class="t b" x="430" y="138" font-size="13" text-anchor="middle">2 · Implement minimally</text>
+  <text class="mut lbl" x="430" y="160" text-anchor="middle">core/views.py, serializers,</text>
+  <text class="mut lbl" x="430" y="178" text-anchor="middle">models — just enough</text>
+
+  <polygon class="dec" points="620,100 720,150 620,200 520,150"/>
+  <text class="t lbl" x="620" y="144" text-anchor="middle">test</text>
+  <text class="t lbl" x="620" y="160" text-anchor="middle">green?</text>
+
+  <text class="t lbl" x="570" y="230" text-anchor="middle">[no] fix, re-run</text>
+  <path class="flow" d="M560,185 C480,240 420,240 430,205" marker-end="url(#ah8)"/>
+
+  <line class="flow" x1="290" y1="150" x2="338" y2="150" marker-end="url(#ah8)"/>
+  <line class="flow" x1="100" y1="150" x2="108" y2="150" marker-end="url(#ah8)"/>
+
+  <!-- [yes] down to full suite -->
+  <line class="flow" x1="620" y1="200" x2="620" y2="250" marker-end="url(#ah8)"/>
+  <text class="t lbl" x="632" y="230">[yes]</text>
+  <rect class="step" x="510" y="250" width="220" height="90" rx="8"/>
+  <text class="t b" x="620" y="282" font-size="13" text-anchor="middle">3 · Full suite + checks</text>
+  <text class="mut lbl" x="620" y="304" text-anchor="middle">47 tests green · black · isort</text>
+  <text class="mut lbl" x="620" y="322" text-anchor="middle">manage.py check · node --check</text>
+
+  <line class="flow" x1="730" y1="295" x2="780" y2="295" marker-end="url(#ah8)"/>
+  <rect class="done" x="780" y="250" width="220" height="90" rx="8"/>
+  <text class="t b" x="890" y="282" font-size="13" text-anchor="middle">4 · Commit + push</text>
+  <text class="mut lbl" x="890" y="304" text-anchor="middle">one conventional commit</text>
+  <text class="mut lbl" x="890" y="322" text-anchor="middle">(fix: / feat:) per task</text>
+
+  <!-- PR row -->
+  <line class="flow" x1="890" y1="340" x2="890" y2="390" marker-end="url(#ah8)"/>
+  <rect class="step" x="780" y="390" width="220" height="90" rx="8"/>
+  <text class="t b" x="890" y="422" font-size="13" text-anchor="middle">5 · PR review</text>
+  <text class="mut lbl" x="890" y="444" text-anchor="middle">teammates review the diff;</text>
+  <text class="mut lbl" x="890" y="462" text-anchor="middle">live curl matrix re-verified</text>
+
+  <line class="flow" x1="780" y1="435" x2="560" y2="435" marker-end="url(#ah8)"/>
+  <rect class="dec" x="440" y="390" width="120" height="90" rx="8" transform="rotate(0)"/>
+  <text class="t lbl" x="500" y="428" text-anchor="middle">mer-</text>
+  <text class="t lbl" x="500" y="444" text-anchor="middle">ged?</text>
+  <line class="flow" x1="440" y1="435" x2="300" y2="435" marker-end="url(#ah8)"/>
+  <rect class="done" x="110" y="390" width="190" height="90" rx="8"/>
+  <text class="t b" x="205" y="422" font-size="13" text-anchor="middle">6 · On main</text>
+  <text class="mut lbl" x="205" y="444" text-anchor="middle">squash/merge; branch</text>
+  <text class="mut lbl" x="205" y="462" text-anchor="middle">re-syncs from main</text>
+  <circle class="end" cx="60" cy="435" r="12"/>
+  <circle class="endc" cx="60" cy="435" r="6"/>
+  <line class="flow" x1="110" y1="435" x2="74" y2="435" marker-end="url(#ah8)"/>
+
+  <text class="mut lbl" x="24" y="505">Symbols: rectangle = step · diamond = decision · green box = recorded result · bullseye = end of one task cycle.</text>
+</svg>
+</body></html>

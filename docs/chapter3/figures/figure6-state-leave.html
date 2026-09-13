@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:16px;background:#fff;color:#111;font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  h2{margin:0 0 2px;font-size:19px;color:#111}
+  p.sub{margin:0 0 12px;color:#555;font-size:12px}
+  svg{width:100%;height:auto;display:block;background:#fff}
+  .state{fill:#fff;stroke:#333;stroke-width:1.5}
+  .t{fill:#111}
+  .mut{fill:#555}
+  .b{font-weight:700}
+  .trans{stroke:#111;stroke-width:1.6;fill:none}
+  .lbl{font-size:12px}
+  .start{fill:#111}
+  .end{fill:#fff;stroke:#111;stroke-width:2}
+  .endc{fill:#111}
+</style></head><body>
+<h2>Figure 6 — State Diagram: Leave Request</h2>
+<p class="sub">UML state machine · LeaveRequest.status (default Pending) · transitions via LeaveRequestDetailView · audit signal logs each change</p>
+<svg viewBox="0 0 1120 420" role="img" aria-label="Leave request state diagram">
+  <defs>
+    <marker id="ah6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" style="fill:#111"/>
+    </marker>
+  </defs>
+
+  <!-- Start -->
+  <circle class="start" cx="60" cy="200" r="10"/>
+  <line class="trans" x1="70" y1="200" x2="150" y2="200" marker-end="url(#ah6)"/>
+  <text class="t lbl" x="110" y="190" text-anchor="middle">file leave</text>
+
+  <!-- Pending -->
+  <rect class="state" x="150" y="150" width="220" height="100" rx="12"/>
+  <text class="t b" x="260" y="190" font-size="15" text-anchor="middle">Pending</text>
+  <text class="mut lbl" x="260" y="212" text-anchor="middle">initial state (default)</text>
+  <text class="mut lbl" x="260" y="230" text-anchor="middle">entry: audit “Submitted”</text>
+
+  <!-- Approve -->
+  <line class="trans" x1="370" y1="175" x2="540" y2="130" marker-end="url(#ah6)"/>
+  <text class="t lbl" x="455" y="140" text-anchor="middle">approve (PATCH status)</text>
+  <!-- Reject -->
+  <line class="trans" x1="370" y1="225" x2="540" y2="270" marker-end="url(#ah6)"/>
+  <text class="t lbl" x="455" y="262" text-anchor="middle">reject (PATCH status)</text>
+
+  <!-- Approved -->
+  <rect class="state" x="540" y="80" width="220" height="100" rx="12"/>
+  <text class="t b" x="650" y="120" font-size="15" text-anchor="middle">Approved</text>
+  <text class="mut lbl" x="650" y="142" text-anchor="middle">entry: audit “Pending →</text>
+  <text class="mut lbl" x="650" y="160" text-anchor="middle">Approved”; counts in summary</text>
+
+  <!-- Rejected -->
+  <rect class="state" x="540" y="220" width="220" height="100" rx="12"/>
+  <text class="t b" x="650" y="260" font-size="15" text-anchor="middle">Rejected</text>
+  <text class="mut lbl" x="650" y="282" text-anchor="middle">entry: audit “Pending →</text>
+  <text class="mut lbl" x="650" y="300" text-anchor="middle">Rejected”; terminal</text>
+
+  <!-- Approved -> end -->
+  <line class="trans" x1="760" y1="130" x2="880" y2="130" marker-end="url(#ah6)"/>
+  <text class="t lbl" x="820" y="120" text-anchor="middle">used in roster view</text>
+  <circle class="end" cx="910" cy="130" r="12"/>
+  <circle class="endc" cx="910" cy="130" r="6"/>
+
+  <!-- Rejected -> end -->
+  <line class="trans" x1="760" y1="270" x2="880" y2="270" marker-end="url(#ah6)"/>
+  <text class="t lbl" x="820" y="260" text-anchor="middle">kept for records</text>
+  <circle class="end" cx="910" cy="270" r="12"/>
+  <circle class="endc" cx="910" cy="270" r="6"/>
+
+  <text class="mut lbl" x="24" y="370">Symbols: UML state machine — rounded box = state · arrow = transition (labeled with what causes it) · black dot = start · bullseye = end.</text>
+  <text class="mut lbl" x="24" y="390">Honest note: the diagram shows the only transitions the code supports; there is no automatic link from an approved leave to any shift roster row.</text>
+</svg>
+</body></html>
