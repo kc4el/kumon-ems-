@@ -93,6 +93,33 @@ class FrontendFixTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
+    # -- D33: file size/MIME validation (backend + frontend mirror) ---------
+    def test_onboarding_file_validation_wiring(self):
+        from django.conf import settings
+
+        from core.views_docs import ONBOARDING_ALLOWED_TYPES, ONBOARDING_MAX_BYTES
+
+        self.assertEqual(ONBOARDING_MAX_BYTES, 10 * 1024 * 1024)
+        self.assertEqual(
+            ONBOARDING_ALLOWED_TYPES,
+            {
+                "application/pdf": {"pdf"},
+                "image/jpeg": {"jpg", "jpeg"},
+                "image/png": {"png"},
+            },
+        )
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn('accept=".pdf,.jpg,.jpeg,.png"', html)
+        js = (settings.BASE_DIR / "static" / "js" / "dashboard.js").read_text()
+        self.assertIn("validateOnboardingFile", js)
+        self.assertIn("ONBOARDING_MAX_BYTES", js)
+        self.assertIn("10 * 1024 * 1024", js)
+        self.assertIn("application/pdf", js)
+        self.assertIn("image/jpeg", js)
+        self.assertIn("image/png", js)
+
     # -- D36: advances ---------------------------------------------------
     def test_advance_create_defaults_pending(self):
         response = self.client.post(

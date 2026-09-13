@@ -590,10 +590,41 @@ document.addEventListener('keydown', function (e) {
 // Onboarding compliance docs: label shows the picked file name; the files
 // are POSTed as multipart to /api/onboarding-docs/ once the employee row
 // exists (see handleOnboarding).
+// Onboarding file guards (D33): mirror the backend 10MB + PDF/JPG/PNG rules
+// so oversized or mistyped files are rejected before upload.
+const ONBOARDING_MAX_BYTES = 10 * 1024 * 1024;
+const ONBOARDING_ALLOWED_MIME = {
+  'application/pdf': ['pdf'],
+  'image/jpeg': ['jpg', 'jpeg'],
+  'image/png': ['png'],
+};
+
+function validateOnboardingFile(file) {
+  if (!file) return 'No file selected.';
+  if (file.size > ONBOARDING_MAX_BYTES) {
+    return `File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum is 10MB.`;
+  }
+  const ext = String(file.name || '').split('.').pop().toLowerCase();
+  const allowedExts = ONBOARDING_ALLOWED_MIME[file.type] || [];
+  if (!allowedExts.includes(ext)) {
+    return `Unsupported file type (${file.type || 'unknown'}). Allowed: PDF, JPG, PNG.`;
+  }
+  return null;
+}
+
 function handleDocFileSelected(input) {
   const file = input.files && input.files[0];
   const kind = input.dataset.docType;
   const label = input.closest('label')?.querySelector(`[data-doc-label="${kind}"]`);
+  if (file) {
+    const err = validateOnboardingFile(file);
+    if (err) {
+      input.value = '';
+      if (label) label.textContent = 'Upload File';
+      showToast(`${kind}: ${err}`, 'error');
+      return;
+    }
+  }
   if (label) label.textContent = file ? file.name : 'Upload File';
   if (file) showToast(`${file.name} attached for ${kind}.`);
 }
@@ -605,6 +636,11 @@ async function uploadOnboardingDocs(form, employeeId) {
     const file = input.files && input.files[0];
     if (!file) continue;
     const docType = input.dataset.docType;
+    const invalid = validateOnboardingFile(file);
+    if (invalid) {
+      showToast(`${docType}: ${invalid}`, 'error');
+      continue;
+    }
     const docData = new FormData();
     docData.append('employee', employeeId);
     docData.append('doc_type', docType);
@@ -971,12 +1007,13 @@ function updateShiftCoverageStatus() {
 // ==========================================================================
 // Claims & Reimbursements Handlers
 // ==========================================================================
-function showToast(message) {
+function showToast(message, type) {
   const container = document.getElementById('toastContainer');
   if (!container) return;
 
   const toast = document.createElement('div');
   toast.className = 'toast';
+  if (type === 'error') toast.style.borderLeft = '4px solid #dc2626';
   toast.textContent = message;
   container.appendChild(toast);
 
