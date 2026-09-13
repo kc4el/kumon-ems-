@@ -884,7 +884,7 @@ class PerformanceReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
 
-class EmployeeAuditLogListView(generics.ListAPIView):
+class EmployeeAuditLogListView(OwnerQuerysetMixin, generics.ListAPIView):
     queryset = EmployeeAuditLog.objects.all().order_by("-timestamp")
     serializer_class = EmployeeAuditLogSerializer
 
