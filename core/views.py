@@ -256,6 +256,15 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = EmployeeSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
+    # Owners may edit their own contact details, never their privileges.
+    STAFF_ONLY_FIELDS = ("role", "is_active", "department", "email")
+
+    def perform_update(self, serializer):
+        if not self.request.user.is_staff:
+            for field in self.STAFF_ONLY_FIELDS:
+                serializer.validated_data.pop(field, None)
+        serializer.save()
+
     def perform_destroy(self, instance):
         instance.is_active = False
         instance.resigned_at = timezone.localdate()

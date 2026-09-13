@@ -1392,6 +1392,51 @@ class SessionAuthTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
+class PrivilegedFieldTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="selfy", password="x")
+        self.emp = Employee.objects.create(
+            first_name="Self",
+            last_name="Serve",
+            email="selfy@example.com",
+            user=self.user,
+            role="Staff",
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+    def test_owner_cannot_patch_privileged_fields(self):
+        response = self.client.patch(
+            f"/api/employees/{self.emp.id}/",
+            {"role": "Manager", "is_active": False, "email": "hijack@example.com"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.emp.refresh_from_db()
+        self.assertEqual(self.emp.role, "Staff")
+        self.assertTrue(self.emp.is_active)
+        self.assertEqual(self.emp.email, "selfy@example.com")
+
+    def test_owner_can_patch_name(self):
+        response = self.client.patch(
+            f"/api/employees/{self.emp.id}/", {"first_name": "Renamed"}, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.emp.refresh_from_db()
+        self.assertEqual(self.emp.first_name, "Renamed")
+
+    def test_staff_can_patch_privileged_fields(self):
+        staff = User.objects.create_user(username="hr", password="x", is_staff=True)
+        client = APIClient()
+        client.force_authenticate(user=staff)
+        response = client.patch(
+            f"/api/employees/{self.emp.id}/", {"role": "Manager"}, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.emp.refresh_from_db()
+        self.assertEqual(self.emp.role, "Manager")
+
+
 class OvertimeSlipTests(TestCase):
     def setUp(self):
         self.client = APIClient()
