@@ -1344,6 +1344,53 @@ class SessionAuthTests(TestCase):
         self.assertEqual(logout.status_code, 200)
         self.assertEqual(client.get("/api/employees/").status_code, 403)
 
+    def test_session_login_inactive_employee_denied(self):
+        user = User.objects.create_user(username="gone", password="right")
+        Employee.objects.create(
+            first_name="Gone",
+            last_name="Guy",
+            email="gone@example.com",
+            user=user,
+            is_active=False,
+        )
+        anon = APIClient()
+        response = anon.post(
+            "/api/session-login/",
+            {"username": "gone", "password": "right"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json()["error"], "Invalid credentials.")
+
+    def test_session_login_inactive_employee_staff_bypass(self):
+        staff = User.objects.create_user(
+            username="boss-gone", password="right", is_staff=True
+        )
+        Employee.objects.create(
+            first_name="Boss",
+            last_name="Gone",
+            email="boss-gone@example.com",
+            user=staff,
+            is_active=False,
+        )
+        anon = APIClient()
+        response = anon.post(
+            "/api/session-login/",
+            {"username": "boss-gone", "password": "right"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_session_login_unlinked_user_still_allowed(self):
+        User.objects.create_user(username="nolink", password="right")
+        anon = APIClient()
+        response = anon.post(
+            "/api/session-login/",
+            {"username": "nolink", "password": "right"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+
 
 class OvertimeSlipTests(TestCase):
     def setUp(self):

@@ -847,6 +847,14 @@ class SessionLoginView(APIView):
                 {"error": "Invalid credentials."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
+        # Resigned/deactivated staff must not sign in. Staff accounts bypass
+        # the check so deactivated manager rows cannot lock out the office.
+        employee = Employee.objects.filter(user=user).first()
+        if employee is not None and not employee.is_active and not user.is_staff:
+            return Response(
+                {"error": "Invalid credentials."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         login(request, user)
         return Response({"message": "Signed in."}, status=status.HTTP_200_OK)
 
