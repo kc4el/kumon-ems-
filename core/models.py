@@ -63,9 +63,9 @@ class Attendance(models.Model):
         unique_together = ("employee", "date")
         constraints = [
             models.UniqueConstraint(
-                fields=["employee"],
+                fields=["employee", "date"],
                 condition=Q(clock_out__isnull=True),
-                name="one_open_attendance_per_employee",
+                name="one_open_attendance_per_employee_per_day",
             )
         ]
 

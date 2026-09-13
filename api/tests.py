@@ -308,16 +308,23 @@ class ApiTests(TestCase):
                 view.perform_create(serializer=None)
 
     def test_two_open_attendances_rejected_by_database(self):
+        # Per-day rule (issue 42): opens on DIFFERENT dates are allowed;
+        # only a second open on the SAME date is rejected.
         employee = Employee.objects.create(
             first_name="Jane", last_name="Doe", email="jane@example.com"
         )
         Attendance.objects.create(
             employee=employee, date=date.today(), clock_in=timezone.now()
         )
+        Attendance.objects.create(
+            employee=employee,
+            date=date.today() + timezone.timedelta(days=1),
+            clock_in=timezone.now(),
+        )
         with self.assertRaises(IntegrityError):
             Attendance.objects.create(
                 employee=employee,
-                date=date.today() + timezone.timedelta(days=1),
+                date=date.today(),
                 clock_in=timezone.now(),
             )
 
@@ -348,6 +355,8 @@ class ApiTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_clock_out_second_open_rejected_by_database(self):
+        # Per-day rule (issue 42): a stale open on another date does not
+        # block a new open; same-date second open is rejected.
         employee = Employee.objects.create(
             first_name="Jane", last_name="Doe", email="jane@example.com"
         )
@@ -356,11 +365,16 @@ class ApiTests(TestCase):
             date=date.today(),
             clock_in=timezone.now() - timezone.timedelta(hours=3),
         )
+        Attendance.objects.create(
+            employee=employee,
+            date=date.today() + timezone.timedelta(days=1),
+            clock_in=timezone.now() - timezone.timedelta(hours=1),
+        )
         with self.assertRaises(IntegrityError):
             Attendance.objects.create(
                 employee=employee,
-                date=date.today() + timezone.timedelta(days=1),
-                clock_in=timezone.now() - timezone.timedelta(hours=1),
+                date=date.today(),
+                clock_in=timezone.now() - timezone.timedelta(minutes=30),
             )
 
     def test_clock_out_before_clock_in_returns_400(self):

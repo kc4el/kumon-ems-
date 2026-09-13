@@ -2,7 +2,10 @@ from datetime import date
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
+from django.db.models import Q
 from django.test import TestCase
+from django.utils import timezone
 
 from core.models import Attendance, Employee, OvertimeSlip
 
@@ -37,3 +40,45 @@ class OvertimeSlipEmployeeMatchTests(TestCase):
         )
         with self.assertRaises(ValidationError):
             slip.full_clean()
+
+
+class AttendanceOpenPerDayTests(TestCase):
+    def test_open_attendances_on_different_dates_allowed(self):
+        emp = Employee.objects.create(
+            first_name="Cara", last_name="Cole", email="att-day@example.com"
+        )
+        Attendance.objects.create(
+            employee=emp,
+            date=date(2026, 9, 10),
+            clock_in=timezone.now(),
+            clock_out=None,
+        )
+        Attendance.objects.create(
+            employee=emp,
+            date=date(2026, 9, 11),
+            clock_in=timezone.now(),
+            clock_out=None,
+        )
+        self.assertEqual(
+            Attendance.objects.filter(employee=emp, clock_out__isnull=True).count(), 2
+        )
+
+    def test_duplicate_date_still_rejected(self):
+        emp = Employee.objects.create(
+            first_name="Dan", last_name="Diaz", email="att-dup@example.com"
+        )
+        Attendance.objects.create(employee=emp, date=date(2026, 9, 10))
+        with self.assertRaises(IntegrityError):
+            Attendance.objects.create(employee=emp, date=date(2026, 9, 10))
+
+    def test_per_day_open_constraint_definition(self):
+        constraints = Attendance._meta.constraints
+        match = [
+            c
+            for c in constraints
+            if getattr(c, "name", "") == "one_open_attendance_per_employee_per_day"
+        ]
+        self.assertEqual(len(match), 1)
+        self.assertEqual(tuple(match[0].fields), ("employee", "date"))
+        self.assertEqual(match[0].condition, Q(clock_out__isnull=True))
+        self.assertIn(("employee", "date"), Attendance._meta.unique_together)
