@@ -62,6 +62,16 @@ class AttendanceSerializer(serializers.ModelSerializer):
                 employee=data["employee"], date=data["date"]
             ).exists():
                 raise Conflict409("This employee has already clocked in today.")
+
+        # Clock order: direct writes must not invert the pair either.
+        def val(name):
+            if name in data:
+                return data[name]
+            return getattr(self.instance, name, None) if self.instance else None
+
+        start, end = val("clock_in"), val("clock_out")
+        if start is not None and end is not None and end <= start:
+            raise serializers.ValidationError("clock_out must be after clock_in.")
         return data
 
 

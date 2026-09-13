@@ -14,6 +14,7 @@ from core.models import (
     Attendance,
     Department,
     Employee,
+    EmployeeAuditLog,
     LeaveAllocation,
     LeaveRequest,
     PayrollItem,
@@ -1390,6 +1391,96 @@ class SessionAuthTests(TestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 200)
+
+
+class AuditScopeTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="audit-a", password="x")
+        self.me = Employee.objects.create(
+            first_name="Aud", last_name="A", email="audit-a@example.com", user=self.user
+        )
+        self.other = Employee.objects.create(
+            first_name="Aud", last_name="B", email="audit-b@example.com"
+        )
+        EmployeeAuditLog.objects.create(employee=self.me, action="mine")
+        EmployeeAuditLog.objects.create(employee=self.other, action="theirs")
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+    def test_non_staff_sees_only_own_audit_rows(self):
+        response = self.client.get("/api/audit-logs/")
+        self.assertEqual(response.status_code, 200)
+        rows = response.json()
+        rows = rows.get("results", rows) if isinstance(rows, dict) else rows
+        actions = [r["action"] for r in rows]
+        self.assertIn("mine", actions)
+        self.assertNotIn("theirs", actions)
+
+    def test_staff_sees_all_audit_rows(self):
+        staff = User.objects.create_user(
+            username="audit-hr", password="x", is_staff=True
+        )
+        client = APIClient()
+        client.force_authenticate(user=staff)
+        response = client.get("/api/audit-logs/")
+        self.assertEqual(response.status_code, 200)
+        rows = response.json()
+        rows = rows.get("results", rows) if isinstance(rows, dict) else rows
+        actions = [r["action"] for r in rows]
+        self.assertIn("mine", actions)
+        self.assertIn("theirs", actions)
+
+
+class AttendanceClockOrderTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="clock-hr", password="x", is_staff=True
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+        self.employee = Employee.objects.create(
+            first_name="Clock", last_name="Order", email="clock@example.com"
+        )
+
+    def test_create_with_clock_out_before_clock_in_is_400(self):
+        response = self.client.post(
+            "/api/attendance/",
+            {
+                "employee": str(self.employee.id),
+                "date": "2026-10-07",
+                "clock_in": "2026-10-07T17:00:00+08:00",
+                "clock_out": "2026-10-07T09:00:00+08:00",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_patch_to_backwards_times_is_400(self):
+        att = Attendance.objects.create(
+            employee=self.employee,
+            date=date(2026, 10, 8),
+            clock_in=timezone.now() - timezone.timedelta(hours=9),
+            clock_out=timezone.now(),
+        )
+        response = self.client.patch(
+            f"/api/attendance/{att.id}/",
+            {"clock_out": "2020-01-01T00:00:00+08:00"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_valid_ordering_still_accepted(self):
+        response = self.client.post(
+            "/api/attendance/",
+            {
+                "employee": str(self.employee.id),
+                "date": "2026-10-09",
+                "clock_in": "2026-10-09T09:00:00+08:00",
+                "clock_out": "2026-10-09T17:00:00+08:00",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
 
 
 class ForceOwnerCreateTests(TestCase):
