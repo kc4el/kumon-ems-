@@ -2,6 +2,7 @@ import uuid
 from decimal import Decimal
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Q
@@ -88,6 +89,16 @@ class OvertimeSlip(models.Model):
         default="Pending",
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        super().clean()
+        if self.attendance_id and self.employee_id:
+            if self.attendance.employee_id != self.employee_id:
+                raise ValidationError(
+                    {
+                        "attendance": "Overtime slip employee must match attendance employee."
+                    }
+                )
 
 
 class AttendanceCorrection(models.Model):
