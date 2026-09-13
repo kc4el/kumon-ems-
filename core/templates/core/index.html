@@ -1287,12 +1287,19 @@
               <!-- STEP 3: EXIT DOCUMENTS & COMPLIANCE -->
               <div>
                 <h3 class="wizard-section-head">STEP 3: EXIT DOCUMENTS & COMPLIANCE</h3>
-                <p class="card-sub">Attachments aren't connected yet — selections below are placeholders.</p>
+                <p class="card-sub">Optional attachments, stored as onboarding documents for the employee.</p>
                 <div class="docs-compliance-grid">
                   <div class="doc-upload-cell">
                     <span class="doc-upload-title">Resignation Letter</span>
-                    <button type="button" class="btn-upload-file" disabled
-                      title="File attachments are not connected yet.">
+                    <label class="btn-upload-file" data-offboard-doc="Resignation Letter">
+                      <input type="file" hidden data-offboard-file accept=".pdf,.jpg,.jpeg,.png" />
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                      <span data-offboard-label>Upload File</span>
+                    </label>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -1303,8 +1310,15 @@
                   </div>
                   <div class="doc-upload-cell">
                     <span class="doc-upload-title">Exit Interview Form</span>
-                    <button type="button" class="btn-upload-file" disabled
-                      title="File attachments are not connected yet.">
+                    <label class="btn-upload-file" data-offboard-doc="Exit Interview Form">
+                      <input type="file" hidden data-offboard-file accept=".pdf,.jpg,.jpeg,.png" />
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                      <span data-offboard-label>Upload File</span>
+                    </label>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -1315,8 +1329,15 @@
                   </div>
                   <div class="doc-upload-cell">
                     <span class="doc-upload-title">Confidentiality Agreement Renewal</span>
-                    <button type="button" class="btn-upload-file" disabled
-                      title="File attachments are not connected yet.">
+                    <label class="btn-upload-file" data-offboard-doc="Confidentiality Agreement Renewal">
+                      <input type="file" hidden data-offboard-file accept=".pdf,.jpg,.jpeg,.png" />
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                      <span data-offboard-label>Upload File</span>
+                    </label>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -1327,8 +1348,15 @@
                   </div>
                   <div class="doc-upload-cell">
                     <span class="doc-upload-title">Final Pay Calculation</span>
-                    <button type="button" class="btn-upload-file" disabled
-                      title="File attachments are not connected yet.">
+                    <label class="btn-upload-file" data-offboard-doc="Final Pay Calculation">
+                      <input type="file" hidden data-offboard-file accept=".pdf,.jpg,.jpeg,.png" />
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                      <span data-offboard-label>Upload File</span>
+                    </label>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -1343,8 +1371,10 @@
               <!-- FOOTER ACTIONS -->
               <div class="wizard-footer-actions">
                 <button type="button" class="btn btn-outline-gray" onclick="setPtMode('promote')">Cancel</button>
+                <button type="button" class="btn btn-outline-gray" onclick="previewPurge(event)">Preview Purge (30d)</button>
                 <button type="submit" class="btn-finalize-offboard">Finalize Offboarding & Issue Clearance</button>
               </div>
+              <div id="purgePreviewBox" class="card-sub" style="display:none; margin-top:8px;"></div>
             </form>
           </div>
         </div>

@@ -532,12 +532,55 @@ function setPtMode(mode) {
   }
 }
 
+// Purge preview: always dry-run first, render server log. Real delete
+// happens only via explicit confirm (double POST, never one click).
+async function previewPurge(e) {
+  if (e) e.preventDefault();
+  const box = document.getElementById('purgePreviewBox');
+  try {
+    const res = await apiFetch('/api/purge-run/', {
+      method: 'POST',
+      body: JSON.stringify({ days: 30, dry_run: true }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(typeof data.error === 'string' ? data.error : 'preview failed');
+    const n = data.would_purge || 0;
+    if (box) {
+      box.style.display = 'block';
+      box.textContent = n === 0
+        ? 'Purge preview: nothing eligible (0 rows past 30 days).'
+        : `Purge preview: ${n} row(s) eligible. Confirm deletes them + Supabase users.`;
+    }
+    showToast(`Purge preview: ${n} eligible.`);
+  } catch (error) {
+    showToast('Purge preview unavailable.', 'error');
+  }
+}
+
+// Offboarding submit: exit docs (optional) ride the same 10MB + PDF/JPG/PNG
+// guards as onboarding docs, then the DELETE (resign) runs as before.
+document.querySelectorAll('[data-offboard-file]').forEach((input) => {
+  input.addEventListener('change', () => {
+    const label = input.closest('[data-offboard-doc]')?.querySelector('[data-offboard-label]');
+    const name = input.files?.[0]?.name || 'Upload File';
+    if (label) label.textContent = name;
+  });
+});
+
 // Offboarding handler — resolves the employee by corporate email, then
 // DELETEs via the existing soft-delete (resign) flow.
 async function handleOffboardingSubmit(e) {
   e.preventDefault();
   const form = e.target;
   const email = form.querySelector('input[type="email"]')?.value.trim() || '';
+  // Exit docs ride validateOnboardingFile guards. Same rule, no new rule.
+  for (const input of form.querySelectorAll('[data-offboard-file]')) {
+    const err = input.files?.[0] ? validateOnboardingFile(input.files[0]) : null;
+    if (err) {
+      showToast(err, 'error');
+      return;
+    }
+  }
   if (!email) {
     showToast('Corporate email is required to offboard.', 'error');
     return;
@@ -594,7 +637,8 @@ document.addEventListener('keydown', function (e) {
 // are POSTed as multipart to /api/onboarding-docs/ once the employee row
 // exists (see handleOnboarding).
 // Onboarding file guards (D33): mirror the backend 10MB + PDF/JPG/PNG rules
-// so oversized or mistyped files are rejected before upload.
+// so oversized or mistyped files are rejected before upload. Exit-doc and
+// chat pickers reuse these same two constants, single source.
 const ONBOARDING_MAX_BYTES = 10 * 1024 * 1024;
 const ONBOARDING_ALLOWED_MIME = {
   'application/pdf': ['pdf'],
