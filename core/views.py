@@ -477,7 +477,29 @@ class LeaveRequestListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView)
     serializer_class = LeaveRequestSerializer
 
 
-class LeaveRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
+DECIDED_409_BODY = {"error": "This request has already been decided."}
+
+
+class DecidedGuardMixin:
+    """409 when a decided request (Approved/Rejected) is re-decided.
+
+    Same-status replays stay idempotent (200); only a status flip on a
+    non-Pending row is rejected. PUT routes through the same guard.
+    """
+
+    def patch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        decided = getattr(obj, "status", "Pending") != "Pending"
+        new_status = request.data.get("status", getattr(obj, "status", None))
+        if decided and new_status != obj.status:
+            return Response(DECIDED_409_BODY, status=status.HTTP_409_CONFLICT)
+        return super().patch(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        return self.patch(request, *args, **kwargs)
+
+
+class LeaveRequestDetailView(DecidedGuardMixin, generics.RetrieveUpdateDestroyAPIView):
     queryset = LeaveRequest.objects.all()
     serializer_class = LeaveRequestSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrStaff]
@@ -582,7 +604,7 @@ class OvertimeSlipListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView)
             raise Conflict409("An overtime slip already exists for this attendance.")
 
 
-class OvertimeSlipDetailView(generics.RetrieveUpdateDestroyAPIView):
+class OvertimeSlipDetailView(DecidedGuardMixin, generics.RetrieveUpdateDestroyAPIView):
     queryset = OvertimeSlip.objects.all()
     serializer_class = OvertimeSlipSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrStaff]
@@ -868,7 +890,7 @@ class ExpenseClaimListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView)
     serializer_class = ExpenseClaimSerializer
 
 
-class ExpenseClaimDetailView(generics.RetrieveUpdateDestroyAPIView):
+class ExpenseClaimDetailView(DecidedGuardMixin, generics.RetrieveUpdateDestroyAPIView):
     queryset = ExpenseClaim.objects.all()
     serializer_class = ExpenseClaimSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrStaff]
