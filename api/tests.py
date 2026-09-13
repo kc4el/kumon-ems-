@@ -1013,9 +1013,9 @@ class ApiTests(TestCase):
         return client
 
     @patch("core.management.commands.purge_resigned.supabase")
-    def test_purge_run_string_false_stays_dry(self, supabase):
-        self._old_resigned("dryfalse@example.com")
+    def test_purge_run_string_false_triggers_real(self, supabase):
         for fmt in ("json", "multipart"):
+            self._old_resigned(f"dryfalse-{fmt}@example.com")
             client = self._staff_client(f"dryboss-{fmt}")
             response = client.post(
                 "/api/purge-run/",
@@ -1023,12 +1023,11 @@ class ApiTests(TestCase):
                 format=fmt,
             )
             self.assertEqual(response.status_code, 200)
-            self.assertIs(response.json()["dry_run"], True)
-            self.assertEqual(response.json()["purged"], 0)
-            self.assertTrue(
-                Employee.objects.filter(email="dryfalse@example.com").exists()
+            self.assertIs(response.json()["dry_run"], False)
+            self.assertFalse(
+                Employee.objects.filter(email=f"dryfalse-{fmt}@example.com").exists()
             )
-        supabase.auth.admin.delete_user.assert_not_called()
+        supabase.auth.admin.delete_user.assert_called()
 
     @patch("core.management.commands.purge_resigned.supabase")
     def test_purge_run_string_zero_means_real(self, supabase):
