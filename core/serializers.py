@@ -295,6 +295,19 @@ class PayrollRunSerializer(serializers.ModelSerializer):
         model = PayrollRun
         fields = "__all__"
 
+    def validate(self, data):
+        def val(name):
+            if name in data:
+                return data[name]
+            return getattr(self.instance, name, None) if self.instance else None
+
+        start, end = val("pay_period_start"), val("pay_period_end")
+        if start is not None and end is not None and end < start:
+            raise serializers.ValidationError(
+                "pay_period_end must not precede pay_period_start."
+            )
+        return data
+
 
 class PayrollItemSerializer(serializers.ModelSerializer):
     class Meta:

@@ -203,8 +203,15 @@ class PayrollItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     payroll_run = models.ForeignKey(PayrollRun, on_delete=models.CASCADE)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    base_pay = models.DecimalField(max_digits=10, decimal_places=2)
-    deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    base_pay = models.DecimalField(
+        max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal("0"))]
+    )
+    deductions = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00,
+        validators=[MinValueValidator(Decimal("0"))],
+    )
     net_pay = models.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:

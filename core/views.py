@@ -855,6 +855,21 @@ class PayrollItemListCreateView(
         )
         if base is None:
             raise DRFValidationError({"base_pay": "This field is required."})
+        # Money guards: no negative amounts and no deductions above base pay.
+        if base < 0:
+            raise DRFValidationError({"base_pay": "Must be >= 0."})
+        if deductions is not None and deductions < 0:
+            raise DRFValidationError({"deductions": "Must be >= 0."})
+        if deductions is not None and base - deductions < 0:
+            raise DRFValidationError({"deductions": "Deductions exceed base pay."})
+        # A processed run is closed for edits.
+        run = serializer.validated_data.get(
+            "payroll_run", getattr(serializer.instance, "payroll_run", None)
+        )
+        if run is not None and getattr(run, "is_processed", False):
+            raise DRFValidationError(
+                {"payroll_run": "This pay run is already processed."}
+            )
         try:
             with transaction.atomic():
                 serializer.save(net_pay=base - deductions)

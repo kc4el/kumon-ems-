@@ -1393,6 +1393,59 @@ class SessionAuthTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
+class PayrollGuardTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        staff = User.objects.create_user(username="pay-hr", password="x", is_staff=True)
+        self.client.force_authenticate(user=staff)
+        self.employee = Employee.objects.create(
+            first_name="Pay", last_name="Roll", email="payroll@example.com"
+        )
+        self.run = PayrollRun.objects.create(
+            pay_period_start=date(2026, 11, 1), pay_period_end=date(2026, 11, 30)
+        )
+
+    def _post(self, **overrides):
+        payload = {
+            "payroll_run": str(self.run.id),
+            "employee": str(self.employee.id),
+            "base_pay": "1000.00",
+            "deductions": "100.00",
+        }
+        payload.update(overrides)
+        return self.client.post("/api/payroll-items/", payload, format="json")
+
+    def test_negative_base_pay_is_400(self):
+        self.assertEqual(self._post(base_pay="-5.00").status_code, 400)
+
+    def test_deductions_over_base_is_400(self):
+        self.assertEqual(
+            self._post(base_pay="100.00", deductions="500.00").status_code, 400
+        )
+
+    def test_negative_deductions_is_400(self):
+        self.assertEqual(self._post(deductions="-1.00").status_code, 400)
+
+    def test_valid_line_still_accepted(self):
+        self.assertEqual(self._post().status_code, 201)
+
+    def test_processed_run_rejects_new_line(self):
+        self.run.is_processed = True
+        self.run.save(update_fields=["is_processed"])
+        self.assertEqual(self._post().status_code, 400)
+
+    def test_backwards_pay_period_is_400(self):
+        response = self.client.post(
+            "/api/payroll-runs/",
+            {
+                "pay_period_start": "2026-12-31",
+                "pay_period_end": "2026-12-01",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+
 class AuditScopeTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="audit-a", password="x")
