@@ -92,24 +92,30 @@ WSGI_APPLICATION = "kumon_ems.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-if os.getenv("DB_HOST"):
-    # Upstream production: PostgreSQL (Supabase or self-hosted).
+# Local dev default: zero-config SQLite. Set USE_SQLITE=false (or DB_HOST) to
+# use Postgres. Upstream switched to USE_SQLITE; both spellings stay supported
+# so older team .env files keep working.
+if os.getenv("USE_SQLITE", "true").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+} and not os.getenv("DB_HOST"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
             "NAME": os.getenv("DB_NAME", "postgres"),
             "USER": os.getenv("DB_USER", "postgres"),
             "PASSWORD": os.getenv("DB_PASSWORD", ""),
-            "HOST": os.getenv("DB_HOST", ""),
+            "HOST": os.getenv("DB_HOST", "localhost"),
             "PORT": os.getenv("DB_PORT", "5432"),
-        }
-    }
-else:
-    # Local dev default: zero-config SQLite.
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 
