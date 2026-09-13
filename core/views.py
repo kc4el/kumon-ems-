@@ -282,7 +282,18 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
         # the local credential must not survive a successful remote delete).
         local_killed = True
         try:
-            users = User.objects.filter(email__iexact=instance.email)
+            # FK-first kill: the linked Django user may carry a different
+            # email than the employee row, so kill instance.user first and
+            # keep the email match only as a fallback.
+            target_ids = set()
+            if getattr(instance, "user_id", None):
+                target_ids.add(instance.user_id)
+            target_ids.update(
+                User.objects.filter(email__iexact=instance.email).values_list(
+                    "pk", flat=True
+                )
+            )
+            users = User.objects.filter(pk__in=target_ids)
             Token.objects.filter(user__in=users).delete()
             victim_ids = {str(u.pk) for u in users}
             for session in Session.objects.all():
