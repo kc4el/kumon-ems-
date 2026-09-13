@@ -4,11 +4,25 @@ from django.db.models import Q
 from rest_framework import serializers
 
 from .exceptions import Conflict409
-from .models import (Attendance, AttendanceCorrection, ClaimStatus, Department,
-                     Employee, EmployeeAuditLog, ExpenseClaim, LeaveAllocation,
-                     LeaveRequest, Message, Notification, OvertimeSlip,
-                     PayrollItem, PayrollRun, PerformanceReview, ShiftRoster,
-                     ShiftSwap)
+from .models import (
+    Attendance,
+    AttendanceCorrection,
+    ClaimStatus,
+    Department,
+    Employee,
+    EmployeeAuditLog,
+    ExpenseClaim,
+    LeaveAllocation,
+    LeaveRequest,
+    Message,
+    Notification,
+    OvertimeSlip,
+    PayrollItem,
+    PayrollRun,
+    PerformanceReview,
+    ShiftRoster,
+    ShiftSwap,
+)
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
