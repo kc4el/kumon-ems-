@@ -108,6 +108,9 @@ class LeaveRequestSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at"]
 
+    def validate_leave_type(self, value):
+        return value.strip().title()
+
     def validate(self, data):
         data = super().validate(data)
 
@@ -130,6 +133,9 @@ class LeaveAllocationSerializer(serializers.ModelSerializer):
         # No auto unique-together validator: duplicate allocation is a 409
         # conflict (raised by the view), not a malformed request.
         validators = []
+
+    def validate_leave_type(self, value):
+        return value.strip().title()
 
 
 class OvertimeSlipSerializer(serializers.ModelSerializer):
