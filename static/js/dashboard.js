@@ -41,6 +41,9 @@ function apiFetch(url, options = {}) {
     ...options,
     headers,
   }).then((res) => {
+    // Logged-out viewers bouncing around /login/?next=/login/ loop forever:
+    // serve the login page instead of redirecting to itself.
+    if ((res.status === 401 || res.status === 403) && window.location.pathname.startsWith('/login')) return res;
     if (res.status === 401) { window.location.href = "/login/?next=" + encodeURIComponent(window.location.pathname); throw new Error("auth"); }
     if (res.status === 403) { window.location.href = '/login/?next=' + encodeURIComponent(window.location.pathname); throw new Error('auth'); }
     return res;
