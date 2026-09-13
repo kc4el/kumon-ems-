@@ -6,16 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0021_alter_overtimeslip_attendance'),
+        ("core", "0021_alter_overtimeslip_attendance"),
     ]
 
     operations = [
         migrations.RemoveConstraint(
-            model_name='attendance',
-            name='one_open_attendance_per_employee',
+            model_name="attendance",
+            name="one_open_attendance_per_employee",
         ),
         migrations.AddConstraint(
-            model_name='attendance',
-            constraint=models.UniqueConstraint(condition=models.Q(('clock_out__isnull', True)), fields=('employee', 'date'), name='one_open_attendance_per_employee_per_day'),
+            model_name="attendance",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("clock_out__isnull", True)),
+                fields=("employee", "date"),
+                name="one_open_attendance_per_employee_per_day",
+            ),
         ),
     ]
