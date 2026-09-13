@@ -40,7 +40,26 @@ def owns_object(obj, user):
 
 
 class IsOwnerOrStaff(BasePermission):
-    """Object permission: staff see everything, others only their own rows."""
+    """Object permission: staff see everything, others only their own rows.
+
+    Inactive non-staff are blocked at the permission gate (staff bypass).
+    Inactive means either the Django user is inactive or the linked
+    Employee profile is inactive.
+    """
+
+    def has_permission(self, request, view):
+        user = request.user
+        if not user or not getattr(user, "is_authenticated", False):
+            return True
+        if getattr(user, "is_staff", False):
+            return True
+        if not getattr(user, "is_active", True):
+            return False
+        from .models import Employee
+
+        if Employee.objects.filter(user=user, is_active=False).exists():
+            return False
+        return True
 
     def has_object_permission(self, request, view, obj):
         user = request.user
