@@ -1302,6 +1302,18 @@ async function loadClaimsSummary() {
     const claims = Array.isArray(claimsPayload) ? claimsPayload : claimsPayload.results || [];
     const advances = Array.isArray(advancesPayload) ? advancesPayload : advancesPayload.results || [];
     const count = (rows, status) => rows.filter((row) => row.status === status).length;
+    const year = new Date().getFullYear();
+    const ytdClaims = claims.filter((claim) => String(claim.created_at || '').slice(0, 4) === String(year));
+    const approvedClaims = ytdClaims.filter((claim) => claim.status === 'Approved');
+    const rejectedClaims = ytdClaims.filter((claim) => claim.status === 'Rejected');
+    const settledClaims = [...approvedClaims, ...rejectedClaims];
+    const settledAmount = settledClaims.reduce((total, claim) => total + Number(claim.amount || 0), 0);
+    const processingDays = settledClaims
+      .map((claim) => (new Date(claim.updated_at) - new Date(claim.created_at)) / 86400000)
+      .filter((days) => Number.isFinite(days) && days >= 0);
+    const averageDays = processingDays.length
+      ? processingDays.reduce((total, days) => total + days, 0) / processingDays.length
+      : null;
     const pending = document.getElementById('claimsPendingCount');
     const approved = document.getElementById('claimsApprovedCount');
     const rejected = document.getElementById('claimsRejectedCount');
@@ -1310,6 +1322,23 @@ async function loadClaimsSummary() {
     if (approved) approved.textContent = count(claims, 'Approved');
     if (rejected) rejected.textContent = count(claims, 'Rejected');
     if (pendingAdvances) pendingAdvances.textContent = count(advances, 'Pending');
+    const settledTarget = document.getElementById('claimsHistorySettledCount');
+    const settledAmountTarget = document.getElementById('claimsHistorySettledAmount');
+    const approvedTarget = document.getElementById('claimsHistoryApprovedCount');
+    const rejectedTarget = document.getElementById('claimsHistoryRejectedCount');
+    const approvedRateTarget = document.getElementById('claimsHistoryApprovedRate');
+    const rejectedRateTarget = document.getElementById('claimsHistoryRejectedRate');
+    const speedTarget = document.getElementById('claimsHistorySpeed');
+    const speedSubtext = document.getElementById('claimsHistorySpeedSubtext');
+    const settledCount = settledClaims.length;
+    if (settledTarget) settledTarget.textContent = settledCount;
+    if (settledAmountTarget) settledAmountTarget.textContent = `$${settledAmount.toFixed(2)} total`;
+    if (approvedTarget) approvedTarget.textContent = approvedClaims.length;
+    if (rejectedTarget) rejectedTarget.textContent = rejectedClaims.length;
+    if (approvedRateTarget) approvedRateTarget.textContent = `${settledCount ? ((approvedClaims.length / settledCount) * 100).toFixed(1) : '0'}% of settled`;
+    if (rejectedRateTarget) rejectedRateTarget.textContent = `${settledCount ? ((rejectedClaims.length / settledCount) * 100).toFixed(1) : '0'}% of settled`;
+    if (speedTarget) speedTarget.textContent = averageDays === null ? '—' : `${averageDays.toFixed(1)}d`;
+    if (speedSubtext) speedSubtext.textContent = averageDays === null ? 'Awaiting processed claims' : `${processingDays.length} processed claim${processingDays.length === 1 ? '' : 's'}`;
   } catch (_) {
     // The live tables show their own unavailable state.
   }

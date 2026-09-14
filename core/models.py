@@ -246,6 +246,7 @@ class ExpenseClaim(models.Model):
         default="Pending",
     )  # Pending, Approved, Rejected
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class EmployeeAuditLog(models.Model):
