@@ -1,0 +1,16 @@
+# Review B — Correctness & Security
+
+| # | Severity | Finding (file:line) | SOP |
+|---|----------|---------------------|-----|
+| B1 | Critical | No authN/authZ on any API route: all views in `core/views.py:46-231` lack `permission_classes`; `REST_FRAMEWORK` in `kumon_ems/settings.py:157-160` sets no `DEFAULT_AUTHENTICATION`/`DEFAULT_PERMISSION`; all 17 routes in `api/urls.py:26-96` are anonymous (PII, payroll, audit logs writable). | SOP4 |
+| B2 | Critical | Service-role key = full DB bypass: `core/supabase_client.py:11` uses `SUPABASE_SERVICE_ROLE_KEY` server-side (correct placement, no frontend leak) but any view bug inherits god-mode; scope down / move admin ops to edge function. | SOP4 |
+| B3 | Critical | Secrets + PII in git history: `.env` committed in `597d245`, only untracked at `c5bd55f` — history still holds `SUPABASE_SERVICE_ROLE_KEY`, `SECRET_KEY`, DB creds; `db.sqlite3` was also tracked. ROTATE all three; purge/squash history or accept exposure. Fallback `SECRET_KEY` hardcoded `kumon_ems/settings.py:28-31`. | SOP4 |
+| B4 | High | Employee-create rollback inverted: `core/views.py:107-124` creates Supabase auth user BEFORE local `serializer.is_valid`, so each validation error burns + deletes an auth user; `except AuthApiError` (`views.py:132-135`) misses other delete failures → orphan auth accounts; success path never links back on later failure. Validate locally first, then create auth user. | SOP4/SOP5 |
+| B5 | High | No Supabase→local orphan cleanup on delete: `EmployeeDetailView` (`views.py:141-143`) default destroy deletes local row only, leaving the auth user (B4's mirror); no 30-day purge job anywhere. Violates deletion expectation. | SOP5 |
+| B6 | High | Double clock-in race: `core/serializers.py:33-41` is check-then-insert with no `transaction.atomic`/`select_for_update`; concurrent POSTs both pass, one dies as raw `IntegrityError` 500 (`unique_together`, `core/models.py:48`). Use DB constraint + catch → 409. | SOP2 |
+| B7 | High | Clock-out lookup bugs: `AttendanceClockOutView.post` (`views.py:157-175`): `.get(employee_id, clock_out__isnull)` raises unhandled `MultipleObjectsReturned` on >1 open row → 500; `emp_id=None` unchecked → misleading 404; `clock_out` string never parsed/ordered vs `clock_in`; no row lock. | SOP2 |
+| B8 | Medium | Wrong error codes: `views.py:128-138` returns `502` for EVERY create failure incl. serializer `400`s and duplicate-email conflicts; clients can't distinguish bad input from upstream outage. Map ValidationError→400, conflict→409, Supabase 5xx→502; don't `str(error)` leak internals. | SOP2 |
+| B9 | Medium | SQLite vs production: `kumon_ems/settings.py:91-96` hardcodes file SQLite (no Postgres/Supabase-DB switch, no conn pooling); concurrency/unique semantics differ from prod; `TIME_ZONE="UTC"` (`settings.py:122`) with naive clock strings risks payroll-hour drift. | SOP2/SOP4 |
+| B10 | Low | `DashboardSummaryView` (`views.py:46-76`) unauthenticated aggregate oracle (counts employees/leaves/open attendance) — confirm intentional once B1 fixed; `CORS_ALLOW_CREDENTIALS=True` (`settings.py:154`) with localhost origins must be narrowed before deploy. | SOP4 |
+
+Fix order: rotate keys (B3) → add authN/Z (B1) → validate-before-create + delete wiring (B4/B5) → atomic clock-in/out + status codes (B6/B7/B8) → Postgres settings (B9).

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:16px;background:#fff;color:#111;font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  h2{margin:0 0 2px;font-size:19px;color:#111}
+  p.sub{margin:0 0 12px;color:#555;font-size:12px}
+  svg{width:100%;height:auto;display:block;background:#fff}
+  .box{fill:#fff;stroke:#333;stroke-width:1.5}
+  .ext{fill:none;stroke:#666;stroke-width:1.5;stroke-dasharray:7 4}
+  .t{fill:#111}
+  .mut{fill:#555}
+  .b{font-weight:700}
+  .rel{stroke:#111;stroke-width:1.4;fill:none}
+  .dlbl{font-size:10.5px}
+</style></head><body>
+<h2>Kumon EMS — Entity Relationship Diagram</h2>
+<p class="sub">Crow's foot notation · all tables in core/models.py (api/models.py empty) · UUID PKs · Supabase auth.users external</p>
+<svg viewBox="0 0 1140 1240" role="img" aria-label="Kumon EMS entity relationship diagram">
+  <defs>
+    <marker id="crow" viewBox="-10 -7 12 14" refX="0" refY="0" markerWidth="11" markerHeight="11" orient="auto">
+      <path d="M0,0 L-9,-6 M0,0 L-9,0 M0,0 L-9,6" style="stroke:#111;stroke-width:1.4;fill:none"/>
+    </marker>
+    <marker id="one" viewBox="-6 -7 12 14" refX="0" refY="0" markerWidth="9" markerHeight="11" orient="auto">
+      <path d="M-2,-6 L-2,6 M2,-6 L2,6" style="stroke:#111;stroke-width:1.4"/>
+    </marker>
+    <marker id="ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" style="fill:#111"/>
+    </marker>
+  </defs>
+
+  <!-- DEPARTMENT -->
+  <g font-size="12">
+    <rect class="box" x="40" y="60" width="250" height="168" rx="6"/>
+    <text class="t b" x="54" y="84" font-size="13">Department</text>
+    <line class="box" x1="40" y1="94" x2="290" y2="94"/>
+    <text class="t" x="54" y="114"><tspan class="b">id</tspan> · uuid · PK</text>
+    <text class="t" x="54" y="132">name · text · UQ</text>
+    <text class="t" x="54" y="150">code · text · UQ null</text>
+    <text class="t" x="54" y="168">manager_id · uuid · FK null</text>
+    <text class="t" x="54" y="186">created_at · timestamptz</text>
+    <text class="t" x="54" y="204">updated_at · timestamptz</text>
+  </g>
+
+  <!-- EMPLOYEE -->
+  <g font-size="12">
+    <rect class="box" x="360" y="40" width="290" height="223" rx="6"/>
+    <text class="t b" x="374" y="64" font-size="13">Employee ★ central</text>
+    <line class="box" x1="360" y1="74" x2="650" y2="74"/>
+    <text class="t" x="374" y="94"><tspan class="b">id</tspan> · uuid · PK (= auth id)</text>
+    <text class="t" x="374" y="112">first_name · varchar(100)</text>
+    <text class="t" x="374" y="130">last_name · varchar(100)</text>
+    <text class="t" x="374" y="148">email · UQ</text>
+    <text class="t" x="374" y="166">role · varchar null</text>
+    <text class="t" x="374" y="184">department_id · uuid · FK null</text>
+    <text class="t" x="374" y="202">date_hired · date</text>
+    <text class="t" x="374" y="220">is_active · bool</text>
+    <text class="t" x="374" y="238">resigned_at · date null</text>
+  </g>
+
+  <!-- SUPABASE external -->
+  <g font-size="12">
+    <rect class="ext" x="720" y="60" width="250" height="102" rx="6"/>
+    <text class="mut b" x="734" y="84" font-size="13">auth.users (external)</text>
+    <text class="mut" x="734" y="104">id · uuid · PK</text>
+    <text class="mut" x="734" y="122">email · UQ</text>
+    <text class="mut" x="734" y="142">Supabase Auth cloud</text>
+  </g>
+
+  <!-- ATTENDANCE -->
+  <g font-size="12">
+    <rect class="box" x="40" y="300" width="270" height="168" rx="6"/>
+    <text class="t b" x="54" y="324" font-size="13">Attendance</text>
+    <line class="box" x1="40" y1="334" x2="310" y2="334"/>
+    <text class="t" x="54" y="354"><tspan class="b">id</tspan> · uuid · PK</text>
+    <text class="t" x="54" y="372">employee_id · uuid · FK ⛔CASCADE</text>
+    <text class="t" x="54" y="390">date · date</text>
+    <text class="t" x="54" y="408">clock_in · timestamptz null</text>
+    <text class="t" x="54" y="426">clock_out · timestamptz null</text>
+    <text class="t" x="54" y="444">UQ(employee_id, date)</text>
+  </g>
+
+  <!-- LEAVE -->
+  <g font-size="12">
+    <rect class="box" x="380" y="300" width="280" height="184" rx="6"/>
+    <text class="t b" x="394" y="324" font-size="13">LeaveRequest</text>
+    <line class="box" x1="380" y1="334" x2="660" y2="334"/>
+    <text class="t" x="394" y="354"><tspan class="b">id</tspan> · uuid · PK</text>
+    <text class="t" x="394" y="372">employee_id · uuid · FK ⛔CASCADE</text>
+    <text class="t" x="394" y="390">leave_type · dflt Personal</text>
+    <text class="t" x="394" y="408">start_date · date</text>
+    <text class="t" x="394" y="426">end_date · date</text>
+    <text class="t" x="394" y="444">reason · text</text>
+    <text class="t" x="394" y="462">status · dflt Pending</text>
+  </g>
+
+  <!-- SHIFT (assigned to employee + work_date) -->
+  <g font-size="12">
+    <rect class="box" x="720" y="230" width="250" height="222" rx="6"/>
+    <text class="t b" x="734" y="254" font-size="13">ShiftRoster</text>
+    <line class="box" x1="720" y1="264" x2="970" y2="264"/>
+    <text class="t" x="734" y="284"><tspan class="b">id</tspan> · uuid · PK</text>
+    <text class="t" x="734" y="302">name · null</text>
+    <text class="t" x="734" y="320">employee_id · uuid · FK null</text>
+    <text class="t" x="734" y="338">work_date · date null</text>
+    <text class="t" x="734" y="356">shift_type · dflt General</text>
+    <text class="t" x="734" y="374">start_time · time</text>
+    <text class="t" x="734" y="392">end_time · time</text>
+    <text class="t" x="734" y="410">break_mins · int</text>
+    <text class="t" x="734" y="428">created_at · updated_at</text>
+  </g>
+  <text class="mut dlbl" x="720" y="466">FK → Employee · overlap-guarded per (employee, work_date)</text>
+
+  <!-- PAYROLL RUN -->
+  <g font-size="12">
+    <rect class="box" x="40" y="540" width="250" height="128" rx="6"/>
+    <text class="t b" x="54" y="564" font-size="13">PayrollRun</text>
+    <line class="box" x1="40" y1="574" x2="290" y2="574"/>
+    <text class="t" x="54" y="594"><tspan class="b">id</tspan> · uuid · PK</text>
+    <text class="t" x="54" y="612">pay_period_start · date</text>
+    <text class="t" x="54" y="630">pay_period_end · date</text>
+    <text class="t" x="54" y="648">is_processed · bool</text>
+  </g>
+
+  <!-- PAYROLL ITEM -->
+  <g font-size="12">
+    <rect class="box" x="380" y="550" width="300" height="175" rx="6"/>
+    <text class="t b" x="394" y="574" font-size="13">PayrollItem</text>
+    <line class="box" x1="380" y1="584" x2="680" y2="584"/>
+    <text class="t" x="394" y="604"><tspan class="b">id</tspan> · uuid · PK</text>
+    <text class="t" x="394" y="622">payroll_run_id · uuid · FK ⛔</text>
+    <text class="t" x="394" y="640">employee_id · uuid · FK ⛔</text>
+    <text class="t" x="394" y="658">base_pay · numeric</text>
+    <text class="t" x="394" y="676">deductions · numeric</text>
+    <text class="t" x="394" y="694">net_pay · numeric</text>
+  </g>
+
+  <!-- PERFORMANCE -->
+  <g font-size="12">
+    <rect class="box" x="720" y="470" width="250" height="142" rx="6"/>
+    <text class="t b" x="734" y="494" font-size="13">PerformanceReview</text>
+    <line class="box" x1="720" y1="504" x2="970" y2="504"/>
+    <text class="t" x="734" y="524"><tspan class="b">id</tspan> · uuid · PK</text>
+    <text class="t" x="734" y="542">employee_id · uuid · FK ⛔</text>
+    <text class="t" x="734" y="560">review_date · date</text>
+    <text class="t" x="734" y="578">score · int</text>
+    <text class="t" x="734" y="596">comments · text</text>
+  </g>
+
+  <!-- AUDIT -->
+  <g font-size="12">
+    <rect class="box" x="720" y="660" width="250" height="126" rx="6"/>
+    <text class="t b" x="734" y="684" font-size="13">EmployeeAuditLog</text>
+    <line class="box" x1="720" y1="694" x2="970" y2="694"/>
+    <text class="t" x="734" y="714"><tspan class="b">id</tspan> · uuid · PK</text>
+    <text class="t" x="734" y="732">employee_id · FK null · SET NULL</text>
+    <text class="t" x="734" y="750">action · varchar(255)</text>
+    <text class="t" x="734" y="768">timestamp · auto now</text>
+  </g>
+
+  <!-- MESSAGE (standalone, no FKs) -->
+  <g font-size="12">
+    <rect class="box" x="40" y="930" width="270" height="160" rx="6"/>
+    <text class="t b" x="54" y="954" font-size="13">Message</text>
+    <line class="box" x1="40" y1="964" x2="310" y2="964"/>
+    <text class="t" x="54" y="984"><tspan class="b">id</tspan> · uuid · PK</text>
+    <text class="t" x="54" y="1002">conversation_key · indexed</text>
+    <text class="t" x="54" y="1020">sender_name · varchar</text>
+    <text class="t" x="54" y="1038">text · attachment</text>
+    <text class="t" x="54" y="1056">created_at · ordered</text>
+  </g>
+  <text class="mut dlbl" x="40" y="1104">STANDALONE — no foreign keys</text>
+
+  <!-- CLAIM STATUS (standalone, no FK to ExpenseClaim) -->
+  <g font-size="12">
+    <rect class="box" x="380" y="930" width="280" height="124" rx="6"/>
+    <text class="t b" x="394" y="954" font-size="13">ClaimStatus</text>
+    <line class="box" x1="380" y1="964" x2="660" y2="964"/>
+    <text class="t" x="394" y="984"><tspan class="b">id</tspan> · auto int · PK</text>
+    <text class="t" x="394" y="1002">claim_id · text · UQ</text>
+    <text class="t" x="394" y="1020">status · varchar</text>
+    <text class="t" x="394" y="1038">updated_at · auto now</text>
+  </g>
+  <text class="mut dlbl" x="380" y="1068">STANDALONE — claim_id is text, no FK</text>
+
+  <!-- EXPENSE CLAIM -->
+  <g font-size="12">
+    <rect class="box" x="720" y="930" width="300" height="160" rx="6"/>
+    <text class="t b" x="734" y="954" font-size="13">ExpenseClaim</text>
+    <rect x="872" y="938" width="138" height="20" rx="4" style="fill:#fff3cd;stroke:#856404;stroke-width:1"/>
+    <text x="941" y="952" font-size="10" text-anchor="middle" style="fill:#856404">UNDER DEVELOPMENT</text>
+    <line class="box" x1="720" y1="964" x2="1020" y2="964"/>
+    <text class="t" x="734" y="984"><tspan class="b">id</tspan> · uuid · PK</text>
+    <text class="t" x="734" y="1002">employee_id · uuid · FK ⛔</text>
+    <text class="t" x="734" y="1020">title · varchar</text>
+    <text class="t" x="734" y="1038">amount · numeric</text>
+    <text class="t" x="734" y="1056">category · status · created_at</text>
+  </g>
+  <text class="mut dlbl" x="720" y="1104">UNDER DEVELOPMENT — views exist, no URL route yet</text>
+
+  <!-- RELATIONSHIPS -->
+  <!-- Dept<->Emp: two FKs, crow both ends -->
+  <line class="rel" x1="292" y1="140" x2="358" y2="140" marker-start="url(#crow)" marker-end="url(#crow)"/>
+  <text class="mut dlbl" x="292" y="128">belongs to / managed by (2 FKs)</text>
+  <!-- Emp->Attendance -->
+  <path class="rel" d="M430,263 V282 H180 V298" marker-end="url(#crow)"/>
+  <text class="mut dlbl" x="296" y="276">clock-ins</text>
+  <!-- Emp->Leave -->
+  <line class="rel" x1="520" y1="265" x2="520" y2="298" marker-end="url(#crow)"/>
+  <text class="mut dlbl" x="528" y="276">files</text>
+  <!-- Emp->PayrollItem corridor x684 -->
+  <path class="rel" d="M650,150 H684 V640 H682" marker-end="url(#crow)"/>
+  <!-- Emp->Performance corridor x698 -->
+  <path class="rel" d="M650,180 H698 V540 H718" marker-end="url(#crow)"/>
+  <!-- Emp->Audit corridor x712 -->
+  <path class="rel" d="M650,210 H712 V722 H718" marker-end="url(#crow)"/>
+  <!-- Shift->Emp: roster assigned to employee -->
+  <path class="rel" d="M718,300 H668 V200 H652" marker-start="url(#crow)" marker-end="url(#one)"/>
+  <text class="mut dlbl" x="652" y="192">assigned to</text>
+  <!-- Emp->ExpenseClaim corridor x700 -->
+  <path class="rel" d="M650,230 H700 V1005 H718" marker-end="url(#crow)"/>
+  <text class="mut dlbl" x="648" y="770">claims</text>
+  <!-- PayrollRun->PayrollItem -->
+  <line class="rel" x1="292" y1="602" x2="378" y2="602" marker-start="url(#one)" marker-end="url(#crow)"/>
+  <text class="mut dlbl" x="292" y="592">run has items</text>
+  <!-- auth->Emp dashed -->
+  <line class="rel" x1="718" y1="110" x2="652" y2="110" style="stroke-dasharray:6 4" marker-end="url(#ah2)"/>
+  <text class="mut dlbl" x="652" y="100">id mirrored on onboard</text>
+
+  <!-- LEGEND -->
+  <g font-size="11">
+    <line class="rel" x1="40" y1="1150" x2="110" y2="1150" marker-start="url(#one)" marker-end="url(#crow)"/>
+    <text class="mut" x="120" y="1154">one → many (crow's foot)</text>
+    <text class="mut" x="40" y="1176">PK primary key · FK foreign key · UQ unique · dflt default · ⛔ on_delete=CASCADE (audit uses SET NULL)</text>
+    <text class="mut" x="40" y="1196">Dashed box/line = external system (Supabase), not in SQLite.</text>
+    <text class="mut" x="40" y="1216">Amber UNDER DEVELOPMENT tag = table exists but has no working feature yet (currently only ExpenseClaim).</text>
+  </g>
+</svg>
+</body></html>

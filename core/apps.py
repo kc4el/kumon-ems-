@@ -1,8 +1,10 @@
 from django.apps import AppConfig
 
+
 class CoreConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'core'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "core"
 
     def ready(self):
         import core.signals
+        import core.views_docs  # noqa: F401  (registers D33/D36 models)

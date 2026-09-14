@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Login &bull; Kumon EMS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Source+Sans+Pro:wght@700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+  <link rel="stylesheet" href="../../../static/css/main.css" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+</head>
+
+<body class="auth-page-body">
+  <div class="auth-standalone-layout">
+    <!-- Top Branding Navbar -->
+    <header class="auth-top-navbar">
+      <div class="brand-header" style="margin-bottom: 0;">
+        <div class="brand-logo-box brand-kumon-box">
+          <img src="{% static 'images/kumon-logo.png' %}" alt="Kumon Logo" class="brand-logo-img" onerror="this.onerror=null; this.src='../../../static/images/kumon-logo.png';" />
+        </div>
+      </div>
+    </header>
+
+    <!-- Center Authentication Stage -->
+    <main class="auth-center-stage">
+      <div class="auth-card-container">
+
+        <!-- Card 1: Penpot Login (auth - login) -->
+        <div class="penpot-auth-card" id="authScreenLogin">
+          <div class="penpot-auth-badge badge-portal">EMPLOYEE LOGIN</div>
+          <h1 class="penpot-auth-title">Welcome back</h1>
+          <p class="penpot-auth-sub">Enter your employee credentials to sign in</p>
+
+          <form class="penpot-auth-form" onsubmit="handleAuthLogin(event)">
+            <div class="penpot-form-group">
+              <label class="penpot-form-label" for="loginEmployeeId">Employee ID Number</label>
+              <div class="penpot-input-wrap">
+                <input type="text" id="loginEmployeeId" class="penpot-input" placeholder="e.g. EMP-10482" value="EMP-10482" required />
+              </div>
+              <small class="penpot-field-hint">(or corporate email for newly onboarded staff)</small>
+            </div>
+
+            <div class="penpot-form-group">
+              <label class="penpot-form-label" for="loginPasswordInput">Password</label>
+              <div class="penpot-input-wrap">
+                <input type="password" id="loginPasswordInput" class="penpot-input has-action" placeholder="••••••••••••" value="kumon2026" required />
+                <button type="button" class="penpot-input-action" onclick="togglePasswordVisibility('loginPasswordInput', this)">Show</button>
+              </div>
+            </div>
+
+            <div class="penpot-options-row">
+              <label class="penpot-checkbox-label">
+                <input type="checkbox" id="rememberMeCheckbox" checked />
+                <span>Remember my ID</span>
+              </label>
+              <a href="#" class="penpot-link-coral" onclick="showToast('Password reset instructions dispatched to your corporate email.'); return false;">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="penpot-btn-primary-navy">Sign In to Portal</button>
+          </form>
+          <p class="penpot-auth-sub" style="margin-top: 10px; font-size: 12px;">Prefilled ID and password are demo credentials (demo) — replace with a real account.</p>
+
+          <div class="penpot-switcher-row">
+            <span>Don't have an account?</span>
+            <a href="#signup" class="penpot-switch-link coral" onclick="switchAuthPage('signup'); return false;">Create account / Sign up →</a>
+          </div>
+        </div>
+
+        <!-- Card 2: Penpot Signup (auth - signup) -->
+        <div class="penpot-auth-card" id="authScreenSignup" style="display: none;">
+          <div class="penpot-auth-badge badge-onboarding">EMPLOYEE REGISTRATION</div>
+          <h1 class="penpot-auth-title">Create an Account</h1>
+          <p class="penpot-auth-sub">Register your corporate credentials for system onboarding</p>
+
+          <form class="penpot-auth-form" onsubmit="handleAuthSignup(event)">
+            <div class="penpot-form-group">
+              <label class="penpot-form-label" for="signupFirstName">First Name</label>
+              <div class="penpot-input-wrap">
+                <input type="text" id="signupFirstName" class="penpot-input" placeholder="e.g. Jane" required />
+              </div>
+            </div>
+
+            <div class="penpot-form-group">
+              <label class="penpot-form-label" for="signupLastName">Last Name</label>
+              <div class="penpot-input-wrap">
+                <input type="text" id="signupLastName" class="penpot-input" placeholder="e.g. Doe" required />
+              </div>
+            </div>
+
+            <div class="penpot-form-group">
+              <label class="penpot-form-label" for="signupEmployeeId">Employee ID Number</label>
+              <div class="penpot-input-wrap">
+                <input type="text" id="signupEmployeeId" class="penpot-input" placeholder="e.g. EMP-10482" value="EMP-10482" required />
+              </div>
+            </div>
+
+            <div class="penpot-form-group">
+              <label class="penpot-form-label" for="signupEmail">Corporate Email Address</label>
+              <div class="penpot-input-wrap">
+                <input type="email" id="signupEmail" class="penpot-input" placeholder="employee@kumon-ems.com" value="employee@kumon-ems.com" required />
+              </div>
+            </div>
+
+            <div class="penpot-form-group">
+              <label class="penpot-form-label" for="signupPasswordInput">Create Password</label>
+              <div class="penpot-input-wrap">
+                <input type="password" id="signupPasswordInput" class="penpot-input has-action" placeholder="At least 8 characters (1 number, 1 symbol)" value="SecurePass2026!" required />
+                <button type="button" class="penpot-input-action" onclick="togglePasswordVisibility('signupPasswordInput', this)">Show</button>
+              </div>
+            </div>
+
+            <div class="penpot-options-row">
+              <label class="penpot-checkbox-label">
+                <input type="checkbox" id="policyAgreement" checked required />
+                <span>I agree to Corporate IT Security &amp; Usage Policy</span>
+              </label>
+            </div>
+
+            <button type="submit" class="penpot-btn-primary-coral">Complete Registration</button>
+          </form>
+
+          <div class="penpot-switcher-row">
+            <span>Already have an account?</span>
+            <a href="#login" class="penpot-switch-link navy" onclick="switchAuthPage('login'); return false;">Sign in here →</a>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Notification Stack -->
+  <div id="toastContainer" class="toast-stack"></div>
+
+  <script src="{% static 'js/dashboard.js' %}"></script>
+  <script>
+    if (typeof switchAuthPage === 'undefined') {
+      document.write('<script src="../../../static/js/dashboard.js"><\/script>');
+    }
+  </script>
+  <script>
+    // Automatic URL hash and query detection (?mode=signup or #signup)
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const mode = urlParams.get('mode') || (window.location.hash === '#signup' ? 'signup' : 'login');
+      switchAuthPage(mode);
+    });
+  </script>
+</body>
+
+</html>
