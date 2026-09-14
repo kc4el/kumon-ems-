@@ -1,0 +1,90 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Attendance Check-in | Kumon EMS</title>
+  <style>
+    :root { color-scheme: light; --ink:#10233f; --muted:#66758a; --blue:#1769d2; --line:#d9e2ef; --green:#16834f; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:#eef4fb; color:var(--ink); font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .shell { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .phone { width:min(100%, 430px); min-height:calc(100vh - 40px); background:#fff; border:1px solid #dce6f2; border-radius:28px; box-shadow:0 20px 55px rgba(16,35,63,.14); overflow:hidden; display:flex; flex-direction:column; }
+    header { background:var(--ink); color:white; padding:26px 22px 24px; }
+    .brand { display:flex; align-items:center; gap:10px; font-weight:750; letter-spacing:.02em; }
+    .brand-mark { width:34px; height:34px; display:grid; place-items:center; border-radius:10px; background:#fff; color:var(--ink); font-weight:900; }
+    .eyebrow { margin:28px 0 8px; color:#9fc7ff; font-size:12px; font-weight:750; letter-spacing:.12em; text-transform:uppercase; }
+    h1 { margin:0; color:white; font-size:30px; line-height:1.08; letter-spacing:0; }
+    .intro { margin:10px 0 0; color:#c9d7e9; font-size:15px; line-height:1.5; }
+    main { flex:1; padding:24px 20px 20px; }
+    .today { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:20px; padding:14px; border:1px solid var(--line); border-radius:14px; background:#f7faff; }
+    .today strong { display:block; font-size:14px; }
+    .today span { display:block; margin-top:4px; color:var(--muted); font-size:12px; }
+    .status-dot { width:12px; height:12px; flex:0 0 auto; border-radius:50%; background:#f59e0b; box-shadow:0 0 0 5px #fff3d6; }
+    label { display:block; margin:16px 0 7px; font-size:13px; font-weight:700; }
+    input { width:100%; min-height:52px; padding:0 14px; border:1px solid #cbd7e6; border-radius:12px; color:var(--ink); background:#fff; font:inherit; font-size:16px; outline:none; }
+    input:focus { border-color:var(--blue); box-shadow:0 0 0 4px #dceaff; }
+    button { width:100%; min-height:54px; margin-top:22px; border:0; border-radius:12px; background:var(--blue); color:#fff; font:inherit; font-weight:750; font-size:16px; cursor:pointer; }
+    button:disabled { opacity:.65; cursor:wait; }
+    .status { min-height:25px; margin:14px 2px 0; font-size:14px; line-height:1.45; }
+    .status.success { color:var(--green); }
+    .status.error { color:#b42318; }
+    footer { padding:16px 20px 22px; color:var(--muted); text-align:center; font-size:12px; }
+    @media (max-width:480px) { .shell { padding:0; align-items:stretch; } .phone { width:100%; min-height:100vh; border:0; border-radius:0; box-shadow:none; } header { padding-top:calc(22px + env(safe-area-inset-top)); } footer { padding-bottom:calc(18px + env(safe-area-inset-bottom)); } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="phone" aria-labelledby="pageTitle">
+      <header>
+        <div class="brand"><span class="brand-mark">K</span><span>Kumon EMS</span></div>
+        <p class="eyebrow">Daily attendance</p>
+        <h1 id="pageTitle">Check in for work</h1>
+        <p class="intro">Use your employee account to mark yourself present today.</p>
+      </header>
+      <main>
+        <div class="today"><div><strong id="todayLabel">Today</strong><span>Your check-in is recorded securely.</span></div><span class="status-dot" aria-hidden="true"></span></div>
+        <form id="mobileCheckInForm">
+          <label for="employeeName">Employee name or work email</label>
+          <input id="employeeName" name="name" type="text" autocomplete="username" autocapitalize="words" placeholder="e.g. Jane Doe" required>
+          <label for="employeePassword">Password</label>
+          <input id="employeePassword" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required>
+          <button id="submitButton" type="submit">Mark me present</button>
+          <p id="result" class="status" role="status" aria-live="polite"></p>
+        </form>
+      </main>
+      <footer>After check-in, your name will appear as present on the dashboard.</footer>
+    </section>
+  </div>
+  <script>
+    const csrfToken = () => document.cookie.split('; ').find((cookie) => cookie.startsWith('csrftoken='))?.split('=')[1];
+    document.getElementById('todayLabel').textContent = new Date().toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric' });
+    document.getElementById('mobileCheckInForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const button = document.getElementById('submitButton');
+      const result = document.getElementById('result');
+      const name = document.getElementById('employeeName').value.trim();
+      const password = document.getElementById('employeePassword').value;
+      button.disabled = true;
+      result.className = 'status';
+      result.textContent = 'Checking your details...';
+      try {
+        const response = await fetch('/api/attendance/check-in/', {
+          method:'POST', credentials:'same-origin',
+          headers:{ 'Content-Type':'application/json', ...(csrfToken() ? { 'X-CSRFToken': csrfToken() } : {}) },
+          body:JSON.stringify({ name, password })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'Unable to record attendance.');
+        result.className = 'status success';
+        result.textContent = data.already_present ? `${data.employee} is already marked present today.` : `${data.employee} is now marked present.`;
+        document.getElementById('employeePassword').value = '';
+      } catch (error) {
+        result.className = 'status error';
+        result.textContent = error.message;
+      } finally { button.disabled = false; }
+    });
+  </script>
+</body>
+</html>

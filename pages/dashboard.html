@@ -112,33 +112,19 @@
       </header>
 
       <!-- ======================================================================
-           VIEW 1: DASHBOARD / OVERVIEW (dasbord)
+           VIEW 1: DASHBOARD / OVERVIEW (dashboard)
            ====================================================================== -->
       <section class="view-panel active" id="view-dashboard">
-        <!-- Hero Greetings Banner & Pulse Cards -->
         <div class="dashboard-hero-layout">
           <div class="hero-text-side">
-            <span class="hero-date-tag">MON, 09 JUNE 2026</span>
+            <span class="hero-date-tag">TODAY</span>
             <h1 class="hero-heading">Greetings, gurt!</h1>
             <p class="hero-subtext">Here’s what’s happening with your team today.</p>
             <div class="hero-cta-buttons">
-              <button class="btn btn-blue-cta" onclick="switchView('employee-manage')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                <span>Add employee</span>
-              </button>
-              <button class="btn btn-light-blue-cta" onclick="switchView('attendance-leave')">
-                <span>Review leave</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="7" y1="17" x2="17" y2="7"></line>
-                  <polyline points="7 7 17 7 17 17"></polyline>
-                </svg>
-              </button>
+              <button class="btn btn-blue-cta" onclick="switchView('employee-manage')">Add employee</button>
+              <button class="btn btn-light-blue-cta" onclick="switchView('attendance-leave')">Review leave</button>
             </div>
           </div>
-
           <div class="hero-summary-cards-side">
             <!-- June 2026 Card -->
             <div class="summary-box dark-navy-box">
@@ -151,7 +137,7 @@
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
                 <span>Total Attendance</span>
-                <strong>1,420</strong>
+                <strong id="dashboardAttendanceCount">0</strong>
               </div>
               <div class="pulse-stat-row">
                 <svg class="pulse-stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -161,7 +147,7 @@
                   <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
                 <span>Employee Leaves</span>
-                <strong>18</strong>
+                <strong id="dashboardLeaveCount">0</strong>
               </div>
               <div class="pulse-stat-row">
                 <svg class="pulse-stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -171,7 +157,7 @@
                   <line x1="16" y1="17" x2="8" y2="17"></line>
                 </svg>
                 <span>Claims Count</span>
-                <strong>32</strong>
+                <strong id="dashboardClaimsCount">0</strong>
               </div>
             </div>
 
@@ -228,7 +214,7 @@
 
           <div class="kpi-card">
             <div class="kpi-head">
-              <span>APPLICANTS</span>
+              <span>ACTIVE EMPLOYEES</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                 <circle cx="8.5" cy="7" r="4"></circle>
@@ -236,8 +222,8 @@
                 <line x1="23" y1="11" x2="17" y2="11"></line>
               </svg>
             </div>
-            <div class="kpi-value">116</div>
-            <div class="kpi-trend">↗ 3.2%</div>
+            <div class="kpi-value">0</div>
+            <div class="kpi-trend">Current database count</div>
           </div>
 
           <div class="kpi-card">
@@ -286,49 +272,8 @@
                     <th>ARRIVAL TIME</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td class="bold-title">Sarah Chen</td>
-                    <td>Engineering</td>
-                    <td>Senior Dev</td>
-                    <td><span class="penpot-badge badge-present">Present Today</span></td>
-                    <td>08:45 AM</td>
-                  </tr>
-                  <tr>
-                    <td class="bold-title">Marcus Williams</td>
-                    <td>Sales</td>
-                    <td>Account Exec</td>
-                    <td><span class="penpot-badge badge-present">Present Today</span></td>
-                    <td>08:52 AM</td>
-                  </tr>
-                  <tr>
-                    <td class="bold-title">Priya Patel</td>
-                    <td>Marketing</td>
-                    <td>Brand Lead</td>
-                    <td><span class="penpot-badge badge-probation">Probation</span></td>
-                    <td>09:05 AM</td>
-                  </tr>
-                  <tr>
-                    <td class="bold-title">James O'Brien</td>
-                    <td>Operations</td>
-                    <td>Ops Manager</td>
-                    <td><span class="penpot-badge badge-present">Present Today</span></td>
-                    <td>08:30 AM</td>
-                  </tr>
-                  <tr>
-                    <td class="bold-title">Elena Rodriguez</td>
-                    <td>HR</td>
-                    <td>HR Specialist</td>
-                    <td><span class="penpot-badge badge-present">Present Today</span></td>
-                    <td>08:40 AM</td>
-                  </tr>
-                  <tr>
-                    <td class="bold-title">David Kim</td>
-                    <td>Finance</td>
-                    <td>Analyst</td>
-                    <td><span class="penpot-badge badge-leave">On Leave</span></td>
-                    <td>Approved PTO</td>
-                  </tr>
+                <tbody id="dashboardAttendanceTableBody">
+                  <tr><td colspan="5">Loading attendance from the database...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -376,32 +321,6 @@
 
       <!-- ======================================================================
            VIEW 2: EMPLOYEE DIRECTORY & PROFILES (employee - directory)
-           ====================================================================== -->
-      <section class="view-panel" id="view-employee-directory">
-        <div class="page-title-block">
-          <h1 class="penpot-page-heading">Employee Directory & Profiles</h1>
-          <p class="penpot-page-sub">Comprehensive corporate employee directory, organizational structure, profiles, and
-            team contact details.</p>
-        </div>
-
-        <!-- Subnav Pill Tabs -->
-        <div class="penpot-subnav-row">
-          <div class="pill-tabs-container">
-            <button class="tab-pill active" onclick="switchView('employee-directory')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="8" y1="6" x2="21" y2="6"></line>
-                <line x1="8" y1="12" x2="21" y2="12"></line>
-                <line x1="8" y1="18" x2="21" y2="18"></line>
-                <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                <line x1="3" y1="18" x2="3.01" y2="18"></line>
-              </svg>
-              <span>Employee List</span>
-            </button>
-            <button class="tab-pill" onclick="switchView('employee-manage')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
               </svg>
               <span>Manage Staff</span>
             </button>
@@ -793,32 +712,6 @@
 
       <!-- ======================================================================
            VIEW 3: EMPLOYEE MANAGEMENT (employee - mgmt - promote & transfer)
-           ====================================================================== -->
-      <section class="view-panel" id="view-employee-manage">
-        <div class="page-title-block">
-          <h1 class="penpot-page-heading">Employee Management</h1>
-          <p class="penpot-page-sub">Onboard new hires, manage internal promotions & department transfers, and process
-            employee offboarding.</p>
-        </div>
-
-        <!-- Subnav Pill Tabs -->
-        <div class="penpot-subnav-row">
-          <div class="pill-tabs-container">
-            <button class="tab-pill" onclick="switchView('employee-directory')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="8" y1="6" x2="21" y2="6"></line>
-                <line x1="8" y1="12" x2="21" y2="12"></line>
-                <line x1="8" y1="18" x2="21" y2="18"></line>
-                <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                <line x1="3" y1="18" x2="3.01" y2="18"></line>
-              </svg>
-              <span>Employee List</span>
-            </button>
-            <button class="tab-pill active" onclick="switchView('employee-manage')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
               </svg>
               <span>Manage Staff</span>
             </button>
@@ -1279,7 +1172,7 @@
       </section>
 
       <!-- ======================================================================
-           VIEW 5: DAILY ATTENDANCE & TIME LOG (attendance - daily log)
+           VIEW 6: DAILY ATTENDANCE & TIME LOG (attendance - daily log)
            ====================================================================== -->
       <section class="view-panel" id="view-attendance-daily">
         <div class="page-title-block">
@@ -1529,8 +1422,6 @@
               <button class="btn btn-outline-gray" id="btnToggleShiftCal" onclick="toggleShiftCalendar()">
                 <span id="shiftCalToggleText">Collapse Calendar</span>
               </button>
-              <button class="btn btn-navy-cta" onclick="showToast('Roster assignment dialog ready.')">+ Assign
-                Roster</button>
             </div>
           </div>
 
@@ -2009,6 +1900,7 @@
                   <th>REQUESTED DURATION</th>
                   <th>DATE FILED</th>
                   <th>APPROVAL STATUS</th>
+                  <th>ACTIONS</th>
                 </tr>
               </thead>
               <tbody id="leaveRegisterTableBody">
@@ -2464,8 +2356,7 @@
                 <input type="text" placeholder="Search past claim ID, employee, or approver..."
                   class="penpot-select-full" style="width:300px; padding:8px 14px; font-size:13px;"
                   onkeyup="filterClaimsTable(this, 'historyClaimsTableBody')" />
-                <button class="btn btn-outline-gray"
-                  onclick="showToast('Exporting settlement audit history as CSV...')">Export Audit CSV</button>
+                <button class="btn btn-outline-gray" onclick="exportClaimHistory()">Export Audit CSV</button>
               </div>
             </div>
 

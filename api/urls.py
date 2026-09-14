@@ -3,6 +3,7 @@ from rest_framework.authtoken.views import obtain_auth_token
 
 from core.views import (
     AttendanceClockOutView,
+    AttendanceCheckInView,
     AttendanceCorrectionDetailView,
     AttendanceCorrectionListCreateView,
     AttendanceDetailView,
@@ -16,6 +17,8 @@ from core.views import (
     EmployeeListCreateView,
     ExpenseClaimDetailView,
     ExpenseClaimListCreateView,
+    GrievanceDetailView,
+    GrievanceListCreateView,
     LeaveAllocationDetailView,
     LeaveAllocationListCreateView,
     LeaveBalanceView,
@@ -64,6 +67,8 @@ urlpatterns = [
     ),
     path("employees/", EmployeeListCreateView.as_view(), name="employee-list-create"),
     path("employees/<uuid:pk>/", EmployeeDetailView.as_view(), name="employee-detail"),
+    path("grievances/", GrievanceListCreateView.as_view(), name="grievance-list-create"),
+    path("grievances/<uuid:pk>/", GrievanceDetailView.as_view(), name="grievance-detail"),
     path(
         "attendance/", AttendanceListCreateView.as_view(), name="attendance-list-create"
     ),
@@ -86,6 +91,11 @@ urlpatterns = [
         "attendance/clock-out/",
         AttendanceClockOutView.as_view(),
         name="attendance-clock-out",
+    ),
+    path(
+        "attendance/check-in/",
+        AttendanceCheckInView.as_view(),
+        name="attendance-check-in",
     ),
     path("leaves/", LeaveRequestListCreateView.as_view(), name="leave-list-create"),
     path("leaves/<uuid:pk>/", LeaveRequestDetailView.as_view(), name="leave-detail"),

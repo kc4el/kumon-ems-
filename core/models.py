@@ -255,6 +255,32 @@ class EmployeeAuditLog(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
 
+class Grievance(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    employee = models.ForeignKey(
+        Employee, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    category = models.CharField(max_length=150)
+    title = models.CharField(max_length=255)
+    details = models.TextField()
+    status = models.CharField(
+        max_length=50,
+        choices=[
+            ("Pending", "Pending"),
+            ("Investigating", "Investigating"),
+            ("In Mediation", "In Mediation"),
+            ("Resolved", "Resolved"),
+            ("Rejected", "Rejected"),
+        ],
+        default="Pending",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+
+
 class Message(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     conversation_key = models.CharField(max_length=100, default="sarah", db_index=True)

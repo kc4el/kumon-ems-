@@ -117,33 +117,19 @@
       </header>
 
       <!-- ======================================================================
-           VIEW 1: DASHBOARD / OVERVIEW (dasbord)
+           VIEW 1: DASHBOARD / OVERVIEW (dashboard)
            ====================================================================== -->
       <section class="view-panel active" id="view-dashboard">
-        <!-- Hero Greetings Banner & Pulse Cards -->
         <div class="dashboard-hero-layout">
           <div class="hero-text-side">
             <span class="hero-date-tag" id="dashboardTodayLabel">TODAY</span>
             <h1 class="hero-heading">Greetings, gurt!</h1>
             <p class="hero-subtext">Here’s what’s happening with your team today.</p>
             <div class="hero-cta-buttons">
-              <button class="btn btn-blue-cta" onclick="switchView('employee-manage')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                <span>Add employee</span>
-              </button>
-              <button class="btn btn-light-blue-cta" onclick="switchView('attendance-leave')">
-                <span>Review leave</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="7" y1="17" x2="17" y2="7"></line>
-                  <polyline points="7 7 17 7 17 17"></polyline>
-                </svg>
-              </button>
+              <button class="btn btn-blue-cta" onclick="switchView('employee-manage')">Add employee</button>
+              <button class="btn btn-light-blue-cta" onclick="switchView('attendance-leave')">Review leave</button>
             </div>
           </div>
-
           <div class="hero-summary-cards-side">
             <!-- D6: team activity feed (filled from /api/audit-logs/) -->
             <aside id="activityFeed"><h3>Today</h3><ul id="activityFeedList"><li>Loading…</li></ul></aside>
@@ -159,7 +145,7 @@
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
                 <span>Total Attendance</span>
-                <strong>1,420</strong>
+                <strong id="dashboardAttendanceCount">0</strong>
               </div>
               <div class="pulse-stat-row">
                 <svg class="pulse-stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
@@ -170,7 +156,7 @@
                   <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
                 <span>Employee Leaves</span>
-                <strong>18</strong>
+                <strong id="dashboardLeaveCount">0</strong>
               </div>
               <div class="pulse-stat-row">
                 <svg class="pulse-stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
@@ -181,7 +167,7 @@
                   <line x1="16" y1="17" x2="8" y2="17"></line>
                 </svg>
                 <span>Claims Count</span>
-                <strong>32</strong>
+                <strong id="dashboardClaimsCount">0</strong>
               </div>
             </div>
 
@@ -204,7 +190,7 @@
 
           <div class="kpi-card">
             <div class="kpi-head">
-              <span>APPLICANTS</span>
+              <span>ACTIVE EMPLOYEES</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                 <circle cx="8.5" cy="7" r="4"></circle>
@@ -212,8 +198,8 @@
                 <line x1="23" y1="11" x2="17" y2="11"></line>
               </svg>
             </div>
-            <div class="kpi-value">116</div>
-            <div class="kpi-trend">↗ 3.2%</div>
+            <div class="kpi-value">0</div>
+            <div class="kpi-trend">Current database count</div>
           </div>
 
           <div class="kpi-card">
@@ -262,49 +248,8 @@
                     <th>ARRIVAL TIME</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td class="bold-title">Sarah Chen</td>
-                    <td>Engineering</td>
-                    <td>Senior Dev</td>
-                    <td><span class="penpot-badge badge-present">Present Today</span></td>
-                    <td>08:45 AM</td>
-                  </tr>
-                  <tr>
-                    <td class="bold-title">Marcus Williams</td>
-                    <td>Sales</td>
-                    <td>Account Exec</td>
-                    <td><span class="penpot-badge badge-present">Present Today</span></td>
-                    <td>08:52 AM</td>
-                  </tr>
-                  <tr>
-                    <td class="bold-title">Priya Patel</td>
-                    <td>Marketing</td>
-                    <td>Brand Lead</td>
-                    <td><span class="penpot-badge badge-probation">Probation</span></td>
-                    <td>09:05 AM</td>
-                  </tr>
-                  <tr>
-                    <td class="bold-title">James O'Brien</td>
-                    <td>Operations</td>
-                    <td>Ops Manager</td>
-                    <td><span class="penpot-badge badge-present">Present Today</span></td>
-                    <td>08:30 AM</td>
-                  </tr>
-                  <tr>
-                    <td class="bold-title">Elena Rodriguez</td>
-                    <td>HR</td>
-                    <td>HR Specialist</td>
-                    <td><span class="penpot-badge badge-present">Present Today</span></td>
-                    <td>08:40 AM</td>
-                  </tr>
-                  <tr>
-                    <td class="bold-title">David Kim</td>
-                    <td>Finance</td>
-                    <td>Analyst</td>
-                    <td><span class="penpot-badge badge-leave">On Leave</span></td>
-                    <td>Approved PTO</td>
-                  </tr>
+                <tbody id="dashboardAttendanceTableBody">
+                  <tr><td colspan="5">Loading attendance from the database...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1436,17 +1381,17 @@
         <div class="kpi-cards-4grid">
           <div class="kpi-card">
             <div class="kpi-head"><span>OPEN CASES</span></div>
-            <div class="kpi-value">02</div>
+            <div class="kpi-value" id="grievanceOpenCount">00</div>
             <div class="kpi-trend">Action Required</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-head"><span>IN MEDIATION</span></div>
-            <div class="kpi-value">01</div>
+            <div class="kpi-value" id="grievanceMediationCount">00</div>
             <div class="kpi-trend">HR Session Active</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-head"><span>RESOLVED THIS Q3</span></div>
-            <div class="kpi-value">14</div>
+            <div class="kpi-value" id="grievanceResolvedCount">00</div>
             <div class="kpi-trend">↗ 94% Rate</div>
           </div>
           <div class="kpi-card">
@@ -1462,6 +1407,7 @@
           <div class="white-card grievance-cases-card">
             <h2 class="card-title" style="margin-bottom:16px;">Active & Recent Workplace Grievance Cases</h2>
 
+            <div class="grievance-case-list" id="grievanceCaseList">
             <div class="grievance-case-item">
               <div class="case-header-row">
                 <strong class="case-title">Case #GR-809: Workload Distribution Query</strong>
@@ -1496,6 +1442,7 @@
                   Vendor</button>
               </div>
             </div>
+            </div>
           </div>
 
           <!-- Right Column: File Confidential Grievance Record -->
@@ -1507,12 +1454,8 @@
             <form onsubmit="handleGrievanceSubmit(event)">
               <div class="input-cell" style="margin-bottom:12px;">
                 <label>COMPLAINANT EMPLOYEE</label>
-                <select class="penpot-select-full" id="grievComplainant" required>
-                  <option value="">Search & select employee</option>
-                  <option>Marcus Williams (Sales)</option>
-                  <option>Elena Rodriguez (HR)</option>
-                  <option>Sarah Chen (Engineering)</option>
-                  <option>Anonymous Filing</option>
+                <select class="penpot-select-full" id="grievComplainant">
+                  <option value="">Anonymous Filing</option>
                 </select>
               </div>
 
@@ -1545,7 +1488,7 @@
       </section>
 
       <!-- ======================================================================
-           VIEW 5: DAILY ATTENDANCE & TIME LOG (attendance - daily log)
+           VIEW 6: DAILY ATTENDANCE & TIME LOG (attendance - daily log)
            ====================================================================== -->
       <section class="view-panel" id="view-attendance-daily">
         <div class="page-title-block">
@@ -1588,7 +1531,7 @@
         <div class="kpi-cards-4grid">
           <div class="kpi-card">
             <div class="kpi-head"><span>PRESENT TODAY</span></div>
-            <div class="kpi-value">05</div>
+            <div class="kpi-value" id="leavePendingCount">0</div>
             <div class="kpi-subtext">5 / 5 Scheduled Staff</div>
           </div>
           <div class="kpi-card">
@@ -1660,56 +1603,7 @@
                   </tr>
                 </thead>
                 <tbody id="attendanceTableBody">
-                  <tr>
-                    <td>
-                      <div class="bold-title">Sarah Chen</div>
-                      <div class="sub-role">Senior Developer</div>
-                    </td>
-                    <td>Morning (08:00 - 16:00)</td>
-                    <td>07:54 AM</td>
-                    <td>04:02 PM</td>
-                    <td><span class="penpot-badge badge-present">● Present</span></td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div class="bold-title">Marcus Williams</div>
-                      <div class="sub-role">Senior Developer</div>
-                    </td>
-                    <td>Evening (16:00 - 00:00)</td>
-                    <td>03:58 PM</td>
-                    <td>--:--</td>
-                    <td><span class="penpot-badge badge-onduty">● On Duty</span></td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div class="bold-title">David Kim</div>
-                      <div class="sub-role">Analyst</div>
-                    </td>
-                    <td>Night (00:00 - 08:00)</td>
-                    <td>11:52 PM</td>
-                    <td>08:01 AM</td>
-                    <td><span class="penpot-badge badge-present">● Present</span></td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div class="bold-title">Rachel Adams</div>
-                      <div class="sub-role">UX Designer</div>
-                    </td>
-                    <td>Day (09:00 - 17:00)</td>
-                    <td>--:--</td>
-                    <td>--:--</td>
-                    <td><span class="penpot-badge badge-unexcused">Unexcused</span></td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div class="bold-title">Robert Martinez</div>
-                      <div class="sub-role">HR Specialist</div>
-                    </td>
-                    <td>Annual Leave</td>
-                    <td>--:--</td>
-                    <td>--:--</td>
-                    <td><span class="penpot-badge badge-probation">Annual Leave</span></td>
-                  </tr>
+                  <tr><td colspan="5">Loading attendance from the database...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1795,8 +1689,6 @@
               <button class="btn btn-outline-gray" id="btnToggleShiftCal" onclick="toggleShiftCalendar()">
                 <span id="shiftCalToggleText">Collapse Calendar</span>
               </button>
-              <button class="btn btn-navy-cta" onclick="focusRosterEditor()">+ Assign
-                Roster</button>
             </div>
           </div>
 
@@ -2241,17 +2133,17 @@
           </div>
           <div class="kpi-card">
             <div class="kpi-head"><span>APPROVED THIS MONTH</span></div>
-            <div class="kpi-value">18</div>
+            <div class="kpi-value" id="leaveApprovedCount">0</div>
             <div class="kpi-subtext">22.5 Days Total</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-head"><span>ON LEAVE TODAY</span></div>
-            <div class="kpi-value">04</div>
+            <div class="kpi-value" id="leaveTodayCount">0</div>
             <div class="kpi-subtext">03 Annual • 01 Sick</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-head"><span>AVG LEAVE UTILIZATION</span></div>
-            <div class="kpi-value">67.67%</div>
+            <div class="kpi-value">Live</div>
             <div class="kpi-subtext">Annual Score</div>
           </div>
         </div>
@@ -2276,6 +2168,7 @@
                   <th>REQUESTED DURATION</th>
                   <th>DATE FILED</th>
                   <th>APPROVAL STATUS</th>
+                  <th>ACTIONS</th>
                 </tr>
               </thead>
               <tbody id="leaveRegisterTableBody">
@@ -2422,17 +2315,17 @@
           <div class="kpi-cards-4grid">
             <div class="kpi-card">
               <div class="kpi-head"><span>PENDING CLAIMS</span></div>
-              <div class="kpi-value">14</div>
+              <div class="kpi-value" id="claimsPendingCount">0</div>
               <div class="kpi-subtext">↗ $4,820.50 Total</div>
             </div>
             <div class="kpi-card">
               <div class="kpi-head"><span>APPROVED THIS MONTH</span></div>
-              <div class="kpi-value">48</div>
+              <div class="kpi-value" id="claimsApprovedCount">0</div>
               <div class="kpi-subtext">↗ $18,450 Settled</div>
             </div>
             <div class="kpi-card">
               <div class="kpi-head"><span>REJECTED / FLAGGED</span></div>
-              <div class="kpi-value">03</div>
+              <div class="kpi-value" id="claimsRejectedCount">0</div>
               <div class="kpi-subtext">↗ Policy Mismatch</div>
             </div>
             <div class="kpi-card">
@@ -2761,8 +2654,7 @@
                 <input type="text" placeholder="Search past claim ID, employee, or approver..."
                   class="penpot-select-full" style="width:300px; padding:8px 14px; font-size:13px;"
                   onkeyup="filterClaimsTable(this, 'historyClaimsTableBody')" />
-                <button class="btn btn-outline-gray"
-                  onclick="showToast('Exporting settlement audit history as CSV...')">Export Audit CSV</button>
+                <button class="btn btn-outline-gray" onclick="exportClaimHistory()">Export Audit CSV</button>
               </div>
             </div>
 
@@ -2934,7 +2826,7 @@
           <div class="kpi-cards-4grid">
             <div class="kpi-card">
               <div class="kpi-head"><span>PENDING ADVANCES</span></div>
-              <div class="kpi-value">04</div>
+              <div class="kpi-value" id="advancesPendingCount">0</div>
               <div class="kpi-subtext">↗ $6,500 Requested</div>
             </div>
             <div class="kpi-card">
@@ -3143,66 +3035,7 @@
 
             <div class="inbox-section-label" style="margin-top:12px;">EMPLOYEE INBOXES</div>
             <div class="inbox-list" id="inboxConversationsList">
-              <div class="inbox-user-tile active"
-                onclick="selectInboxUser(this, 'Sarah Chen', 'SC', 'Engineering Lead', 'sarah')">
-                <div class="avatar-circle-sm avatar-blue">SC</div>
-                <div class="inbox-tile-content">
-                  <div class="inbox-tile-top">
-                    <strong>Sarah Chen</strong>
-                    <span class="inbox-timestamp">10:42 AM</span>
-                  </div>
-                  <span class="inbox-snippet">Uploaded revised system spec doc...</span>
-                </div>
-              </div>
-
-              <div class="inbox-user-tile unread"
-                onclick="selectInboxUser(this, 'Priya Patel', 'PP', 'Brand Lead', 'priya')">
-                <div class="avatar-circle-sm avatar-yellow">PP</div>
-                <div class="inbox-tile-content">
-                  <div class="inbox-tile-top">
-                    <strong>Priya Patel</strong>
-                    <span class="inbox-timestamp">9:15 AM</span>
-                  </div>
-                  <span class="inbox-snippet">Can you review the campaign budget?</span>
-                </div>
-                <span class="unread-count-pill">1</span>
-              </div>
-
-              <div class="inbox-user-tile"
-                onclick="selectInboxUser(this, 'David Kim', 'DK', 'Finance Analyst', 'david')">
-                <div class="avatar-circle-sm avatar-green">DK</div>
-                <div class="inbox-tile-content">
-                  <div class="inbox-tile-top">
-                    <strong>David Kim</strong>
-                    <span class="inbox-timestamp">Yesterday</span>
-                  </div>
-                  <span class="inbox-snippet">Expense claim #CLM-882 approved.</span>
-                </div>
-              </div>
-
-              <div class="inbox-user-tile"
-                onclick="selectInboxUser(this, 'Elena Rostova', 'ER', 'Lead UX Strategist', 'elena')">
-                <div class="avatar-circle-sm avatar-purple">ER</div>
-                <div class="inbox-tile-content">
-                  <div class="inbox-tile-top">
-                    <strong>Elena Rostova</strong>
-                    <span class="inbox-timestamp">Aug 26</span>
-                  </div>
-                  <span class="inbox-snippet">Shift coverage confirmed for Friday.</span>
-                </div>
-              </div>
-
-              <div class="inbox-user-tile"
-                onclick="selectInboxUser(this, 'Robert Chang', 'RC', 'Ops Associate', 'robert')">
-                <div class="avatar-circle-sm avatar-slate">RC</div>
-                <div class="inbox-tile-content">
-                  <div class="inbox-tile-top">
-                    <strong>Robert Chang</strong>
-                    <span class="inbox-timestamp">Aug 25</span>
-                  </div>
-                  <span class="inbox-snippet">Leave calendar schedule updated.</span>
-                </div>
-              </div>
+              <div class="card-sub">Loading employees from the roster...</div>
             </div>
           </div>
 

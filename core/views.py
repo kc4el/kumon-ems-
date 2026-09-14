@@ -10,6 +10,7 @@ from django.db import IntegrityError, models, transaction
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework import generics, status
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import PermissionDenied
@@ -27,6 +28,7 @@ from .models import (
     Employee,
     EmployeeAuditLog,
     ExpenseClaim,
+    Grievance,
     LeaveAllocation,
     LeaveRequest,
     Message,
@@ -47,6 +49,7 @@ from .serializers import (
     EmployeeAuditLogSerializer,
     EmployeeSerializer,
     ExpenseClaimSerializer,
+    GrievanceSerializer,
     LeaveAllocationSerializer,
     LeaveRequestSerializer,
     MessageSerializer,
@@ -102,8 +105,14 @@ class ForceOwnerCreateMixin:
         serializer.save()
 
 
+@ensure_csrf_cookie
 def dashboard_view(request):
     return render(request, "core/index.html")
+
+
+@ensure_csrf_cookie
+def attendance_checkin_view(request):
+    return render(request, "core/attendance_checkin.html")
 
 
 def login_view(request):
@@ -126,6 +135,8 @@ class DashboardSummaryView(APIView):
             pending_leaves = LeaveRequest.objects.filter(
                 status__iexact="pending"
             ).count()
+            attendance_today = Attendance.objects.filter(date=timezone.localdate()).count()
+            claims_count = ExpenseClaim.objects.count()
             open_attendance = Attendance.objects.filter(clock_out__isnull=True).count()
 
             return Response(
@@ -134,6 +145,8 @@ class DashboardSummaryView(APIView):
                     "active_employees": active_employees,
                     "approved_leaves": approved_leaves,
                     "pending_leaves": pending_leaves,
+                    "attendance_today": attendance_today,
+                    "claims_count": claims_count,
                     "open_attendance_records": open_attendance,
                 },
                 status=status.HTTP_200_OK,
@@ -154,6 +167,17 @@ class DepartmentListCreateView(generics.ListCreateAPIView):
 class DepartmentDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
+
+
+class GrievanceListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
+    queryset = Grievance.objects.select_related("employee", "employee__department").all()
+    serializer_class = GrievanceSerializer
+
+
+class GrievanceDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Grievance.objects.all()
+    serializer_class = GrievanceSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
 
 class EmployeeListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
@@ -382,6 +406,62 @@ class AttendanceListCreateView(
                 serializer.save()
         except IntegrityError:
             raise Conflict409("This employee has already clocked in on this date.")
+
+
+class AttendanceCheckInView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        identifier = str(request.data.get("name", "")).strip()
+        password = str(request.data.get("password", ""))
+        if not identifier or not password:
+            return Response(
+                {"error": "Name and password are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user = authenticate(request, username=identifier, password=password)
+        employee = Employee.objects.filter(email__iexact=identifier).first()
+        if user is None and " " in identifier:
+            parts = identifier.split(None, 1)
+            employee = Employee.objects.filter(
+                first_name__iexact=parts[0], last_name__iexact=parts[1]
+            ).first()
+            if employee and employee.user:
+                user = authenticate(
+                    request, username=employee.user.username, password=password
+                )
+        if user is None or employee is None:
+            if user is not None:
+                employee = Employee.objects.filter(user=user).first()
+            if user is None or employee is None or not employee.is_active:
+                return Response(
+                    {"error": "Invalid employee name or password."},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+
+        login(request, user)
+        today = timezone.localdate()
+        attendance, created = Attendance.objects.get_or_create(
+            employee=employee,
+            date=today,
+            defaults={"clock_in": timezone.now()},
+        )
+        if not created and attendance.clock_out is not None:
+            return Response(
+                {"error": "Attendance was already completed for today."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        return Response(
+            {
+                "message": "You are marked present.",
+                "already_present": not created,
+                "employee": f"{employee.first_name} {employee.last_name}".strip(),
+                "date": str(today),
+                "clock_in": attendance.clock_in,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class AttendanceDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -713,6 +793,13 @@ class ShiftRosterListCreateView(
     queryset = ShiftRoster.objects.all().order_by("work_date", "start_time")
     serializer_class = ShiftRosterSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        work_date = (self.request.query_params.get("work_date") or "").strip()
+        if work_date:
+            queryset = queryset.filter(work_date=work_date)
+        return queryset
+
 
 class ShiftRosterDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = ShiftRoster.objects.all()
@@ -984,6 +1071,17 @@ class ExpenseClaimListCreateView(
 ):
     queryset = ExpenseClaim.objects.all().order_by("-created_at")
     serializer_class = ExpenseClaimSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        requested_statuses = [
+            value.strip()
+            for value in (self.request.query_params.get("status") or "").split(",")
+            if value.strip()
+        ]
+        if requested_statuses:
+            queryset = queryset.filter(status__in=requested_statuses)
+        return queryset
 
 
 class ExpenseClaimDetailView(DecidedGuardMixin, generics.RetrieveUpdateDestroyAPIView):

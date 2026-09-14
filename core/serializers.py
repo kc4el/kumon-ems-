@@ -12,6 +12,7 @@ from .models import (
     Employee,
     EmployeeAuditLog,
     ExpenseClaim,
+    Grievance,
     LeaveAllocation,
     LeaveRequest,
     Message,
@@ -29,6 +30,26 @@ class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = "__all__"
+
+
+class GrievanceSerializer(serializers.ModelSerializer):
+    employee_name = serializers.SerializerMethodField()
+    employee_department = serializers.SerializerMethodField()
+    employee_role = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Grievance
+        fields = "__all__"
+        read_only_fields = ("id", "created_at", "updated_at", "employee_name", "employee_department", "employee_role")
+
+    def get_employee_name(self, obj):
+        return str(obj.employee) if obj.employee else "Anonymous Filing"
+
+    def get_employee_department(self, obj):
+        return obj.employee.department.name if obj.employee and obj.employee.department else ""
+
+    def get_employee_role(self, obj):
+        return obj.employee.role if obj.employee and obj.employee.role else ""
 
 
 class EmployeeSerializer(serializers.ModelSerializer):

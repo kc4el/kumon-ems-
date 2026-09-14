@@ -8,17 +8,20 @@ document.addEventListener('DOMContentLoaded', () => {
   initNavigation();
   initializeCurrentDateLabels();
   loadDashboardSummary();
+  loadDashboardAttendance();
   loadEmployeeDirectory();
+  loadGrievanceView();
   populateRosterEmployeeOptions();
   populateRosterMatrixEmployees();
   loadLeaveRegister();
   claimsPagerGoto('pending', 1);
   claimsPagerGoto('history', 1);
   loadClaimStatuses();
+  loadClaimsSummary();
   updateBatchApproveCount();
   loadAdvancesView();
   advancesPagerGoto(1);
-  loadMessagesForConversation('sarah');
+  loadEmployeeInbox();
   loadAttendanceView();
   loadShiftRosterView();
   loadMasterShiftCalendar();
@@ -188,7 +191,7 @@ function switchView(viewName) {
     const dataView = link.getAttribute('data-view');
     if (dataView === viewName ||
        (viewName.startsWith('employee') && dataView === 'employee-directory') ||
-       (viewName.startsWith('attendance') && dataView === 'attendance-daily') ||
+      (viewName.startsWith('attendance') && dataView === 'attendance-daily') ||
        (viewName === 'claims' && dataView === 'claims') ||
        (viewName === 'messages' && dataView === 'messages') ||
        ((viewName === 'logs' || viewName === 'profile' || viewName === 'my-details') && dataView === 'logs')) {
@@ -821,6 +824,7 @@ async function handleOnboarding(e) {
         form.reset();
         form.querySelectorAll('[data-doc-label]').forEach((el) => { el.textContent = 'Upload File'; });
         loadEmployeeDirectory();
+        loadEmployeeInbox();
       };
       if (data.id) {
         uploadOnboardingDocs(form, data.id).then(finish);
@@ -834,24 +838,76 @@ async function handleOnboarding(e) {
     .catch(() => showToast('Unable to create employee upstream. Try again later.', 'error'));
 }
 
-// Grievance handler (D36): files the record to POST /api/messages/ under the
-// frozen grievance conversation key; the demo case list stays untouched.
+async function loadGrievanceView() {
+  const list = document.getElementById('grievanceCaseList');
+  const complainant = document.getElementById('grievComplainant');
+  if (!list) return;
+  try {
+    const [grievanceRes, employeeRes] = await Promise.all([
+      apiFetch('/api/grievances/?page_size=100', { headers: { Accept: 'application/json' } }),
+      apiFetch('/api/employees/?page_size=100', { headers: { Accept: 'application/json' } }),
+    ]);
+    if (!grievanceRes.ok || !employeeRes.ok) throw new Error('grievance data unavailable');
+    const grievancePayload = await grievanceRes.json();
+    const employeePayload = await employeeRes.json();
+    const grievances = Array.isArray(grievancePayload) ? grievancePayload : grievancePayload.results || [];
+    const employees = Array.isArray(employeePayload) ? employeePayload : employeePayload.results || [];
+    if (complainant) {
+      complainant.innerHTML = '<option value="">Anonymous Filing</option>';
+      employees.filter((employee) => employee.is_active !== false).forEach((employee) => {
+        const option = document.createElement('option');
+        option.value = employee.id;
+        option.textContent = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || employee.email;
+        complainant.appendChild(option);
+      });
+    }
+    list.innerHTML = '';
+    if (!grievances.length) {
+      list.innerHTML = '<p class="card-sub">No grievance cases have been filed yet.</p>';
+    } else {
+      grievances.forEach((grievance) => {
+        const status = String(grievance.status || 'Pending');
+        const statusClass = status.toLowerCase().replace(/\s+/g, '-');
+        const item = document.createElement('div');
+        item.className = 'grievance-case-item';
+        item.innerHTML =
+          `<div class="case-header-row"><strong class="case-title">Case #${escapeHtml(String(grievance.id).slice(0, 8))}: ${escapeHtml(grievance.title)}</strong>` +
+          `<span class="penpot-badge badge-${escapeHtml(statusClass)}">${escapeHtml(status)}</span></div>` +
+          `<p class="case-submeta">Filed by: ${escapeHtml(grievance.employee_name || 'Anonymous Filing')} • Date: ${escapeHtml(formatLeaveDate(String(grievance.created_at || '').slice(0, 10)))}</p>` +
+          `<p class="case-quote">${escapeHtml(grievance.details)}</p>`;
+        list.appendChild(item);
+      });
+    }
+    const open = grievances.filter((grievance) => !['Resolved', 'Rejected'].includes(grievance.status)).length;
+    const mediation = grievances.filter((grievance) => grievance.status === 'In Mediation').length;
+    const resolved = grievances.filter((grievance) => grievance.status === 'Resolved').length;
+    document.getElementById('grievanceOpenCount')?.replaceChildren(String(open).padStart(2, '0'));
+    document.getElementById('grievanceMediationCount')?.replaceChildren(String(mediation).padStart(2, '0'));
+    document.getElementById('grievanceResolvedCount')?.replaceChildren(String(resolved).padStart(2, '0'));
+    setApiMode('live');
+  } catch (_) {
+    list.innerHTML = '<p class="card-sub">Grievance data is unavailable.</p>';
+    showToast('Grievance data could not be loaded.', 'error');
+  }
+}
+
+// Save a grievance as a first-class database record so the tracker can reload it.
 async function handleGrievanceSubmit(e) {
   e.preventDefault();
   const form = e.target;
-  const complainant = document.getElementById('grievComplainant')?.value || 'Anonymous Filing';
+  const complainant = document.getElementById('grievComplainant')?.value || null;
   const category = document.getElementById('grievCategory')?.value || 'Workplace Environment / Workload';
   const title = document.getElementById('grievTitle')?.value.trim() || '';
   const details = document.getElementById('grievDetails')?.value.trim() || '';
-  const text = `[${category}] ${title} — ${details} (Complainant: ${complainant})`;
   try {
-    const res = await apiFetch('/api/messages/', {
+    const res = await apiFetch('/api/grievances/', {
       method: 'POST',
-      body: JSON.stringify({ conversation_key: 'grievance', text }),
+      body: JSON.stringify({ employee: complainant, category, title, details }),
     });
     if (!res.ok) throw new Error('file failed');
     showToast('Confidential grievance filed and assigned to HR Mediator.');
     form.reset();
+    loadGrievanceView();
   } catch (err) {
     showToast('Grievance could not be filed. Try again later.', 'error');
   }
@@ -902,6 +958,7 @@ function handleShiftDateChange(dateVal) {
       displayEl.textContent = `Live allocation for ${label}`;
     }
     loadMasterShiftCalendar(dateVal);
+    loadShiftEditorForDate(dateVal);
     showToast(`Roster updated for ${label}`);
   }
 }
@@ -975,8 +1032,6 @@ function toggleAddStaffForm(shiftKey, show) {
 function confirmAddStaff(shiftKey) {
   const select = document.getElementById(`staffSelect-${shiftKey}`);
   const roleSelect = document.getElementById(`roleSelect-${shiftKey}`);
-  const usersList = document.getElementById(`shiftUsers-${shiftKey}`);
-  const shiftBadge = document.getElementById(`shiftBadge-${shiftKey}`);
 
   if (!select || !select.value) {
     showToast('Please choose an employee to assign.');
@@ -987,50 +1042,20 @@ function confirmAddStaff(shiftKey) {
   const employeeId = select.value;
   const option = select.selectedOptions[0];
   const name = option?.dataset.name || option?.textContent || '';
-  const jobTitle = option?.dataset.role || '';
-  const initials = option?.dataset.initials || name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
   const roleTag = roleSelect ? roleSelect.value : 'Duty Staff';
 
-  // Remove empty placeholder if present
-  const placeholder = usersList.querySelector('.shift-empty-placeholder');
-  if (placeholder) placeholder.remove();
-
-  // Create new user row
-  const userRow = document.createElement('div');
-  userRow.className = 'shift-slot-user-row';
-  userRow.innerHTML = `
-    <div class="shift-slot-user-left">
-      <div class="shift-staff-avatar" style="width:28px; height:28px; font-size:11px;">${escapeHtml(initials)}</div>
-      <div>
-        <strong style="font-size:13px; color:#0f172a;">${escapeHtml(name)}</strong>
-        <div style="font-size:11px; color:#64748b;">${escapeHtml(jobTitle)} &bull; ${escapeHtml(roleTag)}</div>
-      </div>
-    </div>
-    <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-  `;
-
-  usersList.appendChild(userRow);
-
-  // Update shift card badge
-  if (shiftBadge) {
-    shiftBadge.className = 'penpot-badge badge-present';
-    shiftBadge.style.fontSize = '11px';
-    shiftBadge.textContent = 'Draft';
-  }
-
-  // Reset and hide form
+  // Save first, then reload the selected date from the database.
   select.selectedIndex = 0;
   if (roleSelect) roleSelect.selectedIndex = 0;
   toggleAddStaffForm(shiftKey, false);
-
-  updateShiftCoverageStatus();
   persistShiftAssignment(shiftKey, employeeId).then((saved) => {
-    showToast(
-      saved
-        ? `Assigned ${name} (${roleTag}) successfully!`
-        : 'Assigned locally — roster save needs retry.',
-      saved ? undefined : 'error'
-    );
+    if (saved) {
+      showToast(`Assigned ${name} (${roleTag}) successfully!`);
+      loadShiftEditorForDate(document.getElementById('shiftDatePicker')?.value);
+      loadMasterShiftCalendar(document.getElementById('shiftDatePicker')?.value);
+    } else {
+      showToast('Unable to save this roster assignment.', 'error');
+    }
   });
 }
 
@@ -1047,6 +1072,7 @@ async function persistShiftAssignment(shiftKey, employeeId) {
   try {
     if (!employeeId) return false;
     const workDate = document.getElementById('shiftDatePicker')?.value || null;
+    if (!workDate) return false;
     const times = SHIFT_SLOT_TIMES[shiftKey] || SHIFT_SLOT_TIMES.morning;
     const res = await apiFetch('/api/shift-rosters/', {
       method: 'POST',
@@ -1065,6 +1091,66 @@ async function persistShiftAssignment(shiftKey, employeeId) {
   }
 }
 
+function renderShiftEditorSlot(shiftKey, records, employeeById) {
+  const usersList = document.getElementById(`shiftUsers-${shiftKey}`);
+  const badge = document.getElementById(`shiftBadge-${shiftKey}`);
+  if (!usersList) return;
+  usersList.innerHTML = '';
+  records.filter((record) => record.shift_type === shiftKey).forEach((record) => {
+    const employee = employeeById[record.employee] || {};
+    const name = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || employee.email || record.employee || 'Unassigned';
+    const initials = name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+    const row = document.createElement('div');
+    row.className = 'shift-slot-user-row';
+    row.dataset.rosterId = record.id || '';
+    row.innerHTML = `
+      <div class="shift-slot-user-left">
+        <div class="shift-staff-avatar" style="width:28px; height:28px; font-size:11px;">${escapeHtml(initials)}</div>
+        <div><strong style="font-size:13px; color:#0f172a;">${escapeHtml(name)}</strong>
+        <div style="font-size:11px; color:#64748b;">${escapeHtml(employee.role || '')} &bull; ${escapeHtml(shiftKey)}</div></div>
+      </div>
+      <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>`;
+    usersList.appendChild(row);
+  });
+  if (!usersList.children.length) {
+    usersList.innerHTML = '<div class="shift-empty-placeholder">No staff currently assigned</div>';
+  }
+  if (badge) {
+    badge.className = `penpot-badge ${records.some((record) => record.shift_type === shiftKey) ? 'badge-present' : 'badge-absent'}`;
+    badge.textContent = records.some((record) => record.shift_type === shiftKey) ? 'Confirmed' : 'Uncovered';
+  }
+}
+
+async function loadShiftEditorForDate(workDate) {
+  const slots = document.getElementById('shiftSlotsContainer');
+  if (!slots || !workDate) return;
+  ['morning', 'evening', 'night'].forEach((shiftKey) => {
+    const usersList = document.getElementById(`shiftUsers-${shiftKey}`);
+    if (usersList) usersList.innerHTML = '<div class="shift-empty-placeholder">Loading assignments...</div>';
+  });
+  try {
+    const [employeeRes, rosterRes] = await Promise.all([
+      apiFetch('/api/employees/?page_size=100', { headers: { Accept: 'application/json' } }),
+      apiFetch(`/api/shift-rosters/?page_size=100&work_date=${encodeURIComponent(workDate)}`, { headers: { Accept: 'application/json' } }),
+    ]);
+    if (!employeeRes.ok || !rosterRes.ok) throw new Error('editor data unavailable');
+    const employeePayload = await employeeRes.json();
+    const rosterPayload = await rosterRes.json();
+    const employees = Array.isArray(employeePayload) ? employeePayload : employeePayload.results || [];
+    const rosters = (Array.isArray(rosterPayload) ? rosterPayload : rosterPayload.results || [])
+      .filter((record) => record.work_date === workDate);
+    const employeeById = Object.fromEntries(employees.map((employee) => [employee.id, employee]));
+    ['morning', 'evening', 'night'].forEach((shiftKey) => renderShiftEditorSlot(shiftKey, rosters, employeeById));
+    updateShiftCoverageStatus();
+  } catch (_) {
+    ['morning', 'evening', 'night'].forEach((shiftKey) => {
+      const usersList = document.getElementById(`shiftUsers-${shiftKey}`);
+      if (usersList) usersList.innerHTML = '<div class="shift-empty-placeholder">Roster data unavailable</div>';
+    });
+    showToast('Roster editor data could not be loaded.', 'error');
+  }
+}
+
 function focusRosterEditor() {
   const editor = document.getElementById('shiftSlotsContainer');
   if (editor && editor.scrollIntoView) editor.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1072,10 +1158,20 @@ function focusRosterEditor() {
   showToast('Roster editor ready — pick a slot and assign staff.');
 }
 
-function removeShiftStaff(btn) {
+async function removeShiftStaff(btn) {
   const userRow = btn.closest('.shift-slot-user-row');
   const usersList = userRow?.closest('.shift-slot-users-list');
   const slotCard = userRow?.closest('.shift-slot-card');
+  const rosterId = userRow?.dataset.rosterId;
+
+  if (!rosterId) return;
+  try {
+    const res = await apiFetch(`/api/shift-rosters/${rosterId}/`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('delete failed');
+  } catch (_) {
+    showToast('Unable to remove this roster assignment.', 'error');
+    return;
+  }
 
   if (userRow) {
     userRow.style.opacity = '0';
@@ -1094,6 +1190,8 @@ function removeShiftStaff(btn) {
       }
 
       updateShiftCoverageStatus();
+      const workDate = document.getElementById('shiftDatePicker')?.value;
+      loadMasterShiftCalendar(workDate);
       showToast('Employee removed from shift slot.');
     }, 200);
   }
@@ -1131,18 +1229,48 @@ function showToast(message, type) {
   const container = document.getElementById('toastContainer');
   if (!container) return;
 
+  const text = String(message || '').trim();
+  if (!text) return;
+  const duplicate = [...container.querySelectorAll('.toast')].find((toast) => toast.dataset.message === text);
+  if (duplicate) {
+    duplicate.classList.remove('toast-refresh');
+    void duplicate.offsetWidth;
+    duplicate.classList.add('toast-refresh');
+    return;
+  }
+
   const toast = document.createElement('div');
   toast.className = 'toast';
+  toast.dataset.message = text;
   if (type === 'error') toast.style.borderLeft = '4px solid #dc2626';
-  toast.textContent = message;
+  toast.textContent = text;
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'toast-close';
+  close.setAttribute('aria-label', 'Dismiss notification');
+  close.textContent = '×';
+  close.addEventListener('click', () => dismissToast(toast));
+  toast.appendChild(close);
   container.appendChild(toast);
 
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(10px)';
-    toast.style.transition = 'all 0.3s ease';
-    setTimeout(() => toast.remove(), 300);
-  }, 3500);
+  while (container.children.length > 3) {
+    dismissToast(container.firstElementChild, true);
+  }
+
+  toast.__timer = setTimeout(() => dismissToast(toast), 3500);
+}
+
+function dismissToast(toast, immediate = false) {
+  if (!toast || !toast.isConnected) return;
+  clearTimeout(toast.__timer);
+  if (immediate) {
+    toast.remove();
+    return;
+  }
+  toast.style.opacity = '0';
+  toast.style.transform = 'translateY(10px)';
+  toast.style.transition = 'all 0.2s ease';
+  setTimeout(() => toast.remove(), 200);
 }
 
 function switchClaimsTab(tabKey) {
@@ -1159,6 +1287,32 @@ function switchClaimsTab(tabKey) {
   if (pnlPending) pnlPending.style.display = (tabKey === 'pending' ? 'block' : 'none');
   if (pnlHistory) pnlHistory.style.display = (tabKey === 'history' ? 'block' : 'none');
   if (pnlAdvance) pnlAdvance.style.display = (tabKey === 'advance' ? 'block' : 'none');
+  if (tabKey === 'history') claimsPagerGoto('history', claimsPagerState.history || 1);
+}
+
+async function loadClaimsSummary() {
+  try {
+    const [claimsRes, advancesRes] = await Promise.all([
+      apiFetch('/api/expense-claims/?page_size=100', { headers: { Accept: 'application/json' } }),
+      apiFetch('/api/advances/?page_size=100', { headers: { Accept: 'application/json' } }),
+    ]);
+    if (!claimsRes.ok || !advancesRes.ok) throw new Error('summary unavailable');
+    const claimsPayload = await claimsRes.json();
+    const advancesPayload = await advancesRes.json();
+    const claims = Array.isArray(claimsPayload) ? claimsPayload : claimsPayload.results || [];
+    const advances = Array.isArray(advancesPayload) ? advancesPayload : advancesPayload.results || [];
+    const count = (rows, status) => rows.filter((row) => row.status === status).length;
+    const pending = document.getElementById('claimsPendingCount');
+    const approved = document.getElementById('claimsApprovedCount');
+    const rejected = document.getElementById('claimsRejectedCount');
+    const pendingAdvances = document.getElementById('advancesPendingCount');
+    if (pending) pending.textContent = count(claims, 'Pending');
+    if (approved) approved.textContent = count(claims, 'Approved');
+    if (rejected) rejected.textContent = count(claims, 'Rejected');
+    if (pendingAdvances) pendingAdvances.textContent = count(advances, 'Pending');
+  } catch (_) {
+    // The live tables show their own unavailable state.
+  }
 }
 
 function filterClaimsTable(input, tableBodyId) {
@@ -1227,6 +1381,7 @@ async function handleClaimAction(id, action) {
     : `Claim ${id} flagged and marked as rejected.`;
   showToast(message);
   if (typeof updateBatchApproveCount === 'function') updateBatchApproveCount();
+  loadClaimsSummary();
 }
 
 async function batchApproveClaims() {
@@ -1244,6 +1399,7 @@ async function batchApproveClaims() {
     }
   }
   updateBatchApproveCount();
+  loadClaimsSummary();
   showToast(
     approved
       ? `Batch approved ${approved} pending expense claim${approved > 1 ? 's' : ''}.`
@@ -1303,7 +1459,8 @@ async function claimsPagerGoto(which, page) {
   body.dataset.demoHtml = demo;
   body.innerHTML = '<tr><td colspan="7">Loading claims…</td></tr>';
   try {
-    const res = await apiFetch(`/api/expense-claims/?page=${page}&page_size=${CLAIMS_PAGE_SIZE}`);
+    const statusFilter = which === 'pending' ? 'Pending' : 'Approved,Rejected';
+    const res = await apiFetch(`/api/expense-claims/?status=${statusFilter}&page=${page}&page_size=${CLAIMS_PAGE_SIZE}`);
     if (!res.ok) throw new Error('load failed');
     const payload = await res.json();
     const rows = Array.isArray(payload) ? payload : payload.results || [];
@@ -1335,12 +1492,19 @@ function buildClaimRow(c, which, names) {
   const tr = document.createElement('tr');
   tr.id = `claim-row-${id}`;
   tr.setAttribute('data-live', 'true');
+  tr.dataset.claimId = id;
+  tr.dataset.employee = who;
+  tr.dataset.category = String(c.category || 'General Expense');
+  tr.dataset.createdAt = String(c.created_at || '');
+  tr.dataset.title = String(c.title || '');
+  tr.dataset.amount = String(c.amount || '0');
+  tr.dataset.status = String(c.status || 'Pending');
   const pill = `<span class="claims-status-pill ${statusCls}" id="status-${id}">${escapeHtml(String(c.status || 'Pending'))}</span>`;
-  const actions =
+  const actions = statusCls === 'pending' ?
     `<div class="claims-actions-cell" id="actions-${id}">` +
     `<button class="btn-claim-approve" onclick="handleClaimAction('${escapeHtml(id)}', 'Approve')">Approve</button>` +
     `<button class="btn-claim-reject" onclick="handleClaimAction('${escapeHtml(id)}', 'Reject')">Reject</button>` +
-    `</div>`;
+    `</div>` : '<span style="font-size:12px; color:#64748b; font-weight:600;">Processed</span>';
   if (which === 'history') {
     tr.innerHTML =
       `<td><div class="claims-applicant-cell"><div class="claims-avatar">${escapeHtml(claimInitials(who))}</div>` +
@@ -1365,6 +1529,28 @@ function buildClaimRow(c, which, names) {
   return tr;
 }
 
+function exportClaimHistory() {
+  const rows = [['Claim ID', 'Employee', 'Category', 'Submitted', 'Expense Details', 'Amount', 'Status']];
+  const historyRows = document.querySelectorAll('#historyClaimsTableBody tr[data-live="true"]');
+  historyRows.forEach((row) => {
+    rows.push([
+      row.dataset.claimId || '',
+      row.dataset.employee || '',
+      row.dataset.category || '',
+      fmtClaimDate(row.dataset.createdAt || ''),
+      row.dataset.title || '',
+      row.dataset.amount || '0',
+      row.dataset.status || '',
+    ]);
+  });
+  if (rows.length === 1) {
+    showToast('No live claim history is available to export.', 'error');
+    return;
+  }
+  downloadCsv(`kumon_ems_claim_history_${new Date().toISOString().slice(0, 10)}.csv`, rows);
+  showToast(`Exported ${rows.length - 1} claim history record${rows.length === 2 ? '' : 's'}.`);
+}
+
 // Advances pager (D34): ?page=N against /api/advances/, same register row
 // shape as the static demo markup, which stays as the offline fallback.
 let advancesPagerPage = 1;
@@ -1382,11 +1568,11 @@ function buildAdvanceRow(a, names) {
   tr.id = `adv-row-${id}`;
   tr.setAttribute('data-live', 'true');
   const pill = `<span class="claims-status-pill ${statusCls}" id="status-${id}">${escapeHtml(String(a.status || 'Pending'))}</span>`;
-  const actions =
+  const actions = String(a.status || 'Pending').toLowerCase() === 'pending' ?
     `<div class="claims-actions-cell" id="actions-${id}">` +
-    `<button class="btn-claim-approve" onclick="handleClaimAction('${escapeHtml(id)}', 'Approve')">Approve</button>` +
-    `<button class="btn-claim-reject" onclick="handleClaimAction('${escapeHtml(id)}', 'Reject')">Reject</button>` +
-    `</div>`;
+    `<button class="btn-claim-approve" onclick="handleAdvanceAction('${escapeHtml(id)}', 'Approved')">Approve</button>` +
+    `<button class="btn-claim-reject" onclick="handleAdvanceAction('${escapeHtml(id)}', 'Rejected')">Reject</button>` +
+    `</div>` : '<span style="font-size:12px; color:#64748b; font-weight:600;">Processed</span>';
   tr.innerHTML =
     `<td><div class="claims-applicant-cell"><div class="claims-avatar">${escapeHtml(claimInitials(who))}</div>` +
     `<div class="claims-applicant-info"><strong>${escapeHtml(who)} &nbsp;<span style="color:#64748b; font-weight:500;">[${escapeHtml(id.slice(0, 12))}]</span></strong>` +
@@ -1397,6 +1583,21 @@ function buildAdvanceRow(a, names) {
     `<td>—</td>` +
     `<td>${pill}</td><td>${actions}</td>`;
   return tr;
+}
+
+async function handleAdvanceAction(id, status) {
+  try {
+    const res = await apiFetch(`/api/advances/${encodeURIComponent(id)}/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ decision: status }),
+    });
+    if (!res.ok) throw new Error('advance decision failed');
+    await advancesPagerGoto(advancesPagerPage);
+    loadClaimsSummary();
+    showToast(`Salary advance ${status.toLowerCase()}.`);
+  } catch (_) {
+    showToast('Salary advance status could not be saved.', 'error');
+  }
 }
 
 async function advancesPagerGoto(page) {
@@ -1541,9 +1742,19 @@ async function loadLeaveRegister() {
     if (!res.ok) throw new Error('leave register unavailable');
     const payload = await res.json();
     const rows = Array.isArray(payload) ? payload : payload.results || [];
+    const today = new Date().toISOString().slice(0, 10);
+    const pendingCount = rows.filter((leave) => leave.status === 'Pending').length;
+    const approvedCount = rows.filter((leave) => leave.status === 'Approved').length;
+    const onLeaveToday = rows.filter((leave) => leave.status === 'Approved' && leave.start_date <= today && leave.end_date >= today).length;
+    const pendingTarget = document.getElementById('leavePendingCount');
+    const approvedTarget = document.getElementById('leaveApprovedCount');
+    const todayTarget = document.getElementById('leaveTodayCount');
+    if (pendingTarget) pendingTarget.textContent = pendingCount;
+    if (approvedTarget) approvedTarget.textContent = approvedCount;
+    if (todayTarget) todayTarget.textContent = onLeaveToday;
     body.innerHTML = '';
     if (!rows.length) {
-      body.innerHTML = '<tr><td colspan="5">No leave applications yet.</td></tr>';
+      body.innerHTML = '<tr><td colspan="6">No leave applications yet.</td></tr>';
       return;
     }
     rows.forEach((leave) => {
@@ -1553,6 +1764,9 @@ async function loadLeaveRegister() {
         : status.toLowerCase() === 'rejected' ? 'badge-rejected' : 'badge-pending';
       const type = leave.leave_type || 'Personal';
       const row = document.createElement('tr');
+      const actions = status.toLowerCase() === 'pending'
+        ? `<div class="claims-actions-cell"><button class="btn-claim-approve" onclick="handleLeaveAction('${escapeHtml(leave.id)}', 'Approved')">Approve</button><button class="btn-claim-reject" onclick="handleLeaveAction('${escapeHtml(leave.id)}', 'Rejected')">Reject</button></div>`
+        : '<span style="font-size:12px; color:#64748b; font-weight:600;">Processed</span>';
       row.innerHTML =
         `<td><div class="bold-title">${escapeHtml(leave.employee_name || 'Unknown employee')}</div>` +
         `<div class="sub-role">${escapeHtml(leave.employee_role || '')}` +
@@ -1561,11 +1775,27 @@ async function loadLeaveRegister() {
         `<td><div class="bold-title">${leaveDuration(leave.start_date, leave.end_date)}</div>` +
         `<div class="sub-role">${formatLeaveDate(leave.start_date)} - ${formatLeaveDate(leave.end_date)}</div></td>` +
         `<td>${formatLeaveDate((leave.created_at || '').slice(0, 10))}</td>` +
-        `<td><span class="penpot-badge ${statusClass}">● ${escapeHtml(status)}</span></td>`;
+        `<td><span class="penpot-badge ${statusClass}">● ${escapeHtml(status)}</span></td>` +
+        `<td>${actions}</td>`;
       body.appendChild(row);
     });
   } catch (error) {
-    body.innerHTML = '<tr><td colspan="5">Unable to load leave applications.</td></tr>';
+    body.innerHTML = '<tr><td colspan="6">Unable to load leave applications.</td></tr>';
+  }
+}
+
+async function handleLeaveAction(id, status) {
+  try {
+    const res = await apiFetch(`/api/leaves/${encodeURIComponent(id)}/`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+    if (!res.ok) throw new Error('leave decision failed');
+    await loadLeaveRegister();
+    loadDashboardSummary();
+    showToast(`Leave request ${status.toLowerCase()}.`);
+  } catch (_) {
+    showToast('Leave request status could not be saved.', 'error');
   }
 }
 
@@ -1616,6 +1846,8 @@ function handleApplyLeave(e) {
       closeLeaveModal();
       showToast('Leave request submitted for HR approval.');
       form.reset();
+      loadLeaveRegister();
+      loadDashboardSummary();
     })
     .catch(() => showToast('Unable to file leave. Try again later.', 'error'));
 }
@@ -1667,6 +1899,46 @@ function filterInboxes(input) {
   });
 }
 
+async function loadEmployeeInbox() {
+  const list = document.getElementById('inboxConversationsList');
+  if (!list) return;
+  try {
+    const response = await apiFetch('/api/employees/?page_size=100&is_active=true', {
+      headers: { Accept: 'application/json' },
+    });
+    if (!response.ok) throw new Error('employee inbox unavailable');
+    const payload = await response.json();
+    const employees = (Array.isArray(payload) ? payload : payload.results || [])
+      .filter((employee) => employee.is_active !== false);
+    list.innerHTML = '';
+    if (!employees.length) {
+      list.innerHTML = '<div class="card-sub">No active employees in the roster.</div>';
+      return;
+    }
+    const avatarClasses = ['avatar-blue', 'avatar-yellow', 'avatar-green', 'avatar-purple', 'avatar-slate'];
+    employees.forEach((employee, index) => {
+      const name = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || employee.email || 'Employee';
+      const initials = name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+      const role = employee.role || 'Employee';
+      const tile = document.createElement('div');
+      tile.className = `inbox-user-tile${index === 0 ? ' active' : ''}`;
+      tile.innerHTML =
+        `<div class="avatar-circle-sm ${avatarClasses[index % avatarClasses.length]}">${escapeHtml(initials)}</div>` +
+        `<div class="inbox-tile-content"><div class="inbox-tile-top"><strong>${escapeHtml(name)}</strong>` +
+        `<span class="inbox-timestamp">Roster</span></div><span class="inbox-snippet">${escapeHtml(role)}</span></div>`;
+      tile.addEventListener('click', () => selectInboxUser(tile, name, initials, role, String(employee.id)));
+      list.appendChild(tile);
+      if (index === 0) {
+        activeConversationKey = String(employee.id);
+        selectInboxUser(tile, name, initials, role, String(employee.id), false);
+      }
+    });
+  } catch (_) {
+    list.innerHTML = '<div class="card-sub">Employee conversations are unavailable.</div>';
+    showToast('Employee roster could not be loaded for Messages.', 'error');
+  }
+}
+
 function selectChannel(elem, channelKey) {
   activeConversationKey = channelKey;
   document.querySelectorAll('.channel-list-item, .inbox-user-tile').forEach(el => el.classList.remove('active'));
@@ -1698,7 +1970,7 @@ function messageOnSlack(fullName) {
   if (hit) hit.click();
   else showToast('Slack is not connected — continue here in the chat tab.');
 }
-function selectInboxUser(elem, userName, initials, userRole, key) {
+function selectInboxUser(elem, userName, initials, userRole, key, notify = true) {
   activeConversationKey = key;
   document.querySelectorAll('.channel-list-item, .inbox-user-tile').forEach(el => el.classList.remove('active'));
   elem.classList.add('active');
@@ -1719,7 +1991,7 @@ function selectInboxUser(elem, userName, initials, userRole, key) {
   if (status) status.textContent = `● ${userRole} • Online Now`;
   if (input) input.placeholder = `Type a message to ${userName}...`;
   loadMessagesForConversation(key);
-  showToast(`Active chat: ${userName}`);
+  if (notify) showToast(`Active chat: ${userName}`);
 }
 
 async function loadMessagesForConversation(conversationKey) {
@@ -1727,7 +1999,8 @@ async function loadMessagesForConversation(conversationKey) {
   if (!stream) return;
 
   const loadVersion = ++messagesLoadVersion;
-  document.querySelectorAll('[data-persisted-message="true"]').forEach(message => message.remove());
+  const demoMarkup = stream.innerHTML;
+  stream.innerHTML = '<div class="chat-loading-state">Loading messages...</div>';
   try {
     const response = await apiFetch(`/api/messages/?conversation=${encodeURIComponent(conversationKey)}`, {
       cache: 'no-store'
@@ -1736,9 +2009,14 @@ async function loadMessagesForConversation(conversationKey) {
     const payload = await response.json();
     const messages = Array.isArray(payload) ? payload : payload.results || [];
     if (loadVersion !== messagesLoadVersion) return;
+    stream.innerHTML = '';
+    if (!messages.length) {
+      stream.innerHTML = '<div class="chat-loading-state">No messages in this conversation yet.</div>';
+    }
     messages.forEach(message => appendPersistedMessage(stream, message));
     stream.scrollTop = stream.scrollHeight;
   } catch (error) {
+    stream.innerHTML = demoMarkup;
     showToast('Messages could not be loaded.');
   }
 }
@@ -2076,8 +2354,7 @@ if (typeof window.showToast !== 'function') {
   };
 }
 
-// Public aggregate counts for the landing page; on failure the static demo
-// values stay but the badge + error toast say so LOUDLY (no silent fallback).
+// Public aggregate counts for the landing page.
 function loadDashboardSummary() {
   apiFetch('/api/dashboard-summary/', { headers: { Accept: 'application/json' } })
     .then((res) => {
@@ -2091,18 +2368,65 @@ function loadDashboardSummary() {
       );
       if (values.length >= 4) {
         values[0].textContent = data.total_employees;
-        // values[1] (applicants) has no API source; leave the demo value.
-        values[2].textContent = String(
-          (data.approved_leaves || 0) + (data.pending_leaves || 0)
-        ).padStart(2, '0');
+        values[1].textContent = data.active_employees;
+        values[2].textContent = String(data.approved_leaves || 0).padStart(2, '0');
         values[3].textContent = String(data.pending_leaves || 0).padStart(2, '0');
       }
+      const attendanceCount = document.getElementById('dashboardAttendanceCount');
+      const leaveCount = document.getElementById('dashboardLeaveCount');
+      const claimsCount = document.getElementById('dashboardClaimsCount');
+      if (attendanceCount) attendanceCount.textContent = data.attendance_today || 0;
+      if (leaveCount) leaveCount.textContent = data.approved_leaves || 0;
+      if (claimsCount) claimsCount.textContent = data.claims_count || 0;
     })
     .catch((err) => {
       if (err && err.message === 'auth') return; // apiFetch already redirected
       setApiMode('demo');
-      showToast('API unreachable — showing demo data', 'error');
+      showToast('Dashboard data could not be loaded.', 'error');
     });
+}
+
+async function loadDashboardAttendance() {
+  const body = document.getElementById('dashboardAttendanceTableBody');
+  if (!body) return;
+  const today = new Date().toISOString().slice(0, 10);
+  try {
+    const [attendanceRes, employeeRes, departmentRes] = await Promise.all([
+      apiFetch('/api/attendance/?page_size=100', { headers: { Accept: 'application/json' } }),
+      apiFetch('/api/employees/?page_size=100', { headers: { Accept: 'application/json' } }),
+      apiFetch('/api/departments/?page_size=100', { headers: { Accept: 'application/json' } }),
+    ]);
+    if (!attendanceRes.ok || !employeeRes.ok || !departmentRes.ok) throw new Error('dashboard attendance unavailable');
+    const attendancePayload = await attendanceRes.json();
+    const employeePayload = await employeeRes.json();
+    const departmentPayload = await departmentRes.json();
+    const attendance = (Array.isArray(attendancePayload) ? attendancePayload : attendancePayload.results || [])
+      .filter((record) => record.date === today);
+    const employees = Array.isArray(employeePayload) ? employeePayload : employeePayload.results || [];
+    const departments = Array.isArray(departmentPayload) ? departmentPayload : departmentPayload.results || [];
+    const employeeById = Object.fromEntries(employees.map((employee) => [employee.id, employee]));
+    const departmentById = Object.fromEntries(departments.map((department) => [department.id, department.name]));
+    body.innerHTML = '';
+    if (!attendance.length) {
+      body.innerHTML = '<tr><td colspan="5">No attendance records for today.</td></tr>';
+      return;
+    }
+    attendance.slice(0, 6).forEach((record) => {
+      const employee = employeeById[record.employee] || {};
+      const name = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || employee.email || record.employee;
+      const status = record.clock_out ? 'Complete' : 'Clocked in';
+      const row = document.createElement('tr');
+      row.innerHTML =
+        `<td class="bold-title">${escapeHtml(name)}</td>` +
+        `<td>${escapeHtml(departmentById[employee.department] || '—')}</td>` +
+        `<td>${escapeHtml(employee.role || '—')}</td>` +
+        `<td><span class="penpot-badge ${record.clock_out ? 'badge-pending' : 'badge-present'}">${status}</span></td>` +
+        `<td>${escapeHtml(fmtTime(record.clock_in))}</td>`;
+      body.appendChild(row);
+    });
+  } catch (error) {
+    body.innerHTML = '<tr><td colspan="5">Dashboard attendance is unavailable.</td></tr>';
+  }
 }
 
 // Live employee directory keyed by lowercase full name (reused by the leave
@@ -2280,6 +2604,7 @@ async function loadEmployeeOptions(selectId) {
 function loadEmployeeDirectory() {
   const list = document.getElementById('employeeRosterList');
   if (!list) return;
+  list.innerHTML = '<div class="directory-empty-state">Loading employees from the database...</div>';
   apiFetch('/api/employees/', { headers: { Accept: 'application/json' } })
     .then((res) => {
       if (!res.ok) throw new Error('directory unavailable');
@@ -2332,7 +2657,8 @@ function loadEmployeeDirectory() {
     .catch((err) => {
       if (err && err.message === 'auth') return; // apiFetch already redirected
       setApiMode('demo');
-      showToast('API unreachable — showing demo data', 'error');
+      list.innerHTML = '<div class="directory-empty-state">Employee data is unavailable.</div>';
+      showToast('Employee data could not be loaded.', 'error');
     });
 }
 
@@ -2363,7 +2689,6 @@ function fmtTime(iso) {
 async function loadAttendanceView() {
   const body = document.getElementById('attendanceTableBody');
   if (!body) return;
-  const demo = body.innerHTML;
   body.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
   try {
     const res = await apiFetch('/api/attendance/?page_size=50');
@@ -2390,7 +2715,47 @@ async function loadAttendanceView() {
       });
     }
     setApiMode('live');
-  } catch (e) { body.innerHTML = demo; setApiMode('demo'); showToast('Attendance unreachable — showing demo data', 'error'); }
+  } catch (e) {
+    body.innerHTML = '<tr><td colspan="5">Attendance data is unavailable.</td></tr>';
+    setApiMode('demo');
+    showToast('Attendance data could not be loaded.', 'error');
+  }
+}
+
+async function submitAttendanceCheckIn(event) {
+  event.preventDefault();
+  const nameInput = document.getElementById('attendanceEmployeeName');
+  const passwordInput = document.getElementById('attendancePassword');
+  const button = document.getElementById('attendanceCheckInButton');
+  const status = document.getElementById('attendanceCheckInStatus');
+  const csrf = document.cookie.split('; ').find((cookie) => cookie.startsWith('csrftoken='))?.split('=')[1];
+  if (!nameInput || !passwordInput || !button || !status) return;
+
+  button.disabled = true;
+  status.textContent = 'Checking your details...';
+  try {
+    const response = await fetch('/api/attendance/check-in/', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', ...(csrf ? { 'X-CSRFToken': csrf } : {}) },
+      body: JSON.stringify({ name: nameInput.value.trim(), password: passwordInput.value }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Unable to record attendance.');
+    status.textContent = data.already_present
+      ? `${data.employee} is already marked present today.`
+      : `${data.employee} is now marked present.`;
+    status.style.color = '#166534';
+    passwordInput.value = '';
+    loadDashboardSummary();
+    loadDashboardAttendance();
+    loadAttendanceView();
+  } catch (error) {
+    status.textContent = error.message;
+    status.style.color = '#b91c1c';
+  } finally {
+    button.disabled = false;
+  }
 }
 
 async function loadShiftRosterView() {
