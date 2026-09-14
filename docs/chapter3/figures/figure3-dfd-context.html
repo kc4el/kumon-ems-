@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:16px;background:#fff;color:#111;font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  h2{margin:0 0 2px;font-size:19px;color:#111}
+  p.sub{margin:0 0 12px;color:#555;font-size:12px}
+  svg{width:100%;height:auto;display:block;background:#fff}
+  .proc{fill:#fff;stroke:#333;stroke-width:1.5}
+  .ent{fill:#f2f2f2;stroke:#333;stroke-width:1.5}
+  .t{fill:#111}
+  .mut{fill:#555}
+  .b{font-weight:700}
+  .flow{stroke:#111;stroke-width:1.6;fill:none}
+  .lbl{font-size:11px}
+</style></head><body>
+<h2>Figure 3 — Data Flow Diagram, Level 0 (Context)</h2>
+<p class="sub">DFD context · one process bubble · three external entities · Supabase Auth is an external system, not part of the bubble</p>
+<svg viewBox="0 0 1120 520" role="img" aria-label="Kumon EMS level 0 data flow diagram">
+  <defs>
+    <marker id="ah3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" style="fill:#111"/>
+    </marker>
+  </defs>
+
+  <!-- External entities -->
+  <rect class="ent" x="24" y="60" width="200" height="120" rx="6"/>
+  <text class="t b" x="124" y="112" font-size="14" text-anchor="middle">HR Admin</text>
+  <text class="mut" x="124" y="132" font-size="11" text-anchor="middle">external entity</text>
+  <text class="mut" x="124" y="150" font-size="11" text-anchor="middle">manages records,</text>
+  <text class="mut" x="124" y="166" font-size="11" text-anchor="middle">payroll, rosters</text>
+
+  <rect class="ent" x="24" y="330" width="200" height="120" rx="6"/>
+  <text class="t b" x="124" y="382" font-size="14" text-anchor="middle">Employee</text>
+  <text class="mut" x="124" y="402" font-size="11" text-anchor="middle">external entity</text>
+  <text class="mut" x="124" y="420" font-size="11" text-anchor="middle">clock in/out,</text>
+  <text class="mut" x="124" y="436" font-size="11" text-anchor="middle">files leaves/claims</text>
+
+  <rect class="ent" x="896" y="195" width="200" height="130" rx="6"/>
+  <text class="t b" x="996" y="247" font-size="14" text-anchor="middle">Supabase Auth</text>
+  <text class="mut" x="996" y="267" font-size="11" text-anchor="middle">external system</text>
+  <text class="mut" x="996" y="285" font-size="11" text-anchor="middle">identity only —</text>
+  <text class="mut" x="996" y="303" font-size="11" text-anchor="middle">no HR data stored</text>
+
+  <!-- Central process -->
+  <circle class="proc" cx="560" cy="260" r="150"/>
+  <text class="t b" x="560" y="240" font-size="20" text-anchor="middle">0</text>
+  <text class="t b" x="560" y="268" font-size="16" text-anchor="middle">Kumon EMS</text>
+  <text class="mut" x="560" y="290" font-size="11" text-anchor="middle">Django 6.1 + DRF + SQLite/PostgreSQL</text>
+
+  <!-- Flows: HR Admin -->
+  <line class="flow" x1="224" y1="110" x2="420" y2="190" marker-end="url(#ah3)"/>
+  <text class="t lbl" x="300" y="140">employee details, payroll posts, rosters</text>
+  <line class="flow" x1="420" y1="230" x2="224" y2="150" marker-end="url(#ah3)"/>
+  <text class="t lbl" x="300" y="205">records, summaries, 409/400 errors</text>
+
+  <!-- Flows: Employee -->
+  <line class="flow" x1="224" y1="380" x2="420" y2="320" marker-end="url(#ah3)"/>
+  <text class="t lbl" x="300" y="365">clock-in/out, leave + claim requests</text>
+  <line class="flow" x1="420" y1="290" x2="224" y2="410" marker-end="url(#ah3)"/>
+  <text class="t lbl" x="300" y="345">pay slips, leave status, messages</text>
+
+  <!-- Flows: Supabase -->
+  <line class="flow" x1="710" y1="230" x2="892" y2="230" marker-end="url(#ah3)"/>
+  <text class="t lbl" x="800" y="220" text-anchor="middle">create_user / delete_user</text>
+  <line class="flow" x1="892" y1="290" x2="710" y2="290" marker-end="url(#ah3)"/>
+  <text class="t lbl" x="800" y="308" text-anchor="middle">user id / auth id</text>
+
+  <text class="mut lbl" x="24" y="492">Symbols: DFD Gane–Sarson — rectangle = external entity · circle = process · arrow = data flow. Datastores appear at Level 1, not here.</text>
+</svg>
+</body></html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:16px;background:#fff;color:#111;font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  h2{margin:0 0 2px;font-size:19px;color:#111}
+  p.sub{margin:0 0 12px;color:#555;font-size:12px}
+  svg{width:100%;height:auto;display:block;background:#fff}
+  .lane{fill:#fafafa;stroke:#999;stroke-width:1}
+  .node{fill:#fff;stroke:#333;stroke-width:1.5}
+  .dec{fill:#fff;stroke:#333;stroke-width:1.5}
+  .t{fill:#111}
+  .mut{fill:#555}
+  .b{font-weight:700}
+  .flow{stroke:#111;stroke-width:1.6;fill:none}
+  .lbl{font-size:11.5px}
+  .start{fill:#111}
+</style></head><body>
+<h2>Figure 5 — Activity Diagram: Clock-In → Clock-Out → Payroll</h2>
+<p class="sub">UML activity with swimlanes · SOP 2 lifecycle · duplicate clock-in → 409 · clock-out with no open record → 404 · payroll stores computed net_pay</p>
+<svg viewBox="0 0 1120 640" role="img" aria-label="Attendance to payroll activity diagram">
+  <defs>
+    <marker id="ah5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" style="fill:#111"/>
+    </marker>
+  </defs>
+
+  <!-- Swimlanes -->
+  <rect class="lane" x="24" y="50" width="340" height="540"/>
+  <rect class="lane" x="364" y="50" width="392" height="540"/>
+  <rect class="lane" x="756" y="50" width="340" height="540"/>
+  <text class="t b" x="194" y="74" font-size="14" text-anchor="middle">Employee</text>
+  <text class="t b" x="560" y="74" font-size="14" text-anchor="middle">System (Django)</text>
+  <text class="t b" x="926" y="74" font-size="14" text-anchor="middle">Payroll</text>
+
+  <!-- Flow -->
+  <circle class="start" cx="194" cy="110" r="9"/>
+  <line class="flow" x1="194" y1="119" x2="194" y2="145" marker-end="url(#ah5)"/>
+  <rect class="node" x="104" y="145" width="180" height="44" rx="8"/>
+  <text class="t lbl" x="194" y="163" text-anchor="middle">POST attendance/</text>
+  <text class="t lbl" x="194" y="180" text-anchor="middle">(clock in)</text>
+  <line class="flow" x1="284" y1="167" x2="440" y2="167" marker-end="url(#ah5)"/>
+  <polygon class="dec" points="560,140 660,190 560,240 460,190"/>
+  <text class="t lbl" x="560" y="184" text-anchor="middle">duplicate</text>
+  <text class="t lbl" x="560" y="200" text-anchor="middle">employee-date?</text>
+  <line class="flow" x1="560" y1="140" x2="560" y2="105" marker-end="url(#ah5)"/>
+  <rect class="node" x="460" y="61" width="200" height="44" rx="8"/>
+  <text class="t lbl" x="560" y="79" text-anchor="middle">[yes] 409 Conflict,</text>
+  <text class="t lbl" x="560" y="96" text-anchor="middle">row rejected</text>
+  <line class="flow" x1="660" y1="190" x2="740" y2="190" marker-end="url(#ah5)"/>
+  <rect class="node" x="740" y="168" width="180" height="44" rx="8"/>
+  <text class="t lbl" x="830" y="186" text-anchor="middle">[no] create open row</text>
+  <text class="t lbl" x="830" y="203" text-anchor="middle">clock_out = null</text>
+
+  <line class="flow" x1="194" y1="189" x2="194" y2="270" marker-end="url(#ah5)"/>
+  <rect class="node" x="104" y="270" width="180" height="44" rx="8"/>
+  <text class="t lbl" x="194" y="288" text-anchor="middle">POST attendance/</text>
+  <text class="t lbl" x="194" y="305" text-anchor="middle">clock-out/</text>
+  <line class="flow" x1="284" y1="292" x2="440" y2="292" marker-end="url(#ah5)"/>
+  <polygon class="dec" points="560,265 660,315 560,365 460,315"/>
+  <text class="t lbl" x="560" y="309" text-anchor="middle">open record</text>
+  <text class="t lbl" x="560" y="325" text-anchor="middle">exists?</text>
+  <line class="flow" x1="460" y1="315" x2="380" y2="315" marker-end="url(#ah5)"/>
+  <rect class="node" x="180" y="293" width="200" height="44" rx="8"/>
+  <text class="t lbl" x="280" y="311" text-anchor="middle">[no] 404, nothing stamped</text>
+  <text class="t lbl" x="280" y="328" text-anchor="middle">end of this attempt</text>
+  <line class="flow" x1="560" y1="365" x2="560" y2="400" marker-end="url(#ah5)"/>
+  <rect class="node" x="460" y="400" width="200" height="44" rx="8"/>
+  <text class="t lbl" x="560" y="418" text-anchor="middle">[yes] stamp clock_out</text>
+  <text class="t lbl" x="560" y="435" text-anchor="middle">200 OK</text>
+
+  <line class="flow" x1="660" y1="422" x2="840" y2="422" marker-end="url(#ah5)"/>
+  <rect class="node" x="800" y="400" width="252" height="44" rx="8"/>
+  <text class="t lbl" x="926" y="418" text-anchor="middle">PayrollRun groups items;</text>
+  <text class="t lbl" x="926" y="435" text-anchor="middle">net_pay = base − deductions</text>
+  <line class="flow" x1="926" y1="444" x2="926" y2="520" marker-end="url(#ah5)"/>
+  <rect class="node" x="826" y="520" width="200" height="44" rx="8"/>
+  <text class="t lbl" x="926" y="538" text-anchor="middle">stored per period,</text>
+  <text class="t lbl" x="926" y="555" text-anchor="middle">auditable</text>
+
+  <text class="mut lbl" x="24" y="615">Symbols: UML activity — rounded box = action · diamond = decision · black dot = start · columns = swimlanes (who does what).</text>
+</svg>
+</body></html>

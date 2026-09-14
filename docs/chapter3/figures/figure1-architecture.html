@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:20px;background:#fff;color:#202124;font:14px/1.5 "Google Sans",Roboto,system-ui,-apple-system,"Segoe UI",sans-serif}
+  .wrap{max-width:1080px;margin:0 auto}
+  h2{margin:0;font-size:22px;font-weight:600;color:#1a73e8}
+  p.sub{margin:4px 0 18px;color:#5f6368;font-size:13px}
+  .flow{display:flex;align-items:stretch;gap:0}
+  .col{display:flex;flex-direction:column;gap:12px}
+  .col-side{width:230px;flex:none}
+  .col-mid{flex:1;min-width:0}
+  .arrow{align-self:center;padding:0 10px;color:#1a73e8;font-size:26px;font-weight:700}
+  .arrow small{display:block;font-size:10px;color:#5f6368;font-weight:400;text-align:center}
+  .card{background:#fff;border:1px solid #dadce0;border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(60,64,67,.12)}
+  .card-h{background:#1a73e8;color:#fff;font-weight:600;font-size:13px;padding:9px 14px}
+  .card-b{padding:12px 14px;font-size:12.5px}
+  .card-b .big{font-size:15px;font-weight:600;color:#202124;margin:2px 0 6px}
+  .card-b .mut{color:#5f6368}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+  .chip{background:#e8f0fe;color:#1a73e8;border-radius:999px;padding:3px 10px;font-size:11.5px;font-weight:500}
+  .row{display:flex;gap:8px;align-items:flex-start;margin:6px 0}
+  .dot{flex:none;width:8px;height:8px;border-radius:50%;background:#1a73e8;margin-top:5px}
+  .ext{border-style:dashed;background:#f8f9fa}
+  .ext .card-h{background:#5f6368}
+  .db{background:linear-gradient(180deg,#e8f0fe,#fff);text-align:center;padding:14px}
+  .db .cyl{font-size:34px}
+  .future{opacity:.85}
+  .legend{margin-top:14px;display:flex;gap:18px;flex-wrap:wrap;font-size:11.5px;color:#5f6368}
+  .legend b{color:#202124}
+  .foot{margin-top:8px;font-size:11.5px;color:#5f6368}
+</style></head><body>
+<div class="wrap">
+<h2>Kumon EMS — How the System Fits Together</h2>
+<p class="sub">One picture: who uses it → what the app does → where data lives. Django 6.1 · DRF · SQLite / PostgreSQL · Supabase Auth</p>
+<div class="flow">
+  <div class="col col-side">
+    <div class="card">
+      <div class="card-h">Admin browser</div>
+      <div class="card-b">
+        <div class="big">Dashboard</div>
+        <div class="mut">Sign in, view staff, approve requests</div>
+        <div class="row"><span class="dot"></span><span>Server-rendered page + JavaScript</span></div>
+        <div class="row"><span class="dot"></span><span>Guided tour + LIVE / DEMO badge</span></div>
+        <div class="row"><span class="dot"></span><span>Session cookie + CSRF</span></div>
+      </div>
+    </div>
+    <div class="card ext future">
+      <div class="card-h">Employee mobile (future)</div>
+      <div class="card-b"><span class="mut">Same API, token login, sees only own rows</span></div>
+    </div>
+  </div>
+  <div class="arrow">→<small>HTML<br>JSON</small></div>
+  <div class="col col-mid">
+    <div class="card">
+      <div class="card-h">Django app — the brain (43 API routes)</div>
+      <div class="card-b">
+        <div class="mut">Pages: <b style="color:#202124">/</b> dashboard · <b style="color:#202124">/login</b></div>
+        <div class="chips">
+          <span class="chip">People</span><span class="chip">Time &amp; Shifts</span><span class="chip">Pay</span><span class="chip">Messages</span><span class="chip">System</span>
+        </div>
+        <div class="row"><span class="dot"></span><span><b>Rules live here:</b> blocks double clock-in, duplicate email, overlapping shifts; computes net pay; conflicts answer 409</span></div>
+        <div class="row"><span class="dot"></span><span><b>Auto side-effects:</b> every approval writes an audit row + a notification (leave, shift, payroll, attendance)</span></div>
+        <div class="row"><span class="dot"></span><span><b>Data shapes:</b> 19 tables, page size 10, one <b>{“error”}</b> format for failures</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="arrow">→<small>ORM<br>reads/writes</small></div>
+  <div class="col col-side">
+    <div class="card">
+      <div class="card-b db">
+        <div class="cyl">🗄️</div>
+        <div class="big">Database</div>
+        <div class="mut">SQLite file on the office PC.<br>PostgreSQL when <b>DB_HOST</b> is set.</div>
+      </div>
+    </div>
+    <div class="card ext">
+      <div class="card-h">Supabase Auth (outside)</div>
+      <div class="card-b"><span class="mut">Holds logins only — no HR data. Server calls it on onboarding; undoes it if saving fails.</span></div>
+    </div>
+  </div>
+</div>
+<div class="legend"><span><b>→</b> normal call</span><span><b>┄</b> server-only side call (never from browser)</span><span>Auth: staff see all · employees see own rows · purge is staff-only</span></div>
+<p class="foot">Example: onboarding → app creates the login in Supabase → saves the employee row → if saving fails, deletes the login again so nothing is half-done.</p>
+</div>
+</body></html>

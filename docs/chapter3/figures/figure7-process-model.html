@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:16px;background:#fff;color:#111;font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  h2{margin:0 0 2px;font-size:19px;color:#111}
+  p.sub{margin:0 0 12px;color:#555;font-size:12px}
+  svg{width:100%;height:auto;display:block;background:#fff}
+  .phase{fill:#fff;stroke:#333;stroke-width:1.5}
+  .sprint{fill:#eef4ee;stroke:#333;stroke-width:1.2}
+  .gate{fill:#fff8e6;stroke:#333;stroke-width:1.2}
+  .t{fill:#111}
+  .mut{fill:#555}
+  .b{font-weight:700}
+  .flow{stroke:#111;stroke-width:1.6;fill:none}
+  .lbl{font-size:11.5px}
+</style></head><body>
+<h2>Figure 7 — Development Process Model (Hybrid Waterfall + Sprints)</h2>
+<p class="sub">SDLC process model · five sequential Waterfall phases · sprint teams work in parallel inside phases · diamond = integration checkpoint (phase gate)</p>
+<svg viewBox="0 0 1120 560" role="img" aria-label="Hybrid waterfall sprint process model">
+  <defs>
+    <marker id="ah7" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" style="fill:#111"/>
+    </marker>
+  </defs>
+
+  <!-- Phase 1 -->
+  <rect class="phase" x="24" y="60" width="180" height="380" rx="8"/>
+  <text class="t b" x="114" y="86" font-size="13" text-anchor="middle">1 · Requirements</text>
+  <text class="mut lbl" x="114" y="106" text-anchor="middle">SOP → module contracts</text>
+  <rect class="sprint" x="40" y="125" width="148" height="60" rx="6"/>
+  <text class="t lbl" x="114" y="148" text-anchor="middle">records + dashboard</text>
+  <rect class="sprint" x="40" y="195" width="148" height="60" rx="6"/>
+  <text class="t lbl" x="114" y="218" text-anchor="middle">attendance + leave</text>
+  <rect class="sprint" x="40" y="265" width="148" height="60" rx="6"/>
+  <text class="t lbl" x="114" y="288" text-anchor="middle">roster · payroll · auth</text>
+  <text class="mut lbl" x="114" y="350" text-anchor="middle">teams split the work,</text>
+  <text class="mut lbl" x="114" y="368" text-anchor="middle">same phase, in parallel</text>
+  <text class="mut lbl" x="114" y="410" text-anchor="middle">each sprint ends at the gate →</text>
+
+  <!-- Gate -->
+  <polygon class="gate" points="252,200 302,250 252,300 202,250"/>
+  <text class="t lbl" x="252" y="244" text-anchor="middle">gate:</text>
+  <text class="t lbl" x="252" y="260" text-anchor="middle">contracts</text>
+  <text class="t lbl" x="252" y="276" text-anchor="middle">agreed?</text>
+
+  <!-- Phase 2 -->
+  <rect class="phase" x="330" y="60" width="180" height="380" rx="8"/>
+  <text class="t b" x="420" y="86" font-size="13" text-anchor="middle">2 · Design</text>
+  <text class="mut lbl" x="420" y="106" text-anchor="middle">architecture + schema</text>
+  <rect class="sprint" x="346" y="125" width="148" height="60" rx="6"/>
+  <text class="t lbl" x="420" y="148" text-anchor="middle">Fig 1–2, endpoints</text>
+  <rect class="sprint" x="346" y="195" width="148" height="60" rx="6"/>
+  <text class="t lbl" x="420" y="218" text-anchor="middle">12-table schema</text>
+  <text class="mut lbl" x="420" y="350" text-anchor="middle">mismatches surface here,</text>
+  <text class="mut lbl" x="420" y="368" text-anchor="middle">not at deployment</text>
+  <polygon class="gate" points="558,200 608,250 558,300 508,250"/>
+  <text class="t lbl" x="558" y="244" text-anchor="middle">gate:</text>
+  <text class="t lbl" x="558" y="260" text-anchor="middle">design</text>
+  <text class="t lbl" x="558" y="276" text-anchor="middle">review</text>
+
+  <!-- Phase 3 -->
+  <rect class="phase" x="636" y="60" width="200" height="380" rx="8"/>
+  <text class="t b" x="736" y="86" font-size="13" text-anchor="middle">3 · Implementation</text>
+  <text class="mut lbl" x="736" y="106" text-anchor="middle">Django 6.1 + DRF in core/</text>
+  <rect class="sprint" x="652" y="125" width="168" height="60" rx="6"/>
+  <text class="t lbl" x="736" y="148" text-anchor="middle">models → serializers</text>
+  <rect class="sprint" x="652" y="195" width="168" height="60" rx="6"/>
+  <text class="t lbl" x="736" y="218" text-anchor="middle">views → wiring (JS)</text>
+  <rect class="sprint" x="652" y="265" width="168" height="60" rx="6"/>
+  <text class="t lbl" x="736" y="288" text-anchor="middle">black + isort per task</text>
+  <polygon class="gate" points="884,200 934,250 884,300 834,250"/>
+  <text class="t lbl" x="884" y="244" text-anchor="middle">gate:</text>
+  <text class="t lbl" x="884" y="260" text-anchor="middle">migrate +</text>
+  <text class="t lbl" x="884" y="276" text-anchor="middle">smoke test</text>
+
+  <!-- Phases 4-5 -->
+  <rect class="phase" x="958" y="60" width="138" height="180" rx="8"/>
+  <text class="t b" x="1027" y="86" font-size="13" text-anchor="middle">4 · Testing</text>
+  <text class="mut lbl" x="1027" y="106" text-anchor="middle">47 tests, TDD</text>
+  <text class="mut lbl" x="1027" y="124" text-anchor="middle">(see Figure 8)</text>
+  <rect class="phase" x="958" y="260" width="138" height="180" rx="8"/>
+  <text class="t b" x="1027" y="286" font-size="13" text-anchor="middle">5 · Deploy + Docs</text>
+  <text class="mut lbl" x="1027" y="306" text-anchor="middle">PR → main,</text>
+  <text class="mut lbl" x="1027" y="324" text-anchor="middle">Ch 3 manuscript</text>
+
+  <!-- Arrows between columns -->
+  <line class="flow" x1="304" y1="250" x2="328" y2="250" marker-end="url(#ah7)"/>
+  <line class="flow" x1="610" y1="250" x2="634" y2="250" marker-end="url(#ah7)"/>
+  <line class="flow" x1="936" y1="150" x2="956" y2="150" marker-end="url(#ah7)"/>
+  <line class="flow" x1="936" y1="350" x2="956" y2="350" marker-end="url(#ah7)"/>
+
+  <text class="mut lbl" x="24" y="480">Reading: phases run left → right (Waterfall discipline); inside a phase the sprint boxes run top → bottom in parallel (Agile concurrency).</text>
+  <text class="mut lbl" x="24" y="500">A gate is a checkpoint — migrate, endpoint smoke tests, merge to the shared branch — so interface mismatches surface within the phase.</text>
+  <text class="mut lbl" x="24" y="530">Symbols: rectangle = phase · inner box = sprint team · diamond = phase gate · arrow = handoff.</text>
+</svg>
+</body></html>

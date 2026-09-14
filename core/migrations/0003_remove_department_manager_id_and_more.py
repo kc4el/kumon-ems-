@@ -7,69 +7,75 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0002_remove_department_description_department_code_and_more'),
+        ("core", "0002_remove_department_description_department_code_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='department',
-            name='manager_id',
+            model_name="department",
+            name="manager_id",
         ),
         migrations.RemoveField(
-            model_name='shiftroster',
-            name='employee',
+            model_name="shiftroster",
+            name="employee",
         ),
         migrations.RemoveField(
-            model_name='shiftroster',
-            name='shift_date',
+            model_name="shiftroster",
+            name="shift_date",
         ),
         migrations.AddField(
-            model_name='department',
-            name='manager',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='managed_departments', to='core.employee'),
+            model_name="department",
+            name="manager",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="managed_departments",
+                to="core.employee",
+            ),
         ),
         migrations.AddField(
-            model_name='employee',
-            name='role',
+            model_name="employee",
+            name="role",
             field=models.CharField(blank=True, max_length=100, null=True),
         ),
         migrations.AddField(
-            model_name='leaverequest',
-            name='created_at',
+            model_name="leaverequest",
+            name="created_at",
             field=models.DateTimeField(auto_now_add=True, null=True),
         ),
         migrations.AddField(
-            model_name='leaverequest',
-            name='leave_type',
-            field=models.CharField(default='Personal', max_length=50),
+            model_name="leaverequest",
+            name="leave_type",
+            field=models.CharField(default="Personal", max_length=50),
         ),
         migrations.AddField(
-            model_name='shiftroster',
-            name='break_mins',
+            model_name="shiftroster",
+            name="break_mins",
             field=models.IntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='shiftroster',
-            name='created_at',
+            model_name="shiftroster",
+            name="created_at",
             field=models.DateTimeField(auto_now_add=True, null=True),
         ),
         migrations.AddField(
-            model_name='shiftroster',
-            name='name',
+            model_name="shiftroster",
+            name="name",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AddField(
-            model_name='shiftroster',
-            name='shift_type',
-            field=models.CharField(default='General', max_length=50),
+            model_name="shiftroster",
+            name="shift_type",
+            field=models.CharField(default="General", max_length=50),
         ),
         migrations.AddField(
-            model_name='shiftroster',
-            name='updated_at',
+            model_name="shiftroster",
+            name="updated_at",
             field=models.DateTimeField(auto_now=True),
         ),
         migrations.AlterUniqueTogether(
-            name='attendance',
-            unique_together={('employee', 'date')},
+            name="attendance",
+            unique_together={("employee", "date")},
         ),
     ]
