@@ -6,20 +6,51 @@
 document.addEventListener('DOMContentLoaded', () => {
   initBrandLogo();
   initNavigation();
+  initializeCurrentDateLabels();
   loadDashboardSummary();
   loadEmployeeDirectory();
+  populateRosterEmployeeOptions();
+  populateRosterMatrixEmployees();
+  loadLeaveRegister();
+  claimsPagerGoto('pending', 1);
+  claimsPagerGoto('history', 1);
   loadClaimStatuses();
   updateBatchApproveCount();
   loadAdvancesView();
+  advancesPagerGoto(1);
   loadMessagesForConversation('sarah');
   loadAttendanceView();
   loadShiftRosterView();
+  loadMasterShiftCalendar();
+  loadPayrollView();
   loadAuditView();
   initDashboardWidgets();
   loadActivityFeed();
   refreshNotifBell();
   initTour();
 });
+
+function initializeCurrentDateLabels() {
+  const today = new Date();
+  const dateText = today.toLocaleDateString(undefined, {
+    weekday: 'short', day: '2-digit', month: 'long', year: 'numeric',
+  }).toUpperCase();
+  const monthText = today.toLocaleDateString(undefined, {
+    month: 'long', year: 'numeric',
+  }).toUpperCase();
+  const isoDate = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
+  const dateLabel = document.getElementById('dashboardTodayLabel');
+  const monthLabel = document.getElementById('dashboardMonthLabel');
+  const attendanceDate = document.getElementById('attendanceDateLabel');
+  const attendanceMonth = document.getElementById('attendanceMonthLabel');
+  const picker = document.getElementById('shiftDatePicker');
+  if (dateLabel) dateLabel.textContent = dateText;
+  if (monthLabel) monthLabel.textContent = monthText;
+  if (attendanceDate) attendanceDate.textContent = `${dateText} • Status: Logged & Verified`;
+  if (attendanceMonth) attendanceMonth.textContent = monthText;
+  if (picker && !picker.value) picker.value = isoDate;
+  if (picker) handleShiftDateChange(picker.value);
+}
 
 // Bell counts live unread notifications. Same apiFetch + pill style as inbox.
 // Fails quiet on login page: apiFetch already skips redirect there.
@@ -358,10 +389,10 @@ async function loadActivityFeed() {
   const list = document.getElementById("activityFeedList");
   if (!list) return;
   try {
-    const res = await fetch("/api/audit-logs/?page_size=20", { credentials: "same-origin", headers: { Accept: "application/json" } });
+    const res = await fetch("/api/audit-logs/?page_size=2", { credentials: "same-origin", headers: { Accept: "application/json" } });
     if (!res.ok) throw new Error("feed failed");
     const payload = await res.json();
-    const rows = payload.results || payload || [];
+    const rows = (payload.results || payload || []).slice(0, 2);
     list.innerHTML = rows.length
       ? rows.map((r) => `<li>${escapeHtml(String(r.action || "update"))} <span>${escapeHtml(String(r.timestamp || "").slice(0, 16).replace("T", " "))}</span></li>`).join("")
       : "<li>No activity yet today.</li>";
@@ -742,9 +773,14 @@ async function handleOnboarding(e) {
   const fullName = (form.querySelector('input[type="text"]')?.value || '').trim();
   const email = (form.querySelector('input[type="email"]')?.value || '').trim();
   const parts = fullName.split(/\s+/).filter(Boolean);
+  if (parts.length < 2) {
+    showToast('Enter the employee\'s first and last name.', 'error');
+    return;
+  }
+  const lastName = parts.pop();
   const payload = {
-    first_name: parts[0] || '',
-    last_name: parts.slice(1).join(' ') || '',
+    first_name: parts.join(' '),
+    last_name: lastName,
     email,
   };
   const deptName = (form.querySelector('#onboardDepartment')?.value || '').trim();
@@ -766,6 +802,10 @@ async function handleOnboarding(e) {
         const err =
           typeof data.error === 'string'
             ? data.error
+            : data.error && typeof data.error === 'object'
+              ? Object.entries(data.error).flatMap(([field, messages]) =>
+                (Array.isArray(messages) ? messages : [messages]).map((message) => `${field}: ${message}`)
+              ).join(' ')
             : 'Unable to create employee. Check the form and try again.';
         showToast(err);
         return null;
@@ -859,8 +899,9 @@ function handleShiftDateChange(dateVal) {
     const label = formatShiftDisplayDate(d);
     const displayEl = document.getElementById('shiftDateDisplay');
     if (displayEl) {
-      displayEl.textContent = `Allocation (demo) for ${label}`;
+      displayEl.textContent = `Live allocation for ${label}`;
     }
+    loadMasterShiftCalendar(dateVal);
     showToast(`Roster updated for ${label}`);
   }
 }
@@ -868,9 +909,9 @@ function handleShiftDateChange(dateVal) {
 function stepShiftDate(offsetDays) {
   const picker = document.getElementById('shiftDatePicker');
   if (!picker) return;
-  let currentDate = picker.value ? new Date(picker.value) : new Date(2026, 5, 18);
+  let currentDate = picker.value ? new Date(picker.value) : new Date();
   if (isNaN(currentDate.getTime())) {
-    currentDate = new Date(2026, 5, 18);
+    currentDate = new Date();
   }
   currentDate.setDate(currentDate.getDate() + offsetDays);
   const yyyy = currentDate.getFullYear();
@@ -884,10 +925,11 @@ function stepShiftDate(offsetDays) {
 function setShiftDateToday() {
   const picker = document.getElementById('shiftDatePicker');
   if (!picker) return;
-  const todayStr = '2026-06-18'; // Demo live date
+  const today = new Date();
+  const todayStr = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
   picker.value = todayStr;
   handleShiftDateChange(todayStr);
-  showToast('Reset roster view to Today (18 June 2026).');
+  showToast('Reset roster view to today.');
 }
 
 // Live employee id lookup shared by the advance + roster forms: the
@@ -942,7 +984,11 @@ function confirmAddStaff(shiftKey) {
     return;
   }
 
-  const [name, jobTitle, initials] = select.value.split('|');
+  const employeeId = select.value;
+  const option = select.selectedOptions[0];
+  const name = option?.dataset.name || option?.textContent || '';
+  const jobTitle = option?.dataset.role || '';
+  const initials = option?.dataset.initials || name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
   const roleTag = roleSelect ? roleSelect.value : 'Duty Staff';
 
   // Remove empty placeholder if present
@@ -978,7 +1024,7 @@ function confirmAddStaff(shiftKey) {
   toggleAddStaffForm(shiftKey, false);
 
   updateShiftCoverageStatus();
-  persistShiftAssignment(shiftKey, name).then((saved) => {
+  persistShiftAssignment(shiftKey, employeeId).then((saved) => {
     showToast(
       saved
         ? `Assigned ${name} (${roleTag}) successfully!`
@@ -997,9 +1043,8 @@ const SHIFT_SLOT_TIMES = {
   night: ['00:00:00', '08:00:00'],
 };
 
-async function persistShiftAssignment(shiftKey, name) {
+async function persistShiftAssignment(shiftKey, employeeId) {
   try {
-    const employeeId = await resolveEmployeeId(name);
     if (!employeeId) return false;
     const workDate = document.getElementById('shiftDatePicker')?.value || null;
     const times = SHIFT_SLOT_TIMES[shiftKey] || SHIFT_SLOT_TIMES.morning;
@@ -1256,6 +1301,7 @@ async function claimsPagerGoto(which, page) {
   if (!body) return;
   const demo = body.dataset.demoHtml || body.innerHTML;
   body.dataset.demoHtml = demo;
+  body.innerHTML = '<tr><td colspan="7">Loading claims…</td></tr>';
   try {
     const res = await apiFetch(`/api/expense-claims/?page=${page}&page_size=${CLAIMS_PAGE_SIZE}`);
     if (!res.ok) throw new Error('load failed');
@@ -1277,8 +1323,8 @@ async function claimsPagerGoto(which, page) {
     setApiMode('live');
     if (which === 'pending' && typeof updateBatchApproveCount === 'function') updateBatchApproveCount();
   } catch (e) {
-    body.innerHTML = demo;
-    showToast('Claims page unreachable — showing demo data', 'error');
+    body.innerHTML = '<tr><td colspan="7">Claims data is unavailable.</td></tr>';
+    showToast('Claims data is unavailable.', 'error');
   }
 }
 
@@ -1359,6 +1405,7 @@ async function advancesPagerGoto(page) {
   if (!body) return;
   const demo = body.dataset.demoHtml || body.innerHTML;
   body.dataset.demoHtml = demo;
+  body.innerHTML = '<tr><td colspan="7">Loading advances…</td></tr>';
   try {
     const res = await apiFetch(`/api/advances/?page=${page}&page_size=${ADVANCES_PAGE_SIZE}`);
     if (!res.ok) throw new Error('load failed');
@@ -1379,8 +1426,8 @@ async function advancesPagerGoto(page) {
     markPagerActive('advances', page);
     setApiMode('live');
   } catch (e) {
-    body.innerHTML = demo;
-    showToast('Advances page unreachable — showing demo data', 'error');
+    body.innerHTML = '<tr><td colspan="7">Advance data is unavailable.</td></tr>';
+    showToast('Advance data is unavailable.', 'error');
   }
 }
 
@@ -1389,6 +1436,7 @@ async function advancesPagerGoto(page) {
 function openAdvanceModal() {
   const modal = document.getElementById('advanceModal');
   if (modal) modal.classList.add('active');
+  loadEmployeeOptions('advanceApplicant');
 }
 
 function closeAdvanceModal() {
@@ -1417,14 +1465,14 @@ async function loadAdvancesView() {
       rows.forEach((a) => body.appendChild(buildAdvanceRow(a, names)));
     }
     setApiMode('live');
-  } catch (e) { body.innerHTML = demo; setApiMode('demo'); showToast('Advances unreachable — showing demo data', 'error'); }
+  } catch (e) { body.innerHTML = '<tr><td colspan="7">Advance data is unavailable.</td></tr>'; setApiMode('demo'); showToast('Advance data is unavailable.', 'error'); }
 }
 
 async function handleRequestAdvance(e) {
   e.preventDefault();
   const form = e.target;
-  const applicantRaw = document.getElementById('advanceApplicant')?.value || '';
-  const applicantName = applicantRaw.replace(/\s*\(.*\)\s*/, '').trim();
+  const applicant = document.getElementById('advanceApplicant');
+  const applicantName = applicant?.selectedOptions[0]?.textContent || '';
   const amount = document.getElementById('advanceAmount')?.value || '';
   const terms = document.getElementById('advanceTerms')?.value || 'Next Payroll';
   const purpose = document.getElementById('advancePurpose')?.value.trim() || '';
@@ -1432,7 +1480,7 @@ async function handleRequestAdvance(e) {
     showToast('Requested amount must be greater than zero.', 'error');
     return;
   }
-  const employeeId = await resolveEmployeeId(applicantName);
+  const employeeId = applicant?.value || await resolveEmployeeId(applicantName);
   if (!employeeId) {
     showToast('Applicant is not in the live employee directory yet.');
     return;
@@ -1467,10 +1515,65 @@ async function handleRequestAdvance(e) {
   }
 }
 
+function formatLeaveDate(value) {
+  if (!value) return '-';
+  const date = new Date(`${value}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString(undefined, {
+    month: 'short', day: 'numeric', year: 'numeric',
+  });
+}
+
+function leaveDuration(start, end) {
+  const from = new Date(`${start}T00:00:00`);
+  const to = new Date(`${end}T00:00:00`);
+  if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) return '-';
+  const days = Math.floor((to - from) / 86400000) + 1;
+  return `${days} ${days === 1 ? 'Calendar Day' : 'Calendar Days'}`;
+}
+
+async function loadLeaveRegister() {
+  const body = document.getElementById('leaveRegisterTableBody');
+  if (!body) return;
+  try {
+    const res = await apiFetch('/api/leaves/?page_size=100', {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) throw new Error('leave register unavailable');
+    const payload = await res.json();
+    const rows = Array.isArray(payload) ? payload : payload.results || [];
+    body.innerHTML = '';
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="5">No leave applications yet.</td></tr>';
+      return;
+    }
+    rows.forEach((leave) => {
+      const status = String(leave.status || 'Pending');
+      const statusClass = status.toLowerCase() === 'approved'
+        ? 'badge-accepted'
+        : status.toLowerCase() === 'rejected' ? 'badge-rejected' : 'badge-pending';
+      const type = leave.leave_type || 'Personal';
+      const row = document.createElement('tr');
+      row.innerHTML =
+        `<td><div class="bold-title">${escapeHtml(leave.employee_name || 'Unknown employee')}</div>` +
+        `<div class="sub-role">${escapeHtml(leave.employee_role || '')}` +
+        `${leave.employee_department ? ` • ${escapeHtml(leave.employee_department)}` : ''}</div></td>` +
+        `<td><span class="penpot-leave-pill pill-blue">${escapeHtml(type)}</span></td>` +
+        `<td><div class="bold-title">${leaveDuration(leave.start_date, leave.end_date)}</div>` +
+        `<div class="sub-role">${formatLeaveDate(leave.start_date)} - ${formatLeaveDate(leave.end_date)}</div></td>` +
+        `<td>${formatLeaveDate((leave.created_at || '').slice(0, 10))}</td>` +
+        `<td><span class="penpot-badge ${statusClass}">● ${escapeHtml(status)}</span></td>`;
+      body.appendChild(row);
+    });
+  } catch (error) {
+    body.innerHTML = '<tr><td colspan="5">Unable to load leave applications.</td></tr>';
+  }
+}
+
 // Leave Application Modal
 function openLeaveModal() {
   const modal = document.getElementById('leaveModal');
   if (modal) modal.classList.add('active');
+  loadEmployeeOptions('leaveApplicant');
 }
 
 function closeLeaveModal() {
@@ -1481,26 +1584,19 @@ function closeLeaveModal() {
 function handleApplyLeave(e) {
   e.preventDefault();
   const form = e.target;
-  const selects = form.querySelectorAll('select');
-  const dates = form.querySelectorAll('input[type="date"]');
-  const reason = form.querySelector('textarea')?.value || '';
-  const applicantName = (selects[0]?.value || '')
-    .replace(/\s*\(.*\)\s*/, '')
-    .trim()
-    .toLowerCase();
-  const employeeId = employeeNameIndex[applicantName];
+  const employeeId = document.getElementById('leaveApplicant')?.value || '';
   if (!employeeId) {
-    showToast('Applicant is not in the live employee directory yet.');
+    showToast('Select an employee from the live directory.', 'error');
     return;
   }
   apiFetch('/api/leaves/', {
     method: 'POST',
     body: JSON.stringify({
       employee: employeeId,
-      leave_type: selects[1]?.value || 'Personal',
-      start_date: dates[0]?.value || null,
-      end_date: dates[1]?.value || null,
-      reason,
+      leave_type: document.getElementById('leaveType')?.value || 'Personal',
+      start_date: document.getElementById('leaveStartDate')?.value || null,
+      end_date: document.getElementById('leaveEndDate')?.value || null,
+      reason: document.getElementById('leaveReason')?.value.trim() || '',
     }),
   })
     .then(async (res) => {
@@ -2014,6 +2110,173 @@ function loadDashboardSummary() {
 // logged-out visitors are sent to the canonical login page.
 const employeeNameIndex = {};
 
+async function populateRosterEmployeeOptions() {
+  const selects = ['morning', 'evening', 'night']
+    .map((shiftKey) => document.getElementById(`staffSelect-${shiftKey}`))
+    .filter(Boolean);
+  if (!selects.length) return;
+  try {
+    const res = await apiFetch('/api/employees/?page_size=100', {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) throw new Error('employee directory unavailable');
+    const payload = await res.json();
+    const rows = (Array.isArray(payload) ? payload : payload.results || [])
+      .filter((employee) => employee.is_active !== false);
+    selects.forEach((select) => {
+      select.innerHTML = '<option value="">Select Employee...</option>';
+      rows.forEach((employee) => {
+        const name = `${employee.first_name || ''} ${employee.last_name || ''}`.trim();
+        const option = document.createElement('option');
+        option.value = employee.id;
+        option.dataset.name = name || employee.email || employee.id;
+        option.dataset.role = employee.role || 'Employee';
+        option.dataset.initials = (name || employee.email || 'E')
+          .split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+        option.textContent = name || employee.email || employee.id;
+        select.appendChild(option);
+      });
+      if (!rows.length) select.innerHTML = '<option value="">No active employees found</option>';
+    });
+  } catch (_) {
+    selects.forEach((select) => {
+      select.innerHTML = '<option value="">Unable to load employees</option>';
+    });
+  }
+}
+
+async function populateRosterMatrixEmployees() {
+  const rows = document.querySelectorAll('.shift-matrix-table tbody tr');
+  if (!rows.length) return;
+  try {
+    const res = await apiFetch('/api/employees/?page_size=100', {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) throw new Error('employee directory unavailable');
+    const payload = await res.json();
+    const employees = (Array.isArray(payload) ? payload : payload.results || [])
+      .filter((employee) => employee.is_active !== false);
+    rows.forEach((row, index) => {
+      const employee = employees[index];
+      if (!employee) {
+        row.remove();
+        return;
+      }
+      const name = `${employee.first_name || ''} ${employee.last_name || ''}`.trim();
+      const nameElement = row.querySelector('.shift-staff-meta strong');
+      const roleElement = row.querySelector('.shift-staff-meta span');
+      const avatar = row.querySelector('.shift-staff-avatar');
+      if (nameElement) nameElement.textContent = name || employee.email || 'Employee';
+      if (roleElement) roleElement.textContent = employee.role || 'Employee';
+      if (avatar) avatar.textContent = (name || employee.email || 'E')
+        .split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+    });
+  } catch (_) {
+    // Keep the static matrix visible if the directory request fails.
+  }
+}
+
+async function loadEmployeeOptions(selectId) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+  try {
+    const res = await apiFetch('/api/employees/?page_size=100', {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) throw new Error('employee directory unavailable');
+    const payload = await res.json();
+    const rows = Array.isArray(payload) ? payload : payload.results || [];
+    select.innerHTML = '';
+    rows.filter((employee) => employee.is_active !== false).forEach((employee) => {
+      const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim();
+      const option = document.createElement('option');
+      option.value = employee.id;
+      option.textContent = fullName || employee.email || employee.id;
+      select.appendChild(option);
+      if (fullName) employeeNameIndex[fullName.toLowerCase()] = employee.id;
+      if (employee.email) employeeNameIndex[employee.email.toLowerCase()] = employee.id;
+    });
+    if (!select.options.length) {
+      select.innerHTML = '<option value="">No active employees found</option>';
+    }
+  } catch (_) {
+    select.innerHTML = '<option value="">Unable to load employees</option>';
+    showToast('Employee directory could not be loaded.', 'error');
+  }
+
+  async function loadRosterEmployeeOptions() {
+    const selects = ['morning', 'evening', 'night']
+      .map((shiftKey) => document.getElementById(`staffSelect-${shiftKey}`))
+      .filter(Boolean);
+    if (!selects.length) return;
+    try {
+      const res = await apiFetch('/api/employees/?page_size=100', {
+        headers: { Accept: 'application/json' },
+      });
+      if (!res.ok) throw new Error('employee directory unavailable');
+      const payload = await res.json();
+      const rows = (Array.isArray(payload) ? payload : payload.results || [])
+        .filter((employee) => employee.is_active !== false);
+      selects.forEach((select) => {
+        select.innerHTML = '<option value="">Select Employee...</option>';
+        rows.forEach((employee) => {
+          const name = `${employee.first_name || ''} ${employee.last_name || ''}`.trim();
+          const option = document.createElement('option');
+          option.value = employee.id;
+          option.dataset.name = name || employee.email || employee.id;
+          option.dataset.role = employee.role || 'Employee';
+          option.dataset.initials = (name || employee.email || 'E')
+            .split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+          option.textContent = name || employee.email || employee.id;
+          select.appendChild(option);
+        });
+        if (!rows.length) select.innerHTML = '<option value="">No active employees found</option>';
+      });
+    } catch (_) {
+      selects.forEach((select) => {
+        select.innerHTML = '<option value="">Unable to load employees</option>';
+      });
+      showToast('Employee roster could not be loaded.', 'error');
+    }
+
+    async function loadRosterMatrixEmployees() {
+      const rows = document.querySelectorAll('.shift-matrix-table tbody tr');
+      if (!rows.length) return;
+      try {
+        const res = await apiFetch('/api/employees/?page_size=100', {
+          headers: { Accept: 'application/json' },
+        });
+        if (!res.ok) throw new Error('employee directory unavailable');
+        const payload = await res.json();
+        const employees = (Array.isArray(payload) ? payload : payload.results || [])
+          .filter((employee) => employee.is_active !== false);
+        rows.forEach((row, index) => {
+          const employee = employees[index];
+          if (!employee) {
+            row.remove();
+            return;
+          }
+          const name = `${employee.first_name || ''} ${employee.last_name || ''}`.trim();
+          const identity = row.querySelector('.shift-staff-meta');
+          const avatar = row.querySelector('.shift-staff-avatar');
+          if (identity) {
+            const nameElement = identity.querySelector('strong');
+            const roleElement = identity.querySelector('span');
+            if (nameElement) nameElement.textContent = name || employee.email || 'Employee';
+            if (roleElement) roleElement.textContent = employee.role || 'Employee';
+          }
+          if (avatar) {
+            avatar.textContent = (name || employee.email || 'E')
+              .split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+          }
+        });
+      } catch (_) {
+        // The matrix keeps its static fallback when the directory is unavailable.
+      }
+    }
+  }
+}
+
 function loadEmployeeDirectory() {
   const list = document.getElementById('employeeRosterList');
   if (!list) return;
@@ -2161,6 +2424,64 @@ async function loadShiftRosterView() {
     setApiMode('live');
     refreshShiftConflictBadges();
   } catch (e) { setApiMode('demo'); showToast('Shift roster unreachable — showing demo data', 'error'); }
+}
+
+async function loadMasterShiftCalendar(selectedDate) {
+  const head = document.getElementById('shiftMatrixHead');
+  const body = document.getElementById('shiftMatrixBody');
+  if (!head || !body) return;
+  const pickerDate = selectedDate || document.getElementById('shiftDatePicker')?.value;
+  const anchor = pickerDate ? new Date(`${pickerDate}T00:00:00`) : new Date();
+  if (Number.isNaN(anchor.getTime())) return;
+  const monday = new Date(anchor);
+  const day = monday.getDay();
+  monday.setDate(monday.getDate() - (day === 0 ? 6 : day - 1));
+  const dates = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(monday);
+    date.setDate(monday.getDate() + index);
+    return date;
+  });
+  const iso = (date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+  const selectedIso = iso(anchor);
+  try {
+    const [employeeRes, rosterRes] = await Promise.all([
+      apiFetch('/api/employees/?page_size=100', { headers: { Accept: 'application/json' } }),
+      apiFetch('/api/shift-rosters/?page_size=100', { headers: { Accept: 'application/json' } }),
+    ]);
+    if (!employeeRes.ok || !rosterRes.ok) throw new Error('calendar data unavailable');
+    const employeePayload = await employeeRes.json();
+    const rosterPayload = await rosterRes.json();
+    const employees = (Array.isArray(employeePayload) ? employeePayload : employeePayload.results || [])
+      .filter((employee) => employee.is_active !== false);
+    const rosters = Array.isArray(rosterPayload) ? rosterPayload : rosterPayload.results || [];
+    const byEmployeeDate = {};
+    rosters.forEach((roster) => {
+      if (roster.work_date) byEmployeeDate[`${roster.employee}:${roster.work_date}`] = roster;
+    });
+    head.innerHTML = `<tr><th class="col-staff">EMPLOYEE</th>${dates.map((date) => {
+      const isSelected = iso(date) === selectedIso;
+      return `<th class="${isSelected ? 'col-today' : ''}">${date.toLocaleDateString([], { weekday: 'short' }).toUpperCase()}<br><strong>${date.toLocaleDateString([], { day: 'numeric', month: 'short' })}${isSelected ? ' • Selected' : ''}</strong></th>`;
+    }).join('')}</tr>`;
+    body.innerHTML = '';
+    if (!employees.length) {
+      body.innerHTML = '<tr><td colspan="8">No active employees found.</td></tr>';
+    } else {
+      employees.forEach((employee) => {
+        const name = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || employee.email || 'Employee';
+        const initials = name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+        const cells = dates.map((date) => {
+          const roster = byEmployeeDate[`${employee.id}:${iso(date)}`];
+          if (!roster) return '<td><div class="shift-capsule shift-off"><span class="shift-code">OFF</span><span class="shift-status">Unassigned</span></div></td>';
+          return `<td><div class="shift-capsule ${iso(date) === selectedIso ? 'shift-flex' : ''}"><span class="shift-code">${escapeHtml(String(roster.shift_type || 'SHIFT').toUpperCase())}</span><span class="shift-status">${escapeHtml(String(roster.start_time || '').slice(0, 5))} – ${escapeHtml(String(roster.end_time || '').slice(0, 5))}</span></div></td>`;
+        }).join('');
+        body.insertAdjacentHTML('beforeend', `<tr><td><div class="shift-staff-cell"><div class="shift-staff-avatar">${escapeHtml(initials)}</div><div class="shift-staff-meta"><strong>${escapeHtml(name)}</strong><span>${escapeHtml(employee.role || 'Employee')}</span></div></div></td>${cells}</tr>`);
+      });
+    }
+    const weekLabel = document.getElementById('shiftWeekLabel');
+    if (weekLabel) weekLabel.textContent = `${dates[0].toLocaleDateString([], { month: 'short', day: 'numeric' })} – ${dates[6].toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  } catch (_) {
+    body.innerHTML = '<tr><td colspan="8">Roster calendar data is unavailable.</td></tr>';
+  }
 }
 
 async function refreshShiftConflictBadges() {

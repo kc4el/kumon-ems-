@@ -521,7 +521,7 @@ class AttendanceClockOutView(APIView):
 class LeaveRequestListCreateView(
     ForceOwnerCreateMixin, OwnerQuerysetMixin, generics.ListCreateAPIView
 ):
-    queryset = LeaveRequest.objects.all().order_by("-created_at")
+    queryset = LeaveRequest.objects.select_related("employee", "employee__department").all().order_by("-created_at")
     serializer_class = LeaveRequestSerializer
 
 

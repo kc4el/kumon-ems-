@@ -118,11 +118,18 @@ class AttendanceCorrectionSerializer(serializers.ModelSerializer):
 
 
 class LeaveRequestSerializer(serializers.ModelSerializer):
+    employee_name = serializers.SerializerMethodField()
+    employee_department = serializers.SerializerMethodField()
+    employee_role = serializers.SerializerMethodField()
+
     class Meta:
         model = LeaveRequest
         fields = [
             "id",
             "employee",
+            "employee_name",
+            "employee_department",
+            "employee_role",
             "leave_type",
             "start_date",
             "end_date",
@@ -131,6 +138,15 @@ class LeaveRequestSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "created_at"]
+
+    def get_employee_name(self, obj):
+        return str(obj.employee)
+
+    def get_employee_department(self, obj):
+        return obj.employee.department.name if obj.employee.department else ""
+
+    def get_employee_role(self, obj):
+        return obj.employee.role or ""
 
     def validate_leave_type(self, value):
         return value.strip().title()

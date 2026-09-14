@@ -3371,37 +3371,34 @@
       <form onsubmit="handleApplyLeave(event)">
         <div class="input-cell" style="margin-bottom:12px;">
           <label>APPLICANT</label>
-          <select class="penpot-select-full" required>
-            <option>Marcus Williams (Sales)</option>
-            <option>Sarah Chen (Engineering)</option>
-            <option>Priya Patel (Marketing)</option>
-            <option>David Kim (Finance)</option>
+          <select id="leaveApplicant" class="penpot-select-full" required>
+            <option value="">Loading employees...</option>
           </select>
         </div>
         <div class="input-cell" style="margin-bottom:12px;">
           <label>LEAVE TYPE</label>
-          <select class="penpot-select-full" required>
-            <option>Annual Vacation</option>
-            <option>Medical / Sick Leave</option>
-            <option>Casual Leave</option>
-            <option>Parental Leave</option>
-            <option>Emergency Personal</option>
-            <option>Compensatory Off</option>
+          <select id="leaveType" class="penpot-select-full" required>
+            <option value="Vacation">Annual Vacation</option>
+            <option value="Sick">Medical / Sick Leave</option>
+            <option value="Personal">Casual Leave</option>
+            <option value="Parental">Parental Leave</option>
+            <option value="Emergency">Emergency Personal</option>
+            <option value="Compensatory">Compensatory Off</option>
           </select>
         </div>
         <div class="inputs-2grid" style="margin-bottom:12px;">
           <div class="input-cell">
             <label>START DATE</label>
-            <input type="date" required />
+            <input id="leaveStartDate" type="date" required />
           </div>
           <div class="input-cell">
             <label>END DATE</label>
-            <input type="date" required />
+            <input id="leaveEndDate" type="date" required />
           </div>
         </div>
         <div class="input-cell" style="margin-bottom:20px;">
           <label>REASON / HANDOVER NOTES</label>
-          <textarea rows="3" placeholder="Describe coverage and handover arrangements..." required></textarea>
+          <textarea id="leaveReason" rows="3" placeholder="Describe coverage and handover arrangements..." required></textarea>
         </div>
         <div class="modal-foot">
           <button type="button" class="btn btn-outline-gray" onclick="closeLeaveModal()">Cancel</button>
@@ -3421,32 +3418,28 @@
       <form onsubmit="handleRequestAdvance(event)">
         <div class="input-cell" style="margin-bottom:12px;">
           <label>APPLICANT EMPLOYEE</label>
-          <select class="penpot-select-full" required>
-            <option>Sarah Chen (Senior Dev • $8,500/mo)</option>
-            <option>Marcus Williams (Senior Dev • $8,500/mo)</option>
-            <option>Amanda Vance (Brand Strategist • $6,200/mo)</option>
-            <option>David Kim (Lead Analyst • $7,800/mo)</option>
-            <option>Elena Rodriguez (HR Specialist • $6,500/mo)</option>
+          <select id="advanceApplicant" class="penpot-select-full" required>
+            <option value="">Loading employees...</option>
           </select>
         </div>
         <div class="inputs-2grid" style="margin-bottom:12px;">
           <div class="input-cell">
             <label>REQUESTED AMOUNT ($)</label>
-            <input type="number" min="100" max="5000" placeholder="e.g. 1500" required />
+            <input id="advanceAmount" type="number" min="100" max="5000" placeholder="e.g. 1500" required />
           </div>
           <div class="input-cell">
             <label>REPAYMENT TERMS</label>
-            <select class="penpot-select-full" required>
-              <option>Next Payroll (Full Deduction)</option>
-              <option>2 Pay Cycles (50% each)</option>
-              <option>3 Pay Cycles (33% each)</option>
-              <option>4 Pay Cycles (25% each)</option>
+            <select id="advanceTerms" class="penpot-select-full" required>
+            <option value="Next Payroll (Full Deduction)">Next Payroll (Full Deduction)</option>
+            <option value="2 Pay Cycles (50% each)">2 Pay Cycles (50% each)</option>
+            <option value="3 Pay Cycles (33% each)">3 Pay Cycles (33% each)</option>
+            <option value="4 Pay Cycles (25% each)">4 Pay Cycles (25% each)</option>
             </select>
           </div>
         </div>
         <div class="input-cell" style="margin-bottom:20px;">
           <label>PURPOSE & FINANCIAL JUSTIFICATION</label>
-          <textarea rows="3" placeholder="State reason for advance request (subject to HR policy cap review)..."
+          <textarea id="advancePurpose" rows="3" placeholder="State reason for advance request (subject to HR policy cap review)..."
             required></textarea>
         </div>
         <div class="modal-foot">
