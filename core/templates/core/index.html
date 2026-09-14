@@ -3819,100 +3819,6 @@
     </div>
   </div>
 
-<!-- Auth Modal (Login / Signup) -->
-<div class="modal-backdrop" id="authModal">
-  <div class="modal-card auth-modal-card">
-    <button class="modal-close" onclick="closeAuthModal()">&times;</button>
-
-    <!-- Login View -->
-    <div id="authLoginContainer">
-      <div class="auth-brand-head">
-        <div class="brand-logo-box"><span class="brand-logo-text">p</span></div>
-        <div>
-          <span class="brand-name" style="color:#0f172a; font-size:20px;">peopleops</span>
-          <span class="brand-tagline" style="color:#64748b; font-size:8.5px;">PEOPLE, IN MOTION</span>
-        </div>
-      </div>
-
-      <span class="auth-tag-pill orange-pill">PORTAL AUTHENTICATION</span>
-      <h2 class="auth-title">Welcome back</h2>
-      <p class="auth-sub">Enter your employee credentials to sign in</p>
-
-      <form onsubmit="handleAuthLogin(event)">
-        <div class="input-cell" style="margin-bottom:12px;">
-          <label>CORPORATE EMAIL ADDRESS</label>
-          <input type="email" id="loginEmailInput" placeholder="employee@peopleops.corp" required />
-        </div>
-        <div class="input-cell" style="margin-bottom:14px;">
-          <label>PASSWORD</label>
-          <div class="password-input-wrap">
-            <input type="password" id="loginPasswordInput" value="peopleops2026" required />
-            <button type="button" class="btn-toggle-pwd"
-              onclick="togglePasswordVisibility('loginPasswordInput', this)">Show</button>
-          </div>
-        </div>
-        <div class="auth-options-row">
-          <label class="auth-checkbox-label">
-            <input type="checkbox" checked />
-            <span>Remember my email</span>
-          </label>
-          <a href="#" class="auth-link-orange" onclick="showToast('Password reset link dispatched to HR.')">Forgot
-            password?</a>
-        </div>
-        <button type="submit" class="btn btn-navy-full" style="margin-top:16px;">Sign In to Portal</button>
-      </form>
-
-      <div class="auth-switch-foot">
-        <span>Don't have an account?</span>
-        <a href="#" class="auth-link-bold" onclick="switchAuthMode('signup')">Create account / Sign up →</a>
-      </div>
-    </div>
-
-    <!-- Signup View -->
-    <div id="authSignupContainer" style="display:none;">
-      <div class="auth-brand-head">
-        <div class="brand-logo-box"><span class="brand-logo-text">p</span></div>
-        <div>
-          <span class="brand-name" style="color:#0f172a; font-size:20px;">peopleops</span>
-          <span class="brand-tagline" style="color:#64748b; font-size:8.5px;">PEOPLE, IN MOTION</span>
-        </div>
-      </div>
-
-      <span class="auth-tag-pill blue-pill">EMPLOYEE REGISTRATION</span>
-      <h2 class="auth-title">Create an Account</h2>
-      <p class="auth-sub">Register your corporate credentials for system onboarding</p>
-
-      <form onsubmit="handleAuthSignup(event)">
-        <div class="input-cell" style="margin-bottom:12px;">
-          <label>CORPORATE EMAIL ADDRESS</label>
-          <input type="email" id="signupEmailInput" placeholder="employee@peopleops.corp" required />
-        </div>
-        <div class="input-cell" style="margin-bottom:12px;">
-          <label>CREATE PASSWORD</label>
-          <div class="password-input-wrap">
-            <input type="password" id="signupPasswordInput" placeholder="At least 8 characters (1 number, 1 symbol)"
-              required />
-            <button type="button" class="btn-toggle-pwd"
-              onclick="togglePasswordVisibility('signupPasswordInput', this)">Show</button>
-          </div>
-        </div>
-        <div class="auth-options-row">
-          <label class="auth-checkbox-label">
-            <input type="checkbox" required checked />
-            <span>I agree to Corporate IT Security & Usage Policy</span>
-          </label>
-        </div>
-        <button type="submit" class="btn btn-blue-full" style="margin-top:16px;">Complete Registration</button>
-      </form>
-
-      <div class="auth-switch-foot">
-        <span>Already have an account?</span>
-        <a href="#" class="auth-link-bold" onclick="switchAuthMode('login')">Sign in here →</a>
-      </div>
-    </div>
-  </div>
-</div>
-
   <!-- ======================================================================
        NEW EMPLOYEE ONBOARDING WIZARD MODAL POP-UP
        ====================================================================== -->
@@ -4016,7 +3922,7 @@
               <label class="it-asset-item">
                 <input type="checkbox" />
                 <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                  <rect x="2" y="3" width="20" height="14" rx="2"></rect>
                   <line x1="8" y1="21" x2="16" y2="21"></line>
                   <line x1="12" y1="17" x2="12" y2="21"></line>
                 </svg>
@@ -4155,7 +4061,6 @@
       <div class="modal-head">
         <h3>Keyboard shortcuts</h3>
         <button class="modal-close" onclick="hideShortcutHelp()">&times;</button>
-
       </div>
       <ul>
         <li><b>g then d</b> — dashboard</li>
@@ -4167,46 +4072,6 @@
       <button class="btn btn-navy-cta" onclick="hideShortcutHelp()">Close</button>
     </div>
   </div>
-</div>
-
-<!-- Supabase CDN and JavaScript Authentication Logic -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  // Replace these placeholders with your actual Supabase project credentials
-  const supabaseUrl = 'https://hrmpcmqmrrbnrizpmtty.supabase.co';
-  const supabaseKey = 'sb_publishable_o8w6f8mGtLUyN_u0cAmWmg_PNXIVv9c';
-  const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-  // Handle Login Submission
-  async function handleAuthLogin(event) {
-    event.preventDefault();
-    const email = document.getElementById('loginEmailInput').value;
-    const password = document.getElementById('loginPasswordInput').value;
-
-    const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-
-    if (error) {
-      alert('Login Failed: ' + error.message);
-    } else {
-      window.location.href = 'welcome.html';
-    }
-  }
-
-  // Handle Signup Submission
-  async function handleAuthSignup(event) {
-    event.preventDefault();
-    const email = document.getElementById('signupEmailInput').value;
-    const password = document.getElementById('signupPasswordInput').value;
-
-    const { data, error } = await _supabase.auth.signUp({ email, password });
-
-    if (error) {
-      alert('Registration Failed: ' + error.message);
-    } else {
-      alert('Registration successful! Check your email inbox for confirmation.');
-    }
-  }
-</script>
 
   <!-- Toast Container -->
   <div id="toastContainer" class="toast-stack"></div>
