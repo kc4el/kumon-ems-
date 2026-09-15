@@ -3162,60 +3162,51 @@
             and security events across Kumon EMS.</p>
         </div>
 
-        <!-- Subtabs Navigation: Filter by Class -->
-        <div class="penpot-subnav-row" style="margin-bottom: 24px;">
-          <div class="pill-tabs-container">
-            <button class="tab-pill active" onclick="filterLogsByTab('all', this)">All Classes (1,482)</button>
-            <button class="tab-pill" onclick="filterLogsByTab('Personnel', this)">Personnel &amp; Staff (412)</button>
-            <button class="tab-pill" onclick="filterLogsByTab('Leaves', this)">Leave Requests (318)</button>
-            <button class="tab-pill" onclick="filterLogsByTab('Claims', this)">Claims &amp; Payroll (286)</button>
-            <button class="tab-pill" onclick="filterLogsByTab('Shifts', this)">Shift Rosters (244)</button>
-            <button class="tab-pill" onclick="filterLogsByTab('Grievance', this)">Grievance Cases (222)</button>
-          </div>
-        </div>
-
         <!-- Table Card -->
         <div class="white-card" style="padding:0; overflow:hidden; margin-bottom:24px;">
-          <div
-            style="padding:20px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; border-bottom:1px solid #e2e8f0;">
-            <div>
-              <h2 class="card-title" style="margin-bottom:4px;">System &amp; Administrative Audit Trail</h2>
-              <p class="card-sub" style="color:#64748b; font-size:13.5px; margin:0;">Every privileged action is signed,
-                timestamped, and categorized by class for security compliance.</p>
-            </div>
-            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-              <div class="audit-search-box">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <input type="text" id="auditSearchInput" placeholder="Search admin, action, employee, or detail..."
-                  oninput="filterAuditLogs()" />
+          <div style="padding:20px 24px; border-bottom:1px solid #e2e8f0;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:16px;">
+              <div>
+                <h2 class="card-title" style="margin-bottom:4px;">System &amp; Administrative Audit Trail</h2>
+                <p class="card-sub" style="color:#64748b; font-size:13.5px; margin:0;">Every privileged action is signed,
+                  timestamped, and categorized by class for security compliance.</p>
               </div>
-              <select class="audit-select-control" id="auditCategoryFilter" onchange="filterAuditLogs()">
-                <option value="">All Classes</option>
-                <option value="Personnel">Personnel &amp; Staff</option>
-                <option value="Leaves">Leave Requests</option>
-                <option value="Claims">Claims &amp; Payroll</option>
-                <option value="Shifts">Shift Rosters</option>
-                <option value="Grievance">Grievance Cases</option>
-              </select>
-              <select class="audit-select-control" id="auditAdminFilter" onchange="filterAuditLogs()">
-                <option value="">All Admins</option>
-                <option value="Marcus Williams">Marcus Williams</option>
-                <option value="Elena Rostova">Elena Rostova</option>
-                <option value="David Kim">David Kim</option>
-                <option value="System Bot">System Bot</option>
-              </select>
-              <button class="btn btn-navy-cta" onclick="exportAuditLogs()"
-                style="height:38px; display:inline-flex; align-items:center; gap:6px; padding:0 14px; font-size:13px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                <span>Export CSV</span>
-              </button>
+              <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <div class="audit-search-box">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <input type="text" id="auditSearchInput" placeholder="Search admin, action, employee, or detail..."
+                    oninput="filterAuditLogs()" />
+                </div>
+                <select class="audit-select-control" id="auditAdminFilter" onchange="filterAuditLogs()">
+                  <option value="">All Admins</option>
+                  <option value="Marcus Williams">Marcus Williams</option>
+                  <option value="Elena Rostova">Elena Rostova</option>
+                  <option value="David Kim">David Kim</option>
+                  <option value="System Bot">System Bot</option>
+                </select>
+                <button class="btn btn-navy-cta" onclick="exportAuditLogs()"
+                  style="height:38px; display:inline-flex; align-items:center; gap:6px; padding:0 14px; font-size:13px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>Export CSV</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Subtabs Navigation: Full-width stretched below search toolbar -->
+            <div class="pill-tabs-container">
+              <button class="tab-pill active" onclick="filterLogsByTab('all', this)">All Classes (1,482)</button>
+              <button class="tab-pill" onclick="filterLogsByTab('Personnel', this)">Personnel &amp; Staff (412)</button>
+              <button class="tab-pill" onclick="filterLogsByTab('Leaves', this)">Leave Requests (318)</button>
+              <button class="tab-pill" onclick="filterLogsByTab('Claims', this)">Claims &amp; Payroll (286)</button>
+              <button class="tab-pill" onclick="filterLogsByTab('Shifts', this)">Shift Rosters (244)</button>
+              <button class="tab-pill" onclick="filterLogsByTab('Grievance', this)">Grievance Cases (222)</button>
             </div>
           </div>
 

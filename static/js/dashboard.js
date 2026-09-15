@@ -2368,21 +2368,15 @@ function filterLogsByTab(category, btnElement) {
     btnElement.classList.add('active');
   }
 
-  const categorySelect = document.getElementById('auditCategoryFilter');
-  if (categorySelect) {
-    categorySelect.value = category === 'all' ? '' : category;
-  }
-
   filterAuditLogs();
 }
 
 function filterAuditLogs() {
   const searchInput = document.getElementById('auditSearchInput');
-  const categorySelect = document.getElementById('auditCategoryFilter');
   const adminSelect = document.getElementById('auditAdminFilter');
 
   const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-  const selectedCategory = categorySelect ? categorySelect.value : (activeLogTabCategory === 'all' ? '' : activeLogTabCategory);
+  const selectedCategory = activeLogTabCategory === 'all' ? '' : activeLogTabCategory;
   const selectedAdmin = adminSelect ? adminSelect.value : '';
 
   const rows = document.querySelectorAll('#auditLogsTableBody tr');
