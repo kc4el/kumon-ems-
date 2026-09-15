@@ -1,7 +1,7 @@
 Project "Django DBML" {
   database_type: 'PostgreSQL'
   Note: '''Generated from Django models.
-  Last Updated At 09-14-2026 02:46AM UTC'''
+  Last Updated At 09-15-2026 05:59AM UTC'''
 }
 
 enum core.char_attendancecorrection_status {

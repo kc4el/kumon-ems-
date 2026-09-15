@@ -31,7 +31,30 @@ document.addEventListener('DOMContentLoaded', () => {
   loadActivityFeed();
   refreshNotifBell();
   initTour();
+  startDashboardLiveRefresh();
 });
+
+let dashboardRefreshTimer = null;
+let dashboardRefreshInFlight = false;
+
+async function refreshDashboardLiveData() {
+  if (dashboardRefreshInFlight || document.hidden) return;
+  if (!document.getElementById('view-dashboard')) return;
+  dashboardRefreshInFlight = true;
+  try {
+    await Promise.all([loadDashboardSummary(), loadDashboardAttendance()]);
+  } finally {
+    dashboardRefreshInFlight = false;
+  }
+}
+
+function startDashboardLiveRefresh() {
+  if (dashboardRefreshTimer) clearInterval(dashboardRefreshTimer);
+  dashboardRefreshTimer = setInterval(refreshDashboardLiveData, 5000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshDashboardLiveData();
+  });
+}
 
 function initializeCurrentDateLabels() {
   const today = new Date();
@@ -53,6 +76,69 @@ function initializeCurrentDateLabels() {
   if (attendanceMonth) attendanceMonth.textContent = monthText;
   if (picker && !picker.value) picker.value = isoDate;
   if (picker) handleShiftDateChange(picker.value);
+  initAttendanceCalendar();
+}
+
+let attendanceCalendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+let attendanceSelectedDate = new Date().toISOString().slice(0, 10);
+
+function initAttendanceCalendar() {
+  const grid = document.getElementById('attendanceCalendarGrid');
+  if (!grid || grid.dataset.ready) return;
+  grid.dataset.ready = 'true';
+  document.getElementById('attendancePrevMonth')?.addEventListener('click', () => {
+    attendanceCalendarMonth.setMonth(attendanceCalendarMonth.getMonth() - 1);
+    attendanceSelectedDate = `${attendanceCalendarMonth.getFullYear()}-${String(attendanceCalendarMonth.getMonth() + 1).padStart(2, '0')}-01`;
+    renderAttendanceCalendar();
+  });
+  document.getElementById('attendanceNextMonth')?.addEventListener('click', () => {
+    attendanceCalendarMonth.setMonth(attendanceCalendarMonth.getMonth() + 1);
+    attendanceSelectedDate = `${attendanceCalendarMonth.getFullYear()}-${String(attendanceCalendarMonth.getMonth() + 1).padStart(2, '0')}-01`;
+    renderAttendanceCalendar();
+  });
+  renderAttendanceCalendar();
+}
+
+function renderAttendanceCalendar() {
+  const grid = document.getElementById('attendanceCalendarGrid');
+  const label = document.getElementById('attendanceMonthLabel');
+  if (!grid) return;
+  const year = attendanceCalendarMonth.getFullYear();
+  const month = attendanceCalendarMonth.getMonth();
+  if (label) label.textContent = attendanceCalendarMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' }).toUpperCase();
+  grid.querySelectorAll('.attendance-calendar-cell').forEach((cell) => cell.remove());
+  for (let i = 0; i < new Date(year, month, 1).getDay(); i += 1) {
+    const placeholder = document.createElement('span');
+    placeholder.className = 'attendance-calendar-cell attendance-calendar-placeholder';
+    placeholder.setAttribute('aria-hidden', 'true');
+    grid.appendChild(placeholder);
+  }
+  const today = new Date().toISOString().slice(0, 10);
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  for (let day = 1; day <= lastDay; day += 1) {
+    const iso = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const cell = document.createElement('span');
+    cell.className = `attendance-calendar-cell attendance-calendar-day${iso === attendanceSelectedDate ? ' day-active' : ''}${iso === today ? ' day-today' : ''}`;
+    cell.textContent = String(day);
+    cell.title = `Show attendance for ${iso}`;
+    cell.addEventListener('click', () => {
+      attendanceSelectedDate = iso;
+      renderAttendanceCalendar();
+      filterAttendanceRegisterByDate();
+    });
+    grid.appendChild(cell);
+  }
+  filterAttendanceRegisterByDate();
+}
+
+function filterAttendanceRegisterByDate() {
+  const body = document.getElementById('attendanceTableBody');
+  const label = document.getElementById('attendanceDateLabel');
+  if (!body) return;
+  body.querySelectorAll('tr[data-attendance-date]').forEach((row) => {
+    row.style.display = row.dataset.attendanceDate === attendanceSelectedDate ? '' : 'none';
+  });
+  if (label) label.textContent = `${formatLeaveDate(attendanceSelectedDate)} • Attendance register`;
 }
 
 // Bell counts live unread notifications. Same apiFetch + pill style as inbox.
@@ -105,9 +191,9 @@ function apiFetch(url, options = {}) {
   }).then((res) => {
     // Logged-out viewers bouncing around /login/?next=/login/ loop forever:
     // serve the login page instead of redirecting to itself.
-    if ((res.status === 401 || res.status === 403) && window.location.pathname.startsWith('/login')) return res;
-    if (res.status === 401) { window.location.href = "/login/?next=" + encodeURIComponent(window.location.pathname); throw new Error("auth"); }
-    if (res.status === 403) { window.location.href = '/login/?next=' + encodeURIComponent(window.location.pathname); throw new Error('auth'); }
+    if (res.status === 401 && (window.location.pathname.startsWith('/login') || window.location.pathname.startsWith('/hr/login'))) return res;
+    const loginPath = window.location.pathname.startsWith('/hr') ? '/hr/login/' : '/login/';
+    if (res.status === 401) { window.location.href = loginPath + '?next=' + encodeURIComponent(window.location.pathname); throw new Error("auth"); }
     return res;
   });
 }
@@ -775,6 +861,7 @@ async function handleOnboarding(e) {
   const form = e.target;
   const fullName = (form.querySelector('input[type="text"]')?.value || '').trim();
   const email = (form.querySelector('input[type="email"]')?.value || '').trim();
+  const password = document.getElementById('onboardPassword')?.value || '';
   const parts = fullName.split(/\s+/).filter(Boolean);
   if (parts.length < 2) {
     showToast('Enter the employee\'s first and last name.', 'error');
@@ -785,6 +872,7 @@ async function handleOnboarding(e) {
     first_name: parts.join(' '),
     last_name: lastName,
     email,
+    password,
   };
   const deptName = (form.querySelector('#onboardDepartment')?.value || '').trim();
   const roleVal = (form.querySelector('#onboardRole')?.value || '').trim();
@@ -819,7 +907,7 @@ async function handleOnboarding(e) {
       if (!data) return;
       const finish = (docCount) => {
         const suffix = docCount ? ` (${docCount} compliance doc${docCount > 1 ? 's' : ''} saved)` : '';
-        showToast(`Employee ${fullName || email} created & credentials issued!${suffix}`);
+        showToast(`Employee ${fullName || email} created. Login: ${email} | Initial password: ${password}${suffix}`);
         closeOnboardingModal();
         form.reset();
         form.querySelectorAll('[data-doc-label]').forEach((el) => { el.textContent = 'Upload File'; });
@@ -844,7 +932,7 @@ async function loadGrievanceView() {
   if (!list) return;
   try {
     const [grievanceRes, employeeRes] = await Promise.all([
-      apiFetch('/api/grievances/?page_size=100', { headers: { Accept: 'application/json' } }),
+      apiFetch('/api/complaints/?page_size=100', { headers: { Accept: 'application/json' } }),
       apiFetch('/api/employees/?page_size=100', { headers: { Accept: 'application/json' } }),
     ]);
     if (!grievanceRes.ok || !employeeRes.ok) throw new Error('grievance data unavailable');
@@ -853,7 +941,7 @@ async function loadGrievanceView() {
     const grievances = Array.isArray(grievancePayload) ? grievancePayload : grievancePayload.results || [];
     const employees = Array.isArray(employeePayload) ? employeePayload : employeePayload.results || [];
     if (complainant) {
-      complainant.innerHTML = '<option value="">Anonymous Filing</option>';
+      complainant.innerHTML = '<option value="">Select employee...</option>';
       employees.filter((employee) => employee.is_active !== false).forEach((employee) => {
         const option = document.createElement('option');
         option.value = employee.id;
@@ -871,10 +959,10 @@ async function loadGrievanceView() {
         const item = document.createElement('div');
         item.className = 'grievance-case-item';
         item.innerHTML =
-          `<div class="case-header-row"><strong class="case-title">Case #${escapeHtml(String(grievance.id).slice(0, 8))}: ${escapeHtml(grievance.title)}</strong>` +
+          `<div class="case-header-row"><strong class="case-title">Case #${escapeHtml(String(grievance.id).slice(0, 8))}: ${escapeHtml(grievance.subject)}</strong>` +
           `<span class="penpot-badge badge-${escapeHtml(statusClass)}">${escapeHtml(status)}</span></div>` +
           `<p class="case-submeta">Filed by: ${escapeHtml(grievance.employee_name || 'Anonymous Filing')} • Date: ${escapeHtml(formatLeaveDate(String(grievance.created_at || '').slice(0, 10)))}</p>` +
-          `<p class="case-quote">${escapeHtml(grievance.details)}</p>`;
+          `<p class="case-quote">${escapeHtml(grievance.description)}</p>`;
         list.appendChild(item);
       });
     }
@@ -895,14 +983,14 @@ async function loadGrievanceView() {
 async function handleGrievanceSubmit(e) {
   e.preventDefault();
   const form = e.target;
-  const complainant = document.getElementById('grievComplainant')?.value || null;
-  const category = document.getElementById('grievCategory')?.value || 'Workplace Environment / Workload';
+  const complainant = document.getElementById('grievComplainant')?.value || '';
+  const category = document.getElementById('grievCategory')?.value || 'general';
   const title = document.getElementById('grievTitle')?.value.trim() || '';
   const details = document.getElementById('grievDetails')?.value.trim() || '';
   try {
-    const res = await apiFetch('/api/grievances/', {
+    const res = await apiFetch('/api/complaints/', {
       method: 'POST',
-      body: JSON.stringify({ employee: complainant, category, title, details }),
+      body: JSON.stringify({ employee: complainant || undefined, category, subject: title, description: details }),
     });
     if (!res.ok) throw new Error('file failed');
     showToast('Confidential grievance filed and assigned to HR Mediator.');
@@ -1710,16 +1798,11 @@ async function handleRequestAdvance(e) {
     showToast('Requested amount must be greater than zero.', 'error');
     return;
   }
-  const employeeId = applicant?.value || await resolveEmployeeId(applicantName);
-  if (!employeeId) {
-    showToast('Applicant is not in the live employee directory yet.');
-    return;
-  }
   try {
     const res = await apiFetch('/api/advances/', {
       method: 'POST',
       body: JSON.stringify({
-        employee: employeeId,
+        employee: applicant?.value || undefined,
         amount,
         repayment_terms: terms,
         purpose,
@@ -1844,14 +1927,10 @@ function handleApplyLeave(e) {
   e.preventDefault();
   const form = e.target;
   const employeeId = document.getElementById('leaveApplicant')?.value || '';
-  if (!employeeId) {
-    showToast('Select an employee from the live directory.', 'error');
-    return;
-  }
   apiFetch('/api/leaves/', {
     method: 'POST',
     body: JSON.stringify({
-      employee: employeeId,
+      employee: employeeId || undefined,
       leave_type: document.getElementById('leaveType')?.value || 'Personal',
       start_date: document.getElementById('leaveStartDate')?.value || null,
       end_date: document.getElementById('leaveEndDate')?.value || null,
@@ -2195,7 +2274,7 @@ function handleAuthLogin(e) {
     .then((data) => {
       if (!data) return;
       showToast(`Welcome back, ${username}! Signed in.`);
-      const next = new URLSearchParams(window.location.search).get('next') || '/';
+      const next = new URLSearchParams(window.location.search).get('next') || data.next_url || '/';
       window.location.href = next;
     })
     .catch(() => showToast('Sign-in service unreachable. Try again later.', 'error'));
@@ -2238,6 +2317,11 @@ function navigateToLogin(mode = 'login') {
   const currentPath = window.location.pathname.toLowerCase();
   const isFileProtocol = window.location.protocol === 'file:';
 
+  if (mode === 'hr' && !isFileProtocol && !currentPath.endsWith('.html')) {
+    window.location.href = '/hr/login/';
+    return;
+  }
+
   if (isFileProtocol || currentPath.endsWith('.html')) {
     window.location.href = `login.html#${mode}`;
   } else {
@@ -2249,7 +2333,7 @@ function signOut() {
   showToast('Signing out of corporate session...');
   apiFetch('/api/session-logout/', { method: 'POST' })
     .catch(() => {})
-    .finally(() => navigateToLogin('login'));
+    .finally(() => navigateToLogin(window.location.pathname.startsWith('/hr') ? 'hr' : 'login'));
 }
 
 // ==========================================================================
@@ -2385,7 +2469,7 @@ if (typeof window.showToast !== 'function') {
 
 // Public aggregate counts for the landing page.
 function loadDashboardSummary() {
-  apiFetch('/api/dashboard-summary/', { headers: { Accept: 'application/json' } })
+  return apiFetch('/api/dashboard-summary/', { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, cache: 'no-store' })
     .then((res) => {
       if (!res.ok) throw new Error('summary unavailable');
       return res.json();
@@ -2421,9 +2505,9 @@ async function loadDashboardAttendance() {
   const today = new Date().toISOString().slice(0, 10);
   try {
     const [attendanceRes, employeeRes, departmentRes] = await Promise.all([
-      apiFetch('/api/attendance/?page_size=100', { headers: { Accept: 'application/json' } }),
-      apiFetch('/api/employees/?page_size=100', { headers: { Accept: 'application/json' } }),
-      apiFetch('/api/departments/?page_size=100', { headers: { Accept: 'application/json' } }),
+      apiFetch('/api/attendance/?page_size=100', { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, cache: 'no-store' }),
+      apiFetch('/api/employees/?page_size=100', { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, cache: 'no-store' }),
+      apiFetch('/api/departments/?page_size=100', { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, cache: 'no-store' }),
     ]);
     if (!attendanceRes.ok || !employeeRes.ok || !departmentRes.ok) throw new Error('dashboard attendance unavailable');
     const attendancePayload = await attendanceRes.json();
@@ -2440,11 +2524,12 @@ async function loadDashboardAttendance() {
       body.innerHTML = '<tr><td colspan="5">No attendance records for today.</td></tr>';
       return;
     }
-    attendance.slice(0, 6).forEach((record) => {
+    attendance.forEach((record) => {
       const employee = employeeById[record.employee] || {};
       const name = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || employee.email || record.employee;
       const status = record.clock_out ? 'Complete' : 'Clocked in';
       const row = document.createElement('tr');
+      row.dataset.attendanceDate = record.date || '';
       row.innerHTML =
         `<td class="bold-title">${escapeHtml(name)}</td>` +
         `<td>${escapeHtml(departmentById[employee.department] || '—')}</td>` +
@@ -2453,6 +2538,7 @@ async function loadDashboardAttendance() {
         `<td>${escapeHtml(fmtTime(record.clock_in))}</td>`;
       body.appendChild(row);
     });
+    filterAttendanceRegisterByDate();
   } catch (error) {
     body.innerHTML = '<tr><td colspan="5">Dashboard attendance is unavailable.</td></tr>';
   }
@@ -2720,7 +2806,7 @@ async function loadAttendanceView() {
   if (!body) return;
   body.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
   try {
-    const res = await apiFetch('/api/attendance/?page_size=50');
+    const res = await apiFetch('/api/attendance/me/');
     if (!res.ok) throw new Error('load failed');
     const payload = await res.json();
     const rows = Array.isArray(payload) ? payload : payload.results || [];
@@ -2734,6 +2820,7 @@ async function loadAttendanceView() {
         const open = !a.clock_out;
         const tr = document.createElement('tr');
         tr.setAttribute('data-live', 'true');
+        tr.dataset.attendanceDate = a.date || '';
         tr.innerHTML =
           `<td><div class="bold-title">${escapeHtml(String(names[a.employee] || a.employee || ''))}</div>` +
           `<div class="sub-role">${escapeHtml(String(a.date || ''))}</div></td>` +
@@ -2748,6 +2835,28 @@ async function loadAttendanceView() {
     body.innerHTML = '<tr><td colspan="5">Attendance data is unavailable.</td></tr>';
     setApiMode('demo');
     showToast('Attendance data could not be loaded.', 'error');
+  }
+}
+
+async function submitSelfAttendance(action) {
+  const buttonId = action === 'clock_in' ? 'portalClockInButton' : 'portalClockOutButton';
+  const button = document.getElementById(buttonId);
+  if (button) button.disabled = true;
+  try {
+    const res = await apiFetch('/api/attendance/me/', {
+      method: 'POST',
+      body: JSON.stringify({ action }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Attendance could not be recorded.');
+    showToast(action === 'clock_in' ? 'Clock-in recorded.' : 'Clock-out recorded.');
+    await loadAttendanceView();
+    loadDashboardSummary();
+    loadDashboardAttendance();
+  } catch (error) {
+    showToast(error.message, 'error');
+  } finally {
+    if (button) button.disabled = false;
   }
 }
 

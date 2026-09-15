@@ -5,12 +5,15 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, path
 from django.views.generic import RedirectView
 
-from core.views import dashboard_view, login_view
+from core.views import dashboard_view, employee_portal_view, hr_dashboard_view, hr_login_view, login_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", dashboard_view, name="dashboard"),
     path("login/", login_view, name="login"),
+    path("hr/login/", hr_login_view, name="hr-login"),
+    path("hr/", hr_dashboard_view, name="hr-dashboard"),
+    path("employee/", employee_portal_view, name="employee-portal"),
     path("signup/", RedirectView.as_view(url="/login/", permanent=False)),
     path("auth/", RedirectView.as_view(url="/login/", permanent=False)),
     path("core/", include("core.urls")),

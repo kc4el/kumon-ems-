@@ -8,6 +8,7 @@ from .models import (
     Attendance,
     AttendanceCorrection,
     ClaimStatus,
+    Complaint,
     Department,
     Employee,
     EmployeeAuditLog,
@@ -50,6 +51,19 @@ class GrievanceSerializer(serializers.ModelSerializer):
 
     def get_employee_role(self, obj):
         return obj.employee.role if obj.employee and obj.employee.role else ""
+
+
+class ComplaintSerializer(serializers.ModelSerializer):
+    employee_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Complaint
+        fields = "__all__"
+        read_only_fields = ("id", "created_at", "employee_name")
+        extra_kwargs = {"employee": {"required": False}}
+
+    def get_employee_name(self, obj):
+        return str(obj.employee)
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
@@ -107,9 +121,8 @@ class AttendanceCorrectionSerializer(serializers.ModelSerializer):
             "reason",
             "status",
             "created_at",
-            "updated_at",
         )
-        read_only_fields = ("id", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at")
 
     def validate(self, data):
         def val(name):
@@ -160,6 +173,7 @@ class LeaveRequestSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "created_at"]
+        extra_kwargs = {"employee": {"required": False}}
 
     def get_employee_name(self, obj):
         return str(obj.employee)

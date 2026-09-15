@@ -121,6 +121,7 @@ class SalaryAdvanceSerializer(serializers.ModelSerializer):
             "created_at",
         )
         read_only_fields = ("id", "status", "created_at")
+        extra_kwargs = {"employee": {"required": False}}
 
 
 class OnboardingDocumentListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
@@ -132,6 +133,14 @@ class OnboardingDocumentListCreateView(OwnerQuerysetMixin, generics.ListCreateAP
 class SalaryAdvanceListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
     queryset = SalaryAdvance.objects.all().order_by("-created_at")
     serializer_class = SalaryAdvanceSerializer
+
+    def perform_create(self, serializer):
+        employee = Employee.objects.filter(user=self.request.user).first()
+        if not self.request.user.is_staff and employee is None:
+            raise DRFValidationError({"employee": "No linked employee profile."})
+        if not self.request.user.is_staff:
+            serializer.validated_data["employee"] = employee
+        serializer.save()
 
 
 class SalaryAdvanceDetailView(generics.RetrieveUpdateDestroyAPIView):

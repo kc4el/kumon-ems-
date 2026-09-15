@@ -282,6 +282,41 @@ class Grievance(models.Model):
         ordering = ("-created_at",)
 
 
+class Complaint(models.Model):
+    class Status(models.TextChoices):
+        OPEN = "Open", "Open"
+        IN_REVIEW = "In Review", "In Review"
+        RESOLVED = "Resolved", "Resolved"
+        DISMISSED = "Dismissed", "Dismissed"
+
+    class Category(models.TextChoices):
+        WORKPLACE = "workplace", "Workplace conduct"
+        HARASSMENT = "harassment", "Harassment"
+        PAYROLL = "payroll", "Payroll issue"
+        GENERAL = "general", "General"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    employee = models.ForeignKey(
+        "Employee", on_delete=models.CASCADE, related_name="complaints"
+    )
+    subject = models.CharField(max_length=200)
+    description = models.TextField()
+    category = models.CharField(
+        max_length=20, choices=Category.choices, default=Category.GENERAL
+    )
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.OPEN
+    )
+    is_confidential = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.subject} ({self.employee_id})"
+
+
 class Message(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     conversation_key = models.CharField(max_length=100, default="sarah", db_index=True)

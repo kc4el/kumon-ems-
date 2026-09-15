@@ -1859,6 +1859,7 @@ body {
 .cal-days-table {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 30px;
   gap: 4px;
   text-align: center;
   font-size: 12px;
@@ -1872,10 +1873,23 @@ body {
   padding: 4px 0;
 }
 
-.cal-days-table span:not(.cal-h) {
-  padding: 6px 0;
+.attendance-calendar-cell {
+  width: 30px;
+  height: 30px;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.attendance-calendar-placeholder {
+  cursor: default;
+}
+
+.attendance-calendar-day:hover {
+  background: #e0f2fe;
 }
 
 .day-active {

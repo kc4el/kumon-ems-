@@ -1453,19 +1453,19 @@
 
             <form onsubmit="handleGrievanceSubmit(event)">
               <div class="input-cell" style="margin-bottom:12px;">
-                <label>COMPLAINANT EMPLOYEE</label>
+                <label>COMPLAINANT EMPLOYEE (OPTIONAL FOR EMPLOYEE PORTAL)</label>
                 <select class="penpot-select-full" id="grievComplainant">
-                  <option value="">Anonymous Filing</option>
+                  <option value="">Select employee...</option>
                 </select>
               </div>
 
               <div class="input-cell" style="margin-bottom:12px;">
                 <label>GRIEVANCE CATEGORY</label>
                 <select class="penpot-select-full" id="grievCategory" required>
-                  <option>Workplace Environment / Workload</option>
-                  <option>Compensation & Commission</option>
-                  <option>Harassment & Conduct</option>
-                  <option>Equipment & Physical Accommodations</option>
+                  <option value="general">General concern</option>
+                  <option value="workplace">Workplace conduct</option>
+                  <option value="payroll">Payroll issue</option>
+                  <option value="harassment">Harassment</option>
                 </select>
               </div>
 
@@ -1558,8 +1558,11 @@
               <h2 class="card-title">Daily Attendance & Time Register</h2>
               <p class="card-sub" id="attendanceDateLabel">Today • Status: Logged & Verified</p>
             </div>
-            <button class="btn btn-outline-gray" onclick="exportAttendanceRegister()">Export
-              Register</button>
+            <div class="hero-cta-buttons">
+              <button type="button" id="portalClockInButton" class="btn btn-navy-cta" onclick="submitSelfAttendance('clock_in')">Clock in</button>
+              <button type="button" id="portalClockOutButton" class="btn btn-outline-gray" onclick="submitSelfAttendance('clock_out')">Clock out</button>
+              <button type="button" class="btn btn-outline-gray" onclick="exportAttendanceRegister()">Export Register</button>
+            </div>
           </div>
 
           <div class="daily-log-split">
@@ -1567,21 +1570,15 @@
             <div class="cal-nav-panel">
               <span class="cal-title-tag">CALENDAR NAVIGATOR</span>
               <div class="cal-month-nav">
-                <button class="cal-nav-arr">◀</button>
+                <button type="button" class="cal-nav-arr" id="attendancePrevMonth" aria-label="Previous month">◀</button>
                 <strong class="cal-month-txt" id="attendanceMonthLabel">Current Month</strong>
-                <button class="cal-nav-arr">▶</button>
+                <button type="button" class="cal-nav-arr" id="attendanceNextMonth" aria-label="Next month">▶</button>
               </div>
 
-              <div class="cal-days-table">
+              <div class="cal-days-table" id="attendanceCalendarGrid">
                 <span class="cal-h">SU</span><span class="cal-h">MO</span><span class="cal-h">TU</span><span
                   class="cal-h">WE</span><span class="cal-h">TH</span><span class="cal-h">FR</span><span
                   class="cal-h">SA</span>
-                <span></span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span>
-                <span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span>
-                <span>14</span><span>15</span><span>16</span><span
-                  class="day-active">17</span><span>18</span><span>19</span><span>20</span>
-                <span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span>
-                <span>28</span><span>29</span><span>30</span>
               </div>
 
               <div class="cal-legend-tags">
@@ -3545,7 +3542,7 @@
       <form onsubmit="handleApplyLeave(event)">
         <div class="input-cell" style="margin-bottom:12px;">
           <label>APPLICANT</label>
-          <select id="leaveApplicant" class="penpot-select-full" required>
+          <select id="leaveApplicant" class="penpot-select-full">
             <option value="">Loading employees...</option>
           </select>
         </div>
@@ -3592,7 +3589,7 @@
       <form onsubmit="handleRequestAdvance(event)">
         <div class="input-cell" style="margin-bottom:12px;">
           <label>APPLICANT EMPLOYEE</label>
-          <select class="penpot-select-full" id="advanceApplicant" required>
+          <select class="penpot-select-full" id="advanceApplicant">
             <option>Sarah Chen (Senior Dev • $8,500/mo)</option>
             <option>Marcus Williams (Senior Dev • $8,500/mo)</option>
             <option>Amanda Vance (Brand Strategist • $6,200/mo)</option>
@@ -3692,6 +3689,11 @@
             <div class="input-cell">
               <label>Start Date <span class="req-star">*</span></label>
               <input type="date" value="2025-08-25" required />
+            </div>
+            <div class="input-cell">
+              <label>Initial Login Password <span class="req-star">*</span></label>
+              <input id="onboardPassword" type="password" minlength="8"
+                placeholder="At least 8 characters" required />
             </div>
           </div>
         </div>

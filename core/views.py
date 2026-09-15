@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, models, transaction
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -24,6 +24,7 @@ from .models import (
     Attendance,
     AttendanceCorrection,
     ClaimStatus,
+    Complaint,
     Department,
     Employee,
     EmployeeAuditLog,
@@ -45,6 +46,7 @@ from .serializers import (
     AttendanceCorrectionSerializer,
     AttendanceSerializer,
     ClaimStatusSerializer,
+    ComplaintSerializer,
     DepartmentSerializer,
     EmployeeAuditLogSerializer,
     EmployeeSerializer,
@@ -107,6 +109,8 @@ class ForceOwnerCreateMixin:
 
 @ensure_csrf_cookie
 def dashboard_view(request):
+    if request.user.is_authenticated:
+        return redirect("/hr/" if _is_hr_user(request.user) else "/employee/")
     return render(request, "core/index.html")
 
 
@@ -115,8 +119,63 @@ def attendance_checkin_view(request):
     return render(request, "core/attendance_checkin.html")
 
 
+@ensure_csrf_cookie
 def login_view(request):
     return render(request, "core/login.html")
+
+
+@ensure_csrf_cookie
+def hr_login_view(request):
+    return render(request, "core/hr_login.html")
+
+
+def _is_hr_user(user):
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_staff:
+        return True
+    employee = Employee.objects.select_related("department").filter(user=user).first()
+    if employee is None:
+        return False
+    return (
+        (employee.department and employee.department.name.lower() == "hr")
+        or "hr" in (employee.role or "").lower()
+    )
+
+
+def _authenticate_login(request, identifier, password):
+    """Authenticate by Django username or the account email address."""
+    identifier = str(identifier or "").strip()
+    user = authenticate(request, username=identifier, password=password)
+    if user is not None:
+        return user
+    email_user = User.objects.filter(email__iexact=identifier, is_active=True).first()
+    if email_user is None:
+        return None
+    return authenticate(request, username=email_user.username, password=password)
+
+
+def hr_dashboard_view(request):
+    if not request.user.is_authenticated:
+        return redirect("/hr/login/?next=/hr/")
+    if not _is_hr_user(request.user):
+        # An employee session must re-authenticate through the HR entry point;
+        # sending it to employee login makes the HR link appear broken.
+        logout(request)
+        return redirect("/hr/login/?next=/hr/")
+    return render(request, "core/index.html")
+
+
+@ensure_csrf_cookie
+def employee_portal_view(request):
+    if not request.user.is_authenticated:
+        return redirect("/login/?next=/employee/")
+    if _is_hr_user(request.user):
+        return redirect("/hr/")
+    if not Employee.objects.filter(user=request.user, is_active=True).exists():
+        logout(request)
+        return redirect("/login/?next=/employee/")
+    return render(request, "core/employee_portal.html")
 
 
 class DashboardSummaryView(APIView):
@@ -177,6 +236,25 @@ class GrievanceListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
 class GrievanceDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Grievance.objects.all()
     serializer_class = GrievanceSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrStaff]
+
+
+class ComplaintListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
+    queryset = Complaint.objects.select_related("employee").all()
+    serializer_class = ComplaintSerializer
+
+    def perform_create(self, serializer):
+        employee = _request_owner(self.request)
+        if not self.request.user.is_staff and employee is None:
+            raise DRFValidationError({"employee": "No linked employee profile."})
+        if not self.request.user.is_staff:
+            serializer.validated_data["employee"] = employee
+        super().perform_create(serializer)
+
+
+class ComplaintDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Complaint.objects.select_related("employee").all()
+    serializer_class = ComplaintSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
 
@@ -259,6 +337,7 @@ class EmployeeListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
                         "id": record_id,
                         "email": email,
                         "email_confirm": True,
+                        **({"password": password} if password else {}),
                         "user_metadata": {
                             "first_name": payload.get("first_name", ""),
                             "last_name": payload.get("last_name", ""),
@@ -557,6 +636,8 @@ class AttendanceClockOutView(APIView):
                     {"error": "clock_out must be an ISO-8601 datetime."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+
+
             if timezone.is_naive(clock_out_time):
                 clock_out_time = timezone.make_aware(clock_out_time)
         else:
@@ -596,6 +677,57 @@ class AttendanceClockOutView(APIView):
                 {"error": "Invalid employee_id."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class AttendanceSelfView(APIView):
+    """Session-authenticated clock-in/out for the employee portal."""
+
+    permission_classes = [IsAuthenticated]
+
+    def _employee(self, request):
+        employee = _request_owner(request)
+        if employee is None or not employee.is_active:
+            raise PermissionDenied("No active employee profile is linked to this account.")
+        return employee
+
+    def get(self, request):
+        employee = self._employee(request)
+        rows = Attendance.objects.filter(employee=employee).order_by("-date", "-clock_in")[:31]
+        return Response(AttendanceSerializer(rows, many=True).data)
+
+    def post(self, request):
+        employee = self._employee(request)
+        action = str(request.data.get("action", "clock_in")).lower()
+        if action == "clock_out":
+            open_row = Attendance.objects.filter(
+                employee=employee,
+                date=timezone.localdate(),
+                clock_out__isnull=True,
+            ).order_by("-clock_in").first()
+            if open_row is None:
+                return Response(
+                    {"error": "No open clock-in found for today."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            open_row.clock_out = timezone.now()
+            open_row.save(update_fields=["clock_out"])
+            return Response(AttendanceSerializer(open_row).data)
+        today = timezone.localdate()
+        try:
+            with transaction.atomic():
+                row, created = Attendance.objects.get_or_create(
+                    employee=employee,
+                    date=today,
+                    defaults={"clock_in": timezone.now()},
+                )
+        except IntegrityError:
+            raise Conflict409("Attendance has already been started for today.")
+        if not created:
+            return Response(
+                {"error": "Attendance has already been started for today."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        return Response(AttendanceSerializer(row).data, status=status.HTTP_201_CREATED)
 
 
 class LeaveRequestListCreateView(
@@ -999,26 +1131,48 @@ class SessionLoginView(APIView):
     throttle_classes = []
 
     def post(self, request):
-        user = authenticate(
-            request,
-            username=request.data.get("username"),
-            password=request.data.get("password"),
-        )
+        user = _authenticate_login(request, request.data.get("username"), request.data.get("password"))
         if user is None:
             return Response(
                 {"error": "Invalid credentials."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-        # Resigned/deactivated staff must not sign in. Staff accounts bypass
-        # the check so deactivated manager rows cannot lock out the office.
+        # Staff accounts are HR accounts. Employee accounts must have an
+        # active linked Employee row before a session can be created.
         employee = Employee.objects.filter(user=user).first()
-        if employee is not None and not employee.is_active and not user.is_staff:
+        if not user.is_staff and (employee is None or not employee.is_active):
             return Response(
-                {"error": "Invalid credentials."},
+                {"error": "This account is not linked to an active employee profile."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if _is_hr_user(user):
+            return Response(
+                {"error": "HR accounts must use the HR login."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        login(request, user)
+        return Response(
+            {"message": "Signed in.", "next_url": "/employee/"},
+            status=status.HTTP_200_OK,
+        )
+
+
+class HrSessionLoginView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = []
+
+    def post(self, request):
+        user = _authenticate_login(request, request.data.get("username"), request.data.get("password"))
+        if user is None or not _is_hr_user(user) or not user.is_active:
+            return Response(
+                {"error": "HR credentials are invalid."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         login(request, user)
-        return Response({"message": "Signed in."}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "HR signed in.", "next_url": "/hr/"},
+            status=status.HTTP_200_OK,
+        )
 
 
 class SessionLogoutView(APIView):

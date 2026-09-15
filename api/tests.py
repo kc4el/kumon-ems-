@@ -14,6 +14,7 @@ from rest_framework.test import APIClient
 from core.exceptions import Conflict409
 from core.models import (
     Attendance,
+    Complaint,
     Department,
     Employee,
     EmployeeAuditLog,
@@ -2043,6 +2044,65 @@ class OwnerScopingTests(TestCase):
         self.assertEqual(response.status_code, 200)
         ids = [row["id"] for row in response.json()["results"]]
         self.assertNotIn(str(self.leave.id), ids)
+
+    def test_employee_portal_attendance_and_requests_use_authenticated_owner(self):
+        client = self._client(self.owner)
+        other = str(self.other_emp.id)
+
+        clocked_in = client.post("/api/attendance/me/", {"action": "clock_in"}, format="json")
+        self.assertEqual(clocked_in.status_code, 201)
+        self.assertEqual(clocked_in.json()["employee"], str(self.owner_emp.id))
+
+        rejected_leave = client.post(
+            "/api/leaves/",
+            {
+                "employee": other,
+                "start_date": "2026-09-20",
+                "end_date": "2026-09-21",
+                "reason": "Personal leave",
+            },
+            format="json",
+        )
+        self.assertEqual(rejected_leave.status_code, 403)
+        leave = client.post(
+            "/api/leaves/",
+            {
+                "start_date": "2026-09-20",
+                "end_date": "2026-09-21",
+                "reason": "Personal leave",
+            },
+            format="json",
+        )
+        self.assertEqual(leave.status_code, 201)
+        self.assertEqual(leave.json()["employee"], str(self.owner_emp.id))
+
+        complaint = client.post(
+            "/api/complaints/",
+            {
+                "subject": "Portal complaint",
+                "description": "A private concern.",
+                "category": "general",
+            },
+            format="json",
+        )
+        self.assertEqual(complaint.status_code, 201)
+        self.assertEqual(complaint.json()["employee"], str(self.owner_emp.id))
+
+        advance = client.post(
+            "/api/advances/",
+            {
+                "amount": "250.00",
+                "purpose": "Unexpected expense",
+            },
+            format="json",
+        )
+        self.assertEqual(advance.status_code, 201)
+        self.assertEqual(advance.json()["employee"], str(self.owner_emp.id))
+
+        clocked_out = client.post("/api/attendance/me/", {"action": "clock_out"}, format="json")
+        self.assertEqual(clocked_out.status_code, 200)
+        self.assertIsNotNone(clocked_out.json()["clock_out"])
+        self.assertEqual(Complaint.objects.get().employee_id, self.owner_emp.id)
 
     def test_non_owner_leave_detail_denied(self):
         response = self._client(self.other).get(f"/api/leaves/{self.leave.id}/")

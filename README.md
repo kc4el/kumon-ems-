@@ -2,6 +2,20 @@
 
 Kumon EMS is a Django-based employee-management dashboard. The server-rendered dashboard now consumes the same-origin Django REST API to display live employee, department, attendance, and leave-request data from Supabase.
 
+## Employee portal data mapping
+
+The employee portal uses Django session authentication and the shared Django tables. Non-staff create requests do not trust an employee id supplied by the browser; the backend resolves `request.user.employee_profile` and overwrites the foreign key before saving.
+
+| Portal action | API | Shared table | Ownership rule |
+| --- | --- | --- | --- |
+| Clock in/out | `POST /api/attendance/me/` with `action` | `core_attendance` | Session user is resolved to `Employee`; date and timestamps are server-side. |
+| Attendance history | `GET /api/attendance/me/` | `core_attendance` | Returns only the authenticated employee's rows. |
+| Leave request | `POST /api/leaves/` | `core_leaverequest` | `ForceOwnerCreateMixin` replaces a non-staff employee id with the session owner. Lists use `employee__user` filtering. |
+| Complaint filing | `POST /api/complaints/` | `core_complaint` | Non-staff submissions are assigned to the session owner; list/detail access uses owner permissions. |
+| Salary advance | `POST /api/advances/` | `core_salaryadvance` | Non-staff submissions are assigned to the session owner; list/detail access uses owner permissions. |
+
+This is the Django equivalent of Supabase RLS: the browser only calls same-origin endpoints with CSRF protection, and server-side queryset scoping prevents employees from reading or writing another employee's records. Supabase access remains server-side through `core.supabase_client`; no service key is exposed to portal JavaScript.
+
 ## Integrated workflows
 
 | Dashboard area | Backend endpoint(s) | Current behavior |

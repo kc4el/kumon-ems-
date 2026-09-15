@@ -37,16 +37,16 @@
 
           <form class="penpot-auth-form" onsubmit="handleAuthLogin(event)">
             <div class="penpot-form-group">
-              <label class="penpot-form-label" for="loginEmployeeId">Employee ID Number</label>
+              <label class="penpot-form-label" for="loginEmployeeId">Corporate Email Address</label>
               <div class="penpot-input-wrap">
-                <input type="text" id="loginEmployeeId" class="penpot-input" placeholder="e.g. EMP-10482" value="EMP-10482" required />
+                <input type="email" id="loginEmployeeId" class="penpot-input" placeholder="employee@company.com" required />
               </div>
             </div>
 
             <div class="penpot-form-group">
               <label class="penpot-form-label" for="loginPasswordInput">Password</label>
               <div class="penpot-input-wrap">
-                <input type="password" id="loginPasswordInput" class="penpot-input has-action" placeholder="••••••••••••" value="kumon2026" required />
+                <input type="password" id="loginPasswordInput" class="penpot-input has-action" placeholder="Enter your password" required />
                 <button type="button" class="penpot-input-action" onclick="togglePasswordVisibility('loginPasswordInput', this)">Show</button>
               </div>
             </div>

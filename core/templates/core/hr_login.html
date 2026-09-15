@@ -1,0 +1,76 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HR Login | Kumon EMS</title>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+</head>
+<body class="auth-page-body">
+  <div class="auth-standalone-layout">
+    <header class="auth-top-navbar">
+      <div class="brand-header" style="margin-bottom: 0;">
+        <div class="brand-logo-box brand-kumon-box">
+          <img src="{% static 'images/kumon-logo.png' %}" alt="Kumon Logo" class="brand-logo-img" />
+        </div>
+      </div>
+    </header>
+    <main class="auth-center-stage">
+      <div class="auth-card-container">
+        <div class="penpot-auth-card">
+          <div class="penpot-auth-badge badge-onboarding">HR ADMINISTRATION</div>
+          <h1 class="penpot-auth-title">HR dashboard sign in</h1>
+          <p class="penpot-auth-sub">Use an authorized HR account to manage employees, attendance, leave, payroll, and complaints.</p>
+          <form class="penpot-auth-form" onsubmit="handleHrLogin(event)">
+            <div class="penpot-form-group">
+              <label class="penpot-form-label" for="hrUsername">HR username or email</label>
+              <input type="text" id="hrUsername" class="penpot-input" autocomplete="username" required />
+            </div>
+            <div class="penpot-form-group">
+              <label class="penpot-form-label" for="hrPassword">Password</label>
+              <input type="password" id="hrPassword" class="penpot-input" autocomplete="current-password" required />
+            </div>
+            <button type="submit" class="penpot-btn-primary-navy">Enter HR dashboard</button>
+          </form>
+          <div class="penpot-switcher-row">
+            <span>Employee account?</span>
+            <a class="penpot-switch-link coral" href="/login/">Go to employee login</a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div id="toastContainer" class="toast-stack"></div>
+  <script>
+    function showToast(message) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+
+    function handleHrLogin(event) {
+      event.preventDefault();
+      const csrf = document.cookie.split('; ').find((cookie) => cookie.startsWith('csrftoken='))?.split('=')[1];
+      fetch('/api/hr-session-login/', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', ...(csrf ? { 'X-CSRFToken': csrf } : {}) },
+        body: JSON.stringify({
+          username: document.getElementById('hrUsername').value.trim(),
+          password: document.getElementById('hrPassword').value,
+        }),
+      }).then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'HR credentials are invalid.');
+        window.location.href = data.next_url || '/hr/';
+      }).catch((error) => {
+        if (typeof showToast === 'function') showToast(error.message, 'error');
+      });
+    }
+  </script>
+</body>
+</html>

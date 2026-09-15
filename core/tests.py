@@ -3,7 +3,9 @@ from unittest.mock import patch
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
-from django.test import TestCase
+from django.test import Client, TestCase
+from django.contrib.auth.models import User
+from rest_framework.test import APIClient
 from django.utils import timezone
 
 from .models import (
@@ -259,6 +261,152 @@ class PageViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Sign In to Portal")
         self.assertContains(response, "Complete Registration")
+
+    def test_hr_login_and_dashboard_are_separate(self):
+        response = self.client.get("/hr/login/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "HR dashboard sign in")
+
+        anonymous_dashboard = self.client.get("/hr/")
+        self.assertEqual(anonymous_dashboard.status_code, 302)
+        self.assertIn("/hr/login/", anonymous_dashboard["Location"])
+
+    def test_hr_session_login_requires_staff(self):
+        employee = User.objects.create_user(username="employee", password="pw")
+        hr = User.objects.create_user(username="hr", password="pw", is_staff=True)
+        client = APIClient()
+
+        denied = client.post(
+            "/api/hr-session-login/",
+            {"username": employee.username, "password": "pw"},
+            format="json",
+        )
+        self.assertEqual(denied.status_code, 401)
+
+        allowed = client.post(
+            "/api/hr-session-login/",
+            {"username": hr.username, "password": "pw"},
+            format="json",
+        )
+        self.assertEqual(allowed.status_code, 200)
+        self.assertEqual(allowed.json()["next_url"], "/hr/")
+
+        dashboard = client.get("/hr/")
+        self.assertEqual(dashboard.status_code, 200)
+
+    def test_hr_login_by_email_keeps_session_for_dashboard(self):
+        hr = User.objects.create_user(
+            username="hr-user", email="hr-user@example.com", password="pw", is_staff=True
+        )
+        client = Client()
+        response = client.post(
+            "/api/hr-session-login/",
+            {"username": "hr-user@example.com", "password": "pw"},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["next_url"], "/hr/")
+        self.assertIn("sessionid", client.cookies)
+        dashboard = client.get("/hr/")
+        self.assertEqual(dashboard.status_code, 200)
+
+    def test_role_landing_pages_do_not_cross_redirect(self):
+        staff = User.objects.create_user(username="role-hr", password="pw", is_staff=True)
+        employee_user = User.objects.create_user(username="role-employee", password="pw")
+        Employee.objects.create(
+            first_name="Role",
+            last_name="Employee",
+            email="role-employee@example.com",
+            user=employee_user,
+        )
+
+        staff_client = self.client
+        staff_client.force_login(staff)
+        self.assertEqual(staff_client.get("/").url, "/hr/")
+        self.assertEqual(staff_client.get("/employee/").url, "/hr/")
+
+        employee_client = Client()
+        employee_client.force_login(employee_user)
+        self.assertEqual(employee_client.get("/").url, "/employee/")
+        self.assertEqual(employee_client.get("/hr/").url, "/hr/login/?next=/hr/")
+
+    def test_root_uses_hr_role_for_hr_linked_nonstaff(self):
+        hr_user = User.objects.create_user(username="linked-hr", password="pw")
+        hr_department = Department.objects.create(name="HR", code="HR-ROLE")
+        Employee.objects.create(
+            first_name="Linked",
+            last_name="HR",
+            email="linked-hr@example.com",
+            department=hr_department,
+            user=hr_user,
+        )
+        self.client.force_login(hr_user)
+        self.assertEqual(self.client.get("/").url, "/hr/")
+        self.assertEqual(self.client.get("/employee/").url, "/hr/")
+
+    def test_employee_login_rejects_hr_account_without_session(self):
+        hr_user = User.objects.create_user(username="hr-through-employee", password="pw")
+        hr_department = Department.objects.create(name="HR", code="HR-LOGIN")
+        Employee.objects.create(
+            first_name="HR",
+            last_name="Login",
+            email="hr-through-employee@example.com",
+            department=hr_department,
+            user=hr_user,
+        )
+        client = Client()
+        response = client.post(
+            "/api/session-login/",
+            {"username": hr_user.username, "password": "pw"},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertNotIn("sessionid", client.cookies)
+
+    def test_employee_login_rejects_unlinked_account_without_creating_session(self):
+        user = User.objects.create_user(username="unlinked", password="pw")
+        client = Client()
+        response = client.post(
+            "/api/session-login/",
+            {"username": user.username, "password": "pw"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse("sessionid" in client.cookies)
+
+    def test_employee_portal_has_all_module_tabs(self):
+        user = User.objects.create_user(username="portal-employee", password="pw")
+        Employee.objects.create(
+            first_name="Portal",
+            last_name="Employee",
+            email="portal-employee@example.com",
+            user=user,
+        )
+        self.client.force_login(user)
+        response = self.client.get("/employee/")
+        self.assertEqual(response.status_code, 200)
+        for label in ("Attendance", "Leave Requests", "Salary Advance", "Complaints"):
+            self.assertContains(response, label)
+
+    def test_employee_email_login_reaches_employee_portal(self):
+        user = User.objects.create_user(
+            username="listed@example.com", email="listed@example.com", password="pw"
+        )
+        Employee.objects.create(
+            first_name="Listed",
+            last_name="Employee",
+            email="listed@example.com",
+            user=user,
+        )
+        client = Client()
+        response = client.post(
+            "/api/session-login/",
+            {"username": "listed@example.com", "password": "pw"},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["next_url"], "/employee/")
+        self.assertEqual(client.get("/employee/").status_code, 200)
 
     def test_signup_and_auth_redirect_to_login(self):
         for path in ["/signup/", "/auth/"]:
