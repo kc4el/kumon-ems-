@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "core",
     "api",
     "django_dbml",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
