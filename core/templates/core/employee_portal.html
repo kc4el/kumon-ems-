@@ -96,6 +96,7 @@
           <label for="complaintDescription">Details</label><textarea id="complaintDescription" required></textarea>
           <button class="btn btn-navy-cta" type="submit">File complaint</button>
         </form>
+        <div class="employee-table-wrap"><table class="employee-table"><thead><tr><th>SUBJECT</th><th>CATEGORY</th><th>STATUS</th><th>FILED</th></tr></thead><tbody id="complaintRows"><tr><td colspan="4">Loading...</td></tr></tbody></table></div>
       </article>
       <article class="employee-card portal-panel" id="advancePanel">
         <div class="employee-card-head"><div><div class="employee-card-label">Payroll support</div><h2>Salary advance</h2><p>Request an advance linked to the payroll advance records.</p></div></div>
@@ -126,11 +127,17 @@
     const showStatus = (message, error = false) => { const el = document.getElementById('attendanceStatus'); el.textContent = message; el.style.color = error ? '#b42318' : '#166534'; };
     const rows = (data) => Array.isArray(data) ? data : data.results || [];
     const safe = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    let portalRefreshInFlight = false;
     async function loadPortalData() {
-      const [attendance, leaves, advances] = await Promise.all([portalFetch('/api/attendance/me/'), portalFetch('/api/leaves/?page_size=50'), portalFetch('/api/advances/?page_size=50')]);
+      if (portalRefreshInFlight) return;
+      portalRefreshInFlight = true;
+      try {
+      const [attendance, leaves, advances, complaints] = await Promise.all([portalFetch('/api/attendance/me/?_=' + Date.now()), portalFetch('/api/leaves/?page_size=50&_=' + Date.now()), portalFetch('/api/advances/?page_size=50&_=' + Date.now()), portalFetch('/api/complaints/?page_size=50&_=' + Date.now())]);
       document.getElementById('attendanceRows').innerHTML = rows(await payload(attendance)).map((item) => `<tr><td>${safe(item.date)}</td><td>${safe(item.clock_in || '-')}</td><td>${safe(item.clock_out || '-')}</td></tr>`).join('') || '<tr><td colspan="3">No attendance records.</td></tr>';
       document.getElementById('leaveRows').innerHTML = rows(await payload(leaves)).map((item) => `<tr><td>${safe(item.leave_type)}</td><td>${safe(item.start_date)} to ${safe(item.end_date)}</td><td>${safe(item.status)}</td></tr>`).join('') || '<tr><td colspan="3">No leave requests.</td></tr>';
       document.getElementById('advanceRows').innerHTML = rows(await payload(advances)).map((item) => `<tr><td>${safe(item.amount)}</td><td>${safe(item.purpose)}</td><td>${safe(item.status)}</td></tr>`).join('') || '<tr><td colspan="3">No advance requests.</td></tr>';
+      document.getElementById('complaintRows').innerHTML = rows(await payload(complaints)).map((item) => `<tr><td>${safe(item.subject)}</td><td>${safe(item.category)}</td><td>${safe(item.status)}</td><td>${safe(String(item.created_at || '').slice(0, 10))}</td></tr>`).join('') || '<tr><td colspan="4">No complaints filed.</td></tr>';
+      } finally { portalRefreshInFlight = false; }
     }
     async function attendanceAction(action) { try { const response = await portalFetch('/api/attendance/me/', { method:'POST', body:JSON.stringify({ action }) }); const data = await payload(response); if (!response.ok) throw new Error(data.error || 'Attendance could not be recorded.'); showStatus(action === 'clock_in' ? 'Clock-in recorded.' : 'Clock-out recorded.'); loadPortalData(); } catch (error) { if (error.message !== 'auth') showStatus(error.message, true); } }
     async function submitLeave(event) { event.preventDefault(); try { const response = await portalFetch('/api/leaves/', { method:'POST', body:JSON.stringify({ leave_type:leaveType.value, start_date:leaveStart.value, end_date:leaveEnd.value, reason:leaveReason.value }) }); if (!response.ok) throw new Error('Leave request could not be submitted.'); event.target.reset(); loadPortalData(); } catch (error) { showStatus(error.message, true); } }
@@ -138,6 +145,8 @@
     async function submitAdvance(event) { event.preventDefault(); try { const response = await portalFetch('/api/advances/', { method:'POST', body:JSON.stringify({ amount:advanceAmount.value, repayment_terms:advanceTerms.value, purpose:advancePurpose.value }) }); if (!response.ok) throw new Error('Advance request could not be submitted.'); event.target.reset(); loadPortalData(); } catch (error) { showStatus(error.message, true); } }
     async function employeeLogout() { await portalFetch('/api/session-logout/', { method:'POST' }).catch(() => {}); window.location.href = '/login/'; }
     loadPortalData().catch(() => showStatus('Portal data could not be loaded.', true));
+    setInterval(() => { if (!document.hidden) loadPortalData().catch(() => showStatus('Portal data could not be refreshed.', true)); }, 5000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) loadPortalData().catch(() => showStatus('Portal data could not be refreshed.', true)); });
   </script>
 </body>
 </html>

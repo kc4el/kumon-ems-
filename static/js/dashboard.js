@@ -42,7 +42,14 @@ async function refreshDashboardLiveData() {
   if (!document.getElementById('view-dashboard')) return;
   dashboardRefreshInFlight = true;
   try {
-    await Promise.all([loadDashboardSummary(), loadDashboardAttendance()]);
+    await Promise.all([
+      loadDashboardSummary(),
+      loadDashboardAttendance(),
+      loadLeaveRegister(),
+      loadGrievanceView(),
+      loadAdvancesView(),
+      loadClaimsSummary(),
+    ]);
   } finally {
     dashboardRefreshInFlight = false;
   }
