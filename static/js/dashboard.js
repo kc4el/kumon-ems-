@@ -45,6 +45,7 @@ async function refreshDashboardLiveData() {
     await Promise.all([
       loadDashboardSummary(),
       loadDashboardAttendance(),
+      loadDashboardPriorityActions(),
       loadLeaveRegister(),
       loadGrievanceView(),
       loadAdvancesView(),
@@ -52,6 +53,32 @@ async function refreshDashboardLiveData() {
     ]);
   } finally {
     dashboardRefreshInFlight = false;
+  }
+}
+
+async function loadDashboardPriorityActions() {
+  const container = document.getElementById('dashboardPriorityActions');
+  if (!container) return;
+  try {
+    const [leaveRes, complaintRes, advanceRes] = await Promise.all([
+      apiFetch('/api/leaves/?status=Pending&page_size=3', { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, cache: 'no-store' }),
+      apiFetch('/api/complaints/?page_size=3', { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, cache: 'no-store' }),
+      apiFetch('/api/advances/?page_size=3', { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, cache: 'no-store' }),
+    ]);
+    if (!leaveRes.ok || !complaintRes.ok || !advanceRes.ok) throw new Error('priority data unavailable');
+    const leavesPayload = await leaveRes.json();
+    const leaves = (Array.isArray(leavesPayload) ? leavesPayload : leavesPayload.results || []).slice(0, 1);
+    const complaintsPayload = await complaintRes.json();
+    const advancesPayload = await advanceRes.json();
+    const complaints = (Array.isArray(complaintsPayload) ? complaintsPayload : complaintsPayload.results || []).slice(0, 1);
+    const advances = (Array.isArray(advancesPayload) ? advancesPayload : advancesPayload.results || []).filter((item) => item.status === 'Pending').slice(0, 1);
+    const cards = [];
+    if (leaves.length) cards.push(`<div class="action-tile tile-yellow"><div class="tile-content"><strong>Pending leave request</strong><span>${escapeHtml(leaves[0].leave_type || 'Leave')} • ${escapeHtml(leaves[0].start_date || '')} to ${escapeHtml(leaves[0].end_date || '')}</span></div><button class="btn btn-black-sm" onclick="switchView('attendance-leave')">Review ↗</button></div>`);
+    if (complaints.length) cards.push(`<div class="action-tile tile-pink"><div class="tile-content"><strong>New complaint</strong><span>${escapeHtml(complaints[0].subject || 'Employee complaint')} • ${escapeHtml(complaints[0].status || 'Open')}</span></div><button class="btn btn-blue-sm" onclick="switchView('employee-grievance')">Review ↗</button></div>`);
+    if (advances.length) cards.push(`<div class="action-tile tile-purple"><div class="tile-content"><strong>Pending salary advance</strong><span>${escapeHtml(String(advances[0].amount || ''))} • ${escapeHtml(advances[0].purpose || '')}</span></div><button class="btn btn-blue-sm" onclick="switchClaimsTab('advance'); switchView('claims')">Review ↗</button></div>`);
+    container.innerHTML = cards.join('') || '<div class="action-tile tile-green"><div class="tile-content"><strong>All clear</strong><span>No pending leave, complaint, or salary advance actions.</span></div></div>';
+  } catch (_) {
+    container.innerHTML = '<div class="action-tile tile-yellow"><div class="tile-content"><strong>Live actions unavailable</strong><span>Priority data could not be loaded.</span></div></div>';
   }
 }
 
@@ -131,7 +158,7 @@ function renderAttendanceCalendar() {
     cell.addEventListener('click', () => {
       attendanceSelectedDate = iso;
       renderAttendanceCalendar();
-      filterAttendanceRegisterByDate();
+      loadDashboardAttendance();
     });
     grid.appendChild(cell);
   }
@@ -2509,40 +2536,49 @@ function loadDashboardSummary() {
 async function loadDashboardAttendance() {
   const body = document.getElementById('dashboardAttendanceTableBody');
   if (!body) return;
-  const today = new Date().toISOString().slice(0, 10);
+  const selectedDate = attendanceSelectedDate || new Date().toISOString().slice(0, 10);
   try {
-    const [attendanceRes, employeeRes, departmentRes] = await Promise.all([
+    const [attendanceRes, employeeRes, departmentRes, rosterRes] = await Promise.all([
       apiFetch('/api/attendance/?page_size=100', { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, cache: 'no-store' }),
       apiFetch('/api/employees/?page_size=100', { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, cache: 'no-store' }),
       apiFetch('/api/departments/?page_size=100', { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, cache: 'no-store' }),
+      apiFetch(`/api/shift-rosters/?work_date=${encodeURIComponent(selectedDate)}&page_size=100`, { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, cache: 'no-store' }),
     ]);
-    if (!attendanceRes.ok || !employeeRes.ok || !departmentRes.ok) throw new Error('dashboard attendance unavailable');
+    if (!attendanceRes.ok || !employeeRes.ok || !departmentRes.ok || !rosterRes.ok) throw new Error('dashboard attendance unavailable');
     const attendancePayload = await attendanceRes.json();
     const employeePayload = await employeeRes.json();
     const departmentPayload = await departmentRes.json();
+    const rosterPayload = await rosterRes.json();
     const attendance = (Array.isArray(attendancePayload) ? attendancePayload : attendancePayload.results || [])
-      .filter((record) => record.date === today);
+      .filter((record) => record.date === selectedDate);
     const employees = Array.isArray(employeePayload) ? employeePayload : employeePayload.results || [];
     const departments = Array.isArray(departmentPayload) ? departmentPayload : departmentPayload.results || [];
+    const rosters = (Array.isArray(rosterPayload) ? rosterPayload : rosterPayload.results || [])
+      .filter((roster) => roster.work_date === selectedDate && roster.employee);
     const employeeById = Object.fromEntries(employees.map((employee) => [employee.id, employee]));
     const departmentById = Object.fromEntries(departments.map((department) => [department.id, department.name]));
     body.innerHTML = '';
-    if (!attendance.length) {
-      body.innerHTML = '<tr><td colspan="5">No attendance records for today.</td></tr>';
+    const attendanceByEmployee = Object.fromEntries(attendance.map((record) => [record.employee, record]));
+    const scheduledEmployeeIds = new Set(rosters.map((roster) => roster.employee));
+    const employeeIds = [...new Set([...rosters.map((roster) => roster.employee), ...attendance.map((record) => record.employee)])];
+    if (!employeeIds.length) {
+      body.innerHTML = `<tr><td colspan="5">No scheduled employees or attendance records for ${escapeHtml(selectedDate)}.</td></tr>`;
       return;
     }
-    attendance.forEach((record) => {
-      const employee = employeeById[record.employee] || {};
-      const name = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || employee.email || record.employee;
-      const status = record.clock_out ? 'Complete' : 'Clocked in';
+    employeeIds.forEach((employeeId) => {
+      const record = attendanceByEmployee[employeeId];
+      const roster = rosters.find((item) => item.employee === employeeId);
+      const employee = employeeById[employeeId] || {};
+      const name = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || employee.email || employeeId;
+      const status = record ? (record.clock_out ? 'Complete' : 'Clocked in') : 'Scheduled';
       const row = document.createElement('tr');
-      row.dataset.attendanceDate = record.date || '';
+      row.dataset.attendanceDate = selectedDate;
       row.innerHTML =
         `<td class="bold-title">${escapeHtml(name)}</td>` +
         `<td>${escapeHtml(departmentById[employee.department] || '—')}</td>` +
         `<td>${escapeHtml(employee.role || '—')}</td>` +
-        `<td><span class="penpot-badge ${record.clock_out ? 'badge-pending' : 'badge-present'}">${status}</span></td>` +
-        `<td>${escapeHtml(fmtTime(record.clock_in))}</td>`;
+        `<td><span class="penpot-badge ${record ? (record.clock_out ? 'badge-pending' : 'badge-present') : 'badge-absent'}">${status}</span></td>` +
+        `<td>${escapeHtml(record ? fmtTime(record.clock_in) : (roster ? `${roster.start_time || ''} scheduled` : '—'))}</td>`;
       body.appendChild(row);
     });
     filterAttendanceRegisterByDate();

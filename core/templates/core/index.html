@@ -184,7 +184,7 @@
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
             </div>
-            <div class="kpi-value">128</div>
+            <div class="kpi-value">0</div>
             <div class="kpi-trend">↗ 8.4%</div>
           </div>
 
@@ -212,7 +212,7 @@
                 <line x1="3" y1="10" x2="21" y2="10"></line>
               </svg>
             </div>
-            <div class="kpi-value">07</div>
+            <div class="kpi-value">0</div>
             <div class="kpi-trend">↗ 2.1%</div>
           </div>
 
@@ -224,7 +224,7 @@
                 <polyline points="12 6 12 12 16 14"></polyline>
               </svg>
             </div>
-            <div class="kpi-value">03</div>
+            <div class="kpi-value">0</div>
             <div class="kpi-trend">↗ Needs you</div>
           </div>
         </div>
@@ -258,7 +258,7 @@
           <!-- Right: Priority Actions Card -->
           <div class="white-card card-priority">
             <h2 class="card-title" style="margin-bottom:16px;">Priority Actions</h2>
-            <div class="priority-actions-stack">
+            <div class="priority-actions-stack" id="dashboardPriorityActions">
               <div class="action-tile tile-yellow">
                 <div class="tile-content">
                   <strong>Leave Request: Sarah Chen</strong>
@@ -3192,21 +3192,6 @@
                 <input type="text" id="auditSearchInput" placeholder="Search admin, action, employee, or detail..."
                   oninput="filterAuditLogs()" />
               </div>
-              <select class="audit-select-control" id="auditCategoryFilter" onchange="filterAuditLogs()">
-                <option value="">All Classes</option>
-                <option value="Personnel">Personnel &amp; Staff</option>
-                <option value="Leaves">Leave Requests</option>
-                <option value="Claims">Claims &amp; Payroll</option>
-                <option value="Shifts">Shift Rosters</option>
-                <option value="Grievance">Grievance Cases</option>
-              </select>
-              <select class="audit-select-control" id="auditAdminFilter" onchange="filterAuditLogs()">
-                <option value="">All Admins</option>
-                <option value="Marcus Williams">Marcus Williams</option>
-                <option value="Elena Rostova">Elena Rostova</option>
-                <option value="David Kim">David Kim</option>
-                <option value="System Bot">System Bot</option>
-              </select>
               <button class="btn btn-navy-cta" onclick="exportAuditLogs()"
                 style="height:38px; display:inline-flex; align-items:center; gap:6px; padding:0 14px; font-size:13px;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
