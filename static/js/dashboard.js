@@ -249,17 +249,17 @@ function initBrandLogo() {
 // View Navigation Mapping
 const viewBreadcrumbs = {
   'dashboard': { active: 'Dashboard' },
-  'employee-directory': { active: 'Employee Directory' },
+  'employee-directory': { root: 'Employees', active: 'Employee List' },
   'employee-manage': { root: 'Employees', active: 'Manage Staff' },
   'employee-grievance': { root: 'Employees', active: 'Grievance Tracker' },
-  'attendance-daily': { root: 'Attendance', active: 'Daily Attendance & Time Log' },
-  'attendance-shift': { root: 'Attendance', active: 'Shift Scheduling & Roster' },
-  'attendance-leave': { root: 'Attendance', active: 'Leave & Absence Management' },
-  'claims': { active: 'Claims & Reimbursements' },
+  'attendance-daily': { root: 'Attendance', active: 'Daily Log' },
+  'attendance-shift': { root: 'Attendance', active: 'Shift Management' },
+  'attendance-leave': { root: 'Attendance', active: 'Leave Management' },
+  'claims': { root: 'Claims', active: 'Pending Claims' },
   'messages': { active: 'Messages & Channels' },
-  'logs': { root: 'Security & Audit', active: 'Audit & Activity Logs' },
-  'profile': { root: 'Security & Audit', active: 'Audit & Activity Logs' },
-  'my-details': { root: 'Security & Audit', active: 'Audit & Activity Logs' },
+  'logs': { active: 'Audit & Activity Logs' },
+  'profile': { active: 'My Profile' },
+  'my-details': { active: 'My Details' },
   'reports': { active: 'Reports & Analytics' }
 };
 
@@ -1383,6 +1383,18 @@ function switchClaimsTab(tabKey) {
   if (pnlHistory) pnlHistory.style.display = (tabKey === 'history' ? 'block' : 'none');
   if (pnlAdvance) pnlAdvance.style.display = (tabKey === 'advance' ? 'block' : 'none');
   if (tabKey === 'history') claimsPagerGoto('history', claimsPagerState.history || 1);
+
+  // Update breadcrumb trail for Claims subtab
+  const breadcrumbTrail = document.getElementById('breadcrumbTrail');
+  if (breadcrumbTrail) {
+    const claimsTabNames = {
+      'pending': 'Pending Claims',
+      'history': 'Claims History',
+      'advance': 'Advance Pay Requests'
+    };
+    const activeLabel = claimsTabNames[tabKey] || 'Pending Claims';
+    breadcrumbTrail.innerHTML = `<span class="bc-root">Claims</span> <span class="bc-slash">/</span> <span class="bc-page">${activeLabel}</span>`;
+  }
 }
 
 async function loadClaimsSummary() {

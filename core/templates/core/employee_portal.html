@@ -52,7 +52,7 @@
   <main class="employee-shell">
     <header class="employee-top">
       <div>
-        <div class="employee-kicker">Kumon EMS / Employee Workspace</div>
+        <div class="employee-kicker"><span style="color:var(--employee-navy); font-weight:700;">Employee Portal</span> <span style="color:#94a3b8; margin: 0 4px;">/</span> <span id="portalSubpageLabel" style="color:var(--employee-blue); font-weight:600;">Attendance</span></div>
         <div class="employee-heading">Your employee portal</div>
         <div class="employee-subtitle">Manage your attendance, requests, and conversations with HR.</div>
       </div>
@@ -114,6 +114,8 @@
     document.querySelectorAll('.portal-tab').forEach((tab) => tab.addEventListener('click', () => {
       document.querySelectorAll('.portal-tab').forEach((item) => item.classList.toggle('active', item === tab));
       document.querySelectorAll('.portal-panel').forEach((panel) => panel.classList.toggle('active', panel.id === tab.dataset.panel));
+      const subpageLabel = document.getElementById('portalSubpageLabel');
+      if (subpageLabel) subpageLabel.textContent = tab.textContent.trim();
     }));
     const csrf = () => document.cookie.split('; ').find((cookie) => cookie.startsWith('csrftoken='))?.split('=')[1];
     async function portalFetch(url, options = {}) {
