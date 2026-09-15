@@ -109,9 +109,9 @@ class ForceOwnerCreateMixin:
 
 @ensure_csrf_cookie
 def dashboard_view(request):
-    if not request.user.is_authenticated:
-        return redirect("/hr/login/?next=/hr/")
-    return redirect("/hr/" if _is_hr_user(request.user) else "/employee/")
+    if request.user.is_authenticated:
+        return redirect("/hr/" if _is_hr_user(request.user) else "/employee/")
+    return render(request, "core/index.html")
 
 
 @ensure_csrf_cookie
