@@ -10,6 +10,27 @@ from core.supabase_client import supabase
 
 logger = logging.getLogger(__name__)
 
+PURGE_RETENTION_DEFAULT_DAYS = 30
+
+
+def _retention_days_default():
+    """purge_retention_days SiteSetting (source of truth), else 30."""
+    try:
+        from core.models import SiteSetting
+
+        raw = (
+            SiteSetting.objects.filter(key="purge_retention_days")
+            .values_list("value", flat=True)
+            .first()
+        )
+        if raw not in (None, ""):
+            days = int(float(raw))
+            if 1 <= days <= 365:
+                return days
+    except Exception:
+        pass
+    return PURGE_RETENTION_DEFAULT_DAYS
+
 
 class Command(BaseCommand):
     help = (
@@ -19,10 +40,14 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--dry-run", action="store_true")
-        parser.add_argument("--days", type=int, default=30)
+        # Default None: falls back to the purge_retention_days SiteSetting
+        # (source of truth, default 30) when the flag is omitted.
+        parser.add_argument("--days", type=int, default=None)
 
     def handle(self, *args, **options):
-        days = options["days"]
+        days = options.get("days")
+        if days is None:
+            days = _retention_days_default()
         if days < 0:
             raise CommandError("--days must be >= 0.")
         cutoff = timezone.localdate() - timedelta(days=days)

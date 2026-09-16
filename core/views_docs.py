@@ -18,7 +18,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import ClaimStatus, Employee, ExpenseClaim
+from .models import ClaimStatus, Employee, ExpenseClaim, SiteSetting
 from .permissions import IsOwnerOrStaff, OwnerQuerysetMixin, owns_object
 
 ONBOARDING_MAX_BYTES = 10 * 1024 * 1024
@@ -44,12 +44,32 @@ ADVANCE_STATUS_CHOICES = (
 )
 
 
+def _onboarding_max_bytes():
+    """Onboarding upload cap from the onboarding_max_mb SiteSetting.
+
+    Source of truth is SiteSetting (staff-editable); falls back to the
+    ONBOARDING_MAX_BYTES default when unset, out of range, or on DB error.
+    """
+    try:
+        raw = (
+            SiteSetting.objects.filter(key="onboarding_max_mb")
+            .values_list("value", flat=True)
+            .first()
+        )
+        mb = float(raw) if raw not in (None, "") else 10
+        if not 1 <= mb <= 100:
+            return ONBOARDING_MAX_BYTES
+        return int(mb * 1024 * 1024)
+    except Exception:
+        return ONBOARDING_MAX_BYTES
+
+
 def validate_onboarding_file(upload):
-    """Size (10MB) + MIME/extension guard for onboarding documents."""
-    if upload.size > ONBOARDING_MAX_BYTES:
+    """Size (SiteSetting onboarding_max_mb) + MIME/extension guard."""
+    cap = _onboarding_max_bytes()
+    if upload.size > cap:
         raise ValidationError(
-            f"File too large ({upload.size} bytes). Maximum is "
-            f"{ONBOARDING_MAX_BYTES} bytes."
+            f"File too large ({upload.size} bytes). Maximum is {cap} bytes."
         )
     content_type = getattr(upload, "content_type", "") or ""
     name = getattr(upload, "name", "") or ""
