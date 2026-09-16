@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadMasterShiftCalendar();
   loadPayrollView();
   loadAuditView();
+  applySettingsA11yOnLoad();
   initDashboardWidgets();
   loadActivityFeed();
   refreshNotifBell();
@@ -258,6 +259,7 @@ const viewBreadcrumbs = {
   'claims': { root: 'Claims', active: 'Pending Claims' },
   'messages': { active: 'Messages & Channels' },
   'logs': { active: 'Audit & Activity Logs' },
+  'settings': { active: 'Settings' },
   'profile': { active: 'My Profile' },
   'my-details': { active: 'My Details' },
   'reports': { active: 'Reports & Analytics' }
@@ -287,7 +289,8 @@ function switchView(viewName) {
       (viewName.startsWith('attendance') && dataView === 'attendance-daily') ||
        (viewName === 'claims' && dataView === 'claims') ||
        (viewName === 'messages' && dataView === 'messages') ||
-       ((viewName === 'logs' || viewName === 'profile' || viewName === 'my-details') && dataView === 'logs')) {
+       ((viewName === 'logs' || viewName === 'profile' || viewName === 'my-details') && dataView === 'logs') ||
+       (viewName === 'settings' && dataView === 'settings')) {
       link.classList.add('active');
     } else {
       link.classList.remove('active');
@@ -316,6 +319,9 @@ function switchView(viewName) {
     targetPanel.classList.add('active');
     if (viewName === 'messages') {
       loadMessagesForConversation(activeConversationKey);
+    }
+    if (viewName === 'settings') {
+      loadSettingsView();
     }
   } else {
     // Show placeholder view with specific title
@@ -2229,6 +2235,318 @@ async function handleSendChatMessage(e) {
 
 function escapeHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
+// ==========================================================================
+// Settings view (T9+T15): profile, notifications/display, company (staff-only)
+// GET/PATCH /api/settings/me/, POST /api/settings/password/,
+// GET/PATCH /api/settings/site/ (staff). a11y enforced via --fs-scale +
+// html[data-contrast]/html[data-motion] (see main.css tail).
+// ==========================================================================
+const SETTINGS_FONT_SCALES = ['87.5', '100', '112.5', '125'];
+let settingsCache = null;
+let settingsIsStaff = false;
+let settingsConfirmAction = null;
+
+function applySettingsA11y(a11y) {
+  const a = a11y || {};
+  let scale = String(a.font_scale != null ? a.font_scale : '100');
+  if (!SETTINGS_FONT_SCALES.includes(scale)) scale = '100';
+  // html font-size scales the whole rem-based layout.
+  document.documentElement.style.setProperty('--fs-scale', scale + '%');
+  document.documentElement.dataset.contrast = a.high_contrast ? 'high' : 'normal';
+  document.documentElement.dataset.motion = a.reduce_motion ? 'reduced' : 'full';
+}
+
+// a11y apply on every load: fetch settings/me and set --fs-scale + datasets.
+// Falls back to logged-out-safe defaults when the API is unreachable.
+async function applySettingsA11yOnLoad() {
+  try {
+    const res = await apiFetch('/api/settings/me/');
+    if (!res.ok) throw new Error('settings unreachable');
+    const data = await res.json();
+    applySettingsA11y(data.a11y || {});
+  } catch (_) {
+    applySettingsA11y({ font_scale: 100, high_contrast: false, reduce_motion: false });
+  }
+}
+
+function settingsSwitchTab(which) {
+  const panes = { profile: 'settingsPaneProfile', notif: 'settingsPaneNotif', company: 'settingsPaneCompany' };
+  const tabs = { profile: 'settingsTabProfile', notif: 'settingsTabNotif', company: 'settingsTabCompany' };
+  Object.entries(panes).forEach(([key, id]) => {
+    const pane = document.getElementById(id);
+    if (pane && !(key === 'company' && !settingsIsStaff)) {
+      pane.style.display = key === which ? 'block' : 'none';
+    }
+  });
+  Object.entries(tabs).forEach(([key, id]) => {
+    const tab = document.getElementById(id);
+    if (tab) tab.classList.toggle('active', key === which);
+  });
+}
+
+function settingsRevealStaff() {
+  document.querySelectorAll('#view-settings [data-staff-only]').forEach((el) => {
+    if (settingsIsStaff) el.removeAttribute('hidden');
+    else el.setAttribute('hidden', '');
+  });
+}
+
+async function loadSettingsView() {
+  try {
+    const res = await apiFetch('/api/settings/me/');
+    if (!res.ok) throw new Error('load failed');
+    const data = await res.json();
+    settingsCache = data;
+    renderSettingsForm(data);
+    // Staff probe: site settings GET is staff-only; 403/404 keeps company hidden.
+    try {
+      const site = await apiFetch('/api/settings/site/');
+      if (site.ok) {
+        settingsIsStaff = true;
+        renderSettingsSite(await site.json());
+      } else {
+        settingsIsStaff = false;
+      }
+    } catch (_) { settingsIsStaff = false; }
+    settingsRevealStaff();
+    applySettingsA11y(data.a11y || {});
+    setApiMode('live');
+  } catch (e) {
+    setApiMode('demo');
+    showToast('Settings unreachable — showing defaults', 'error');
+  }
+}
+
+function renderSettingsForm(data) {
+  const p = data.profile || {};
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val != null ? val : ''; };
+  set('setFirstName', p.first_name);
+  set('setLastName', p.last_name);
+  set('setEmail', p.email);
+  set('setRole', p.role);
+  const muted = Array.isArray(data.muted_kinds) ? data.muted_kinds : [];
+  const ml = document.getElementById('setMuteLeave'); if (ml) ml.checked = muted.includes('leave');
+  const ms = document.getElementById('setMuteShift'); if (ms) ms.checked = muted.includes('shift');
+  const mp = document.getElementById('setMutePayroll'); if (mp) mp.checked = muted.includes('payroll');
+  const ps = document.getElementById('setPageSize'); if (ps) ps.value = String(data.page_size || 10);
+  const a = data.a11y || {};
+  const fs = document.getElementById('setFontScale');
+  if (fs) fs.value = String(a.font_scale != null ? a.font_scale : '100');
+  const hc = document.getElementById('setHighContrast'); if (hc) hc.checked = !!a.high_contrast;
+  const rm = document.getElementById('setReduceMotion'); if (rm) rm.checked = !!a.reduce_motion;
+}
+
+function renderSettingsSite(site) {
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val != null ? val : ''; };
+  set('setOtMin', site.overtime_min_hours);
+  set('setOtMax', site.overtime_max_hours);
+  set('setPurgeDays', site.purge_retention_days);
+  set('setUploadCap', site.onboarding_max_mb);
+  const ro = document.getElementById('setReadOnlyNet');
+  if (ro) {
+    ro.textContent =
+      `throttle anon ${site.throttle_anon || '—'} · user ${site.throttle_user || '—'} · CORS ${(site.cors_origins || []).join(', ') || '—'}`;
+  }
+}
+
+function openSettingsConfirm(title, text, action) {
+  const modal = document.getElementById('settingsConfirmModal');
+  const t = document.getElementById('settingsConfirmTitle');
+  const b = document.getElementById('settingsConfirmText');
+  const ok = document.getElementById('settingsConfirmOk');
+  if (!modal || !ok) { if (typeof action === 'function') action(); return; }
+  if (t) t.textContent = title;
+  if (b) b.textContent = text;
+  settingsConfirmAction = action;
+  ok.onclick = async () => {
+    closeSettingsConfirm();
+    if (typeof settingsConfirmAction === 'function') await settingsConfirmAction();
+  };
+  modal.classList.add('active');
+}
+
+function closeSettingsConfirm() {
+  const modal = document.getElementById('settingsConfirmModal');
+  if (modal) modal.classList.remove('active');
+  settingsConfirmAction = null;
+}
+
+function collectMutedKinds() {
+  const kinds = [];
+  if (document.getElementById('setMuteLeave')?.checked) kinds.push('leave');
+  if (document.getElementById('setMuteShift')?.checked) kinds.push('shift');
+  if (document.getElementById('setMutePayroll')?.checked) kinds.push('payroll');
+  return kinds;
+}
+
+async function saveSettingsProfile() {
+  const profile = {
+    first_name: document.getElementById('setFirstName')?.value.trim() || '',
+    last_name: document.getElementById('setLastName')?.value.trim() || '',
+    email: document.getElementById('setEmail')?.value.trim() || '',
+    role: document.getElementById('setRole')?.value.trim() || '',
+  };
+  openSettingsConfirm('Save profile?', 'Your employee name, email and role will be updated.', async () => {
+    try {
+      const res = await apiFetch('/api/settings/me/', { method: 'PATCH', body: JSON.stringify({ profile }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(typeof data.error === 'string' ? data.error : (data.email && data.email.join(' ')) || 'save failed');
+      settingsCache = { ...(settingsCache || {}), profile: data.profile || profile };
+      renderSettingsForm({ ...(settingsCache || {}), profile: settingsCache.profile });
+      showToast('Profile saved.');
+    } catch (error) {
+      showToast(error.message || 'Profile save failed.', 'error');
+    }
+  });
+}
+
+async function saveSettingsPassword() {
+  const oldPw = document.getElementById('setOldPassword')?.value || '';
+  const nw = document.getElementById('setNewPassword')?.value || '';
+  const nw2 = document.getElementById('setNewPassword2')?.value || '';
+  if (!oldPw || !nw) { showToast('Enter your current and a new password.', 'error'); return; }
+  if (nw !== nw2) { showToast('New passwords do not match.', 'error'); return; }
+  if (nw.length < 8) { showToast('New password must be at least 8 characters.', 'error'); return; }
+  openSettingsConfirm('Change password?', 'You will stay signed in here; other sessions sign out.', async () => {
+    try {
+      const res = await apiFetch('/api/settings/password/', {
+        method: 'POST',
+        body: JSON.stringify({ old_password: oldPw, new_password: nw }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(typeof data.error === 'string' ? data.error : 'password change failed');
+      ['setOldPassword', 'setNewPassword', 'setNewPassword2'].forEach((id) => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      showToast(data.message || 'Password changed.');
+    } catch (error) {
+      showToast(error.message || 'Password change failed.', 'error');
+    }
+  });
+}
+
+async function saveSettingsPrefs() {
+  const a11y = {
+    font_scale: parseFloat(document.getElementById('setFontScale')?.value || '100'),
+    high_contrast: !!document.getElementById('setHighContrast')?.checked,
+    reduce_motion: !!document.getElementById('setReduceMotion')?.checked,
+  };
+  const payload = { page_size: parseInt(document.getElementById('setPageSize')?.value || '10', 10), muted_kinds: collectMutedKinds(), a11y };
+  try {
+    const res = await apiFetch('/api/settings/me/', { method: 'PATCH', body: JSON.stringify(payload) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(typeof data.error === 'string' ? data.error : 'save failed');
+    settingsCache = { ...(settingsCache || {}), ...data };
+    applySettingsA11y(data.a11y || a11y);
+    showToast('Preferences saved.');
+  } catch (error) {
+    showToast(error.message || 'Preferences save failed.', 'error');
+  }
+}
+
+async function saveSettingsSite() {
+  if (!settingsIsStaff) { showToast('Company settings are staff-only.', 'error'); return; }
+  const entries = {
+    overtime_min_hours: document.getElementById('setOtMin')?.value,
+    overtime_max_hours: document.getElementById('setOtMax')?.value,
+    purge_retention_days: document.getElementById('setPurgeDays')?.value,
+    onboarding_max_mb: document.getElementById('setUploadCap')?.value,
+  };
+  openSettingsConfirm('Save company settings?', 'Overtime bounds, purge retention and upload cap update for everyone.', async () => {
+    try {
+      const res = await apiFetch('/api/settings/site/', { method: 'PATCH', body: JSON.stringify(entries) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(typeof data.error === 'string' ? data.error : 'save failed');
+      renderSettingsSite(data);
+      showToast('Company settings saved.');
+    } catch (error) {
+      showToast(error.message || 'Company save failed.', 'error');
+    }
+  });
+}
+
+function settingsImportRows(status) {
+  return (settingsCache && settingsCache._importPreview) || [];
+}
+
+function renderSettingsImportPreview(rows) {
+  const body = document.getElementById('settingsImportResults');
+  if (!body) return;
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="4">Preview is empty — nothing to import.</td></tr>';
+    return;
+  }
+  body.innerHTML = '';
+  rows.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    const name = row.name || [row.first_name, row.last_name].filter(Boolean).join(' ') || '—';
+    tr.innerHTML =
+      `<td>${i + 1}</td><td>${escapeHtml(String(name))}</td>` +
+      `<td>${escapeHtml(String(row.email || '—'))}</td>` +
+      `<td>${escapeHtml(String(row.status || 'ready'))}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+async function settingsReadImportFile() {
+  const input = document.getElementById('settingsImportFile');
+  const file = input?.files?.[0];
+  if (!file) { showToast('Choose a roster file first.', 'error'); return null; }
+  const text = await file.text();
+  const NL = String.fromCharCode(10);
+  const CR = String.fromCharCode(13);
+  const lines = text.split(NL).map((l) => l.split(CR).join("")).filter((l) => l.trim());
+  if (lines.length < 2) { showToast('File has no data rows.', 'error'); return null; }
+  const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+  const rows = lines.slice(1, 51).map((line) => {
+    const cells = line.split(',');
+    const get = (k) => cells[headers.indexOf(k)]?.trim() || '';
+    return {
+      first_name: get('first_name') || get('firstname') || '',
+      last_name: get('last_name') || get('lastname') || '',
+      name: get('name'),
+      email: get('email'),
+      status: get('email') ? 'ready' : 'missing email',
+    };
+  });
+  return rows;
+}
+
+async function settingsImportDryRun() {
+  const rows = await settingsReadImportFile();
+  if (!rows) return;
+  settingsCache = { ...(settingsCache || {}), _importPreview: rows };
+  renderSettingsImportPreview(rows);
+  showToast(`Dry-run: ${rows.length} row(s) previewed, nothing imported.`);
+}
+
+async function settingsImportCommit() {
+  const rows = (settingsCache && settingsCache._importPreview) || [];
+  if (!rows.length) { showToast('Run a dry-run preview first.', 'error'); return; }
+  const valid = rows.filter((r) => r.email);
+  if (!valid.length) { showToast('No valid rows to import.', 'error'); return; }
+  openSettingsConfirm('Import roster?', `${valid.length} row(s) will be created as employees.`, async () => {
+    let okCount = 0;
+    const results = [];
+    for (const row of valid) {
+      try {
+        const res = await apiFetch('/api/employees/', {
+          method: 'POST',
+          body: JSON.stringify({ first_name: row.first_name || row.name || 'Imported', last_name: row.last_name || '', email: row.email }),
+        });
+        if (!res.ok) throw new Error('create failed');
+        okCount += 1;
+        results.push({ ...row, status: 'imported' });
+      } catch (_) {
+        results.push({ ...row, status: 'failed' });
+      }
+    }
+    settingsCache._importPreview = results;
+    renderSettingsImportPreview(results);
+    showToast(`Import complete: ${okCount}/${valid.length} imported.`);
+  });
 }
 
 // ==========================================================================
