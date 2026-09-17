@@ -375,6 +375,7 @@ class SiteSetting(models.Model):
         "overtime_max_hours": (0, 24),
         "purge_retention_days": (1, 365),
         "onboarding_max_mb": (1, 100),
+        "leave_auto_allocate_days": (0, 365),
     }
 
     def clean(self):

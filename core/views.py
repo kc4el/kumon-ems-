@@ -1466,6 +1466,11 @@ SITE_SETTING_DEFAULTS = {
     "overtime_max_hours": "5.00",
     "purge_retention_days": "30",
     "onboarding_max_mb": "10",
+    "leave_restrict_backdated": "false",
+    "leave_auto_allocate_days": "0",
+    "shift_allow_double_booking": "false",
+    "payroll_round_net": "false",
+    "mobile_checkin_enabled": "true",
 }
 
 

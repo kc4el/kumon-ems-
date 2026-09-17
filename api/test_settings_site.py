@@ -145,3 +145,50 @@ class PurgeRetentionFloorTests(TestCase):
 
         with self.assertRaises(CommandError):
             call_command("purge_resigned", days=400, dry_run=True)
+
+
+class FrappeMirrorKeysTests(TestCase):
+    """T1: the 5 FrappeHR-mirror keys validate through the site endpoint."""
+
+    def setUp(self):
+        self.client = APIClient()
+        user = User.objects.create_user(username="frappe", password="x", is_staff=True)
+        self.client.force_authenticate(user=user)
+
+    def test_five_keys_accept_valid_values(self):
+        r = self.client.patch(
+            "/api/settings/site/",
+            {
+                "leave_restrict_backdated": "true",
+                "leave_auto_allocate_days": "14",
+                "shift_allow_double_booking": "false",
+                "payroll_round_net": "true",
+                "mobile_checkin_enabled": "True",
+            },
+            format="json",
+        )
+        self.assertEqual(r.status_code, 200)
+        for key in (
+            "leave_restrict_backdated",
+            "leave_auto_allocate_days",
+            "shift_allow_double_booking",
+            "payroll_round_net",
+            "mobile_checkin_enabled",
+        ):
+            self.assertIn(key, r.json())
+
+    def test_allocate_days_out_of_range_rejected(self):
+        r = self.client.patch(
+            "/api/settings/site/",
+            {"leave_auto_allocate_days": "9999"},
+            format="json",
+        )
+        self.assertEqual(r.status_code, 400)
+
+    def test_bool_rejects_non_boolean(self):
+        r = self.client.patch(
+            "/api/settings/site/",
+            {"shift_allow_double_booking": "yes"},
+            format="json",
+        )
+        self.assertEqual(r.status_code, 400)
