@@ -1,58 +1,321 @@
 {% load static %}
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Employee Portal | Kumon EMS</title>
   <link rel="stylesheet" href="{% static 'css/main.css' %}" />
   <style>
-    :root { --employee-navy:#0f172a; --employee-blue:#2563eb; --employee-canvas:#faf8f5; --employee-line:#e6ecf5; --employee-muted:#64748b; }
-    body.portal-header { min-height:100vh; background:var(--employee-canvas); color:#334155; }
-    .employee-shell { max-width:1320px; margin:0 auto; padding:26px 34px 56px; }
-    .employee-top { display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:26px; padding-bottom:20px; border-bottom:1px solid var(--employee-line); }
-    .employee-brand { color:var(--employee-navy); font-size:22px; font-weight:800; letter-spacing:.01em; }
-    .employee-kicker { color:var(--employee-blue); font-size:11px; font-weight:800; letter-spacing:.13em; text-transform:uppercase; }
-    .employee-heading { margin-top:5px; color:var(--employee-navy); font-size:32px; line-height:1.12; font-weight:800; }
-    .employee-subtitle { margin-top:7px; color:var(--employee-muted); font-size:14px; }
-    .employee-session { display:flex; align-items:center; gap:12px; }
-    .employee-session-badge { padding:7px 11px; border-radius:999px; background:#dcfce7; color:#15803d; font-size:11px; font-weight:800; letter-spacing:.04em; }
-    .portal-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; padding:5px; border-bottom:1px solid var(--employee-line); }
-    .portal-tab { border:0; border-bottom:3px solid transparent; border-radius:0; background:transparent; color:#64748b; padding:12px 18px; font:inherit; font-size:13px; font-weight:750; cursor:pointer; transition:.18s ease; }
-    .portal-tab:hover { color:var(--employee-blue); background:#eff6ff; }
-    .portal-tab.active { border-bottom-color:var(--employee-blue); color:var(--employee-blue); background:#eff6ff; }
-    .employee-grid { display:block; }
-    .portal-panel { display:none; }
-    .portal-panel.active { display:block; animation:portalReveal .22s ease-out; }
-    .employee-card { background:#fff; border:1px solid var(--employee-line); border-radius:10px; padding:26px; box-shadow:0 4px 18px -2px rgba(15,23,42,.04); }
-    .employee-card h2 { margin:0; color:var(--employee-navy); font-size:21px; font-weight:800; }
-    .employee-card p { color:var(--employee-muted); margin:5px 0 20px; line-height:1.5; }
-    .employee-card-head { display:flex; justify-content:space-between; align-items:flex-start; gap:18px; margin-bottom:22px; }
-    .employee-card-label { color:var(--employee-blue); font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
-    .employee-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:15px 18px; padding:20px; margin-bottom:24px; border:1px solid #edf1f7; background:#fbfdff; border-radius:8px; }
-    .employee-form label { margin:0 0 -7px; color:#475569; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.07em; }
-    .employee-form input,.employee-form select,.employee-form textarea { width:100%; padding:11px 12px; border:1px solid #cbd7e6; border-radius:7px; color:#334155; background:#fff; font:inherit; outline:none; }
-    .employee-form input:focus,.employee-form select:focus,.employee-form textarea:focus { border-color:var(--employee-blue); box-shadow:0 0 0 3px #dbeafe; }
-    .employee-form textarea { min-height:92px; resize:vertical; grid-column:1 / -1; }
-    .employee-form button { grid-column:1 / -1; justify-self:start; }
-    .employee-actions { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
-    .employee-actions button { min-width:140px; }
-    .employee-status { min-height:22px; color:#166534; font-size:13px; }
-    .employee-table-wrap { overflow:auto; border:1px solid #edf1f7; border-radius:8px; }
-    .employee-table { width:100%; min-width:520px; border-collapse:collapse; font-size:13px; }
-    .employee-table th,.employee-table td { padding:13px 14px; border-bottom:1px solid #edf1f7; text-align:left; }
-    .employee-table th { background:#f8fafc; color:#64748b; font-size:10px; letter-spacing:.09em; font-weight:800; }
-    .employee-table tr:last-child td { border-bottom:0; }
-    .portal-header .btn-outline-gray { border-color:#cbd5e1; color:#e2e8f0; background:transparent; }
-    @keyframes portalReveal { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
-    @media (max-width:760px) { .employee-shell { padding:20px 16px 40px; } .employee-top { align-items:flex-start; } .employee-heading { font-size:26px; } .employee-session-badge { display:none; } .employee-form { grid-template-columns:1fr; } }
+    :root {
+      --employee-navy: #0f172a;
+      --employee-blue: #2563eb;
+      --employee-canvas: #faf8f5;
+      --employee-line: #e6ecf5;
+      --employee-muted: #64748b;
+    }
+
+    body.portal-header {
+      min-height: 100vh;
+      background: var(--employee-canvas);
+      color: #334155;
+    }
+
+    .employee-shell {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 26px 34px 56px;
+    }
+
+    .employee-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 26px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--employee-line);
+    }
+
+    .employee-brand {
+      color: var(--employee-navy);
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: .01em;
+    }
+
+    .employee-kicker {
+      color: var(--employee-blue);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .employee-heading {
+      margin-top: 5px;
+      color: var(--employee-navy);
+      font-size: 32px;
+      line-height: 1.12;
+      font-weight: 800;
+    }
+
+    .employee-subtitle {
+      margin-top: 7px;
+      color: var(--employee-muted);
+      font-size: 14px;
+    }
+
+    .employee-session {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .employee-session-badge {
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: #dcfce7;
+      color: #15803d;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .04em;
+    }
+
+    .portal-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      padding: 5px;
+      border-bottom: 1px solid var(--employee-line);
+    }
+
+    .portal-tab {
+      border: 0;
+      border-bottom: 3px solid transparent;
+      border-radius: 0;
+      background: transparent;
+      color: #64748b;
+      padding: 12px 18px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 750;
+      cursor: pointer;
+      transition: .18s ease;
+    }
+
+    .portal-tab:hover {
+      color: var(--employee-blue);
+      background: #eff6ff;
+    }
+
+    .portal-tab.active {
+      border-bottom-color: var(--employee-blue);
+      color: var(--employee-blue);
+      background: #eff6ff;
+    }
+
+    .employee-grid {
+      display: block;
+    }
+
+    .portal-panel {
+      display: none;
+    }
+
+    .portal-panel.active {
+      display: block;
+      animation: portalReveal .22s ease-out;
+    }
+
+    .employee-card {
+      background: #fff;
+      border: 1px solid var(--employee-line);
+      border-radius: 10px;
+      padding: 26px;
+      box-shadow: 0 4px 18px -2px rgba(15, 23, 42, .04);
+    }
+
+    .employee-card h2 {
+      margin: 0;
+      color: var(--employee-navy);
+      font-size: 21px;
+      font-weight: 800;
+    }
+
+    .employee-card p {
+      color: var(--employee-muted);
+      margin: 5px 0 20px;
+      line-height: 1.5;
+    }
+
+    .employee-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .employee-card-label {
+      color: var(--employee-blue);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .employee-form {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 15px 18px;
+      padding: 20px;
+      margin-bottom: 24px;
+      border: 1px solid #edf1f7;
+      background: #fbfdff;
+      border-radius: 8px;
+    }
+
+    .employee-form label {
+      margin: 0 0 -7px;
+      color: #475569;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+    }
+
+    .employee-form input,
+    .employee-form select,
+    .employee-form textarea {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid #cbd7e6;
+      border-radius: 7px;
+      color: #334155;
+      background: #fff;
+      font: inherit;
+      outline: none;
+    }
+
+    .employee-form input:focus,
+    .employee-form select:focus,
+    .employee-form textarea:focus {
+      border-color: var(--employee-blue);
+      box-shadow: 0 0 0 3px #dbeafe;
+    }
+
+    .employee-form textarea {
+      min-height: 92px;
+      resize: vertical;
+      grid-column: 1 / -1;
+    }
+
+    .employee-form button {
+      grid-column: 1 / -1;
+      justify-self: start;
+    }
+
+    .employee-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .employee-actions button {
+      min-width: 140px;
+    }
+
+    .employee-status {
+      min-height: 22px;
+      color: #166534;
+      font-size: 13px;
+    }
+
+    .employee-table-wrap {
+      overflow: auto;
+      border: 1px solid #edf1f7;
+      border-radius: 8px;
+    }
+
+    .employee-table {
+      width: 100%;
+      min-width: 520px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .employee-table th,
+    .employee-table td {
+      padding: 13px 14px;
+      border-bottom: 1px solid #edf1f7;
+      text-align: left;
+    }
+
+    .employee-table th {
+      background: #f8fafc;
+      color: #64748b;
+      font-size: 10px;
+      letter-spacing: .09em;
+      font-weight: 800;
+    }
+
+    .employee-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .portal-header .btn-outline-gray {
+      border-color: #cbd5e1;
+      color: #e2e8f0;
+      background: transparent;
+    }
+
+    @keyframes portalReveal {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width:760px) {
+      .employee-shell {
+        padding: 20px 16px 40px;
+      }
+
+      .employee-top {
+        align-items: flex-start;
+      }
+
+      .employee-heading {
+        font-size: 26px;
+      }
+
+      .employee-session-badge {
+        display: none;
+      }
+
+      .employee-form {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
+
 <body class="portal-header">
   <main class="employee-shell">
     <header class="employee-top">
       <div>
-        <div class="employee-kicker"><span style="color:var(--employee-navy); font-weight:700;">Employee Portal</span> <span style="color:#94a3b8; margin: 0 4px;">/</span> <span id="portalSubpageLabel" style="color:var(--employee-blue); font-weight:600;">Attendance</span></div>
+        <div class="employee-kicker"><span style="color:var(--employee-navy); font-weight:700;">Employee Portal</span>
+          <span style="color:#94a3b8; margin: 0 4px;">/</span> <span id="portalSubpageLabel"
+            style="color:var(--employee-blue); font-weight:600;">Attendance</span></div>
         <div class="employee-heading">Your employee portal</div>
         <div class="employee-subtitle">Manage your attendance, requests, and conversations with HR.</div>
       </div>
@@ -66,47 +329,167 @@
       <button type="button" class="portal-tab" data-panel="leavePanel">Leave Requests</button>
       <button type="button" class="portal-tab" data-panel="advancePanel">Salary Advance</button>
       <button type="button" class="portal-tab" data-panel="complaintPanel">Complaints</button>
+      <button type="button" class="portal-tab" data-panel="settingsPanel">Settings</button>
     </nav>
     <section class="employee-grid">
       <article class="employee-card portal-panel active" id="attendancePanel">
-        <div class="employee-card-head"><div><div class="employee-card-label">Daily time log</div><h2>Attendance logging</h2><p>Record today's clock-in and clock-out timestamps.</p></div><span class="employee-session-badge">LIVE</span></div>
+        <div class="employee-card-head">
+          <div>
+            <div class="employee-card-label">Daily time log</div>
+            <h2>Attendance logging</h2>
+            <p>Record today's clock-in and clock-out timestamps.</p>
+          </div><span class="employee-session-badge">LIVE</span>
+        </div>
         <div class="employee-actions">
           <button type="button" class="btn btn-navy-cta" onclick="attendanceAction('clock_in')">Clock in</button>
           <button type="button" class="btn btn-outline-gray" onclick="attendanceAction('clock_out')">Clock out</button>
         </div>
         <p id="attendanceStatus" class="employee-status"></p>
-        <div class="employee-table-wrap"><table class="employee-table"><thead><tr><th>DATE</th><th>IN</th><th>OUT</th></tr></thead><tbody id="attendanceRows"><tr><td colspan="3">Loading...</td></tr></tbody></table></div>
+        <div class="employee-table-wrap">
+          <table class="employee-table">
+            <thead>
+              <tr>
+                <th>DATE</th>
+                <th>IN</th>
+                <th>OUT</th>
+              </tr>
+            </thead>
+            <tbody id="attendanceRows">
+              <tr>
+                <td colspan="3">Loading...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </article>
       <article class="employee-card portal-panel" id="leavePanel">
-        <div class="employee-card-head"><div><div class="employee-card-label">Time away</div><h2>Leave requests</h2><p>Submit leave and track Pending, Approved, or Rejected requests.</p></div></div>
+        <div class="employee-card-head">
+          <div>
+            <div class="employee-card-label">Time away</div>
+            <h2>Leave requests</h2>
+            <p>Submit leave and track Pending, Approved, or Rejected requests.</p>
+          </div>
+        </div>
         <form class="employee-form" onsubmit="submitLeave(event)">
-          <label for="leaveType">Leave type</label><select id="leaveType"><option>Vacation</option><option>Sick</option><option>Personal</option><option>Parental</option></select>
+          <label for="leaveType">Leave type</label><select id="leaveType">
+            <option>Vacation</option>
+            <option>Sick</option>
+            <option>Personal</option>
+            <option>Parental</option>
+          </select>
           <label for="leaveStart">Start date</label><input id="leaveStart" type="date" required />
           <label for="leaveEnd">End date</label><input id="leaveEnd" type="date" required />
           <label for="leaveReason">Reason</label><textarea id="leaveReason" required></textarea>
           <button class="btn btn-navy-cta" type="submit">Submit leave request</button>
         </form>
-        <div class="employee-table-wrap"><table class="employee-table"><thead><tr><th>TYPE</th><th>DATES</th><th>STATUS</th></tr></thead><tbody id="leaveRows"><tr><td colspan="3">Loading...</td></tr></tbody></table></div>
+        <div class="employee-table-wrap">
+          <table class="employee-table">
+            <thead>
+              <tr>
+                <th>TYPE</th>
+                <th>DATES</th>
+                <th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="leaveRows">
+              <tr>
+                <td colspan="3">Loading...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </article>
       <article class="employee-card portal-panel" id="complaintPanel">
-        <div class="employee-card-head"><div><div class="employee-card-label">Private HR channel</div><h2>Complaint filing</h2><p>Send a private workplace complaint to HR.</p></div></div>
+        <div class="employee-card-head">
+          <div>
+            <div class="employee-card-label">Private HR channel</div>
+            <h2>Complaint filing</h2>
+            <p>Send a private workplace complaint to HR.</p>
+          </div>
+        </div>
         <form class="employee-form" onsubmit="submitComplaint(event)">
-          <label for="complaintCategory">Category</label><select id="complaintCategory"><option value="general">General</option><option value="workplace">Workplace conduct</option><option value="payroll">Payroll issue</option><option value="harassment">Harassment</option></select>
+          <label for="complaintCategory">Category</label><select id="complaintCategory">
+            <option value="general">General</option>
+            <option value="workplace">Workplace conduct</option>
+            <option value="payroll">Payroll issue</option>
+            <option value="harassment">Harassment</option>
+          </select>
           <label for="complaintSubject">Subject</label><input id="complaintSubject" required />
           <label for="complaintDescription">Details</label><textarea id="complaintDescription" required></textarea>
           <button class="btn btn-navy-cta" type="submit">File complaint</button>
         </form>
-        <div class="employee-table-wrap"><table class="employee-table"><thead><tr><th>SUBJECT</th><th>CATEGORY</th><th>STATUS</th><th>FILED</th></tr></thead><tbody id="complaintRows"><tr><td colspan="4">Loading...</td></tr></tbody></table></div>
+        <div class="employee-table-wrap">
+          <table class="employee-table">
+            <thead>
+              <tr>
+                <th>SUBJECT</th>
+                <th>CATEGORY</th>
+                <th>STATUS</th>
+                <th>FILED</th>
+              </tr>
+            </thead>
+            <tbody id="complaintRows">
+              <tr>
+                <td colspan="4">Loading...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </article>
       <article class="employee-card portal-panel" id="advancePanel">
-        <div class="employee-card-head"><div><div class="employee-card-label">Payroll support</div><h2>Salary advance</h2><p>Request an advance linked to the payroll advance records.</p></div></div>
+        <div class="employee-card-head">
+          <div>
+            <div class="employee-card-label">Payroll support</div>
+            <h2>Salary advance</h2>
+            <p>Request an advance linked to the payroll advance records.</p>
+          </div>
+        </div>
         <form class="employee-form" onsubmit="submitAdvance(event)">
-          <label for="advanceAmount">Amount</label><input id="advanceAmount" type="number" min="0.01" step="0.01" required />
-          <label for="advanceTerms">Repayment terms</label><select id="advanceTerms"><option>Next Payroll</option><option>2 Pay Cycles</option><option>3 Pay Cycles</option></select>
+          <label for="advanceAmount">Amount</label><input id="advanceAmount" type="number" min="0.01" step="0.01"
+            required />
+          <label for="advanceTerms">Repayment terms</label><select id="advanceTerms">
+            <option>Next Payroll</option>
+            <option>2 Pay Cycles</option>
+            <option>3 Pay Cycles</option>
+          </select>
           <label for="advancePurpose">Reason</label><textarea id="advancePurpose" required></textarea>
           <button class="btn btn-navy-cta" type="submit">Submit advance request</button>
         </form>
-        <div class="employee-table-wrap"><table class="employee-table"><thead><tr><th>AMOUNT</th><th>REASON</th><th>STATUS</th></tr></thead><tbody id="advanceRows"><tr><td colspan="3">Loading...</td></tr></tbody></table></div>
+        <div class="employee-table-wrap">
+          <table class="employee-table">
+            <thead>
+              <tr>
+                <th>AMOUNT</th>
+                <th>REASON</th>
+                <th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="advanceRows">
+              <tr>
+                <td colspan="3">Loading...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+      <article class="employee-card portal-panel" id="settingsPanel">
+        <div class="employee-card-head"><div><div class="employee-card-label">Profile &amp; Security</div><h2>Settings</h2><p>Update password and display preferences.</p></div></div>
+        <form class="employee-form" onsubmit="submitPassword(event)" style="border-bottom:1px solid #e2e8f0;padding-bottom:24px;margin-bottom:24px;">
+          <h3 style="font-size:15px;font-weight:600;margin-bottom:16px;">Change Password</h3>
+          <label for="oldPassword">Current Password</label><input id="oldPassword" type="password" required />
+          <label for="newPassword">New Password</label><input id="newPassword" type="password" required />
+          <label for="newPassword2">Confirm New Password</label><input id="newPassword2" type="password" required />
+          <button class="btn btn-navy-cta" type="submit">Update Password</button>
+        </form>
+        <form class="employee-form" onsubmit="submitPrefs(event)">
+          <h3 style="font-size:15px;font-weight:600;margin-bottom:16px;">Display &amp; Notifications</h3>
+          <label for="empPageSize">Page Size</label>
+          <select id="empPageSize"><option value="5">5 per page</option><option value="10">10 per page</option><option value="25">25 per page</option></select>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:16px;"><input type="checkbox" id="empHighContrast" /> Enable High Contrast</label>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:8px;"><input type="checkbox" id="empMuteLeave" /> Mute Leave Notifications</label>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:8px;margin-bottom:16px;"><input type="checkbox" id="empMutePayroll" /> Mute Payroll Notifications</label>
+          <button class="btn btn-navy-cta" type="submit">Save Preferences</button>
+        </form>
       </article>
     </section>
   </main>
@@ -121,34 +504,56 @@
     async function portalFetch(url, options = {}) {
       const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
       if (csrf()) headers['X-CSRFToken'] = csrf();
-      const response = await fetch(url, { credentials:'same-origin', ...options, headers });
+      const response = await fetch(url, { credentials: 'same-origin', ...options, headers });
       if (response.status === 401 || response.status === 403) { window.location.href = '/login/?next=/employee/'; throw new Error('auth'); }
       return response;
     }
     const payload = async (response) => response.json().catch(() => ({}));
     const showStatus = (message, error = false) => { const el = document.getElementById('attendanceStatus'); el.textContent = message; el.style.color = error ? '#b42318' : '#166534'; };
     const rows = (data) => Array.isArray(data) ? data : data.results || [];
-    const safe = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    const safe = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
     let portalRefreshInFlight = false;
     async function loadPortalData() {
       if (portalRefreshInFlight) return;
       portalRefreshInFlight = true;
       try {
-      const [attendance, leaves, advances, complaints] = await Promise.all([portalFetch('/api/attendance/me/?_=' + Date.now()), portalFetch('/api/leaves/?page_size=50&_=' + Date.now()), portalFetch('/api/advances/?page_size=50&_=' + Date.now()), portalFetch('/api/complaints/?page_size=50&_=' + Date.now())]);
-      document.getElementById('attendanceRows').innerHTML = rows(await payload(attendance)).map((item) => `<tr><td>${safe(item.date)}</td><td>${safe(item.clock_in || '-')}</td><td>${safe(item.clock_out || '-')}</td></tr>`).join('') || '<tr><td colspan="3">No attendance records.</td></tr>';
-      document.getElementById('leaveRows').innerHTML = rows(await payload(leaves)).map((item) => `<tr><td>${safe(item.leave_type)}</td><td>${safe(item.start_date)} to ${safe(item.end_date)}</td><td>${safe(item.status)}</td></tr>`).join('') || '<tr><td colspan="3">No leave requests.</td></tr>';
-      document.getElementById('advanceRows').innerHTML = rows(await payload(advances)).map((item) => `<tr><td>${safe(item.amount)}</td><td>${safe(item.purpose)}</td><td>${safe(item.status)}</td></tr>`).join('') || '<tr><td colspan="3">No advance requests.</td></tr>';
-      document.getElementById('complaintRows').innerHTML = rows(await payload(complaints)).map((item) => `<tr><td>${safe(item.subject)}</td><td>${safe(item.category)}</td><td>${safe(item.status)}</td><td>${safe(String(item.created_at || '').slice(0, 10))}</td></tr>`).join('') || '<tr><td colspan="4">No complaints filed.</td></tr>';
+        const [attendance, leaves, advances, complaints] = await Promise.all([portalFetch('/api/attendance/me/?_=' + Date.now()), portalFetch('/api/leaves/?page_size=50&_=' + Date.now()), portalFetch('/api/advances/?page_size=50&_=' + Date.now()), portalFetch('/api/complaints/?page_size=50&_=' + Date.now())]);
+        document.getElementById('attendanceRows').innerHTML = rows(await payload(attendance)).map((item) => `<tr><td>${safe(item.date)}</td><td>${safe(item.clock_in || '-')}</td><td>${safe(item.clock_out || '-')}</td></tr>`).join('') || '<tr><td colspan="3">No attendance records.</td></tr>';
+        document.getElementById('leaveRows').innerHTML = rows(await payload(leaves)).map((item) => `<tr><td>${safe(item.leave_type)}</td><td>${safe(item.start_date)} to ${safe(item.end_date)}</td><td>${safe(item.status)}</td></tr>`).join('') || '<tr><td colspan="3">No leave requests.</td></tr>';
+        document.getElementById('advanceRows').innerHTML = rows(await payload(advances)).map((item) => `<tr><td>${safe(item.amount)}</td><td>${safe(item.purpose)}</td><td>${safe(item.status)}</td></tr>`).join('') || '<tr><td colspan="3">No advance requests.</td></tr>';
+        document.getElementById('complaintRows').innerHTML = rows(await payload(complaints)).map((item) => `<tr><td>${safe(item.subject)}</td><td>${safe(item.category)}</td><td>${safe(item.status)}</td><td>${safe(String(item.created_at || '').slice(0, 10))}</td></tr>`).join('') || '<tr><td colspan="4">No complaints filed.</td></tr>';
       } finally { portalRefreshInFlight = false; }
     }
-    async function attendanceAction(action) { try { const response = await portalFetch('/api/attendance/me/', { method:'POST', body:JSON.stringify({ action }) }); const data = await payload(response); if (!response.ok) throw new Error(data.error || 'Attendance could not be recorded.'); showStatus(action === 'clock_in' ? 'Clock-in recorded.' : 'Clock-out recorded.'); loadPortalData(); } catch (error) { if (error.message !== 'auth') showStatus(error.message, true); } }
-    async function submitLeave(event) { event.preventDefault(); try { const response = await portalFetch('/api/leaves/', { method:'POST', body:JSON.stringify({ leave_type:leaveType.value, start_date:leaveStart.value, end_date:leaveEnd.value, reason:leaveReason.value }) }); if (!response.ok) throw new Error('Leave request could not be submitted.'); event.target.reset(); loadPortalData(); } catch (error) { showStatus(error.message, true); } }
-    async function submitComplaint(event) { event.preventDefault(); try { const response = await portalFetch('/api/complaints/', { method:'POST', body:JSON.stringify({ category:complaintCategory.value, subject:complaintSubject.value, description:complaintDescription.value }) }); if (!response.ok) throw new Error('Complaint could not be filed.'); event.target.reset(); alert('Complaint filed securely.'); } catch (error) { showStatus(error.message, true); } }
-    async function submitAdvance(event) { event.preventDefault(); try { const response = await portalFetch('/api/advances/', { method:'POST', body:JSON.stringify({ amount:advanceAmount.value, repayment_terms:advanceTerms.value, purpose:advancePurpose.value }) }); if (!response.ok) throw new Error('Advance request could not be submitted.'); event.target.reset(); loadPortalData(); } catch (error) { showStatus(error.message, true); } }
-    async function employeeLogout() { await portalFetch('/api/session-logout/', { method:'POST' }).catch(() => {}); window.location.href = '/login/'; }
+    async function attendanceAction(action) { try { const response = await portalFetch('/api/attendance/me/', { method: 'POST', body: JSON.stringify({ action }) }); const data = await payload(response); if (!response.ok) throw new Error(data.error || 'Attendance could not be recorded.'); showStatus(action === 'clock_in' ? 'Clock-in recorded.' : 'Clock-out recorded.'); loadPortalData(); } catch (error) { if (error.message !== 'auth') showStatus(error.message, true); } }
+    async function submitLeave(event) { event.preventDefault(); try { const response = await portalFetch('/api/leaves/', { method: 'POST', body: JSON.stringify({ leave_type: leaveType.value, start_date: leaveStart.value, end_date: leaveEnd.value, reason: leaveReason.value }) }); if (!response.ok) throw new Error('Leave request could not be submitted.'); event.target.reset(); loadPortalData(); } catch (error) { showStatus(error.message, true); } }
+    async function submitComplaint(event) { event.preventDefault(); try { const response = await portalFetch('/api/complaints/', { method: 'POST', body: JSON.stringify({ category: complaintCategory.value, subject: complaintSubject.value, description: complaintDescription.value }) }); if (!response.ok) throw new Error('Complaint could not be filed.'); event.target.reset(); alert('Complaint filed securely.'); } catch (error) { showStatus(error.message, true); } }
+    async function submitAdvance(event) { event.preventDefault(); try { const response = await portalFetch('/api/advances/', { method: 'POST', body: JSON.stringify({ amount: advanceAmount.value, repayment_terms: advanceTerms.value, purpose: advancePurpose.value }) }); if (!response.ok) throw new Error('Advance request could not be submitted.'); event.target.reset(); loadPortalData(); } catch (error) { showStatus(error.message, true); } }
+    async function submitPassword(event) {
+      event.preventDefault();
+      if (newPassword.value !== newPassword2.value) return alert('Passwords do not match.');
+      try {
+        const response = await portalFetch('/api/settings/password/', { method:'POST', body:JSON.stringify({ old_password:oldPassword.value, new_password:newPassword.value }) });
+        const data = await payload(response);
+        if (!response.ok) throw new Error(data.error || 'Password update failed.');
+        event.target.reset(); alert('Password updated.');
+      } catch (error) { alert(error.message); }
+    }
+    async function submitPrefs(event) {
+      event.preventDefault();
+      const muted = [];
+      if (empMuteLeave.checked) muted.push('leave');
+      if (empMutePayroll.checked) muted.push('payroll');
+      try {
+        const response = await portalFetch('/api/settings/me/', { method:'PATCH', body:JSON.stringify({ page_size:parseInt(empPageSize.value), muted_kinds:muted, a11y:{ high_contrast:empHighContrast.checked } }) });
+        if (!response.ok) throw new Error('Failed to save.');
+        alert('Preferences saved.');
+      } catch (error) { alert(error.message); }
+    }
+    async function employeeLogout() { await portalFetch('/api/session-logout/', { method: 'POST' }).catch(() => { }); window.location.href = '/login/'; }
     loadPortalData().catch(() => showStatus('Portal data could not be loaded.', true));
-    setInterval(() => { if (!document.hidden) loadPortalData().catch(() => showStatus('Portal data could not be refreshed.', true)); }, 5000);
+    setInterval(() => { if (!document.hidden) loadPortalData().catch(() => showStatus('Portal data could not be refreshed.', true)); }, 60000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) loadPortalData().catch(() => showStatus('Portal data could not be refreshed.', true)); });
   </script>
 </body>
+
 </html>

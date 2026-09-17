@@ -426,7 +426,7 @@ function writeWidgetPrefs() {
   try { localStorage.setItem(KUMON_WIDGETS_KEY, JSON.stringify(prefs)); } catch (e) { /* degrade silently */ }
 }
 function renderWidgetSettings() {
-  const view = document.getElementById("view-dashboard");
+  const view = document.getElementById("view-settings");
   if (!view || document.getElementById("widgetSettings")) return;
   const details = document.createElement("details");
   details.id = "widgetSettings";
