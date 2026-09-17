@@ -86,6 +86,16 @@
           </svg>
           <span>Logs</span>
         </a>
+        <a href="#" class="nav-link" data-view="settings">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
+            </path>
+          </svg>
+          <span>Settings</span>
+        </a>
       </nav>
 
     </aside>
@@ -279,7 +289,7 @@
                   <strong style="color:#065f46;">Q3 All-Hands Meeting</strong>
                   <span>Tomorrow at 3:00 PM • Main Auditorium & Zoom</span>
                 </div>
-                <button class="btn btn-outline-white-sm">Company</button>
+                <button class="btn btn-outline-white-sm" onclick="showToast('Company events are managed in the external calendar portal.', 'info')">Company</button>
               </div>
 
               <div class="action-tile tile-purple">
@@ -462,7 +472,7 @@
                     <span class="col-head">PERFORMANCE & CONTACT ACTIONS</span>
                     <div class="perf-text">Q2 Performance Rating: <strong>Exceeds (4.8/5.0)</strong></div>
                     <div class="acc-btn-row">
-                      <button class="btn btn-black-sm">View Full Profile</button>
+                      <button class="btn btn-black-sm" onclick="showToast('Full profile view coming soon in v2', 'info')">View Full Profile</button>
                       <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('Sarah Chen')">Message on
                         Slack</button>
                     </div>
@@ -556,7 +566,7 @@
                     <span class="col-head">PERFORMANCE & CONTACT ACTIONS</span>
                     <div class="perf-text">Q2 Performance Rating: <strong>Exceeds (4.2/5.0)</strong></div>
                     <div class="acc-btn-row">
-                      <button class="btn btn-black-sm">View Full Profile</button>
+                      <button class="btn btn-black-sm" onclick="showToast('Full profile view coming soon in v2', 'info')">View Full Profile</button>
                       <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('Marcus Williams')">Message on
                         Slack</button>
                     </div>
@@ -649,7 +659,7 @@
                     <span class="col-head">PERFORMANCE & CONTACT ACTIONS</span>
                     <div class="perf-text">90-Day Review: <strong>In Progress</strong></div>
                     <div class="acc-btn-row">
-                      <button class="btn btn-black-sm">View Full Profile</button>
+                      <button class="btn btn-black-sm" onclick="showToast('Full profile view coming soon in v2', 'info')">View Full Profile</button>
                       <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('Priya Patel')">Message on
                         Slack</button>
                     </div>
@@ -743,7 +753,7 @@
                     <span class="col-head">PERFORMANCE & CONTACT ACTIONS</span>
                     <div class="perf-text">Q2 Performance Rating: <strong>Strong (4.5/5.0)</strong></div>
                     <div class="acc-btn-row">
-                      <button class="btn btn-black-sm">View Full Profile</button>
+                      <button class="btn btn-black-sm" onclick="showToast('Full profile view coming soon in v2', 'info')">View Full Profile</button>
                       <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('James O\u0027Brien')">Message
                         on Slack</button>
                     </div>
@@ -836,7 +846,7 @@
                     <span class="col-head">PERFORMANCE & CONTACT ACTIONS</span>
                     <div class="perf-text">Q2 Performance Rating: <strong>Exceeds (4.7/5.0)</strong></div>
                     <div class="acc-btn-row">
-                      <button class="btn btn-black-sm">View Full Profile</button>
+                      <button class="btn btn-black-sm" onclick="showToast('Full profile view coming soon in v2', 'info')">View Full Profile</button>
                       <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('Elena Rodriguez')">Message on
                         Slack</button>
                     </div>
@@ -929,7 +939,7 @@
                     <span class="col-head">PERFORMANCE & CONTACT ACTIONS</span>
                     <div class="perf-text">Status: <strong>Approved PTO (Returns Aug 20)</strong></div>
                     <div class="acc-btn-row">
-                      <button class="btn btn-black-sm">View Full Profile</button>
+                      <button class="btn btn-black-sm" onclick="showToast('Full profile view coming soon in v2', 'info')">View Full Profile</button>
                       <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('David Kim')">Message on
                         Slack</button>
                     </div>
@@ -1036,7 +1046,7 @@
 
             <div class="pt-footer-row">
               <div class="pt-actions">
-                <button type="button" class="btn btn-outline-gray">Cancel</button>
+                <button type="button" class="btn btn-outline-gray" onclick="document.getElementById('promoteFormContainer').style.display='none'">Cancel</button>
                 <button type="button" class="btn btn-orange-cta" disabled
                   title="Promotion workflow is not connected yet.">Record Promotion</button>
               </div>
@@ -1092,7 +1102,7 @@
 
             <div class="pt-footer-row">
               <div class="pt-actions">
-                <button type="button" class="btn btn-outline-gray">Cancel</button>
+                <button type="button" class="btn btn-outline-gray" onclick="document.getElementById('transferFormContainer').style.display='none'">Cancel</button>
                 <button type="button" class="btn btn-orange-cta" disabled
                   title="Transfer workflow is not connected yet.">Record Transfer</button>
               </div>
@@ -3535,6 +3545,284 @@
       </section>
 
       <!-- ======================================================================
+           VIEW: SETTINGS (T9+T15 frontend)
+           ====================================================================== -->
+      <section class="view-panel" id="view-settings">
+        <div class="page-title-block">
+          <h1 class="penpot-page-heading">Settings</h1>
+          <p class="penpot-page-sub">Personal profile, notification &amp; display preferences, and company-wide
+            configuration.</p>
+          <p id="settingsLoadError" class="card-sub" style="display:none; color:#991b1b;">Settings could not be loaded. Check your connection and retry.</p>
+        </div>
+
+        <!-- Subnav Pill Tabs -->
+        <div class="penpot-subnav-row">
+          <div class="pill-tabs-container">
+            <button class="tab-pill active" id="settingsTabProfile" onclick="settingsSwitchTab('profile')">
+              <span>My profile</span>
+            </button>
+            <button class="tab-pill" id="settingsTabNotif" onclick="settingsSwitchTab('notif')">
+              <span>Notifications &amp; display</span>
+            </button>
+            <button class="tab-pill" id="settingsTabCompany" onclick="settingsSwitchTab('company')" data-staff-only hidden title="Staff only — contact your HR admin">
+              <span>Company</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB: MY PROFILE -->
+        <div id="settingsPaneProfile">
+          <div class="white-card">
+            <h2 class="card-title">My profile</h2>
+            <p class="card-sub">Update your name, email and role. Changes save to your employee record.</p>
+            <div class="inputs-2grid" style="margin-bottom:12px; margin-top:16px;">
+              <div class="input-cell">
+                <label>FIRST NAME</label>
+                <input id="setFirstName" class="penpot-input" placeholder="First name" />
+              </div>
+              <div class="input-cell">
+                <label>LAST NAME</label>
+                <input id="setLastName" class="penpot-input" placeholder="Last name" />
+              </div>
+            </div>
+            <div class="inputs-2grid" style="margin-bottom:20px;">
+              <div class="input-cell">
+                <label>EMAIL</label>
+                <input id="setEmail" type="email" class="penpot-input" placeholder="you@company.com" />
+              </div>
+              <div class="input-cell">
+                              <label>ROLE</label>
+                              <input id="setRole" class="penpot-input" placeholder="Role" disabled />
+                              <small class="penpot-field-hint">Role is assigned by HR.</small>
+                            </div>
+            </div>
+            <div class="modal-foot" style="justify-content:flex-start;">
+              <button class="btn btn-navy-cta" onclick="saveSettingsProfile()">Save profile</button>
+            </div>
+          </div>
+
+          <div class="white-card">
+            <h2 class="card-title">Change password</h2>
+            <p class="card-sub">Minimum 8 characters. Other sessions are signed out.</p>
+            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
+              <label>CURRENT PASSWORD</label>
+              <input id="setOldPassword" type="password" class="penpot-input" placeholder="Current password"
+                autocomplete="current-password" />
+            </div>
+            <div class="inputs-2grid" style="margin-bottom:20px;">
+              <div class="input-cell">
+                <label>NEW PASSWORD</label>
+                <input id="setNewPassword" type="password" class="penpot-input" placeholder="New password"
+                  autocomplete="new-password" />
+              </div>
+              <div class="input-cell">
+                <label>CONFIRM NEW PASSWORD</label>
+                <input id="setNewPassword2" type="password" class="penpot-input" placeholder="Repeat new password"
+                  autocomplete="new-password" />
+              </div>
+            </div>
+            <div class="modal-foot" style="justify-content:flex-start;">
+              <button class="btn btn-navy-cta" onclick="saveSettingsPassword()">Change password</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: NOTIFICATIONS & DISPLAY -->
+        <div id="settingsPaneNotif" style="display:none;">
+          <div class="white-card">
+            <h2 class="card-title">Notifications &amp; display</h2>
+            <p class="card-sub">Mute notification kinds, page size, and accessibility display options.</p>
+            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
+              <label>MUTED NOTIFICATION KINDS</label>
+              <div style="display:flex; gap:18px; flex-wrap:wrap; margin-top:8px;">
+                <label
+                  style="font-size:13px; color:#334155; display:flex; gap:6px; align-items:center; text-transform:none;">
+                  <input type="checkbox" id="setMuteLeave" value="leave" /> Leave
+                </label>
+                <label
+                  style="font-size:13px; color:#334155; display:flex; gap:6px; align-items:center; text-transform:none;">
+                  <input type="checkbox" id="setMuteShift" value="shift" /> Shift
+                </label>
+                <label
+                  style="font-size:13px; color:#334155; display:flex; gap:6px; align-items:center; text-transform:none;">
+                  <input type="checkbox" id="setMutePayroll" value="payroll" /> Payroll
+                </label>
+              </div>
+            </div>
+            <div class="inputs-2grid" style="margin-bottom:12px;">
+              <div class="input-cell">
+                <label>PAGE SIZE</label>
+                <select id="setPageSize" class="penpot-select-full">
+                  <option value="5">5 per page</option>
+                  <option value="10">10 per page</option>
+                  <option value="25">25 per page</option>
+                  <option value="50">50 per page</option>
+                  <option value="100">100 per page</option>
+                </select>
+              </div>
+              <div class="input-cell">
+                <label>FONT SCALE</label>
+                <select id="setFontScale" class="penpot-select-full">
+                  <option value="87.5">Compact (87.5%)</option>
+                  <option value="100">Default (100%)</option>
+                  <option value="112.5">Large (112.5%)</option>
+                  <option value="125">Extra large (125%)</option>
+                </select>
+              </div>
+            </div>
+            <div class="inputs-2grid" style="margin-bottom:20px;">
+              <div class="input-cell">
+                <label>HIGH CONTRAST</label>
+                <label
+                  style="font-size:13px; color:#334155; display:flex; gap:6px; align-items:center; text-transform:none; margin-top:8px;">
+                  <input type="checkbox" id="setHighContrast" /> Enable high contrast
+                </label>
+              </div>
+              <div class="input-cell">
+                <label>REDUCE MOTION</label>
+                <label
+                  style="font-size:13px; color:#334155; display:flex; gap:6px; align-items:center; text-transform:none; margin-top:8px;">
+                  <input type="checkbox" id="setReduceMotion" /> Reduce motion &amp; transitions
+                </label>
+              </div>
+            </div>
+            <div class="modal-foot" style="justify-content:flex-start;">
+              <button class="btn btn-navy-cta" onclick="saveSettingsPrefs()">Save preferences</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: COMPANY (staff-only) -->
+        <div id="settingsPaneCompany" style="display:none;" data-staff-only hidden>
+          <div class="white-card">
+            <h2 class="card-title">Leave rules</h2>
+            <p class="card-sub">Staff only. Mirrors FrappeHR leave settings: backdated control and automatic grants on hire (Vacation, this year).</p>
+            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
+              <label class="penpot-checkbox-label">
+                <input type="checkbox" id="setLeaveBackdated" />
+                <span>Restrict backdated leave applications</span>
+              </label>
+            </div>
+            <div class="input-cell" style="margin-bottom:12px;">
+              <label>AUTO-ALLOCATE DAYS ON HIRE (0 = OFF)</label>
+              <input id="setLeaveAutoDays" type="number" step="1" min="0" max="365" class="penpot-input"
+                placeholder="0" />
+            </div>
+          </div>
+          <div class="white-card">
+            <h2 class="card-title">Shift rules</h2>
+            <p class="card-sub">Staff only. Mirrors FrappeHR shift settings.</p>
+            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
+              <label class="penpot-checkbox-label">
+                <input type="checkbox" id="setShiftDouble" />
+                <span>Allow double-booking the same person on one date</span>
+              </label>
+            </div>
+          </div>
+          <div class="white-card">
+            <h2 class="card-title">Payroll rules</h2>
+            <p class="card-sub">Staff only. Overtime bounds applied to every slip.</p>
+            <div class="inputs-2grid" style="margin-bottom:12px; margin-top:16px;">
+              <div class="input-cell">
+                <label>OVERTIME MIN HOURS</label>
+                <input id="setOtMin" type="number" step="0.01" min="0" max="24" class="penpot-input"
+                  placeholder="0.01" />
+              </div>
+              <div class="input-cell">
+                <label>OVERTIME MAX HOURS</label>
+                <input id="setOtMax" type="number" step="0.01" min="0" max="24" class="penpot-input"
+                  placeholder="5.00" />
+              </div>
+            </div>
+          </div>
+          <div class="white-card">
+            <h2 class="card-title">Mobile</h2>
+            <p class="card-sub">Staff only. Gates kiosk + self-service clock-in for the future mobile client.</p>
+            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
+              <label class="penpot-checkbox-label">
+                <input type="checkbox" id="setMobileCheckin" checked />
+                <span>Allow mobile check-in</span>
+              </label>
+            </div>
+          </div>
+          <div class="white-card">
+            <h2 class="card-title">System</h2>
+            <p class="card-sub">Staff only. Retention, upload cap. Throttle and CORS values are
+              read-only here.</p>
+            <div class="inputs-2grid" style="margin-bottom:12px; margin-top:16px;">
+              <div class="input-cell">
+                <label>PURGE RETENTION DAYS</label>
+                <input id="setPurgeDays" type="number" step="1" min="1" max="365" class="penpot-input"
+                  placeholder="30" />
+              </div>
+              <div class="input-cell">
+                <label>UPLOAD CAP (MB)</label>
+                <input id="setUploadCap" type="number" step="1" min="1" max="100" class="penpot-input"
+                  placeholder="10" />
+              </div>
+            </div>
+            <div class="input-cell" style="margin-bottom:12px;">
+              <label>THROTTLE / CORS (READ-ONLY)</label>
+              <div id="setReadOnlyNet" style="font-size:13px; color:#475569; margin-top:8px;">Contact your HR admin for throttle/CORS values.</div>
+            </div>
+            <div class="input-cell" style="margin-bottom:20px;">
+              <label>LOGIN DOORS</label>
+              <p style="font-size:13px; color:#475569; margin:8px 0 0 0;">Not sure which login? Staff use HR login (/hr/login/); everyone else uses Employee login (/login/).</p>
+            </div>
+            <div class="modal-foot" style="justify-content:flex-start;">
+              <button class="btn btn-outline-gray" onclick="loadSettingsView()">Discard</button>
+              <button class="btn btn-navy-cta" onclick="saveSettingsSite()">Save company settings</button>
+            </div>
+          </div>
+
+          <div class="white-card">
+            <h2 class="card-title">Excel import</h2>
+            <p class="card-sub">Upload an .xlsx roster to preview rows first (dry-run), then confirm to import.</p>
+            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
+              <label>ROSTER FILE (.XLSX)</label>
+              <input id="settingsImportFile" type="file" accept=".xlsx,.xls,.csv" class="penpot-input" />
+            </div>
+            <div class="modal-foot" style="justify-content:flex-start; margin-bottom:16px;">
+              <button class="btn btn-outline-gray" onclick="settingsImportDryRun()">Dry-run preview</button>
+              <button class="btn btn-navy-cta" onclick="settingsImportCommit()">Confirm import</button>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="penpot-table">
+                <thead>
+                  <tr>
+                    <th>ROW</th>
+                    <th>NAME</th>
+                    <th>EMAIL</th>
+                    <th>STATUS</th>
+                  </tr>
+                </thead>
+                <tbody id="settingsImportResults">
+                  <tr>
+                    <td colspan="4">No preview yet — choose a file and run a dry-run.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings confirm modal (reuses modal-backdrop/modal-card) -->
+        <div class="modal-backdrop" id="settingsConfirmModal">
+          <div class="modal-card">
+            <div class="modal-head">
+              <h3 id="settingsConfirmTitle">Confirm change</h3>
+              <button class="modal-close" onclick="closeSettingsConfirm()">&times;</button>
+            </div>
+            <p id="settingsConfirmText" style="font-size:14px; color:#475569; margin:0 0 20px 0;"></p>
+            <div class="modal-foot">
+              <button type="button" class="btn btn-outline-gray" onclick="closeSettingsConfirm()">Cancel</button>
+              <button type="button" class="btn btn-navy-cta" id="settingsConfirmOk">Confirm</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
            GENERIC PLACEHOLDER VIEW (Payroll, Reports)
            ====================================================================== -->
       <section class="view-panel" id="view-placeholder">
@@ -3937,9 +4225,6 @@
     if (typeof switchView === 'undefined') {
       document.write('<script src="../../../static/js/dashboard.js"><\/script>');
     }
-  </script>
-  <script>
-    (function () { if (!window.chatbase || window.chatbase("getState") !== "initialized") { window.chatbase = (...arguments) => { if (!window.chatbase.q) { window.chatbase.q = [] } window.chatbase.q.push(arguments) }; window.chatbase = new Proxy(window.chatbase, { get(target, prop) { if (prop === "q") { return target.q } return (...args) => target(prop, ...args) } }) } const onLoad = function () { const script = document.createElement("script"); script.src = "https://www.chatbase.co/embed.min.js"; script.id = "ZR84LaAfbmdAWKswjfurQ"; script.domain = "www.chatbase.co"; document.body.appendChild(script) }; if (document.readyState === "complete") { onLoad() } else { window.addEventListener("load", onLoad) } })();
   </script>
 </body>
 

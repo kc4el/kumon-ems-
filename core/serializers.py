@@ -1,6 +1,8 @@
+import logging
 from decimal import Decimal
 
 from django.db.models import Q
+from django.utils import timezone
 from rest_framework import serializers
 
 from .exceptions import Conflict409
@@ -24,6 +26,8 @@ from .models import (
     PerformanceReview,
     ShiftRoster,
     ShiftSwap,
+    SiteSetting,
+    UserSetting,
 )
 
 
@@ -41,13 +45,24 @@ class GrievanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Grievance
         fields = "__all__"
-        read_only_fields = ("id", "created_at", "updated_at", "employee_name", "employee_department", "employee_role")
+        read_only_fields = (
+            "id",
+            "created_at",
+            "updated_at",
+            "employee_name",
+            "employee_department",
+            "employee_role",
+        )
 
     def get_employee_name(self, obj):
         return str(obj.employee) if obj.employee else "Anonymous Filing"
 
     def get_employee_department(self, obj):
-        return obj.employee.department.name if obj.employee and obj.employee.department else ""
+        return (
+            obj.employee.department.name
+            if obj.employee and obj.employee.department
+            else ""
+        )
 
     def get_employee_role(self, obj):
         return obj.employee.role if obj.employee and obj.employee.role else ""
@@ -198,6 +213,15 @@ class LeaveRequestSerializer(serializers.ModelSerializer):
         start, end = val("start_date"), val("end_date")
         if start is not None and end is not None and end < start:
             raise serializers.ValidationError("end_date must not precede start_date.")
+        # FrappeHR 4.6 mirror: optionally refuse backdated applications.
+        if (
+            start is not None
+            and _site_val("leave_restrict_backdated").lower() == "true"
+            and start < timezone.localdate()
+        ):
+            raise serializers.ValidationError(
+                {"start_date": "Backdated leave applications are disabled."}
+            )
         return data
 
 
@@ -218,11 +242,12 @@ class OvertimeSlipSerializer(serializers.ModelSerializer):
     STATUS_CHOICES = ("Pending", "Approved", "Rejected")
     status = serializers.ChoiceField(choices=STATUS_CHOICES, default="Pending")
     hours = serializers.DecimalField(max_digits=5, decimal_places=2, required=False)
+    # Multiplier bounds are NOT hardcoded here: they follow the
+    # overtime_min_hours / overtime_max_hours SiteSettings (see validate),
+    # defaulting to 0.01/5.00 when unset or invalid.
     multiplier = serializers.DecimalField(
         max_digits=4,
         decimal_places=2,
-        min_value=Decimal("0.01"),
-        max_value=Decimal("5.00"),
         default=Decimal("1.25"),
         required=False,
     )
@@ -269,6 +294,23 @@ class OvertimeSlipSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {"attendance": "Attendance does not belong to this employee."}
                 )
+        multiplier = val("multiplier")
+        if multiplier is not None:
+            # Bounds are the overtime_min/max_hours SiteSettings (source of
+            # truth), defaulting to 0.01/5.00 when unset or invalid.
+            lo = _site_decimal("overtime_min_hours", Decimal("0.01"))
+            hi = _site_decimal("overtime_max_hours", Decimal("5.00"))
+            if lo > hi:
+                lo, hi = Decimal("0.01"), Decimal("5.00")
+            if not (lo <= Decimal(str(multiplier)) <= hi):
+                raise serializers.ValidationError(
+                    {
+                        "multiplier": (
+                            "Must be between "
+                            f"{lo} and {hi} (overtime_min/max_hours)."
+                        )
+                    }
+                )
         return data
 
 
@@ -290,16 +332,19 @@ class ShiftRosterSerializer(serializers.ModelSerializer):
         if employee and day and start and end:
             if start >= end:
                 raise serializers.ValidationError("start_time must be before end_time.")
-            clash = ShiftRoster.objects.filter(
-                employee=employee,
-                work_date=day,
-                start_time__lt=end,
-                end_time__gt=start,
-            )
-            if self.instance:
-                clash = clash.exclude(pk=self.instance.pk)
-            if clash.exists():
-                raise Conflict409("Shift overlaps an existing assignment.")
+            # FrappeHR 3.1 mirror: staff may allow multiple assignments per
+            # date via the shift_allow_double_booking site setting.
+            if _site_val("shift_allow_double_booking").lower() != "true":
+                clash = ShiftRoster.objects.filter(
+                    employee=employee,
+                    work_date=day,
+                    start_time__lt=end,
+                    end_time__gt=start,
+                )
+                if self.instance:
+                    clash = clash.exclude(pk=self.instance.pk)
+                if clash.exists():
+                    raise Conflict409("Shift overlaps an existing assignment.")
         return data
 
 
@@ -458,3 +503,112 @@ class ClaimStatusSerializer(serializers.ModelSerializer):
                 "trim_whitespace": True,
             }
         }
+
+
+SITE_SETTING_SPECS = {
+    "overtime_min_hours": {"min": 0, "max": 24},
+    "overtime_max_hours": {"min": 0, "max": 24},
+    "purge_retention_days": {"min": 1, "max": 365, "integer": True},
+    "onboarding_max_mb": {"min": 1, "max": 100, "integer": True},
+    "leave_restrict_backdated": {"bool": True},
+    "leave_auto_allocate_days": {"min": 0, "max": 365, "integer": True},
+    "shift_allow_double_booking": {"bool": True},
+    "mobile_checkin_enabled": {"bool": True},
+}
+
+# Local SiteSetting reader (kept here instead of importing get_site_setting
+# from .views: views.py imports this module, so that import would be circular).
+# Falls back to SITE_SETTING_DEFAULTS when unset, invalid, or on DB error.
+SITE_SETTING_DEFAULTS = {
+    "overtime_min_hours": "0.01",
+    "overtime_max_hours": "5.00",
+    "purge_retention_days": "30",
+    "onboarding_max_mb": "10",
+    "leave_restrict_backdated": "false",
+    "leave_auto_allocate_days": "0",
+    "shift_allow_double_booking": "false",
+    "mobile_checkin_enabled": "true",
+}
+
+
+def _site_val(key):
+    default = SITE_SETTING_DEFAULTS.get(key, "")
+    try:
+        val = (
+            SiteSetting.objects.filter(key=key).values_list("value", flat=True).first()
+            or default
+        )
+        if val != default and key in SiteSetting.NUMERIC_RANGES:
+            float(val)  # corrupt stored values fall through to default + log
+        return val
+    except Exception:
+        logger = logging.getLogger(__name__)
+        logger.warning(
+            "SiteSetting %s unreadable/invalid, using default %s", key, default
+        )
+        return default
+
+
+def _site_decimal(key, fallback):
+    try:
+        return Decimal(str(_site_val(key)))
+    except Exception:
+        logger = logging.getLogger(__name__)
+        logger.warning(
+            "SiteSetting %s invalid decimal, using fallback %s", key, fallback
+        )
+        return fallback
+
+
+MUTABLE_PROFILE_FIELDS = ("first_name", "last_name", "email")
+
+
+class UserSettingSerializer(serializers.ModelSerializer):
+    page_size = serializers.IntegerField(min_value=5, max_value=100)
+    muted_kinds = serializers.ListField(
+        child=serializers.ChoiceField(choices=["leave", "shift", "payroll"]),
+        required=False,
+    )
+    dashboard_widgets = serializers.DictField(required=False)
+    a11y = serializers.DictField(required=False)
+
+    class Meta:
+        model = UserSetting
+        fields = ("page_size", "muted_kinds", "dashboard_widgets", "a11y")
+
+    def validate_a11y(self, value):
+        allowed_scales = [87.5, 100, 112.5, 125]
+        if "font_scale" in value and value["font_scale"] not in allowed_scales:
+            raise serializers.ValidationError(
+                f"font_scale must be one of {allowed_scales}."
+            )
+        for flag in ("high_contrast", "reduce_motion"):
+            if flag in value and not isinstance(value[flag], bool):
+                raise serializers.ValidationError(f"{flag} must be true/false.")
+        unknown = set(value) - {"font_scale", "high_contrast", "reduce_motion"}
+        if unknown:
+            raise serializers.ValidationError(f"Unknown a11y keys: {sorted(unknown)}.")
+        return value
+
+
+class SiteSettingSerializer(serializers.Serializer):
+    key = serializers.ChoiceField(choices=list(SITE_SETTING_SPECS))
+    value = serializers.CharField(max_length=200)
+
+    def validate(self, attrs):
+        spec = SITE_SETTING_SPECS[attrs["key"]]
+        if spec.get("bool"):
+            if str(attrs["value"]).lower() not in ("true", "false"):
+                raise serializers.ValidationError('value must be "true" or "false".')
+            return attrs
+        try:
+            num = float(attrs["value"])
+        except (TypeError, ValueError):
+            raise serializers.ValidationError("value must be numeric.")
+        if spec.get("integer") and not num.is_integer():
+            raise serializers.ValidationError("value must be a whole number.")
+        if not (spec["min"] <= num <= spec["max"]):
+            raise serializers.ValidationError(
+                f"value must be between {spec['min']} and {spec['max']}."
+            )
+        return attrs

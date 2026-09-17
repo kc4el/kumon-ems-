@@ -1,5 +1,6 @@
 import logging
 
+from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
@@ -18,6 +19,8 @@ from .models import (
     PerformanceReview,
     ShiftRoster,
     ShiftSwap,
+    SiteSetting,
+    UserSetting,
 )
 
 logger = logging.getLogger(__name__)
@@ -294,3 +297,39 @@ def log_swap_action(sender, instance, created, **kwargs):
                 ),
                 kind="shift",
             )
+
+
+@receiver(post_save, sender=get_user_model())
+def create_user_setting(sender, instance, created, **kwargs):
+    if created:
+        UserSetting.objects.get_or_create(user=instance)
+
+
+@receiver(post_save, sender=Employee)
+def auto_allocate_leave_on_hire(sender, instance, created, **kwargs):
+    """FrappeHR 4.7 mirror (Kumon-simple): grant Vacation days for the
+    current year on hire when leave_auto_allocate_days is above 0."""
+    if not created:
+        return
+    try:
+        from django.utils import timezone as tz
+
+        from .models import SiteSetting
+
+        raw = (
+            SiteSetting.objects.filter(key="leave_auto_allocate_days")
+            .values_list("value", flat=True)
+            .first()
+            or "0"
+        )
+        days = int(float(raw))
+    except Exception:
+        return
+    if days <= 0:
+        return
+    LeaveAllocation.objects.get_or_create(
+        employee=instance,
+        leave_type="Vacation",
+        year=tz.localdate().year,
+        defaults={"days_total": days},
+    )

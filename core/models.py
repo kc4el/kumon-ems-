@@ -54,7 +54,7 @@ class Employee(models.Model):
 class Attendance(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    date = models.DateField()
+    date = models.DateField(db_index=True)
     clock_in = models.DateTimeField(null=True, blank=True)
     clock_out = models.DateTimeField(null=True, blank=True)
 
@@ -123,8 +123,8 @@ class LeaveRequest(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     leave_type = models.CharField(max_length=50, default="Personal")
-    start_date = models.DateField()
-    end_date = models.DateField()
+    start_date = models.DateField(db_index=True)
+    end_date = models.DateField(db_index=True)
     reason = models.TextField()
     status = models.CharField(
         max_length=50,
@@ -161,7 +161,7 @@ class ShiftRoster(models.Model):
     employee = models.ForeignKey(
         Employee, on_delete=models.SET_NULL, null=True, blank=True
     )
-    work_date = models.DateField(null=True, blank=True)
+    work_date = models.DateField(null=True, blank=True, db_index=True)
     shift_type = models.CharField(max_length=50, default="General")
     start_time = models.TimeField()
     end_time = models.TimeField()
@@ -347,3 +347,48 @@ class Notification(models.Model):
 
     class Meta:
         ordering = ("-created_at",)
+
+
+class UserSetting(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="setting"
+    )
+    page_size = models.PositiveSmallIntegerField(default=10)
+    muted_kinds = models.JSONField(default=list)
+    dashboard_widgets = models.JSONField(default=dict)
+    a11y = models.JSONField(default=dict)
+
+    def __str__(self):
+        return f"settings({self.user_id})"
+
+
+class SiteSetting(models.Model):
+    key = models.CharField(max_length=80, unique=True)
+    value = models.CharField(max_length=200)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # Numeric ranges for known keys. Duplicated from
+    # core/serializers.SITE_SETTING_SPECS (importing it here would be
+    # circular: serializers imports models). Update both together.
+    NUMERIC_RANGES = {
+        "overtime_min_hours": (0, 24),
+        "overtime_max_hours": (0, 24),
+        "purge_retention_days": (1, 365),
+        "onboarding_max_mb": (1, 100),
+        "leave_auto_allocate_days": (0, 365),
+    }
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        if self.key in self.NUMERIC_RANGES:
+            try:
+                num = float(self.value)
+            except (TypeError, ValueError):
+                raise ValidationError(f"{self.key} must be numeric.")
+            lo, hi = self.NUMERIC_RANGES[self.key]
+            if not (lo <= num <= hi):
+                raise ValidationError(f"{self.key} must be between {lo} and {hi}.")
+
+    def __str__(self):
+        return f"{self.key}={self.value}"

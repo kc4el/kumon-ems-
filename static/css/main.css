@@ -155,7 +155,7 @@ body {
 }
 
 .brand-tagline {
-  font-size: 8.5px;
+  font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.5px;
   color: #f6f6f4;
@@ -3961,3 +3961,8 @@ body {
 .hero-summary-cards-side .summary-box{flex:1 1 0;}
 .hero-summary-cards-side #activityFeed{float:none;width:auto;flex:1 1 0;margin:0;}
 @media (max-width:768px){.hero-summary-cards-side{flex-direction:column;}}
+
+/* T9+T15 settings a11y enforcement (append-only): font scale, contrast, motion. */
+html{font-size:var(--fs-scale,100%);}
+html[data-contrast="high"]{--text-heading:#000;--text-subheading:#111827;--text-body:#111827;--text-muted:#334155;--card-border:#0f172a;}
+html[data-motion="reduced"] *,html[data-motion="reduced"] *::before,html[data-motion="reduced"] *::after{transition:none !important;animation:none !important;scroll-behavior:auto !important;}

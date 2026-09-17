@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadMasterShiftCalendar();
   loadPayrollView();
   loadAuditView();
+  applySettingsA11yOnLoad();
   initDashboardWidgets();
   loadActivityFeed();
   refreshNotifBell();
@@ -219,7 +220,7 @@ function setApiMode(mode) {
 function initBrandLogo() {
   const isFileProtocol = window.location.protocol === 'file:';
   const currentPath = window.location.pathname.toLowerCase();
-  
+
   const logoImgs = document.querySelectorAll('.brand-logo-img');
   logoImgs.forEach(img => {
     let bestSrc = '/static/images/kumon-logo.png';
@@ -258,6 +259,7 @@ const viewBreadcrumbs = {
   'claims': { root: 'Claims', active: 'Pending Claims' },
   'messages': { active: 'Messages & Channels' },
   'logs': { active: 'Audit & Activity Logs' },
+  'settings': { active: 'Settings' },
   'profile': { active: 'My Profile' },
   'my-details': { active: 'My Details' },
   'reports': { active: 'Reports & Analytics' }
@@ -283,11 +285,12 @@ function switchView(viewName) {
   document.querySelectorAll('.nav-link').forEach(link => {
     const dataView = link.getAttribute('data-view');
     if (dataView === viewName ||
-       (viewName.startsWith('employee') && dataView === 'employee-directory') ||
+      (viewName.startsWith('employee') && dataView === 'employee-directory') ||
       (viewName.startsWith('attendance') && dataView === 'attendance-daily') ||
-       (viewName === 'claims' && dataView === 'claims') ||
-       (viewName === 'messages' && dataView === 'messages') ||
-       ((viewName === 'logs' || viewName === 'profile' || viewName === 'my-details') && dataView === 'logs')) {
+      (viewName === 'claims' && dataView === 'claims') ||
+      (viewName === 'messages' && dataView === 'messages') ||
+      ((viewName === 'logs' || viewName === 'profile' || viewName === 'my-details') && dataView === 'logs') ||
+      (viewName === 'settings' && dataView === 'settings')) {
       link.classList.add('active');
     } else {
       link.classList.remove('active');
@@ -316,6 +319,9 @@ function switchView(viewName) {
     targetPanel.classList.add('active');
     if (viewName === 'messages') {
       loadMessagesForConversation(activeConversationKey);
+    }
+    if (viewName === 'settings') {
+      loadSettingsView();
     }
   } else {
     // Show placeholder view with specific title
@@ -515,7 +521,7 @@ const KUMON_TOUR_STEPS = [
 ];
 let kumonTourIndex = -1;
 function startTour() {
-  try { localStorage.removeItem(KUMON_TOUR_KEY); } catch (e) {}
+  try { localStorage.removeItem(KUMON_TOUR_KEY); } catch (e) { }
   kumonTourIndex = -1; nextTourStep();
 }
 function nextTourStep() {
@@ -529,7 +535,7 @@ function endTour() {
   kumonTourIndex = -1;
   const b = document.getElementById("tourBubble");
   if (b) b.remove();
-  try { localStorage.setItem(KUMON_TOUR_KEY, "1"); } catch (e) {}
+  try { localStorage.setItem(KUMON_TOUR_KEY, "1"); } catch (e) { }
 }
 function showTourBubble(step, n, total) {
   const old = document.getElementById("tourBubble");
@@ -608,7 +614,7 @@ function initTour() {
 function toggleAccordion(summaryElement) {
   const card = summaryElement.closest('.roster-accordion-card');
   const tag = summaryElement.querySelector('.acc-toggle-tag');
-  
+
   if (card.classList.contains('open')) {
     card.classList.remove('open');
     card.querySelector('.acc-expanded-body')?.setAttribute('hidden', '');
@@ -904,7 +910,7 @@ async function handleOnboarding(e) {
               ? Object.entries(data.error).flatMap(([field, messages]) =>
                 (Array.isArray(messages) ? messages : [messages]).map((message) => `${field}: ${message}`)
               ).join(' ')
-            : 'Unable to create employee. Check the form and try again.';
+              : 'Unable to create employee. Check the form and try again.';
         showToast(err);
         return null;
       }
@@ -2232,6 +2238,332 @@ function escapeHtml(str) {
 }
 
 // ==========================================================================
+// Settings view (T9+T15): profile, notifications/display, company (staff-only)
+// GET/PATCH /api/settings/me/, POST /api/settings/password/,
+// GET/PATCH /api/settings/site/ (staff). a11y enforced via --fs-scale +
+// html[data-contrast]/html[data-motion] (see main.css tail).
+// ==========================================================================
+const SETTINGS_FONT_SCALES = ['87.5', '100', '112.5', '125'];
+let settingsCache = null;
+let settingsIsStaff = false;
+let settingsConfirmAction = null;
+
+function applySettingsA11y(a11y) {
+  const a = a11y || {};
+  let scale = String(a.font_scale != null ? a.font_scale : '100');
+  if (!SETTINGS_FONT_SCALES.includes(scale)) scale = '100';
+  // html font-size scales the whole rem-based layout.
+  document.documentElement.style.setProperty('--fs-scale', scale + '%');
+  document.documentElement.dataset.contrast = a.high_contrast ? 'high' : 'normal';
+  document.documentElement.dataset.motion = a.reduce_motion ? 'reduced' : 'full';
+}
+
+// a11y apply on every load: fetch settings/me and set --fs-scale + datasets.
+// Falls back to logged-out-safe defaults when the API is unreachable.
+async function applySettingsA11yOnLoad() {
+  try {
+    const res = await apiFetch('/api/settings/me/');
+    if (!res.ok) throw new Error('settings unreachable');
+    const data = await res.json();
+    applySettingsA11y(data.a11y || {});
+  } catch (_) {
+    applySettingsA11y({ font_scale: 100, high_contrast: false, reduce_motion: false });
+  }
+}
+
+function settingsSwitchTab(which) {
+  const panes = { profile: 'settingsPaneProfile', notif: 'settingsPaneNotif', company: 'settingsPaneCompany' };
+  const tabs = { profile: 'settingsTabProfile', notif: 'settingsTabNotif', company: 'settingsTabCompany' };
+  Object.entries(panes).forEach(([key, id]) => {
+    const pane = document.getElementById(id);
+    if (pane && !(key === 'company' && !settingsIsStaff)) {
+      pane.style.display = key === which ? 'block' : 'none';
+    }
+  });
+  Object.entries(tabs).forEach(([key, id]) => {
+    const tab = document.getElementById(id);
+    if (tab) tab.classList.toggle('active', key === which);
+  });
+}
+
+function settingsRevealStaff() {
+  document.querySelectorAll('#view-settings [data-staff-only]').forEach((el) => {
+    if (settingsIsStaff) el.removeAttribute('hidden');
+    else el.setAttribute('hidden', '');
+  });
+}
+
+async function loadSettingsView() {
+  try {
+    const res = await apiFetch('/api/settings/me/');
+    if (!res.ok) throw new Error('load failed');
+    const data = await res.json();
+    settingsCache = data;
+    renderSettingsForm(data);
+    // Staff probe: site settings GET is staff-only; 403/404 keeps company hidden.
+    try {
+      const site = await apiFetch('/api/settings/site/');
+      if (site.ok) {
+        settingsIsStaff = true;
+        renderSettingsSite(await site.json());
+      } else {
+        settingsIsStaff = false;
+      }
+    } catch (_) { settingsIsStaff = false; }
+    settingsRevealStaff();
+    applySettingsA11y(data.a11y || {});
+    setApiMode('live');
+  } catch (e) {
+    setApiMode('demo');
+    showToast('Settings unreachable — showing defaults', 'error');
+    const errNote = document.getElementById('settingsLoadError');
+    if (errNote) errNote.style.display = 'block';
+    document.querySelectorAll('#view-settings .btn-navy-cta').forEach((b) => {
+      b.disabled = true;
+    });
+  }
+}
+
+function renderSettingsForm(data) {
+  const p = data.profile || {};
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val != null ? val : ''; };
+  set('setFirstName', p.first_name);
+  set('setLastName', p.last_name);
+  set('setEmail', p.email);
+  set('setRole', p.role);
+  const muted = Array.isArray(data.muted_kinds) ? data.muted_kinds : [];
+  const ml = document.getElementById('setMuteLeave'); if (ml) ml.checked = muted.includes('leave');
+  const ms = document.getElementById('setMuteShift'); if (ms) ms.checked = muted.includes('shift');
+  const mp = document.getElementById('setMutePayroll'); if (mp) mp.checked = muted.includes('payroll');
+  const ps = document.getElementById('setPageSize'); if (ps) ps.value = String(data.page_size || 10);
+  const a = data.a11y || {};
+  const fs = document.getElementById('setFontScale');
+  if (fs) fs.value = String(a.font_scale != null ? a.font_scale : '100');
+  const hc = document.getElementById('setHighContrast'); if (hc) hc.checked = !!a.high_contrast;
+  const rm = document.getElementById('setReduceMotion'); if (rm) rm.checked = !!a.reduce_motion;
+}
+
+function renderSettingsSite(site) {
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val != null ? val : ''; };
+  const setChecked = (id, val) => { const el = document.getElementById(id); if (el) el.checked = String(val).toLowerCase() === 'true'; };
+  set('setOtMin', site.overtime_min_hours);
+  set('setOtMax', site.overtime_max_hours);
+  set('setPurgeDays', site.purge_retention_days);
+  set('setUploadCap', site.onboarding_max_mb);
+  setChecked('setLeaveBackdated', site.leave_restrict_backdated);
+  set('setLeaveAutoDays', site.leave_auto_allocate_days);
+  setChecked('setShiftDouble', site.shift_allow_double_booking);
+  setChecked('setMobileCheckin', site.mobile_checkin_enabled != null ? site.mobile_checkin_enabled : true);
+  const ro = document.getElementById('setReadOnlyNet');
+  if (ro) {
+    ro.textContent =
+      `throttle anon ${site.throttle_anon || '—'} · user ${site.throttle_user || '—'} · CORS ${(site.cors_origins || []).join(', ') || '—'}`;
+  }
+}
+
+function openSettingsConfirm(title, text, action) {
+  const modal = document.getElementById('settingsConfirmModal');
+  const t = document.getElementById('settingsConfirmTitle');
+  const b = document.getElementById('settingsConfirmText');
+  const ok = document.getElementById('settingsConfirmOk');
+  if (!modal || !ok) { if (typeof action === 'function') action(); return; }
+  if (t) t.textContent = title;
+  if (b) b.textContent = text;
+  settingsConfirmAction = action;
+  ok.onclick = async () => {
+    closeSettingsConfirm();
+    if (typeof settingsConfirmAction === 'function') await settingsConfirmAction();
+  };
+  modal.classList.add('active');
+}
+
+function closeSettingsConfirm() {
+  const modal = document.getElementById('settingsConfirmModal');
+  if (modal) modal.classList.remove('active');
+  settingsConfirmAction = null;
+}
+
+function collectMutedKinds() {
+  const kinds = [];
+  if (document.getElementById('setMuteLeave')?.checked) kinds.push('leave');
+  if (document.getElementById('setMuteShift')?.checked) kinds.push('shift');
+  if (document.getElementById('setMutePayroll')?.checked) kinds.push('payroll');
+  return kinds;
+}
+
+async function saveSettingsProfile() {
+  const profile = {
+    first_name: document.getElementById('setFirstName')?.value.trim() || '',
+    last_name: document.getElementById('setLastName')?.value.trim() || '',
+    email: document.getElementById('setEmail')?.value.trim() || '',
+  };
+  openSettingsConfirm('Save profile?', 'Your employee name and email will be updated.', async () => {
+    try {
+      const res = await apiFetch('/api/settings/me/', { method: 'PATCH', body: JSON.stringify({ profile }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(typeof data.error === 'string' ? data.error : (data.email && data.email.join(' ')) || 'save failed');
+      settingsCache = { ...(settingsCache || {}), profile: data.profile || profile };
+      renderSettingsForm({ ...(settingsCache || {}), profile: settingsCache.profile });
+      showToast('Profile saved.');
+    } catch (error) {
+      showToast(error.message || 'Profile save failed.', 'error');
+    }
+  });
+}
+
+async function saveSettingsPassword() {
+  const oldPw = document.getElementById('setOldPassword')?.value || '';
+  const nw = document.getElementById('setNewPassword')?.value || '';
+  const nw2 = document.getElementById('setNewPassword2')?.value || '';
+  if (!oldPw || !nw) { showToast('Enter your current and a new password.', 'error'); return; }
+  if (nw !== nw2) { showToast('New passwords do not match.', 'error'); return; }
+  if (nw.length < 8) { showToast('New password must be at least 8 characters.', 'error'); return; }
+  openSettingsConfirm('Change password?', 'You will stay signed in here; other sessions sign out.', async () => {
+    try {
+      const res = await apiFetch('/api/settings/password/', {
+        method: 'POST',
+        body: JSON.stringify({ old_password: oldPw, new_password: nw }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(typeof data.error === 'string' ? data.error : 'password change failed');
+      ['setOldPassword', 'setNewPassword', 'setNewPassword2'].forEach((id) => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      showToast(data.message || 'Password changed.');
+    } catch (error) {
+      showToast(error.message || 'Password change failed.', 'error');
+    }
+  });
+}
+
+async function saveSettingsPrefs() {
+  const a11y = {
+    font_scale: parseFloat(document.getElementById('setFontScale')?.value || '100'),
+    high_contrast: !!document.getElementById('setHighContrast')?.checked,
+    reduce_motion: !!document.getElementById('setReduceMotion')?.checked,
+  };
+  const payload = { page_size: parseInt(document.getElementById('setPageSize')?.value || '10', 10), muted_kinds: collectMutedKinds(), a11y };
+  try {
+    const res = await apiFetch('/api/settings/me/', { method: 'PATCH', body: JSON.stringify(payload) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(typeof data.error === 'string' ? data.error : 'save failed');
+    settingsCache = { ...(settingsCache || {}), ...data };
+    applySettingsA11y(data.a11y || a11y);
+    showToast('Preferences saved.');
+  } catch (error) {
+    showToast(error.message || 'Preferences save failed.', 'error');
+  }
+}
+
+async function saveSettingsSite() {
+  if (!settingsIsStaff) { showToast('Company settings are staff-only.', 'error'); return; }
+  const flag = (id) => (document.getElementById(id)?.checked ? 'true' : 'false');
+  const entries = {
+    overtime_min_hours: document.getElementById('setOtMin')?.value,
+    overtime_max_hours: document.getElementById('setOtMax')?.value,
+    purge_retention_days: document.getElementById('setPurgeDays')?.value,
+    onboarding_max_mb: document.getElementById('setUploadCap')?.value,
+    leave_restrict_backdated: flag('setLeaveBackdated'),
+    leave_auto_allocate_days: document.getElementById('setLeaveAutoDays')?.value,
+    shift_allow_double_booking: flag('setShiftDouble'),
+    mobile_checkin_enabled: flag('setMobileCheckin'),
+  };
+  openSettingsConfirm('Save company settings?', 'Leave, shift, payroll, mobile and system rules update for everyone.', async () => {
+    try {
+      const res = await apiFetch('/api/settings/site/', { method: 'PATCH', body: JSON.stringify(entries) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(typeof data.error === 'string' ? data.error : 'save failed');
+      renderSettingsSite(data);
+      showToast('Company settings saved.');
+    } catch (error) {
+      showToast(error.message || 'Company save failed.', 'error');
+    }
+  });
+}
+
+function settingsImportRows(status) {
+  return (settingsCache && settingsCache._importPreview) || [];
+}
+
+function renderSettingsImportPreview(rows) {
+  const body = document.getElementById('settingsImportResults');
+  if (!body) return;
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="4">Preview is empty — nothing to import.</td></tr>';
+    return;
+  }
+  body.innerHTML = '';
+  rows.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    const name = row.name || [row.first_name, row.last_name].filter(Boolean).join(' ') || '—';
+    tr.innerHTML =
+      `<td>${i + 1}</td><td>${escapeHtml(String(name))}</td>` +
+      `<td>${escapeHtml(String(row.email || '—'))}</td>` +
+      `<td>${escapeHtml(String(row.status || 'ready'))}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+async function settingsReadImportFile() {
+  const input = document.getElementById('settingsImportFile');
+  const file = input?.files?.[0];
+  if (!file) { showToast('Choose a roster file first.', 'error'); return null; }
+  const text = await file.text();
+  const NL = String.fromCharCode(10);
+  const CR = String.fromCharCode(13);
+  const lines = text.split(NL).map((l) => l.split(CR).join("")).filter((l) => l.trim());
+  if (lines.length < 2) { showToast('File has no data rows.', 'error'); return null; }
+  const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+  const rows = lines.slice(1, 51).map((line) => {
+    const cells = line.split(',');
+    const get = (k) => cells[headers.indexOf(k)]?.trim() || '';
+    return {
+      first_name: get('first_name') || get('firstname') || '',
+      last_name: get('last_name') || get('lastname') || '',
+      name: get('name'),
+      email: get('email'),
+      status: get('email') ? 'ready' : 'missing email',
+    };
+  });
+  return rows;
+}
+
+async function settingsImportDryRun() {
+  const rows = await settingsReadImportFile();
+  if (!rows) return;
+  settingsCache = { ...(settingsCache || {}), _importPreview: rows };
+  renderSettingsImportPreview(rows);
+  showToast(`Dry-run: ${rows.length} row(s) previewed, nothing imported.`);
+}
+
+async function settingsImportCommit() {
+  const rows = (settingsCache && settingsCache._importPreview) || [];
+  if (!rows.length) { showToast('Run a dry-run preview first.', 'error'); return; }
+  const valid = rows.filter((r) => r.email);
+  if (!valid.length) { showToast('No valid rows to import.', 'error'); return; }
+  openSettingsConfirm('Import roster?', `${valid.length} row(s) will be created as employees.`, async () => {
+    let okCount = 0;
+    const results = [];
+    for (const row of valid) {
+      try {
+        const res = await apiFetch('/api/employees/', {
+          method: 'POST',
+          body: JSON.stringify({ first_name: row.first_name || row.name || 'Imported', last_name: row.last_name || '', email: row.email }),
+        });
+        if (!res.ok) throw new Error('create failed');
+        okCount += 1;
+        results.push({ ...row, status: 'imported' });
+      } catch (_) {
+        results.push({ ...row, status: 'failed' });
+      }
+    }
+    settingsCache._importPreview = results;
+    renderSettingsImportPreview(results);
+    showToast(`Import complete: ${okCount}/${valid.length} imported.`);
+  });
+}
+
+// ==========================================================================
 // Standalone Authentication Handlers & Navigation
 // ==========================================================================
 function switchAuthPage(mode = 'login') {
@@ -2351,7 +2683,7 @@ function navigateToLogin(mode = 'login') {
 function signOut() {
   showToast('Signing out of corporate session...');
   apiFetch('/api/session-logout/', { method: 'POST' })
-    .catch(() => {})
+    .catch(() => { })
     .finally(() => navigateToLogin(window.location.pathname.startsWith('/hr') ? 'hr' : 'login'));
 }
 
@@ -2439,15 +2771,15 @@ function exportAuditLogs() {
     [
       ['Timestamp', 'Administrator', 'Action Class', 'Action', 'Target Record', 'Details', 'Status', 'Audit ID'],
       ['2026-06-09 14:32:00', 'Marcus Williams (Admin)', 'Personnel', 'Added Employee: Sofia Taylor', 'EMP-10482', 'Created employee profile, issued portal credentials', 'Completed', 'LOG-9482'],
-    ['2026-06-09 11:15:00', 'Elena Rostova (Admin)', 'Leaves', 'Approved Leave Request', 'EMP-10291', 'Approved 3 days Medical Leave', 'Approved', 'LOG-9481'],
-    ['2026-06-08 16:45:00', 'Marcus Williams (Admin)', 'Personnel', 'Promoted Staff: Marcus Chen', 'EMP-10334', 'Promoted to Lead Instructor', 'Completed', 'LOG-9480'],
-    ['2026-06-08 10:20:00', 'David Kim (Admin)', 'Claims', 'Approved Expense Claim', 'CLM-2026-088', 'Educational materials reimbursement ($420.50)', 'Disbursed', 'LOG-9479'],
-    ['2026-06-07 15:10:00', 'Elena Rostova (Admin)', 'Shifts', 'Modified Shift Roster', 'ROSTER-2026-W24', 'Reassigned 12 instructors to Morning Shift', 'Applied', 'LOG-9478'],
-    ['2026-06-07 09:30:00', 'Marcus Williams (Admin)', 'Claims', 'Disbursed Advance Pay', 'ADV-2026-014', 'Approved emergency payroll advance ($800.00)', 'Disbursed', 'LOG-9477'],
-    ['2026-06-06 17:00:00', 'Elena Rostova (Admin)', 'Grievance', 'Resolved Grievance Case', 'GRV-4091', 'Mediation completed and agreed', 'Resolved', 'LOG-9476'],
-    ['2026-06-06 13:40:00', 'Marcus Williams (Admin)', 'Personnel', 'Transferred Employee Center', 'EMP-10255', 'Transferred to West Campus Center', 'Completed', 'LOG-9475'],
-    ['2026-06-05 18:00:00', 'System Bot', 'Leaves', 'Accrued Monthly Leave Balances', 'ALL INSTRUCTORS', 'Automated 1.5 days annual leave accrual', 'Executed', 'LOG-9474'],
-    ['2026-06-05 11:25:00', 'David Kim (Admin)', 'Claims', 'Rejected Non-Compliant Claim', 'CLM-2026-079', 'Rejected fuel claim missing tax invoice', 'Rejected', 'LOG-9473']
+      ['2026-06-09 11:15:00', 'Elena Rostova (Admin)', 'Leaves', 'Approved Leave Request', 'EMP-10291', 'Approved 3 days Medical Leave', 'Approved', 'LOG-9481'],
+      ['2026-06-08 16:45:00', 'Marcus Williams (Admin)', 'Personnel', 'Promoted Staff: Marcus Chen', 'EMP-10334', 'Promoted to Lead Instructor', 'Completed', 'LOG-9480'],
+      ['2026-06-08 10:20:00', 'David Kim (Admin)', 'Claims', 'Approved Expense Claim', 'CLM-2026-088', 'Educational materials reimbursement ($420.50)', 'Disbursed', 'LOG-9479'],
+      ['2026-06-07 15:10:00', 'Elena Rostova (Admin)', 'Shifts', 'Modified Shift Roster', 'ROSTER-2026-W24', 'Reassigned 12 instructors to Morning Shift', 'Applied', 'LOG-9478'],
+      ['2026-06-07 09:30:00', 'Marcus Williams (Admin)', 'Claims', 'Disbursed Advance Pay', 'ADV-2026-014', 'Approved emergency payroll advance ($800.00)', 'Disbursed', 'LOG-9477'],
+      ['2026-06-06 17:00:00', 'Elena Rostova (Admin)', 'Grievance', 'Resolved Grievance Case', 'GRV-4091', 'Mediation completed and agreed', 'Resolved', 'LOG-9476'],
+      ['2026-06-06 13:40:00', 'Marcus Williams (Admin)', 'Personnel', 'Transferred Employee Center', 'EMP-10255', 'Transferred to West Campus Center', 'Completed', 'LOG-9475'],
+      ['2026-06-05 18:00:00', 'System Bot', 'Leaves', 'Accrued Monthly Leave Balances', 'ALL INSTRUCTORS', 'Automated 1.5 days annual leave accrual', 'Executed', 'LOG-9474'],
+      ['2026-06-05 11:25:00', 'David Kim (Admin)', 'Claims', 'Rejected Non-Compliant Claim', 'CLM-2026-079', 'Rejected fuel claim missing tax invoice', 'Rejected', 'LOG-9473']
     ]
   );
 }
@@ -2480,6 +2812,27 @@ if (typeof window.showToast !== 'function') {
   };
 }
 
+// First-run empty state: point fresh installs at employee onboarding.
+function renderFirstEmployeeCta(total) {
+  const slot = document.getElementById('view-dashboard');
+  if (!slot) return;
+  let cta = document.getElementById('firstEmployeeCta');
+  if (Number(total) !== 0) {
+    if (cta) cta.remove();
+    return;
+  }
+  if (cta) return;
+  cta = document.createElement('div');
+  cta.id = 'firstEmployeeCta';
+  cta.className = 'white-card';
+  cta.innerHTML =
+    '<h2 class="card-title">No employees yet</h2>' +
+    '<p class="card-sub">Add your first employee to unlock attendance, leave, and payroll.</p>' +
+    '<div class="modal-foot" style="justify-content:flex-start;">' +
+    '<button class="btn btn-navy-cta" onclick="switchView(\'employee-directory\')">Add your first employee</button></div>';
+  slot.prepend(cta);
+}
+
 // Public aggregate counts for the landing page.
 function loadDashboardSummary() {
   return apiFetch('/api/dashboard-summary/', { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, cache: 'no-store' })
@@ -2489,6 +2842,7 @@ function loadDashboardSummary() {
     })
     .then((data) => {
       setApiMode('live');
+      renderFirstEmployeeCta(data.total_employees);
       const values = document.querySelectorAll(
         '#view-dashboard .kpi-cards-4grid .kpi-card .kpi-value'
       );
