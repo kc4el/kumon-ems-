@@ -3887,6 +3887,200 @@ body {
   min-width: 0;
 }
 
+.badge-claims {
+  background-color: #faf5ff;
+  border: 1px solid #e9d5ff;
+  color: #7e22ce;
+}
+
+.badge-shifts {
+  background-color: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #b45309;
+}
+
+.badge-grievance {
+  background-color: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #be123c;
+}
+
+.audit-timestamp {
+  font-size: 12.5px;
+  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  color: #475569;
+  font-weight: 500;
+}
+
+.action-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.action-target {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.audit-detail-text {
+  font-size: 12.5px;
+  color: #334155;
+  line-height: 1.45;
+  max-width: 420px;
+}
+
+.audit-id-badge {
+  font-family: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  padding: 3px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+/* Audit Status Pills */
+.audit-status-pill,
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.audit-status-completed,
+.audit-status-approved,
+.status-pill.status-approved,
+.status-pill.status-completed {
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.audit-status-resolved {
+  background-color: #e0e7ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+}
+
+.audit-status-executed {
+  background-color: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+
+.audit-status-disbursed {
+  background-color: #f3e8ff;
+  color: #7e22ce;
+  border: 1px solid #e9d5ff;
+}
+
+.audit-status-applied {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.audit-status-rejected,
+.status-pill.status-rejected {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* User Cell Meta (Avatar & Name) in Table */
+.user-cell-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cell-avatar-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cell-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.cell-sub {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.audit-select-control {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  font-size: 13px;
+  font-family: inherit;
+  color: #0f172a;
+  cursor: pointer;
+  outline: none;
+}
+
+.audit-select-control:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* Activity Logs Subtabs Container */
+#view-logs .pill-tabs-container {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 4px;
+  gap: 4px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+}
+
+#view-logs .pill-tabs-container::-webkit-scrollbar {
+  display: none;
+}
+
+#view-logs .tab-pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  border-radius: 20px;
+  min-width: 0;
+}
+
 #view-logs .tab-pill.active {
   background-color: #0f172a;
   color: #ffffff;
@@ -3910,29 +4104,458 @@ body {
   }
 }
 
-@media (max-width: 768px) {
+/* ==========================================================================
+   MOBILE-CENTRIC DESIGN — Mobbin-inspired HR Employee Portal
+   Breakpoint: 767px and below
+   Design principles: bottom tab bar, frosted glass, card stacking,
+   bottom-sheet modals, thumb-zone optimised, safe-area aware
+   ========================================================================== */
+@media (max-width: 767px) {
+
+  /* ── Global Mobile Reset ───────────────────────────────────────────────── */
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    overscroll-behavior-y: contain;
+  }
+
+  /* ── App Layout: vertical stack ────────────────────────────────────────── */
   .app-layout {
     flex-direction: column;
+    min-height: 100dvh; /* dynamic viewport height for mobile browsers */
   }
+
+  /* ── Bottom Tab Bar ────────────────────────────────────────────────────── */
   .sidebar {
+    order: 99; /* push to bottom of flex column */
     width: 100%;
     height: auto;
-    min-height: auto;
-    position: relative;
+    min-height: 64px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    flex-direction: row;
+    padding: 0 0 env(safe-area-inset-bottom, 0px) 0;
+    z-index: 9999;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(
+      180deg,
+      rgba(92, 132, 173, 0.92) 0%,
+      rgba(72, 112, 153, 0.98) 100%
+    );
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+    border-radius: 0;
+    overflow: visible;
     top: auto;
-    padding: 16px;
+  }
+
+  .sidebar::-webkit-scrollbar {
+    display: none;
   }
 
   .brand-header {
-    margin-bottom: 20px;
+    display: none;
   }
+
   .sidebar-navigation {
     flex-direction: row;
+    justify-content: space-around;
+    align-items: stretch;
+    width: 100%;
+    gap: 0;
+    padding: 0 4px;
+    overflow: visible;
+  }
+
+  .nav-link {
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 64px;
+    padding: 8px 4px 10px;
+    font-size: 10px;
+    font-weight: 500;
+    gap: 4px;
+    border-radius: 0;
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.2s ease, transform 0.15s ease;
+    position: relative;
+    letter-spacing: 0.2px;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .nav-link:hover {
+    background: transparent;
+  }
+
+  .nav-link.active {
+    color: #ffffff;
+    font-weight: 700;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* Active indicator dot (Mobbin-style) */
+  .nav-link.active::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+  }
+
+  /* Pressed state for haptic feel */
+  .nav-link:active {
+    transform: scale(0.92);
+  }
+
+  .nav-icon {
+    width: 22px;
+    height: 22px;
+    opacity: 1;
+  }
+
+  /* ── Main Content Area ─────────────────────────────────────────────────── */
+  .main-content-area {
+    padding: 16px 16px calc(80px + env(safe-area-inset-bottom, 0px)) 16px;
+    overflow-x: hidden;
+  }
+
+  /* ── Top Header Bar ────────────────────────────────────────────────────── */
+  .top-header-bar {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--penpot-bg);
+    padding: 8px 0;
+  }
+
+  .header-breadcrumbs {
+    font-size: 15px;
+  }
+
+  .header-right-tools {
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  .header-icon-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .user-avatar-circle {
+    width: 34px;
+    height: 34px;
+    font-size: 13px;
+  }
+
+  /* ── Page Titles ───────────────────────────────────────────────────────── */
+  .page-title-block {
+    margin-bottom: 16px;
+  }
+
+  .penpot-page-heading {
+    font-size: 26px;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+
+  .penpot-page-sub {
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  /* ── Pill Tabs (horizontal scroll) ─────────────────────────────────────── */
+  .penpot-subnav-row {
+    margin-bottom: 16px;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .penpot-subnav-row::-webkit-scrollbar { display: none; }
+
+  .pill-tabs-container {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4px;
+    padding: 3px;
+    white-space: nowrap;
+    width: max-content;
+    min-width: 100%;
+  }
+
+  .tab-pill {
+    padding: 8px 14px;
+    font-size: 12.5px;
+    flex-shrink: 0;
+    min-height: 36px;
+  }
+
+  /* ── Dashboard Hero ────────────────────────────────────────────────────── */
+  .dashboard-hero-layout {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .hero-heading {
+    font-size: 28px;
+    letter-spacing: -0.5px;
+  }
+
+  .hero-date-tag {
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+
+  .hero-subtext {
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  .hero-cta-buttons {
     gap: 8px;
   }
+  .hero-cta-buttons .btn {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .hero-summary-cards-side {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .summary-box {
+    padding: 14px 16px;
+    border-radius: 12px;
+  }
+
+  .summary-tag {
+    font-size: 10px;
+    margin-bottom: 8px;
+  }
+
+  .pill-badge-row {
+    font-size: 11.5px;
+    padding: 4px 8px;
+  }
+
+  .pulse-stat-row {
+    font-size: 12.5px;
+    margin-bottom: 7px;
+    gap: 6px;
+  }
+
+  .pulse-stat-row strong {
+    font-size: 13px;
+  }
+
+  /* ── KPI Cards: 2-column compact grid ──────────────────────────────────── */
   .kpi-cards-4grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .kpi-card {
+    padding: 14px 14px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(79, 115, 214, 0.18);
+  }
+
+  .kpi-head {
+    font-size: 9px;
+    letter-spacing: 0.6px;
+    margin-bottom: 4px;
+  }
+
+  .kpi-head svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .kpi-value {
+    font-size: 30px;
+    margin-bottom: 4px;
+  }
+
+  .kpi-subtext,
+  .kpi-trend {
+    font-size: 10.5px;
+  }
+
+  /* ── White Cards ───────────────────────────────────────────────────────── */
+  .white-card {
+    padding: 16px;
+    margin-bottom: 14px;
+    border-radius: 12px;
+  }
+
+  .card-title {
+    font-size: 16px;
+  }
+
+  .card-sub {
+    font-size: 12px;
+  }
+
+  /* ── Dashboard Split Row ───────────────────────────────────────────────── */
+  .dashboard-split-row {
     grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  /* ── Tables → Mobile Card Stack ────────────────────────────────────────── */
+  .data-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -16px;
+    padding: 0 16px;
+  }
+
+  .data-table {
+    min-width: 520px;
+    font-size: 12.5px;
+  }
+
+  .data-table th {
+    font-size: 10px;
+    padding: 8px 10px;
+    white-space: nowrap;
+  }
+
+  .data-table td {
+    padding: 10px;
+    font-size: 12.5px;
+  }
+
+  /* ── Modals → Bottom Sheet ─────────────────────────────────────────────── */
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal-dialog-wizard,
+  .modal-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 92dvh;
+    min-height: 40dvh;
+    border-radius: 20px 20px 0 0 !important;
+    margin: 0 !important;
+    padding: 12px 20px 24px !important;
+    animation: mobileSheetUp 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* Drag handle indicator */
+  .modal-dialog-wizard::before,
+  .modal-card::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    background: #cbd5e1;
+    border-radius: 2px;
+    margin: 0 auto 12px;
+    flex-shrink: 0;
+  }
+
+  @keyframes mobileSheetUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+
+  .modal-wizard-header {
+    padding-bottom: 8px;
+  }
+
+  .modal-wizard-title {
+    font-size: 15px;
+  }
+
+  .modal-close-btn {
+    top: 8px;
+    right: 12px;
+  }
+
+  /* ── Touch Targets ─────────────────────────────────────────────────────── */
+  .btn,
+  button,
+  .header-icon-btn,
+  input[type="submit"],
+  input[type="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Input fields */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important; /* prevents iOS zoom on focus */
+    min-height: 44px;
+    border-radius: 10px;
+  }
+
+  /* ── Activity Feed ─────────────────────────────────────────────────────── */
+  #activityFeed {
+    float: none;
+    width: 100%;
+    margin: 0 0 14px 0;
+  }
+
+  /* ── Tour Bubble ───────────────────────────────────────────────────────── */
+  #tourBubble {
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    width: calc(100vw - 32px);
+  }
+
+  /* ── Messages Layout ───────────────────────────────────────────────────── */
+  .messages-layout-card {
+    grid-template-columns: 1fr;
+  }
+
+  .messages-inbox-sidebar {
+    max-height: 260px;
+    overflow-y: auto;
+    border-bottom: 1px solid var(--card-border);
+    border-right: none;
+  }
+
+  /* ── Settings Form ─────────────────────────────────────────────────────── */
+  .settings-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* ── Utility: hide-on-mobile ───────────────────────────────────────────── */
+  .hide-mobile {
+    display: none !important;
   }
 }
 
