@@ -513,7 +513,6 @@ SITE_SETTING_SPECS = {
     "leave_restrict_backdated": {"bool": True},
     "leave_auto_allocate_days": {"min": 0, "max": 365, "integer": True},
     "shift_allow_double_booking": {"bool": True},
-    "payroll_round_net": {"bool": True},
     "mobile_checkin_enabled": {"bool": True},
 }
 
@@ -528,7 +527,6 @@ SITE_SETTING_DEFAULTS = {
     "leave_restrict_backdated": "false",
     "leave_auto_allocate_days": "0",
     "shift_allow_double_booking": "false",
-    "payroll_round_net": "false",
     "mobile_checkin_enabled": "true",
 }
 

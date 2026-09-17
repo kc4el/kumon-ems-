@@ -162,7 +162,6 @@ class FrappeMirrorKeysTests(TestCase):
                 "leave_restrict_backdated": "true",
                 "leave_auto_allocate_days": "14",
                 "shift_allow_double_booking": "false",
-                "payroll_round_net": "true",
                 "mobile_checkin_enabled": "True",
             },
             format="json",
@@ -172,7 +171,6 @@ class FrappeMirrorKeysTests(TestCase):
             "leave_restrict_backdated",
             "leave_auto_allocate_days",
             "shift_allow_double_booking",
-            "payroll_round_net",
             "mobile_checkin_enabled",
         ):
             self.assertIn(key, r.json())

@@ -500,6 +500,13 @@ class AttendanceCheckInView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        # FrappeHR 6.1 mirror: the mobile/self-service clock-in path can be
+        # switched off without touching the HR-desk attendance endpoints.
+        if get_site_setting("mobile_checkin_enabled").lower() != "true":
+            return Response(
+                {"error": "Mobile check-in is disabled by your administrator."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         identifier = str(request.data.get("name", "")).strip()
         password = str(request.data.get("password", ""))
         if not identifier or not password:
@@ -708,6 +715,11 @@ class AttendanceSelfView(APIView):
         return Response(AttendanceSerializer(rows, many=True).data)
 
     def post(self, request):
+        if get_site_setting("mobile_checkin_enabled").lower() != "true":
+            return Response(
+                {"error": "Mobile check-in is disabled by your administrator."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         employee = self._employee(request)
         action = str(request.data.get("action", "clock_in")).lower()
         if action == "clock_out":
@@ -1469,7 +1481,6 @@ SITE_SETTING_DEFAULTS = {
     "leave_restrict_backdated": "false",
     "leave_auto_allocate_days": "0",
     "shift_allow_double_booking": "false",
-    "payroll_round_net": "false",
     "mobile_checkin_enabled": "true",
 }
 

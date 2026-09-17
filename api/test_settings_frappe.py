@@ -114,3 +114,34 @@ class AutoAllocateTests(TestCase):
         self.assertEqual(
             LeaveAllocation.objects.filter(employee=emp).count(), 1
         )
+
+
+class MobileCheckinToggleTests(TestCase):
+    def test_kiosk_default_path_unchanged(self):
+        r = APIClient().post("/api/attendance/check-in/", {}, format="json")
+        self.assertEqual(r.status_code, 400)
+
+    def test_kiosk_disabled_returns_403(self):
+        SiteSetting.objects.update_or_create(
+            key="mobile_checkin_enabled", defaults={"value": "false"}
+        )
+        r = APIClient().post("/api/attendance/check-in/", {}, format="json")
+        self.assertEqual(r.status_code, 403)
+        self.assertIn("disabled", r.json()["error"])
+
+    def test_self_post_disabled_returns_403(self):
+        from django.contrib.auth.models import User as U
+
+        user = U.objects.create_user(username="mob", password="x")
+        Employee.objects.create(
+            first_name="M", last_name="O", email="mo@example.com", user=user
+        )
+        client = APIClient()
+        client.force_authenticate(user=user)
+        SiteSetting.objects.update_or_create(
+            key="mobile_checkin_enabled", defaults={"value": "false"}
+        )
+        r = client.post(
+            "/api/attendance/me/", {"action": "clock_in"}, format="json"
+        )
+        self.assertEqual(r.status_code, 403)
