@@ -2345,10 +2345,15 @@ function renderSettingsForm(data) {
 
 function renderSettingsSite(site) {
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val != null ? val : ''; };
+  const setChecked = (id, val) => { const el = document.getElementById(id); if (el) el.checked = String(val).toLowerCase() === 'true'; };
   set('setOtMin', site.overtime_min_hours);
   set('setOtMax', site.overtime_max_hours);
   set('setPurgeDays', site.purge_retention_days);
   set('setUploadCap', site.onboarding_max_mb);
+  setChecked('setLeaveBackdated', site.leave_restrict_backdated);
+  set('setLeaveAutoDays', site.leave_auto_allocate_days);
+  setChecked('setShiftDouble', site.shift_allow_double_booking);
+  setChecked('setMobileCheckin', site.mobile_checkin_enabled != null ? site.mobile_checkin_enabled : true);
   const ro = document.getElementById('setReadOnlyNet');
   if (ro) {
     ro.textContent =
@@ -2452,13 +2457,18 @@ async function saveSettingsPrefs() {
 
 async function saveSettingsSite() {
   if (!settingsIsStaff) { showToast('Company settings are staff-only.', 'error'); return; }
+  const flag = (id) => (document.getElementById(id)?.checked ? 'true' : 'false');
   const entries = {
     overtime_min_hours: document.getElementById('setOtMin')?.value,
     overtime_max_hours: document.getElementById('setOtMax')?.value,
     purge_retention_days: document.getElementById('setPurgeDays')?.value,
     onboarding_max_mb: document.getElementById('setUploadCap')?.value,
+    leave_restrict_backdated: flag('setLeaveBackdated'),
+    leave_auto_allocate_days: document.getElementById('setLeaveAutoDays')?.value,
+    shift_allow_double_booking: flag('setShiftDouble'),
+    mobile_checkin_enabled: flag('setMobileCheckin'),
   };
-  openSettingsConfirm('Save company settings?', 'Overtime bounds, purge retention and upload cap update for everyone.', async () => {
+  openSettingsConfirm('Save company settings?', 'Leave, shift, payroll, mobile and system rules update for everyone.', async () => {
     try {
       const res = await apiFetch('/api/settings/site/', { method: 'PATCH', body: JSON.stringify(entries) });
       const data = await res.json().catch(() => ({}));

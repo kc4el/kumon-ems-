@@ -3695,9 +3695,33 @@
         <!-- TAB: COMPANY (staff-only) -->
         <div id="settingsPaneCompany" style="display:none;" data-staff-only hidden>
           <div class="white-card">
-            <h2 class="card-title">Company settings</h2>
-            <p class="card-sub">Staff only. Overtime bounds, purge retention, upload cap. Throttle and CORS values are
-              read-only here.</p>
+            <h2 class="card-title">Leave rules</h2>
+            <p class="card-sub">Staff only. Mirrors FrappeHR leave settings: backdated control and automatic grants on hire (Vacation, this year).</p>
+            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
+              <label class="penpot-checkbox-label">
+                <input type="checkbox" id="setLeaveBackdated" />
+                <span>Restrict backdated leave applications</span>
+              </label>
+            </div>
+            <div class="input-cell" style="margin-bottom:12px;">
+              <label>AUTO-ALLOCATE DAYS ON HIRE (0 = OFF)</label>
+              <input id="setLeaveAutoDays" type="number" step="1" min="0" max="365" class="penpot-input"
+                placeholder="0" />
+            </div>
+          </div>
+          <div class="white-card">
+            <h2 class="card-title">Shift rules</h2>
+            <p class="card-sub">Staff only. Mirrors FrappeHR shift settings.</p>
+            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
+              <label class="penpot-checkbox-label">
+                <input type="checkbox" id="setShiftDouble" />
+                <span>Allow double-booking the same person on one date</span>
+              </label>
+            </div>
+          </div>
+          <div class="white-card">
+            <h2 class="card-title">Payroll rules</h2>
+            <p class="card-sub">Staff only. Overtime bounds applied to every slip.</p>
             <div class="inputs-2grid" style="margin-bottom:12px; margin-top:16px;">
               <div class="input-cell">
                 <label>OVERTIME MIN HOURS</label>
@@ -3710,7 +3734,22 @@
                   placeholder="5.00" />
               </div>
             </div>
-            <div class="inputs-2grid" style="margin-bottom:12px;">
+          </div>
+          <div class="white-card">
+            <h2 class="card-title">Mobile</h2>
+            <p class="card-sub">Staff only. Gates kiosk + self-service clock-in for the future mobile client.</p>
+            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
+              <label class="penpot-checkbox-label">
+                <input type="checkbox" id="setMobileCheckin" checked />
+                <span>Allow mobile check-in</span>
+              </label>
+            </div>
+          </div>
+          <div class="white-card">
+            <h2 class="card-title">System</h2>
+            <p class="card-sub">Staff only. Retention, upload cap. Throttle and CORS values are
+              read-only here.</p>
+            <div class="inputs-2grid" style="margin-bottom:12px; margin-top:16px;">
               <div class="input-cell">
                 <label>PURGE RETENTION DAYS</label>
                 <input id="setPurgeDays" type="number" step="1" min="1" max="365" class="penpot-input"
@@ -3720,25 +3759,6 @@
                 <label>UPLOAD CAP (MB)</label>
                 <input id="setUploadCap" type="number" step="1" min="1" max="100" class="penpot-input"
                   placeholder="10" />
-              </div>
-            </div>
-            <div class="inputs-2grid" style="margin-bottom:12px;">
-              <div class="input-cell">
-                <label>ATTENDANCE GRACE (MINS)</label>
-                <input id="setAttGrace" type="number" step="1" min="0" max="60" class="penpot-input"
-                  placeholder="15" />
-              </div>
-              <div class="input-cell">
-                <label>LEAVE QUOTA DEFAULT</label>
-                <input id="setLeaveQuota" type="number" step="1" min="0" max="365" class="penpot-input"
-                  placeholder="14" />
-              </div>
-            </div>
-            <div class="inputs-2grid" style="margin-bottom:12px;">
-              <div class="input-cell">
-                <label>PAYROLL ADVANCE MAX %</label>
-                <input id="setPayAdvanceMax" type="number" step="1" min="0" max="100" class="penpot-input"
-                  placeholder="20" />
               </div>
             </div>
             <div class="input-cell" style="margin-bottom:12px;">

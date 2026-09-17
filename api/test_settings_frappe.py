@@ -43,7 +43,9 @@ class DoubleBookingTests(TestCase):
 
     def test_default_still_409(self):
         self.assertEqual(
-            self.client.post("/api/shift-rosters/", self.base, format="json").status_code,
+            self.client.post(
+                "/api/shift-rosters/", self.base, format="json"
+            ).status_code,
             201,
         )
         self.assertEqual(self._overlap().status_code, 409)
@@ -53,7 +55,9 @@ class DoubleBookingTests(TestCase):
             key="shift_allow_double_booking", defaults={"value": "true"}
         )
         self.assertEqual(
-            self.client.post("/api/shift-rosters/", self.base, format="json").status_code,
+            self.client.post(
+                "/api/shift-rosters/", self.base, format="json"
+            ).status_code,
             201,
         )
         self.assertEqual(self._overlap().status_code, 201)
@@ -111,9 +115,7 @@ class AutoAllocateTests(TestCase):
         self.assertEqual(float(row.days_total), 14)
         emp.first_name = "A2"
         emp.save()
-        self.assertEqual(
-            LeaveAllocation.objects.filter(employee=emp).count(), 1
-        )
+        self.assertEqual(LeaveAllocation.objects.filter(employee=emp).count(), 1)
 
 
 class MobileCheckinToggleTests(TestCase):
@@ -141,7 +143,5 @@ class MobileCheckinToggleTests(TestCase):
         SiteSetting.objects.update_or_create(
             key="mobile_checkin_enabled", defaults={"value": "false"}
         )
-        r = client.post(
-            "/api/attendance/me/", {"action": "clock_in"}, format="json"
-        )
+        r = client.post("/api/attendance/me/", {"action": "clock_in"}, format="json")
         self.assertEqual(r.status_code, 403)
