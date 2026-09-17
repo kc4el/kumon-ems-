@@ -120,8 +120,8 @@
             <span id="notifUnreadPill" class="unread-count-pill" style="display:none;">0</span>
           </button>
 
-          <div class="user-avatar-circle" title="MW • Marcus Williams (Click to Sign Out)" onclick="signOut()">
-            <span>MW</span>
+          <div class="user-avatar-circle" title="{% firstof user.get_full_name user.employee_profile user.username 'User' %} (Click to Sign Out)" onclick="signOut()">
+            <span>{% if user.is_authenticated %}{% if user.first_name and user.last_name %}{{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}{% elif user.employee_profile.first_name and user.employee_profile.last_name %}{{ user.employee_profile.first_name|slice:":1"|upper }}{{ user.employee_profile.last_name|slice:":1"|upper }}{% elif user.first_name %}{{ user.first_name|slice:":2"|upper }}{% elif user.employee_profile.first_name %}{{ user.employee_profile.first_name|slice:":2"|upper }}{% else %}{{ user.username|slice:":2"|upper }}{% endif %}{% else %}GU{% endif %}</span>
           </div>
         </div>
       </header>
