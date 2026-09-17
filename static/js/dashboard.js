@@ -2391,9 +2391,8 @@ async function saveSettingsProfile() {
     first_name: document.getElementById('setFirstName')?.value.trim() || '',
     last_name: document.getElementById('setLastName')?.value.trim() || '',
     email: document.getElementById('setEmail')?.value.trim() || '',
-    role: document.getElementById('setRole')?.value.trim() || '',
   };
-  openSettingsConfirm('Save profile?', 'Your employee name, email and role will be updated.', async () => {
+  openSettingsConfirm('Save profile?', 'Your employee name and email will be updated.', async () => {
     try {
       const res = await apiFetch('/api/settings/me/', { method: 'PATCH', body: JSON.stringify({ profile }) });
       const data = await res.json().catch(() => ({}));

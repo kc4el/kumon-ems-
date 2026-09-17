@@ -539,7 +539,7 @@ def _site_decimal(key, fallback):
         return fallback
 
 
-MUTABLE_PROFILE_FIELDS = ("first_name", "last_name", "email", "role")
+MUTABLE_PROFILE_FIELDS = ("first_name", "last_name", "email")
 
 
 class UserSettingSerializer(serializers.ModelSerializer):
