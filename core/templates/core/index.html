@@ -100,9 +100,9 @@
 
 
         <div class="header-right-tools">
-          <span id="apiModeBadge" class="penpot-badge badge-pending" title="Green LIVE = data came from the API; amber DEMO DATA = static fallback values">DEMO DATA</span>
-          <button class="header-icon-btn" title="Notifications"
-            onclick="openNotifInbox(event)">
+          <span id="apiModeBadge" class="penpot-badge badge-pending"
+            title="Green LIVE = data came from the API; amber DEMO DATA = static fallback values">DEMO DATA</span>
+          <button class="header-icon-btn" title="Notifications" onclick="openNotifInbox(event)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
@@ -132,7 +132,12 @@
           </div>
           <div class="hero-summary-cards-side">
             <!-- D6: team activity feed (filled from /api/audit-logs/) -->
-            <aside id="activityFeed"><h3>Today</h3><ul id="activityFeedList"><li>Loading…</li></ul></aside>
+            <aside id="activityFeed">
+              <h3>Today</h3>
+              <ul id="activityFeedList">
+                <li>Loading…</li>
+              </ul>
+            </aside>
             <!-- June 2026 Card -->
             <div class="summary-box dark-navy-box">
               <span class="summary-tag" id="dashboardMonthLabel">CURRENT MONTH</span>
@@ -249,7 +254,9 @@
                   </tr>
                 </thead>
                 <tbody id="dashboardAttendanceTableBody">
-                  <tr><td colspan="5">Loading attendance from the database...</td></tr>
+                  <tr>
+                    <td colspan="5">Loading attendance from the database...</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -340,7 +347,8 @@
           <div class="roster-top-bar">
             <h2 class="card-title">Corporate Employee Roster & Expandable Profiles</h2>
             <div class="roster-filters">
-              <input id="empSearch" class="penpot-select" placeholder="Search name or email" oninput="filterDirectory()">
+              <input id="empSearch" class="penpot-select" placeholder="Search name or email"
+                oninput="filterDirectory()">
               <select class="penpot-select" id="deptFilter" onchange="filterDirectory()">
                 <option value="all">All Departments</option>
                 <option value="Engineering">Engineering</option>
@@ -455,7 +463,8 @@
                     <div class="perf-text">Q2 Performance Rating: <strong>Exceeds (4.8/5.0)</strong></div>
                     <div class="acc-btn-row">
                       <button class="btn btn-black-sm">View Full Profile</button>
-                      <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('Sarah Chen')">Message on Slack</button>
+                      <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('Sarah Chen')">Message on
+                        Slack</button>
                     </div>
                   </div>
                 </div>
@@ -548,7 +557,8 @@
                     <div class="perf-text">Q2 Performance Rating: <strong>Exceeds (4.2/5.0)</strong></div>
                     <div class="acc-btn-row">
                       <button class="btn btn-black-sm">View Full Profile</button>
-                      <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('Marcus Williams')">Message on Slack</button>
+                      <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('Marcus Williams')">Message on
+                        Slack</button>
                     </div>
                   </div>
                 </div>
@@ -640,7 +650,8 @@
                     <div class="perf-text">90-Day Review: <strong>In Progress</strong></div>
                     <div class="acc-btn-row">
                       <button class="btn btn-black-sm">View Full Profile</button>
-                      <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('Priya Patel')">Message on Slack</button>
+                      <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('Priya Patel')">Message on
+                        Slack</button>
                     </div>
                   </div>
                 </div>
@@ -733,7 +744,8 @@
                     <div class="perf-text">Q2 Performance Rating: <strong>Strong (4.5/5.0)</strong></div>
                     <div class="acc-btn-row">
                       <button class="btn btn-black-sm">View Full Profile</button>
-                      <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('James O\u0027Brien')">Message on Slack</button>
+                      <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('James O\u0027Brien')">Message
+                        on Slack</button>
                     </div>
                   </div>
                 </div>
@@ -825,7 +837,8 @@
                     <div class="perf-text">Q2 Performance Rating: <strong>Exceeds (4.7/5.0)</strong></div>
                     <div class="acc-btn-row">
                       <button class="btn btn-black-sm">View Full Profile</button>
-                      <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('Elena Rodriguez')">Message on Slack</button>
+                      <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('Elena Rodriguez')">Message on
+                        Slack</button>
                     </div>
                   </div>
                 </div>
@@ -917,7 +930,8 @@
                     <div class="perf-text">Status: <strong>Approved PTO (Returns Aug 20)</strong></div>
                     <div class="acc-btn-row">
                       <button class="btn btn-black-sm">View Full Profile</button>
-                      <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('David Kim')">Message on Slack</button>
+                      <button class="btn btn-purple-outline-sm" onclick="messageOnSlack('David Kim')">Message on
+                        Slack</button>
                     </div>
                   </div>
                 </div>
@@ -1246,12 +1260,11 @@
                       </svg>
                       <span data-offboard-label>Upload File</span>
                     </label>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                      </svg>
-                      <span>Upload File</span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                    <span>Upload File</span>
                     </button>
                   </div>
                   <div class="doc-upload-cell">
@@ -1265,12 +1278,11 @@
                       </svg>
                       <span data-offboard-label>Upload File</span>
                     </label>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                      </svg>
-                      <span>Upload File</span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                    <span>Upload File</span>
                     </button>
                   </div>
                   <div class="doc-upload-cell">
@@ -1284,12 +1296,11 @@
                       </svg>
                       <span data-offboard-label>Upload File</span>
                     </label>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                      </svg>
-                      <span>Upload File</span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                    <span>Upload File</span>
                     </button>
                   </div>
                   <div class="doc-upload-cell">
@@ -1303,12 +1314,11 @@
                       </svg>
                       <span data-offboard-label>Upload File</span>
                     </label>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                      </svg>
-                      <span>Upload File</span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                    <span>Upload File</span>
                     </button>
                   </div>
                 </div>
@@ -1317,7 +1327,8 @@
               <!-- FOOTER ACTIONS -->
               <div class="wizard-footer-actions">
                 <button type="button" class="btn btn-outline-gray" onclick="setPtMode('promote')">Cancel</button>
-                <button type="button" class="btn btn-outline-gray" onclick="previewPurge(event)">Preview Purge (30d)</button>
+                <button type="button" class="btn btn-outline-gray" onclick="previewPurge(event)">Preview Purge
+                  (30d)</button>
                 <button type="submit" class="btn-finalize-offboard">Finalize Offboarding & Issue Clearance</button>
               </div>
               <div id="purgePreviewBox" class="card-sub" style="display:none; margin-top:8px;"></div>
@@ -1408,40 +1419,42 @@
             <h2 class="card-title" style="margin-bottom:16px;">Active & Recent Workplace Grievance Cases</h2>
 
             <div class="grievance-case-list" id="grievanceCaseList">
-            <div class="grievance-case-item">
-              <div class="case-header-row">
-                <strong class="case-title">Case #GR-809: Workload Distribution Query</strong>
-                <span class="penpot-badge badge-investigating">Investigating</span>
+              <div class="grievance-case-item">
+                <div class="case-header-row">
+                  <strong class="case-title">Case #GR-809: Workload Distribution Query</strong>
+                  <span class="penpot-badge badge-investigating">Investigating</span>
+                </div>
+                <p class="case-submeta">Filed by: Marcus Williams (Sales) • Date: Aug 08, 2025 • Mediator: Maya Lin (HR
+                  Director)</p>
+                <p class="case-quote">"Request for formal workload assessment following Q3 sales account reassignments
+                  and
+                  territory expansion."</p>
+                <div class="case-action-btns">
+                  <button class="btn btn-navy-sm"
+                    onclick="showToast('Opened investigation notes for Case #GR-809.')">Investigation Notes</button>
+                  <button class="btn btn-outline-dark-sm" onclick="showToast('Mediation session scheduled.')">Schedule
+                    Mediation</button>
+                  <button class="btn btn-green-outline-sm" onclick="showToast('Case #GR-809 marked as resolved.')">Mark
+                    Resolved</button>
+                </div>
               </div>
-              <p class="case-submeta">Filed by: Marcus Williams (Sales) • Date: Aug 08, 2025 • Mediator: Maya Lin (HR
-                Director)</p>
-              <p class="case-quote">"Request for formal workload assessment following Q3 sales account reassignments and
-                territory expansion."</p>
-              <div class="case-action-btns">
-                <button class="btn btn-navy-sm"
-                  onclick="showToast('Opened investigation notes for Case #GR-809.')">Investigation Notes</button>
-                <button class="btn btn-outline-dark-sm" onclick="showToast('Mediation session scheduled.')">Schedule
-                  Mediation</button>
-                <button class="btn btn-green-outline-sm" onclick="showToast('Case #GR-809 marked as resolved.')">Mark
-                  Resolved</button>
-              </div>
-            </div>
 
-            <div class="grievance-case-item">
-              <div class="case-header-row">
-                <strong class="case-title">Case #GR-810: Workplace Ergonomics Request</strong>
-                <span class="penpot-badge badge-mediation">In Mediation</span>
+              <div class="grievance-case-item">
+                <div class="case-header-row">
+                  <strong class="case-title">Case #GR-810: Workplace Ergonomics Request</strong>
+                  <span class="penpot-badge badge-mediation">In Mediation</span>
+                </div>
+                <p class="case-submeta">Filed by: Elena Rodriguez (HR) • Date: Aug 10, 2025 • Mediator: James O'Brien
+                </p>
+                <p class="case-quote">"Assessment request for standing desk converter and ergonomic chair following
+                  medical recommendation."</p>
+                <div class="case-action-btns">
+                  <button class="btn btn-navy-sm" onclick="showToast('Approved ergonomics equipment.')">Approve
+                    Equipment</button>
+                  <button class="btn btn-outline-dark-sm" onclick="showToast('Contacted vendor for quotation.')">Contact
+                    Vendor</button>
+                </div>
               </div>
-              <p class="case-submeta">Filed by: Elena Rodriguez (HR) • Date: Aug 10, 2025 • Mediator: James O'Brien</p>
-              <p class="case-quote">"Assessment request for standing desk converter and ergonomic chair following
-                medical recommendation."</p>
-              <div class="case-action-btns">
-                <button class="btn btn-navy-sm" onclick="showToast('Approved ergonomics equipment.')">Approve
-                  Equipment</button>
-                <button class="btn btn-outline-dark-sm" onclick="showToast('Contacted vendor for quotation.')">Contact
-                  Vendor</button>
-              </div>
-            </div>
             </div>
           </div>
 
@@ -1559,9 +1572,12 @@
               <p class="card-sub" id="attendanceDateLabel">Today • Status: Logged & Verified</p>
             </div>
             <div class="hero-cta-buttons">
-              <button type="button" id="portalClockInButton" class="btn btn-navy-cta" onclick="submitSelfAttendance('clock_in')">Clock in</button>
-              <button type="button" id="portalClockOutButton" class="btn btn-outline-gray" onclick="submitSelfAttendance('clock_out')">Clock out</button>
-              <button type="button" class="btn btn-outline-gray" onclick="exportAttendanceRegister()">Export Register</button>
+              <button type="button" id="portalClockInButton" class="btn btn-navy-cta"
+                onclick="submitSelfAttendance('clock_in')">Clock in</button>
+              <button type="button" id="portalClockOutButton" class="btn btn-outline-gray"
+                onclick="submitSelfAttendance('clock_out')">Clock out</button>
+              <button type="button" class="btn btn-outline-gray" onclick="exportAttendanceRegister()">Export
+                Register</button>
             </div>
           </div>
 
@@ -1570,7 +1586,8 @@
             <div class="cal-nav-panel">
               <span class="cal-title-tag">CALENDAR NAVIGATOR</span>
               <div class="cal-month-nav">
-                <button type="button" class="cal-nav-arr" id="attendancePrevMonth" aria-label="Previous month">◀</button>
+                <button type="button" class="cal-nav-arr" id="attendancePrevMonth"
+                  aria-label="Previous month">◀</button>
                 <strong class="cal-month-txt" id="attendanceMonthLabel">Current Month</strong>
                 <button type="button" class="cal-nav-arr" id="attendanceNextMonth" aria-label="Next month">▶</button>
               </div>
@@ -1600,7 +1617,9 @@
                   </tr>
                 </thead>
                 <tbody id="attendanceTableBody">
-                  <tr><td colspan="5">Loading attendance from the database...</td></tr>
+                  <tr>
+                    <td colspan="5">Loading attendance from the database...</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -1882,8 +1901,11 @@
             </div>
             <div class="shift-editor-controls">
               <div class="shift-date-selector-group">
-                <button type="button" class="btn-date-nav" onclick="stepShiftDate(-1)" title="Previous Day" aria-label="Previous Day">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                <button type="button" class="btn-date-nav" onclick="stepShiftDate(-1)" title="Previous Day"
+                  aria-label="Previous Day">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
                 </button>
                 <div class="shift-date-input-wrap">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1892,14 +1914,19 @@
                     <line x1="8" y1="2" x2="8" y2="6"></line>
                     <line x1="3" y1="10" x2="21" y2="10"></line>
                   </svg>
-                  <input type="date" id="shiftDatePicker" class="shift-date-input" onchange="handleShiftDateChange(this.value)" aria-label="Select Shift Date">
+                  <input type="date" id="shiftDatePicker" class="shift-date-input"
+                    onchange="handleShiftDateChange(this.value)" aria-label="Select Shift Date">
                 </div>
-                <button type="button" class="btn-date-nav" onclick="stepShiftDate(1)" title="Next Day" aria-label="Next Day">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                <button type="button" class="btn-date-nav" onclick="stepShiftDate(1)" title="Next Day"
+                  aria-label="Next Day">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
                 </button>
                 <button type="button" class="btn-date-today" onclick="setShiftDateToday()">Today</button>
               </div>
-              <span class="penpot-badge badge-present" id="shiftOverallCoverage" style="font-size:12px; padding:6px 14px;">● 100% Covered</span>
+              <span class="penpot-badge badge-present" id="shiftOverallCoverage"
+                style="font-size:12px; padding:6px 14px;">● 100% Covered</span>
             </div>
           </div>
 
@@ -1912,7 +1939,8 @@
                     <span class="shift-slot-name">Morning Shift</span>
                     <span class="shift-slot-time"> • 08:00 - 16:00</span>
                   </div>
-                  <span class="penpot-badge badge-present" id="shiftBadge-morning" style="font-size:11px;">Confirmed</span>
+                  <span class="penpot-badge badge-present" id="shiftBadge-morning"
+                    style="font-size:11px;">Confirmed</span>
                 </div>
                 <div class="shift-slot-users-list" id="shiftUsers-morning">
                   <div class="shift-slot-user-row">
@@ -1923,8 +1951,8 @@
                         <div style="font-size:11px; color:#64748b;">Senior Dev &bull; Primary Lead</div>
                       </div>
                     </div>
-                    <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12"
-                        height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg
+                        width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                       </svg></button>
@@ -1933,8 +1961,9 @@
               </div>
 
               <div>
-                <button class="btn btn-outline-gray" id="btnAddStaff-morning" style="width:100%; font-size:12px; padding:7px;"
-                  onclick="toggleAddStaffForm('morning', true)">+ Add Staff</button>
+                <button class="btn btn-outline-gray" id="btnAddStaff-morning"
+                  style="width:100%; font-size:12px; padding:7px;" onclick="toggleAddStaffForm('morning', true)">+ Add
+                  Staff</button>
 
                 <div class="shift-inline-assign-form" id="addStaffForm-morning" style="display:none;">
                   <div class="shift-inline-fields">
@@ -1948,8 +1977,11 @@
                     </select>
                   </div>
                   <div class="shift-inline-actions">
-                    <button type="button" class="btn btn-outline-gray btn-sm" style="font-size:11.5px; padding:4px 10px;" onclick="toggleAddStaffForm('morning', false)">Cancel</button>
-                    <button type="button" class="btn btn-navy-cta btn-sm" style="font-size:11.5px; padding:4px 12px;" onclick="confirmAddStaff('morning')">Assign</button>
+                    <button type="button" class="btn btn-outline-gray btn-sm"
+                      style="font-size:11.5px; padding:4px 10px;"
+                      onclick="toggleAddStaffForm('morning', false)">Cancel</button>
+                    <button type="button" class="btn btn-navy-cta btn-sm" style="font-size:11.5px; padding:4px 12px;"
+                      onclick="confirmAddStaff('morning')">Assign</button>
                   </div>
                 </div>
               </div>
@@ -1963,7 +1995,8 @@
                     <span class="shift-slot-name">Evening Shift</span>
                     <span class="shift-slot-time"> • 16:00 - 00:00</span>
                   </div>
-                  <span class="penpot-badge badge-present" id="shiftBadge-evening" style="font-size:11px;">Confirmed</span>
+                  <span class="penpot-badge badge-present" id="shiftBadge-evening"
+                    style="font-size:11px;">Confirmed</span>
                 </div>
                 <div class="shift-slot-users-list" id="shiftUsers-evening">
                   <div class="shift-slot-user-row">
@@ -1974,8 +2007,8 @@
                         <div style="font-size:11px; color:#64748b;">Senior Dev &bull; Duty Staff</div>
                       </div>
                     </div>
-                    <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12"
-                        height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg
+                        width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                       </svg></button>
@@ -1984,8 +2017,9 @@
               </div>
 
               <div>
-                <button class="btn btn-outline-gray" id="btnAddStaff-evening" style="width:100%; font-size:12px; padding:7px;"
-                  onclick="toggleAddStaffForm('evening', true)">+ Add Staff</button>
+                <button class="btn btn-outline-gray" id="btnAddStaff-evening"
+                  style="width:100%; font-size:12px; padding:7px;" onclick="toggleAddStaffForm('evening', true)">+ Add
+                  Staff</button>
 
                 <div class="shift-inline-assign-form" id="addStaffForm-evening" style="display:none;">
                   <div class="shift-inline-fields">
@@ -1999,8 +2033,11 @@
                     </select>
                   </div>
                   <div class="shift-inline-actions">
-                    <button type="button" class="btn btn-outline-gray btn-sm" style="font-size:11.5px; padding:4px 10px;" onclick="toggleAddStaffForm('evening', false)">Cancel</button>
-                    <button type="button" class="btn btn-navy-cta btn-sm" style="font-size:11.5px; padding:4px 12px;" onclick="confirmAddStaff('evening')">Assign</button>
+                    <button type="button" class="btn btn-outline-gray btn-sm"
+                      style="font-size:11.5px; padding:4px 10px;"
+                      onclick="toggleAddStaffForm('evening', false)">Cancel</button>
+                    <button type="button" class="btn btn-navy-cta btn-sm" style="font-size:11.5px; padding:4px 12px;"
+                      onclick="confirmAddStaff('evening')">Assign</button>
                   </div>
                 </div>
               </div>
@@ -2014,7 +2051,8 @@
                     <span class="shift-slot-name">Night Shift</span>
                     <span class="shift-slot-time"> • 00:00 - 08:00</span>
                   </div>
-                  <span class="penpot-badge badge-present" id="shiftBadge-night" style="font-size:11px;">Confirmed</span>
+                  <span class="penpot-badge badge-present" id="shiftBadge-night"
+                    style="font-size:11px;">Confirmed</span>
                 </div>
                 <div class="shift-slot-users-list" id="shiftUsers-night">
                   <div class="shift-slot-user-row">
@@ -2025,8 +2063,8 @@
                         <div style="font-size:11px; color:#64748b;">Lead Analyst &bull; Standby Relief</div>
                       </div>
                     </div>
-                    <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg width="12"
-                        height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <button class="btn-remove-staff" title="Remove staff" onclick="removeShiftStaff(this)"><svg
+                        width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                       </svg></button>
@@ -2035,8 +2073,9 @@
               </div>
 
               <div>
-                <button class="btn btn-outline-gray" id="btnAddStaff-night" style="width:100%; font-size:12px; padding:7px;"
-                  onclick="toggleAddStaffForm('night', true)">+ Add Staff</button>
+                <button class="btn btn-outline-gray" id="btnAddStaff-night"
+                  style="width:100%; font-size:12px; padding:7px;" onclick="toggleAddStaffForm('night', true)">+ Add
+                  Staff</button>
 
                 <div class="shift-inline-assign-form" id="addStaffForm-night" style="display:none;">
                   <div class="shift-inline-fields">
@@ -2050,8 +2089,11 @@
                     </select>
                   </div>
                   <div class="shift-inline-actions">
-                    <button type="button" class="btn btn-outline-gray btn-sm" style="font-size:11.5px; padding:4px 10px;" onclick="toggleAddStaffForm('night', false)">Cancel</button>
-                    <button type="button" class="btn btn-navy-cta btn-sm" style="font-size:11.5px; padding:4px 12px;" onclick="confirmAddStaff('night')">Assign</button>
+                    <button type="button" class="btn btn-outline-gray btn-sm"
+                      style="font-size:11.5px; padding:4px 10px;"
+                      onclick="toggleAddStaffForm('night', false)">Cancel</button>
+                    <button type="button" class="btn btn-navy-cta btn-sm" style="font-size:11.5px; padding:4px 12px;"
+                      onclick="confirmAddStaff('night')">Assign</button>
                   </div>
                 </div>
               </div>
@@ -2074,7 +2116,9 @@
                 </tr>
               </thead>
               <tbody id="shiftRosterTableBody">
-                <tr><td colspan="5">Loading…</td></tr>
+                <tr>
+                  <td colspan="5">Loading…</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -2345,7 +2389,8 @@
                 <input type="text" placeholder="Search claim ID, applicant, or category..." class="penpot-select-full"
                   style="width:280px; padding:8px 14px; font-size:13px;"
                   onkeyup="filterClaimsTable(this, 'pendingClaimsTableBody')" />
-                <button class="btn btn-navy-cta" id="batchApproveBtn" data-batch-approve-count onclick="batchApproveClaims()">+ Batch Approve (0)</button>
+                <button class="btn btn-navy-cta" id="batchApproveBtn" data-batch-approve-count
+                  onclick="batchApproveClaims()">+ Batch Approve (0)</button>
               </div>
             </div>
 
@@ -2381,8 +2426,9 @@
                       <div class="claims-details-cell">
                         <div class="claims-details-text">Client onsite workshop hotel & flight booking</div>
                         <div class="claims-attachment-text"
-                          onclick="showToast('Receipt-4092.pdf (1.4 MB)... is a demo sample — no file stored.', 'error')" disabled title="demo sample, no file stored"><svg width="12" height="12"
-                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                          onclick="showToast('Receipt-4092.pdf (1.4 MB)... is a demo sample — no file stored.', 'error')"
+                          disabled title="demo sample, no file stored"><svg width="12" height="12" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2"
                             style="vertical-align:middle; margin-right:4px;">
                             <path
                               d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
@@ -2459,8 +2505,9 @@
                       <div class="claims-details-cell">
                         <div class="claims-details-text">Annual Figma Enterprise & Font License renewal</div>
                         <div class="claims-attachment-text"
-                          onclick="showToast('Receipt-9931.pdf (2.1 MB)... is a demo sample — no file stored.', 'error')" disabled title="demo sample, no file stored"><svg width="12" height="12"
-                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                          onclick="showToast('Receipt-9931.pdf (2.1 MB)... is a demo sample — no file stored.', 'error')"
+                          disabled title="demo sample, no file stored"><svg width="12" height="12" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2"
                             style="vertical-align:middle; margin-right:4px;">
                             <path
                               d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
@@ -2498,8 +2545,9 @@
                       <div class="claims-details-cell">
                         <div class="claims-details-text">Dinner with Q2 audit partners</div>
                         <div class="claims-attachment-text"
-                          onclick="showToast('Receipt-1029.jpg (640 KB)... is a demo sample — no file stored.', 'error')" disabled title="demo sample, no file stored"><svg width="12" height="12"
-                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                          onclick="showToast('Receipt-1029.jpg (640 KB)... is a demo sample — no file stored.', 'error')"
+                          disabled title="demo sample, no file stored"><svg width="12" height="12" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2"
                             style="vertical-align:middle; margin-right:4px;">
                             <path
                               d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
@@ -2537,8 +2585,9 @@
                       <div class="claims-details-cell">
                         <div class="claims-details-text">Design workshop stationery & whiteboard set</div>
                         <div class="claims-attachment-text"
-                          onclick="showToast('Receipt-5521.pdf (410 KB)... is a demo sample — no file stored.', 'error')" disabled title="demo sample, no file stored"><svg width="12" height="12"
-                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                          onclick="showToast('Receipt-5521.pdf (410 KB)... is a demo sample — no file stored.', 'error')"
+                          disabled title="demo sample, no file stored"><svg width="12" height="12" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2"
                             style="vertical-align:middle; margin-right:4px;">
                             <path
                               d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
@@ -3114,7 +3163,8 @@
             <div class="chat-composer-bar">
               <form id="chatMessageForm" onsubmit="handleSendChatMessage(event)">
                 <input type="file" id="chatFileInput" hidden onchange="handleChatFileSelected(this)" />
-                <input type="file" id="chatImageInput" accept="image/*" hidden onchange="handleChatFileSelected(this)" />
+                <input type="file" id="chatImageInput" accept="image/*" hidden
+                  onchange="handleChatFileSelected(this)" />
                 <div class="composer-input-row">
                   <input type="text" id="chatTextInput" placeholder="Type a message to Sarah Chen..." autocomplete="off"
                     required />
@@ -3165,10 +3215,12 @@
         <!-- Table Card -->
         <div class="white-card" style="padding:0; overflow:hidden; margin-bottom:24px;">
           <div style="padding:20px 24px; border-bottom:1px solid #e2e8f0;">
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:16px;">
+            <div
+              style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:16px;">
               <div>
                 <h2 class="card-title" style="margin-bottom:4px;">System &amp; Administrative Audit Trail</h2>
-                <p class="card-sub" style="color:#64748b; font-size:13.5px; margin:0;">Every privileged action is signed,
+                <p class="card-sub" style="color:#64748b; font-size:13.5px; margin:0;">Every privileged action is
+                  signed,
                   timestamped, and categorized by class for security compliance.</p>
               </div>
               <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
@@ -3512,7 +3564,9 @@
                 </tr>
               </thead>
               <tbody id="payrollRunsTableBody">
-                <tr><td colspan="4">Loading…</td></tr>
+                <tr>
+                  <td colspan="4">Loading…</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -3560,7 +3614,8 @@
         </div>
         <div class="input-cell" style="margin-bottom:20px;">
           <label>REASON / HANDOVER NOTES</label>
-          <textarea id="leaveReason" rows="3" placeholder="Describe coverage and handover arrangements..." required></textarea>
+          <textarea id="leaveReason" rows="3" placeholder="Describe coverage and handover arrangements..."
+            required></textarea>
         </div>
         <div class="modal-foot">
           <button type="button" class="btn btn-outline-gray" onclick="closeLeaveModal()">Cancel</button>
@@ -3605,8 +3660,8 @@
         </div>
         <div class="input-cell" style="margin-bottom:20px;">
           <label>PURPOSE & FINANCIAL JUSTIFICATION</label>
-          <textarea rows="3" id="advancePurpose" placeholder="State reason for advance request (subject to HR policy cap review)..."
-            required></textarea>
+          <textarea rows="3" id="advancePurpose"
+            placeholder="State reason for advance request (subject to HR policy cap review)..." required></textarea>
         </div>
         <div class="modal-foot">
           <button type="button" class="btn btn-outline-gray" onclick="closeAdvanceModal()">Cancel</button>
@@ -3683,8 +3738,7 @@
             </div>
             <div class="input-cell">
               <label>Initial Login Password <span class="req-star">*</span></label>
-              <input id="onboardPassword" type="password" minlength="8"
-                placeholder="At least 8 characters" required />
+              <input id="onboardPassword" type="password" minlength="8" placeholder="At least 8 characters" required />
             </div>
           </div>
         </div>
@@ -3883,6 +3937,9 @@
     if (typeof switchView === 'undefined') {
       document.write('<script src="../../../static/js/dashboard.js"><\/script>');
     }
+  </script>
+  <script>
+    (function () { if (!window.chatbase || window.chatbase("getState") !== "initialized") { window.chatbase = (...arguments) => { if (!window.chatbase.q) { window.chatbase.q = [] } window.chatbase.q.push(arguments) }; window.chatbase = new Proxy(window.chatbase, { get(target, prop) { if (prop === "q") { return target.q } return (...args) => target(prop, ...args) } }) } const onLoad = function () { const script = document.createElement("script"); script.src = "https://www.chatbase.co/embed.min.js"; script.id = "ZR84LaAfbmdAWKswjfurQ"; script.domain = "www.chatbase.co"; document.body.appendChild(script) }; if (document.readyState === "complete") { onLoad() } else { window.addEventListener("load", onLoad) } })();
   </script>
 </body>
 
