@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Figure 1 — Decoupled System Architecture (main, 21 tables, 58 routes)</title>
+<style>
+  body { background:#fff; color:#111; font-family: Arial, Helvetica, sans-serif; margin:24px; max-width:1060px; }
+  h1 { font-size:20px; margin:0 0 4px 0; }
+  p.sub { font-size:12px; color:#444; margin:0 0 14px 0; }
+  h2 { font-size:15px; margin:22px 0 6px 0; border-bottom:2px solid #0f172a; padding-bottom:4px; }
+  p, li { font-size:13px; line-height:1.55; }
+  ul, ol { margin:6px 0 6px 20px; padding:0; }
+  code { background:#f1f5f9; padding:1px 5px; border-radius:4px; font-size:12px; }
+  table { border-collapse:collapse; margin:8px 0 4px 0; font-size:12px; }
+  th, td { border:1px solid #94a3b8; padding:5px 9px; text-align:left; vertical-align:top; }
+  th { background:#0f172a; color:#fff; }
+  svg { display:block; margin:6px 0; max-width:100%; height:auto; }
+  .tier { fill:#f8fafc; stroke:#0f172a; stroke-width:2; }
+  .comp { fill:#fff; stroke:#0f172a; stroke-width:1.5; }
+  .ext { fill:#eff6ff; stroke:#1d4ed8; stroke-width:1.5; stroke-dasharray:7 3; }
+  .t { font-size:13px; font-weight:bold; fill:#111; }
+  .st { font-size:10.5px; font-style:italic; fill:#475569; }
+  .s { font-size:11px; fill:#334155; }
+  .lbl { font-size:10.5px; fill:#0f172a; font-weight:bold; }
+  .proto { font-size:10px; fill:#1d4ed8; font-style:italic; }
+  .flow { stroke:#0f172a; stroke-width:2; fill:none; }
+  .flowB { stroke:#1d4ed8; stroke-width:2; fill:none; stroke-dasharray:6 3; }
+  .note { font-size:11px; fill:#334155; }
+</style>
+</head>
+<body>
+<h1>Figure 1 — Decoupled System Architecture</h1>
+<p class="sub">Kumon EMS · <code>main</code> · Django 6.1 + DRF · 21 tables · 58 API routes · Supabase Auth + Postgres live · SQLite for local dev · No MySQL</p>
+
+<h2>The drawing — four tiers, six decoupling points</h2>
+<p>Read top to bottom. Each tier talks to its neighbours only through the labelled contract. Symbol key: solid boxes = system-owned components; <span style="color:#1d4ed8;">dashed blue boxes</span> = external services; stereotypes in guillemets (e.g. «client») name each node's role; every arrow carries its protocol.</p>
+
+<svg width="1020" height="980" viewBox="0 0 1020 980">
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><polygon points="0 0,10 4,0 8" fill="#0f172a"/></marker>
+    <marker id="b" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><polygon points="0 0,10 4,0 8" fill="#1d4ed8"/></marker>
+  </defs>
+
+  <!-- TIER 1 -->
+  <rect class="tier" x="8" y="8" width="1004" height="150" rx="10"/>
+  <text class="t" x="22" y="32">TIER 1 — PRESENTATION</text>
+  <text class="st" x="232" y="32">«client» · renders only, decides nothing</text>
+  <rect class="comp" x="24" y="44" width="310" height="100" rx="8"/>
+  <text class="t" x="36" y="66">Pages + portals</text>
+  <text class="s" x="36" y="82">index · login · hr_login · employee_portal</text>
+  <text class="s" x="36" y="96">attendance_checkin (kiosk: name + password)</text>
+  <text class="s" x="36" y="110">Split doors: /login/ vs /hr/login/</text>
+  <text class="s" x="36" y="124">Settings tab: profile · prefs · company · import</text>
+  <text class="s" x="36" y="138">First-run CTA when headcount = 0</text>
+  <rect class="comp" x="350" y="44" width="330" height="100" rx="8"/>
+  <text class="t" x="362" y="66">dashboard.js (one script)</text>
+  <text class="s" x="362" y="82">apiFetch: cookies + CSRF, one error shape</text>
+  <text class="s" x="362" y="96">switchView router · toasts · modals · bell count</text>
+  <text class="s" x="362" y="110">Pagers (?page=) · CSV exports · KPI widgets</text>
+  <text class="s" x="362" y="124">a11y prefs: font scale · contrast · motion</text>
+  <text class="s" x="362" y="138">Confirm modal reserved for what hurts</text>
+  <rect class="comp" x="696" y="44" width="300" height="100" rx="8"/>
+  <text class="t" x="708" y="66">Design system (retained)</text>
+  <text class="s" x="708" y="82">main.css :root vars · white-card · tab-pill</text>
+  <text class="s" x="708" y="96">penpot-input · navy/coral CTAs</text>
+  <text class="s" x="708" y="110">Company sections: Leave · Shift · Payroll</text>
+  <text class="s" x="708" y="124">Mobile · System (FrappeHR-mirrored)</text>
+  <text class="s" x="708" y="138">LIVE / DEMO DATA badge on every view</text>
+
+  <line class="flow" x1="180" y1="158" x2="180" y2="198" marker-end="url(#a)"/>
+  <text class="lbl" x="192" y="174">① REST boundary</text>
+  <text class="proto" x="192" y="188">HTTPS · JSON · /api/ · 58 routes</text>
+  <line class="flow" x1="830" y1="158" x2="830" y2="198" marker-end="url(#a)"/>
+  <text class="lbl" x="580" y="174">② Auth at the boundary</text>
+  <text class="proto" x="580" y="188">session cookie (screens) · token (scripts)</text>
+
+  <!-- TIER 2 -->
+  <rect class="tier" x="8" y="206" width="1004" height="240" rx="10"/>
+  <text class="t" x="22" y="230">TIER 2 — APPLICATION (Django 6.1 + DRF)</text>
+  <text class="st" x="340" y="230">«server» · every rule lives here, behind the API</text>
+  <rect class="comp" x="24" y="242" width="236" height="192" rx="8"/>
+  <text class="t" x="36" y="264">Guards</text>
+  <text class="s" x="36" y="280">IsOwnerOrStaff — own rows only</text>
+  <text class="s" x="36" y="294">ForceOwnerCreate — cross-post → 403</text>
+  <text class="s" x="36" y="308">DecidedGuard — re-decide → 409</text>
+  <text class="s" x="36" y="322">HR door needs active linked row</text>
+  <text class="s" x="36" y="336">Password: validators + token revoke</text>
+  <text class="s" x="36" y="350">+ per-user session kill</text>
+  <text class="s" x="36" y="364">Role read-only in self-service</text>
+  <text class="s" x="36" y="378">Throttle 100/1000/day · CORS list</text>
+  <text class="s" x="36" y="392">Page size 10, prefs up to 100</text>
+  <text class="s" x="36" y="406">Site toggles read per request</text>
+  <text class="s" x="36" y="420">Mobile check-in gate (kiosk + self)</text>
+  <rect class="comp" x="272" y="242" width="236" height="192" rx="8"/>
+  <text class="t" x="284" y="264">Rules (serializers)</text>
+  <text class="s" x="284" y="280">One clock-in per person-day → 409</text>
+  <text class="s" x="284" y="294">Clock-out needs one open row</text>
+  <text class="s" x="284" y="308">Overlap guard, toggleable (FrappeHR 3.1)</text>
+  <text class="s" x="284" y="322">Backdated-leave toggle (FrappeHR 4.6)</text>
+  <text class="s" x="284" y="336">Leave: Pending/Approved/Rejected</text>
+  <text class="s" x="284" y="350">Pay: net = base − deductions, server-side</text>
+  <text class="s" x="284" y="364">OT bounds from site settings</text>
+  <text class="s" x="284" y="378">SiteSetting clean() + logged fallback</text>
+  <text class="s" x="284" y="392">Import: per-row errors, never aborts batch</text>
+  <text class="s" x="284" y="406">UserSetting: page · mute · a11y · widgets</text>
+  <text class="s" x="284" y="420">Errors share {"error"}: 400/401/403/404/409</text>
+  <rect class="comp" x="520" y="242" width="228" height="192" rx="8"/>
+  <text class="t" x="532" y="264">Side-effects (signals) ⑤</text>
+  <text class="s" x="532" y="280">Audit row per change, survives erase</text>
+  <text class="s" x="532" y="294">Notifications: leave/shift/payroll kinds</text>
+  <text class="s" x="532" y="308">Pending filings stay silent by design</text>
+  <text class="s" x="532" y="322">Vacation auto-grant on hire (toggle)</text>
+  <text class="s" x="532" y="336">Swap approval swaps holders atomically</text>
+  <text class="s" x="532" y="350">Correction applies on approval only</text>
+  <text class="s" x="532" y="364">Site-change audit (actor, old → new)</text>
+  <text class="s" x="532" y="378">Views never call these directly —</text>
+  <text class="s" x="532" y="392">Django dispatches them. Decoupled.</text>
+  <text class="s" x="532" y="406">Bell = live unread count (polls)</text>
+  <text class="s" x="532" y="420">No websocket / push channel</text>
+  <rect class="comp" x="760" y="242" width="236" height="192" rx="8"/>
+  <text class="t" x="772" y="264">Ops (commands) ⑥</text>
+  <text class="s" x="772" y="280">purge_resigned --days 1–365</text>
+  <text class="s" x="772" y="294">--dry-run preview, per-row skip</text>
+  <text class="s" x="772" y="308">Snapshot ids first (no live delete)</text>
+  <text class="s" x="772" y="322">Row + Supabase login erased;</text>
+  <text class="s" x="772" y="336">diary keeps id + email</text>
+  <text class="s" x="772" y="350">Scheduling is operator-owned</text>
+  <text class="s" x="772" y="364">(weekly Task Scheduler)</text>
+  <text class="s" x="772" y="378">Runs outside HTTP — same models,</text>
+  <text class="s" x="772" y="392">no request needed. Decoupled.</text>
+  <text class="s" x="772" y="406">purge-run/ endpoint wraps it (staff)</text>
+  <text class="s" x="772" y="420">Excel import: dry-run, then commit</text>
+
+  <line class="flow" x1="300" y1="446" x2="300" y2="486" marker-end="url(#a)"/>
+  <text class="lbl" x="312" y="462">③ Storage switch</text>
+  <text class="proto" x="312" y="476">DB_HOST set → Postgres · unset → SQLite file</text>
+  <line class="flowB" x1="720" y1="446" x2="720" y2="800" marker-end="url(#b)"/>
+  <text class="lbl" x="732" y="600">④ Identity sidecar (server-side only)</text>
+  <text class="proto" x="732" y="614">supabase_client.py holds the keys;</text>
+  <text class="proto" x="732" y="628">browser never sees them</text>
+
+  <!-- TIER 3 -->
+  <rect class="tier" x="8" y="494" width="560" height="252" rx="10"/>
+  <text class="t" x="22" y="518">TIER 3 — DATA (21 tables)</text>
+  <text class="st" x="230" y="518">«database» · Supabase Postgres live · SQLite dev</text>
+  <text class="s" x="24" y="536">Organization: Department, Employee (login link, active flag)</text>
+  <text class="s" x="24" y="552">Time: Attendance (per-day rules) · AttendanceCorrection (applies on approval)</text>
+  <text class="s" x="24" y="568">LeaveRequest · LeaveAllocation · OvertimeSlip (one per shift)</text>
+  <text class="s" x="24" y="584">ShiftRoster · ShiftSwap · PayrollRun · PayrollItem (server net)</text>
+  <text class="s" x="24" y="600">ExpenseClaim (+updated_at) · PerformanceReview</text>
+  <text class="s" x="24" y="616">Oversight: EmployeeAuditLog (SET_NULL, survives erase) · Grievance (5 states)</text>
+  <text class="s" x="24" y="632">Complaint (confidential, categorized) · Message · ClaimStatus</text>
+  <text class="s" x="24" y="648">Notification (leave/shift/payroll) · SalaryAdvance · OnboardingDocument</text>
+  <text class="s" x="24" y="664">Settings: UserSetting (page/mute/a11y/widgets) · SiteSetting (key-value + ranges)</text>
+  <text class="s" x="24" y="680">Constraints do the guarding: uniques + validators + serializer re-checks;</text>
+  <text class="s" x="24" y="694">races resolve to 409, never 500. Migrations 0001–0029 linear. No MySQL.</text>
+  <text class="s" x="24" y="710">Review artifacts: Latest.dbml + docs/erd.png generated from models.</text>
+  <text class="s" x="24" y="726">Local dev: db.sqlite3, zero-config. Same code flips on DB_HOST.</text>
+
+  <!-- TIER 4 -->
+  <rect class="ext" x="584" y="494" width="412" height="252" rx="10"/>
+  <text class="t" x="598" y="518">TIER 4 — SUPABASE (external BaaS)</text>
+  <text class="st" x="598" y="534">«external service» · contacted by server only</text>
+  <text class="s" x="598" y="552">Auth: create_user on hire (id = Employee id)</text>
+  <text class="s" x="598" y="568">delete_user on save-fail (rollback, no orphans)</text>
+  <text class="s" x="598" y="584">delete_user on resign + purge; password sync</text>
+  <text class="s" x="598" y="600">on change (best-effort, never blocks)</text>
+  <text class="s" x="598" y="616">Postgres: hosted tables, TLS in transit,</text>
+  <text class="s" x="598" y="632">platform encryption at rest; creds in .env</text>
+  <text class="s" x="598" y="648">Hire: Auth user first → local row;</text>
+  <text class="s" x="598" y="664">failure rolls the Auth user back.</text>
+  <text class="s" x="598" y="680">Quit: inactive + resigned_at → after N days</text>
+  <text class="s" x="598" y="696">purge erases row + login, diary kept.</text>
+  <text class="s" x="598" y="712">Honest limits: single-node dev server,</text>
+  <text class="s" x="598" y="728">no replica/HA; sync is REST + page-load poll.</text>
+
+  <text class="note" x="8" y="768">Decoupling summary: ① screens replaceable behind /api/ · ② auth enforced at boundary, doors split HR/employee · ③ storage flips on one env var · ④ secrets never leave the server · ⑤ signals fire without view calls · ⑥ purge/import run outside HTTP.</text>
+  <text class="note" x="8" y="784">Verified at draw: 21 models (core/models.py), 58 routes (api/urls.py). Public: only dashboard-summary. Counts include settings/me|password|site, import-employees, attendance/me|check-in, hr-session-login, complaints, grievances.</text>
+  <text class="note" x="8" y="800">Flows: hire = screen → server creates Auth user → saves row, else rollback · clock-in = one row per person-day, second → 409 · quit = deactivate → purge after retention erases login + row.</text>
+  <text class="note" x="8" y="816">Legend: solid = owned · dashed blue = external · ①–⑥ = decoupling points · blue italic = protocol.</text>
+</svg>
+
+<h2>Route groups (58 routes)</h2>
+<table>
+<tr><th>Group</th><th>Routes</th></tr>
+<tr><td>Auth</td><td><code>session-login/</code> · <code>hr-session-login/</code> · <code>session-logout/</code> · <code>auth-token/</code> · <code>attendance/check-in/</code></td></tr>
+<tr><td>People</td><td><code>employees/</code> (+ detail) · <code>departments/</code> · <code>performance/</code> · <code>grievances/</code> · <code>complaints/</code></td></tr>
+<tr><td>Time</td><td><code>attendance/</code> · <code>attendance/clock-out/</code> · <code>attendance/me/</code> · <code>attendance-corrections/</code> · <code>leaves/</code> (+ <code>leave-requests/</code> alias) · <code>leave-allocations/</code> · <code>leave-balances/</code> · <code>overtime/</code> · <code>shift-rosters/</code> (+ <code>conflicts/</code>) · <code>shift-swaps/</code></td></tr>
+<tr><td>Pay</td><td><code>payroll-runs/</code> · <code>payroll-items/</code> · <code>expense-claims/</code> · <code>claim-statuses/</code> · <code>claims/&lt;id&gt;/decision/</code> · <code>advances/</code> · <code>onboarding-docs/</code></td></tr>
+<tr><td>Settings</td><td><code>settings/me/</code> · <code>settings/password/</code> · <code>settings/site/</code> · <code>settings/import-employees/</code></td></tr>
+<tr><td>Oversight</td><td><code>audit-logs/</code> (+ <code>logs/</code> alias) · <code>notifications/</code> (+ mark-read) · <code>messages/</code> · <code>dashboard-summary/</code> (+ <code>dashboard/</code>, <code>activities/</code> aliases, public) · <code>purge-run/</code> (staff)</td></tr>
+</table>
+
+<h2>Table groups (21 tables)</h2>
+<table>
+<tr><th>Group</th><th>Tables</th></tr>
+<tr><td>Organization</td><td>Department, Employee</td></tr>
+<tr><td>Time</td><td>Attendance, AttendanceCorrection, LeaveRequest, LeaveAllocation, OvertimeSlip, ShiftRoster, ShiftSwap</td></tr>
+<tr><td>Pay</td><td>PayrollRun, PayrollItem, ExpenseClaim, SalaryAdvance, OnboardingDocument</td></tr>
+<tr><td>Oversight</td><td>PerformanceReview, EmployeeAuditLog, Grievance, Complaint</td></tr>
+<tr><td>Messages</td><td>Message, ClaimStatus, Notification</td></tr>
+<tr><td>Settings</td><td>UserSetting, SiteSetting</td></tr>
+</table>
+
+<h2>Why this is decoupled (panel-ready wording)</h2>
+<ul>
+<li><strong>Replaceable client:</strong> any HTTP client (the planned mobile app, scripts via token) consumes the same 58 routes; the dashboard holds no business logic.</li>
+<li><strong>Auth at the edge:</strong> split HR/employee doors, ownership scoping, and throttles execute before any business code.</li>
+<li><strong>Swappable storage:</strong> one environment variable moves the system from file SQLite to hosted Postgres; no code path names an engine.</li>
+<li><strong>Server-side identity:</strong> Supabase keys and Auth calls exist only in <code>core/supabase_client.py</code> and views; a client swap cannot leak them.</li>
+<li><strong>Event side-effects:</strong> audit, notifications, and auto-allocation fire via signals — views stay unaware of them.</li>
+<li><strong>Offline ops:</strong> purge and import run as commands/endpoints outside the request cycle with dry-run previews.</li>
+</ul>
+</body>
+</html>
