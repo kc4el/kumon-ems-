@@ -133,7 +133,7 @@
         <div class="dashboard-hero-layout">
           <div class="hero-text-side">
             <span class="hero-date-tag" id="dashboardTodayLabel">TODAY</span>
-            <h1 class="hero-heading">Greetings, gurt!</h1>
+            <h1 class="hero-heading">Greetings, {% firstof user.first_name user.employee_profile.first_name user.username "there" %}!</h1>
             <p class="hero-subtext">Here’s what’s happening with your team today.</p>
             <div class="hero-cta-buttons">
               <button class="btn btn-blue-cta" onclick="switchView('employee-manage')">Add employee</button>
