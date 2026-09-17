@@ -183,6 +183,8 @@ class ApiTests(TestCase):
                 "active_employees": 1,
                 "approved_leaves": 1,
                 "pending_leaves": 1,
+                "attendance_today": 1,
+                "claims_count": 0,
                 "open_attendance_records": 1,
             },
         )
@@ -1334,7 +1336,14 @@ class SessionAuthTests(TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_session_login_logout_round_trip(self):
-        User.objects.create_user(username="sess", password="right")
+        user = User.objects.create_user(username="sess", password="right")
+        Employee.objects.create(
+            first_name="Sess",
+            last_name="Ion",
+            email="sess@example.com",
+            user=user,
+            is_active=True,
+        )
         client = APIClient()
         login = client.post(
             "/api/session-login/",
@@ -1364,8 +1373,8 @@ class SessionAuthTests(TestCase):
             {"username": "gone", "password": "right"},
             format="json",
         )
-        self.assertEqual(response.status_code, 401)
-        self.assertEqual(response.json()["error"], "Invalid credentials.")
+        self.assertEqual(response.status_code, 403)
+        self.assertIn("active employee profile", response.json()["error"])
 
     def test_session_login_inactive_employee_staff_bypass(self):
         staff = User.objects.create_user(
@@ -1379,8 +1388,10 @@ class SessionAuthTests(TestCase):
             is_active=False,
         )
         anon = APIClient()
+        # Staff use the HR door; the bypass survives there (is_staff skips
+        # the active-row gate).
         response = anon.post(
-            "/api/session-login/",
+            "/api/hr-session-login/",
             {"username": "boss-gone", "password": "right"},
             format="json",
         )
@@ -1394,7 +1405,8 @@ class SessionAuthTests(TestCase):
             {"username": "nolink", "password": "right"},
             format="json",
         )
-        self.assertEqual(response.status_code, 200)
+        # Decided: the employee door requires a linked active profile.
+        self.assertEqual(response.status_code, 403)
 
 
 class PurgeValidationTests(TestCase):
@@ -1717,14 +1729,14 @@ class ForceOwnerCreateTests(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(LeaveRequest.objects.get().employee, self.me)
 
-    def test_non_staff_omitting_employee_is_rejected(self):
-        # employee is a required serializer field, so a non-staff caller
-        # must name themselves explicitly (the UI always sends the id).
+    def test_non_staff_omitting_employee_auto_assigns_caller(self):
+        # Omitting employee auto-assigns the caller's own profile (decided:
+        # keep auto-assign). The UI always sends the id; the API fills it.
         response = self.client.post(
             "/api/leaves/", self._leave_payload(None), format="json"
         )
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(LeaveRequest.objects.count(), 0)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(LeaveRequest.objects.get().employee, self.me)
 
     def test_staff_can_file_for_anyone(self):
         staff = User.objects.create_user(username="hr2", password="x", is_staff=True)

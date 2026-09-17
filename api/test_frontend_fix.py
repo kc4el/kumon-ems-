@@ -250,7 +250,7 @@ class FrontendFixTests(TestCase):
             'id="grievDetails"',
         ):
             self.assertIn(field_id, html)
-        self.assertIn("focusRosterEditor()", html)
+        self.assertIn("confirmAddStaff(", html)
         js = (settings.BASE_DIR / "static" / "js" / "dashboard.js").read_text()
         self.assertIn("handleRequestAdvance", js)
         self.assertIn("/api/advances/", js)
@@ -260,7 +260,7 @@ class FrontendFixTests(TestCase):
         self.assertIn("grievance", js)
         self.assertIn("/api/shift-rosters/", js)
         self.assertIn("persistShiftAssignment", js)
-        self.assertIn("focusRosterEditor", js)
+        self.assertIn("confirmAddStaff", js)
 
     # -- D34: pagers honor ?page=N -----------------------------------------
     def test_list_pagers_honor_page_param(self):
@@ -325,7 +325,8 @@ class FrontendFixTests(TestCase):
         # No toast-only pager stubs may remain.
         self.assertNotIn("Loading page", html)
         js = (settings.BASE_DIR / "static" / "js" / "dashboard.js").read_text()
-        self.assertIn("/api/expense-claims/?page=", js)
+        self.assertIn("/api/expense-claims/?status=", js)
+        self.assertIn("&page=", js)
         self.assertIn("/api/audit-logs/?page=", js)
         self.assertIn("/api/advances/?page=", js)
         self.assertIn("claimsPagerGoto", js)
