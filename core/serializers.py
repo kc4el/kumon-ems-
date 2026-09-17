@@ -2,6 +2,7 @@ import logging
 from decimal import Decimal
 
 from django.db.models import Q
+from django.utils import timezone
 from rest_framework import serializers
 
 from .exceptions import Conflict409
@@ -212,6 +213,15 @@ class LeaveRequestSerializer(serializers.ModelSerializer):
         start, end = val("start_date"), val("end_date")
         if start is not None and end is not None and end < start:
             raise serializers.ValidationError("end_date must not precede start_date.")
+        # FrappeHR 4.6 mirror: optionally refuse backdated applications.
+        if (
+            start is not None
+            and _site_val("leave_restrict_backdated").lower() == "true"
+            and start < timezone.localdate()
+        ):
+            raise serializers.ValidationError(
+                {"start_date": "Backdated leave applications are disabled."}
+            )
         return data
 
 
@@ -322,16 +332,19 @@ class ShiftRosterSerializer(serializers.ModelSerializer):
         if employee and day and start and end:
             if start >= end:
                 raise serializers.ValidationError("start_time must be before end_time.")
-            clash = ShiftRoster.objects.filter(
-                employee=employee,
-                work_date=day,
-                start_time__lt=end,
-                end_time__gt=start,
-            )
-            if self.instance:
-                clash = clash.exclude(pk=self.instance.pk)
-            if clash.exists():
-                raise Conflict409("Shift overlaps an existing assignment.")
+            # FrappeHR 3.1 mirror: staff may allow multiple assignments per
+            # date via the shift_allow_double_booking site setting.
+            if _site_val("shift_allow_double_booking").lower() != "true":
+                clash = ShiftRoster.objects.filter(
+                    employee=employee,
+                    work_date=day,
+                    start_time__lt=end,
+                    end_time__gt=start,
+                )
+                if self.instance:
+                    clash = clash.exclude(pk=self.instance.pk)
+                if clash.exists():
+                    raise Conflict409("Shift overlaps an existing assignment.")
         return data
 
 
@@ -527,7 +540,7 @@ def _site_val(key):
             SiteSetting.objects.filter(key=key).values_list("value", flat=True).first()
             or default
         )
-        if val != default:
+        if val != default and key in SiteSetting.NUMERIC_RANGES:
             float(val)  # corrupt stored values fall through to default + log
         return val
     except Exception:
