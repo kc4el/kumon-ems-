@@ -48,17 +48,25 @@ class Command(BaseCommand):
         days = options.get("days")
         if days is None:
             days = _retention_days_default()
-        if days < 0:
-            raise CommandError("--days must be >= 0.")
+        if days < 1 or days > 365:
+            raise CommandError("--days must be between 1 and 365.")
         cutoff = timezone.localdate() - timedelta(days=days)
         query = Employee.objects.filter(is_active=False, resigned_at__lte=cutoff)
-        for emp in query:
+        # Snapshot ids first: deleting while iterating the live queryset
+        # can skip rows.
+        for emp_id in list(query.values_list("id", flat=True)):
+            emp = Employee.objects.get(pk=emp_id)
             if options["dry_run"]:
                 self.stdout.write(f"would purge {emp.id} {emp.email}")
                 continue
             try:
+                supabase.auth.admin.delete_user(str(emp.id))
+            except Exception:
+                logger.exception("purge: skipping %s after Supabase failure", emp.id)
+                self.stderr.write(f"skipped {emp.email}: upstream delete failed")
+                continue
+            try:
                 with transaction.atomic():
-                    supabase.auth.admin.delete_user(str(emp.id))
                     EmployeeAuditLog.objects.create(
                         employee=None,
                         # Snapshot BOTH id and email: the row is about to be
@@ -71,7 +79,7 @@ class Command(BaseCommand):
                     )
                     emp.delete()
             except Exception:
-                logger.exception("purge: skipping %s after Supabase failure", emp.id)
-                self.stderr.write(f"skipped {emp.email}: upstream delete failed")
+                logger.exception("purge: local delete failed for %s", emp.id)
+                self.stderr.write(f"skipped {emp.email}: local delete failed")
             else:
                 self.stdout.write(f"purged {emp.email}")

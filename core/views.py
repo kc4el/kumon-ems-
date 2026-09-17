@@ -1510,6 +1510,12 @@ class SiteSettingsView(APIView):
             )
             old = row.value
             row.value = str(value)
+            try:
+                row.full_clean()
+            except DjangoValidationError as e:
+                raise DRFValidationError(
+                    e.message_dict if hasattr(e, "message_dict") else e.messages
+                )
             row.save(update_fields=["value", "updated_at"])
             actor = Employee.objects.filter(user=request.user).first()
             _Audit.objects.create(

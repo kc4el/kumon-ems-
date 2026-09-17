@@ -93,3 +93,55 @@ class PurgeRetentionFallbackTests(TestCase):
         # 44 days ago: within a 45-day retention window -> not a candidate.
         self.assertNotIn("would purge", out.getvalue())
         self.assertNotIn(str(emp.email), out.getvalue())
+
+
+class SiteSettingConstraintTests(TestCase):
+    """T9: model-level numeric guard + logged reader fallback."""
+
+    def test_non_numeric_value_rejected_by_clean(self):
+        from django.core.exceptions import ValidationError
+
+        from core.models import SiteSetting
+
+        with self.assertRaises(ValidationError):
+            SiteSetting(key="purge_retention_days", value="banana").full_clean()
+
+    def test_out_of_range_value_rejected_by_clean(self):
+        from django.core.exceptions import ValidationError
+
+        from core.models import SiteSetting
+
+        with self.assertRaises(ValidationError):
+            SiteSetting(key="purge_retention_days", value="9999").full_clean()
+
+    def test_corrupt_row_falls_back_with_log(self):
+        from core.models import SiteSetting
+        from core.serializers import _site_decimal
+        from decimal import Decimal
+
+        SiteSetting.objects.update_or_create(
+            key="overtime_max_hours", defaults={"value": "banana"}
+        )
+        with self.assertLogs("core.serializers", level="WARNING"):
+            self.assertEqual(
+                _site_decimal("overtime_max_hours", Decimal("5.00")),
+                Decimal("5.00"),
+            )
+
+
+class PurgeRetentionFloorTests(TestCase):
+    """T10: --days floor, id snapshot, honest errors."""
+
+    def test_days_zero_rejected(self):
+        from django.core.management import call_command
+        from django.core.management.base import CommandError
+
+        with self.assertRaises(CommandError):
+            call_command("purge_resigned", days=0, dry_run=True)
+
+    def test_days_over_max_rejected(self):
+        from django.core.management import call_command
+        from django.core.management.base import CommandError
+
+        with self.assertRaises(CommandError):
+            call_command("purge_resigned", days=400, dry_run=True)
