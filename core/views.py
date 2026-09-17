@@ -2,6 +2,7 @@ import logging
 import uuid
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
@@ -40,9 +41,12 @@ from .models import (
     PerformanceReview,
     ShiftRoster,
     ShiftSwap,
+    SiteSetting,
+    UserSetting,
 )
 from .permissions import IsOwnerOrStaff, OwnerQuerysetMixin
 from .serializers import (
+    MUTABLE_PROFILE_FIELDS,
     AttendanceCorrectionSerializer,
     AttendanceSerializer,
     ClaimStatusSerializer,
@@ -62,6 +66,8 @@ from .serializers import (
     PerformanceReviewSerializer,
     ShiftRosterSerializer,
     ShiftSwapSerializer,
+    SiteSettingSerializer,
+    UserSettingSerializer,
 )
 from .supabase_client import supabase
 
@@ -138,9 +144,8 @@ def _is_hr_user(user):
     if employee is None:
         return False
     return (
-        (employee.department and employee.department.name.lower() == "hr")
-        or "hr" in (employee.role or "").lower()
-    )
+        employee.department and employee.department.name.lower() == "hr"
+    ) or "hr" in (employee.role or "").lower()
 
 
 def _authenticate_login(request, identifier, password):
@@ -194,7 +199,9 @@ class DashboardSummaryView(APIView):
             pending_leaves = LeaveRequest.objects.filter(
                 status__iexact="pending"
             ).count()
-            attendance_today = Attendance.objects.filter(date=timezone.localdate()).count()
+            attendance_today = Attendance.objects.filter(
+                date=timezone.localdate()
+            ).count()
             claims_count = ExpenseClaim.objects.count()
             open_attendance = Attendance.objects.filter(clock_out__isnull=True).count()
 
@@ -229,7 +236,9 @@ class DepartmentDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class GrievanceListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
-    queryset = Grievance.objects.select_related("employee", "employee__department").all()
+    queryset = Grievance.objects.select_related(
+        "employee", "employee__department"
+    ).all()
     serializer_class = GrievanceSerializer
 
 
@@ -637,7 +646,6 @@ class AttendanceClockOutView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-
             if timezone.is_naive(clock_out_time):
                 clock_out_time = timezone.make_aware(clock_out_time)
         else:
@@ -687,23 +695,30 @@ class AttendanceSelfView(APIView):
     def _employee(self, request):
         employee = _request_owner(request)
         if employee is None or not employee.is_active:
-            raise PermissionDenied("No active employee profile is linked to this account.")
+            raise PermissionDenied(
+                "No active employee profile is linked to this account."
+            )
         return employee
 
     def get(self, request):
         employee = self._employee(request)
-        rows = Attendance.objects.filter(employee=employee).order_by("-date", "-clock_in")[:31]
+        rows = Attendance.objects.filter(employee=employee).order_by(
+            "-date", "-clock_in"
+        )[:31]
         return Response(AttendanceSerializer(rows, many=True).data)
 
     def post(self, request):
         employee = self._employee(request)
         action = str(request.data.get("action", "clock_in")).lower()
         if action == "clock_out":
-            open_row = Attendance.objects.filter(
-                employee=employee,
-                date=timezone.localdate(),
-                clock_out__isnull=True,
-            ).order_by("-clock_in").first()
+            open_row = (
+                Attendance.objects.filter(
+                    employee=employee,
+                    clock_out__isnull=True,
+                )
+                .order_by("-clock_in")
+                .first()
+            )
             if open_row is None:
                 return Response(
                     {"error": "No open clock-in found for today."},
@@ -733,7 +748,11 @@ class AttendanceSelfView(APIView):
 class LeaveRequestListCreateView(
     ForceOwnerCreateMixin, OwnerQuerysetMixin, generics.ListCreateAPIView
 ):
-    queryset = LeaveRequest.objects.select_related("employee", "employee__department").all().order_by("-created_at")
+    queryset = (
+        LeaveRequest.objects.select_related("employee", "employee__department")
+        .all()
+        .order_by("-created_at")
+    )
     serializer_class = LeaveRequestSerializer
 
 
@@ -1131,7 +1150,9 @@ class SessionLoginView(APIView):
     throttle_classes = []
 
     def post(self, request):
-        user = _authenticate_login(request, request.data.get("username"), request.data.get("password"))
+        user = _authenticate_login(
+            request, request.data.get("username"), request.data.get("password")
+        )
         if user is None:
             return Response(
                 {"error": "Invalid credentials."},
@@ -1162,12 +1183,21 @@ class HrSessionLoginView(APIView):
     throttle_classes = []
 
     def post(self, request):
-        user = _authenticate_login(request, request.data.get("username"), request.data.get("password"))
+        user = _authenticate_login(
+            request, request.data.get("username"), request.data.get("password")
+        )
         if user is None or not _is_hr_user(user) or not user.is_active:
             return Response(
                 {"error": "HR credentials are invalid."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
+        if not user.is_staff:
+            hr_employee = Employee.objects.filter(user=user, is_active=True).first()
+            if hr_employee is None:
+                return Response(
+                    {"error": "HR credentials are invalid."},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
         login(request, user)
         return Response(
             {"message": "HR signed in.", "next_url": "/hr/"},
@@ -1248,6 +1278,17 @@ class NotificationListView(OwnerQuerysetMixin, generics.ListAPIView):
     queryset = Notification.objects.all().order_by("-created_at")
     serializer_class = NotificationSerializer
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        try:
+            setting = UserSetting.objects.filter(user=self.request.user).first()
+            muted = list(getattr(setting, "muted_kinds", None) or [])
+            if muted:
+                qs = qs.exclude(kind__in=muted)
+        except Exception:
+            pass
+        return qs
+
 
 class NotificationMarkReadView(APIView):
     def patch(self, request, pk):
@@ -1320,3 +1361,163 @@ class PurgeRunView(APIView):
                 "log": log,
             }
         )
+
+
+def _get_user_setting(user):
+    s, _ = UserSetting.objects.get_or_create(user=user)
+    return s
+
+
+class MySettingsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        s = _get_user_setting(request.user)
+        data = UserSettingSerializer(s).data
+        emp = Employee.objects.filter(user=request.user).first()
+        data["profile"] = EmployeeSerializer(emp).data if emp else None
+        return Response(data)
+
+    def patch(self, request):
+        s = _get_user_setting(request.user)
+        payload = dict(request.data)
+        profile_data = None
+        if "profile" in payload and isinstance(payload["profile"], dict):
+            profile_data = {
+                k: v
+                for k, v in payload["profile"].items()
+                if k in MUTABLE_PROFILE_FIELDS
+            }
+        ser = UserSettingSerializer(s, data=request.data, partial=True)
+        ser.is_valid(raise_exception=True)
+        ser.save()
+        out = UserSettingSerializer(s).data
+        if profile_data is not None:
+            emp = Employee.objects.filter(user=request.user).first()
+            if emp is None:
+                return Response(
+                    {"error": "No employee profile is linked to this account."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            for k, v in profile_data.items():
+                setattr(emp, k, v)
+            try:
+                emp.full_clean(exclude=["date_hired"])
+                emp.save()
+            except DjangoValidationError as e:
+                if "email" in getattr(e, "message_dict", {}):
+                    raise Conflict409("That email is already in use.")
+                raise DRFValidationError(e.message_dict)
+            except IntegrityError:
+                raise Conflict409("That email is already in use.")
+            out["profile"] = EmployeeSerializer(emp).data
+        else:
+            emp = Employee.objects.filter(user=request.user).first()
+            out["profile"] = EmployeeSerializer(emp).data if emp else None
+        return Response(out)
+
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        from django.contrib.auth.password_validation import (
+            ValidationError as PwValidationError,
+        )
+        from django.contrib.auth.password_validation import validate_password
+
+        user = request.user
+        old = request.data.get("old_password", "")
+        new = request.data.get("new_password", "")
+        if not user.check_password(old):
+            return Response(
+                {"error": "Current password is incorrect."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            validate_password(new, user)
+        except PwValidationError as e:
+            return Response(
+                {"error": " ".join(e.messages)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user.set_password(new)
+        user.save(update_fields=["password"])
+        # Scope to this user's sessions only: _auth_user_id lives inside
+        # session data, so decode each row instead of bulk-deleting.
+        for s in Session.objects.filter(expire_date__gt=timezone.now()):
+            if s.get_decoded().get("_auth_user_id") != str(user.pk):
+                continue
+            if s.session_key == request.session.session_key:
+                continue
+            s.delete()
+        Token.objects.filter(user=user).delete()
+        emp = Employee.objects.filter(user=user).first()
+        if emp is not None:
+            try:
+                supabase.auth.admin.update_user_by_id(str(emp.id), {"password": new})
+            except Exception:
+                logger.exception("supabase password sync failed for %s", emp.id)
+        return Response({"message": "Password changed."})
+
+
+SITE_SETTING_DEFAULTS = {
+    "overtime_min_hours": "0.01",
+    "overtime_max_hours": "5.00",
+    "purge_retention_days": "30",
+    "onboarding_max_mb": "10",
+}
+
+
+def get_site_setting(key):
+    default = SITE_SETTING_DEFAULTS.get(key, "")
+    try:
+        return (
+            SiteSetting.objects.filter(key=key).values_list("value", flat=True).first()
+            or default
+        )
+    except Exception:
+        return default
+
+
+class SiteSettingsView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request):
+        stored = {s.key: s.value for s in SiteSetting.objects.all()}
+        for k, v in SITE_SETTING_DEFAULTS.items():
+            stored.setdefault(k, v)
+        stored["throttle_anon"] = settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"][
+            "anon"
+        ]
+        stored["throttle_user"] = settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"][
+            "user"
+        ]
+        stored["cors_origins"] = settings.CORS_ALLOWED_ORIGINS
+        return Response(stored)
+
+    def patch(self, request):
+        from .models import EmployeeAuditLog as _Audit
+
+        out = {}
+        for key, value in request.data.items():
+            if key in ("throttle_anon", "throttle_user", "cors_origins"):
+                continue
+            ser = SiteSettingSerializer(data={"key": key, "value": str(value)})
+            ser.is_valid(raise_exception=True)
+            row, _ = SiteSetting.objects.get_or_create(
+                key=key, defaults={"value": SITE_SETTING_DEFAULTS.get(key, "")}
+            )
+            old = row.value
+            row.value = str(value)
+            row.save(update_fields=["value", "updated_at"])
+            actor = Employee.objects.filter(user=request.user).first()
+            _Audit.objects.create(
+                employee=actor,
+                action=f"Site setting {key} changed from {old} to {row.value}.",
+            )
+            out[key] = row.value
+        stored = {s.key: s.value for s in SiteSetting.objects.all()}
+        for k, v in SITE_SETTING_DEFAULTS.items():
+            stored.setdefault(k, v)
+        return Response(stored)
