@@ -1,5 +1,6 @@
 import logging
 
+from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
@@ -18,6 +19,8 @@ from .models import (
     PerformanceReview,
     ShiftRoster,
     ShiftSwap,
+    SiteSetting,
+    UserSetting,
 )
 
 logger = logging.getLogger(__name__)
@@ -294,3 +297,9 @@ def log_swap_action(sender, instance, created, **kwargs):
                 ),
                 kind="shift",
             )
+
+
+@receiver(post_save, sender=get_user_model())
+def create_user_setting(sender, instance, created, **kwargs):
+    if created:
+        UserSetting.objects.get_or_create(user=instance)

@@ -1,6 +1,5 @@
-from decimal import Decimal
-
 import logging
+from decimal import Decimal
 
 from django.db.models import Q
 from rest_framework import serializers
@@ -523,7 +522,9 @@ def _site_val(key):
         return val
     except Exception:
         logger = logging.getLogger(__name__)
-        logger.warning("SiteSetting %s unreadable/invalid, using default %s", key, default)
+        logger.warning(
+            "SiteSetting %s unreadable/invalid, using default %s", key, default
+        )
         return default
 
 
@@ -532,7 +533,9 @@ def _site_decimal(key, fallback):
         return Decimal(str(_site_val(key)))
     except Exception:
         logger = logging.getLogger(__name__)
-        logger.warning("SiteSetting %s invalid decimal, using fallback %s", key, fallback)
+        logger.warning(
+            "SiteSetting %s invalid decimal, using fallback %s", key, fallback
+        )
         return fallback
 
 

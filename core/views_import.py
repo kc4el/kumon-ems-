@@ -195,9 +195,7 @@ def _commit_rows(validated):
                     failed.append(
                         {
                             "row": lineno,
-                            "error": (
-                                "An employee with this email already exists."
-                            ),
+                            "error": ("An employee with this email already exists."),
                         }
                     )
     return created, failed
@@ -217,14 +215,10 @@ class EmployeeImportView(APIView):
         try:
             data = _parse_workbook(upload)
         except ValueError as exc:
-            return Response(
-                {"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         validated = _validate_rows(data)
         dry_run = (
-            str(request.query_params.get("dry_run", ""))
-            .strip()
-            .lower()
+            str(request.query_params.get("dry_run", "")).strip().lower()
             in DRY_RUN_TRUE_WORDS
         )
         if dry_run:

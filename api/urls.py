@@ -2,13 +2,14 @@ from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token
 
 from core.views import (
-    AttendanceClockOutView,
     AttendanceCheckInView,
+    AttendanceClockOutView,
     AttendanceCorrectionDetailView,
     AttendanceCorrectionListCreateView,
     AttendanceDetailView,
     AttendanceListCreateView,
     AttendanceSelfView,
+    ChangePasswordView,
     ClaimStatusListCreateView,
     ComplaintDetailView,
     ComplaintListCreateView,
@@ -22,12 +23,14 @@ from core.views import (
     ExpenseClaimListCreateView,
     GrievanceDetailView,
     GrievanceListCreateView,
+    HrSessionLoginView,
     LeaveAllocationDetailView,
     LeaveAllocationListCreateView,
     LeaveBalanceView,
     LeaveRequestDetailView,
     LeaveRequestListCreateView,
     MessageListCreateView,
+    MySettingsView,
     NotificationListView,
     NotificationMarkReadView,
     OvertimeSlipDetailView,
@@ -40,13 +43,13 @@ from core.views import (
     PerformanceReviewListCreateView,
     PurgeRunView,
     SessionLoginView,
-    HrSessionLoginView,
     SessionLogoutView,
     ShiftConflictView,
     ShiftRosterDetailView,
     ShiftRosterListCreateView,
     ShiftSwapDetailView,
     ShiftSwapListCreateView,
+    SiteSettingsView,
 )
 from core.views_docs import (
     ClaimDecisionView,
@@ -54,11 +57,15 @@ from core.views_docs import (
     SalaryAdvanceDetailView,
     SalaryAdvanceListCreateView,
 )
+from core.views_import import import_urls
 
 urlpatterns = [
     path(
         "dashboard-summary/", DashboardSummaryView.as_view(), name="dashboard-summary"
     ),
+    path("dashboard/", DashboardSummaryView.as_view(), name="dashboard-alias"),
+    path("activities/", DashboardSummaryView.as_view(), name="activities-alias"),
+
     path(
         "departments/",
         DepartmentListCreateView.as_view(),
@@ -70,11 +77,19 @@ urlpatterns = [
         name="department-detail",
     ),
     path("employees/", EmployeeListCreateView.as_view(), name="employee-list-create"),
-    path("complaints/", ComplaintListCreateView.as_view(), name="complaint-list-create"),
-    path("complaints/<int:pk>/", ComplaintDetailView.as_view(), name="complaint-detail"),
+    path(
+        "complaints/", ComplaintListCreateView.as_view(), name="complaint-list-create"
+    ),
+    path(
+        "complaints/<int:pk>/", ComplaintDetailView.as_view(), name="complaint-detail"
+    ),
     path("employees/<uuid:pk>/", EmployeeDetailView.as_view(), name="employee-detail"),
-    path("grievances/", GrievanceListCreateView.as_view(), name="grievance-list-create"),
-    path("grievances/<uuid:pk>/", GrievanceDetailView.as_view(), name="grievance-detail"),
+    path(
+        "grievances/", GrievanceListCreateView.as_view(), name="grievance-list-create"
+    ),
+    path(
+        "grievances/<uuid:pk>/", GrievanceDetailView.as_view(), name="grievance-detail"
+    ),
     path(
         "attendance/", AttendanceListCreateView.as_view(), name="attendance-list-create"
     ),
@@ -105,6 +120,7 @@ urlpatterns = [
         name="attendance-check-in",
     ),
     path("leaves/", LeaveRequestListCreateView.as_view(), name="leave-list-create"),
+    path("leave-requests/", LeaveRequestListCreateView.as_view(), name="leave-requests-alias"),
     path("leaves/<uuid:pk>/", LeaveRequestDetailView.as_view(), name="leave-detail"),
     path(
         "leave-allocations/",
@@ -181,10 +197,18 @@ urlpatterns = [
         name="performance-detail",
     ),
     path("audit-logs/", EmployeeAuditLogListView.as_view(), name="audit-log-list"),
+    path("logs/", EmployeeAuditLogListView.as_view(), name="logs-alias"),
     path("auth-token/", obtain_auth_token, name="api-token"),
     path("session-login/", SessionLoginView.as_view(), name="session-login"),
     path("hr-session-login/", HrSessionLoginView.as_view(), name="hr-session-login"),
     path("session-logout/", SessionLogoutView.as_view(), name="session-logout"),
+    path("settings/me/", MySettingsView.as_view(), name="settings-me"),
+    path(
+        "settings/password/",
+        ChangePasswordView.as_view(),
+        name="settings-password",
+    ),
+    path("settings/site/", SiteSettingsView.as_view(), name="settings-site"),
     path("messages/", MessageListCreateView.as_view(), name="message-list-create"),
     path(
         "claim-statuses/",
@@ -195,6 +219,11 @@ urlpatterns = [
         "expense-claims/",
         ExpenseClaimListCreateView.as_view(),
         name="expense-claim-list-create",
+    ),
+    path(
+        "claims/",
+        ExpenseClaimListCreateView.as_view(),
+        name="claims-alias",
     ),
     path(
         "expense-claims/<uuid:pk>/",
@@ -233,3 +262,5 @@ urlpatterns = [
         name="claim-decision",
     ),
 ]
+
+urlpatterns += import_urls

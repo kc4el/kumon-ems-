@@ -387,9 +387,7 @@ class SiteSetting(models.Model):
                 raise ValidationError(f"{self.key} must be numeric.")
             lo, hi = self.NUMERIC_RANGES[self.key]
             if not (lo <= num <= hi):
-                raise ValidationError(
-                    f"{self.key} must be between {lo} and {hi}."
-                )
+                raise ValidationError(f"{self.key} must be between {lo} and {hi}.")
 
     def __str__(self):
         return f"{self.key}={self.value}"

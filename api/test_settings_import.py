@@ -49,9 +49,7 @@ def _supa_users(*ids):
 class EmployeeImportTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        admin = User.objects.create_user(
-            username="boss", password="x", is_staff=True
-        )
+        admin = User.objects.create_user(username="boss", password="x", is_staff=True)
         self.client.force_authenticate(admin)
         self.dept = Department.objects.create(name="Engineering", code="ENG")
 
@@ -62,9 +60,7 @@ class EmployeeImportTests(TestCase):
                 ["Grace", "Hopper", "grace@example.com", "Lead", "Engineering"],
             ]
         )
-        r = self.client.post(
-            URL + "?dry_run=1", {"file": upload}, format="multipart"
-        )
+        r = self.client.post(URL + "?dry_run=1", {"file": upload}, format="multipart")
         self.assertEqual(r.status_code, 200)
         body = r.json()
         self.assertTrue(body["dry_run"])
@@ -89,9 +85,7 @@ class EmployeeImportTests(TestCase):
                 ["Good", "Guy", "good@example.com", "Dev", "Engineering"],  # row 8: ok
             ]
         )
-        r = self.client.post(
-            URL + "?dry_run=1", {"file": upload}, format="multipart"
-        )
+        r = self.client.post(URL + "?dry_run=1", {"file": upload}, format="multipart")
         self.assertEqual(r.status_code, 200)
         by_row = {item["row"]: item for item in r.json()["rows"]}
         self.assertFalse(by_row[2]["ok"])
@@ -104,13 +98,9 @@ class EmployeeImportTests(TestCase):
             any("within this sheet" in e for e in by_row[4]["errors"]), by_row[4]
         )
         self.assertFalse(by_row[5]["ok"])
-        self.assertTrue(
-            any("first_name" in e for e in by_row[5]["errors"]), by_row[5]
-        )
+        self.assertTrue(any("first_name" in e for e in by_row[5]["errors"]), by_row[5])
         self.assertFalse(by_row[6]["ok"])
-        self.assertTrue(
-            any("valid email" in e for e in by_row[6]["errors"]), by_row[6]
-        )
+        self.assertTrue(any("valid email" in e for e in by_row[6]["errors"]), by_row[6])
         self.assertFalse(by_row[7]["ok"])
         self.assertTrue(
             any("Unknown department" in e for e in by_row[7]["errors"]), by_row[7]
