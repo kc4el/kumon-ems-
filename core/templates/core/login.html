@@ -43,7 +43,7 @@
               <div class="penpot-input-wrap">
                 <input type="email" id="loginEmployeeId" class="penpot-input" placeholder="employee@company.com" required />
               </div>
-              <small class="penpot-field-hint">(or corporate email for newly onboarded staff)</small>
+              <small class="penpot-field-hint">(new staff: use the email HR registered for you)</small>
             </div>
 
             <div class="penpot-form-group">
@@ -57,14 +57,14 @@
             <div class="penpot-options-row">
               <label class="penpot-checkbox-label">
                 <input type="checkbox" id="rememberMeCheckbox" checked />
-                <span>Remember my ID</span>
+                                <span>Remember my email</span>
               </label>
-              <a href="#" class="penpot-link-coral" onclick="showToast('Password reset instructions dispatched to your corporate email.'); return false;">Forgot password?</a>
+              <a href="#" class="penpot-link-coral" onclick="showToast('Password resets are handled by your HR admin — please contact them.'); return false;">Forgot password?</a>
             </div>
 
             <button type="submit" class="penpot-btn-primary-navy">Sign In to Portal</button>
           </form>
-          <p class="penpot-auth-sub" style="margin-top: 10px; font-size: 12px;">Prefilled ID and password are demo credentials (demo) — replace with a real account.</p>
+          <p class="penpot-auth-sub" style="margin-top: 10px; font-size: 12px;">Use a real account. Demo logins are issued by your HR admin.</p>
 
           <div class="penpot-switcher-row">
             <span>Don't have an account?</span>
@@ -100,28 +100,28 @@
             <div class="penpot-form-group">
               <label class="penpot-form-label" for="signupEmployeeId">Employee ID Number</label>
               <div class="penpot-input-wrap">
-                <input type="text" id="signupEmployeeId" class="penpot-input" placeholder="e.g. EMP-10482" value="EMP-10482" required />
+                <input type="text" id="signupEmployeeId" class="penpot-input" placeholder="e.g. EMP-10482" required />
               </div>
             </div>
 
             <div class="penpot-form-group">
               <label class="penpot-form-label" for="signupEmail">Corporate Email Address</label>
               <div class="penpot-input-wrap">
-                <input type="email" id="signupEmail" class="penpot-input" placeholder="employee@kumon-ems.com" value="employee@kumon-ems.com" required />
+                <input type="email" id="signupEmail" class="penpot-input" placeholder="employee@kumon-ems.com" required />
               </div>
             </div>
 
             <div class="penpot-form-group">
               <label class="penpot-form-label" for="signupPasswordInput">Create Password</label>
               <div class="penpot-input-wrap">
-                <input type="password" id="signupPasswordInput" class="penpot-input has-action" placeholder="At least 8 characters (1 number, 1 symbol)" value="SecurePass2026!" required />
+                <input type="password" id="signupPasswordInput" class="penpot-input has-action" placeholder="At least 8 characters (1 number, 1 symbol)" required />
                 <button type="button" class="penpot-input-action" onclick="togglePasswordVisibility('signupPasswordInput', this)">Show</button>
               </div>
             </div>
 
             <div class="penpot-options-row">
               <label class="penpot-checkbox-label">
-                <input type="checkbox" id="policyAgreement" checked required />
+                <input type="checkbox" id="policyAgreement" required />
                 <span>I agree to Corporate IT Security &amp; Usage Policy</span>
               </label>
             </div>

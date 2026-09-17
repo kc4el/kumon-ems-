@@ -220,7 +220,7 @@ function setApiMode(mode) {
 function initBrandLogo() {
   const isFileProtocol = window.location.protocol === 'file:';
   const currentPath = window.location.pathname.toLowerCase();
-  
+
   const logoImgs = document.querySelectorAll('.brand-logo-img');
   logoImgs.forEach(img => {
     let bestSrc = '/static/images/kumon-logo.png';
@@ -285,12 +285,12 @@ function switchView(viewName) {
   document.querySelectorAll('.nav-link').forEach(link => {
     const dataView = link.getAttribute('data-view');
     if (dataView === viewName ||
-       (viewName.startsWith('employee') && dataView === 'employee-directory') ||
+      (viewName.startsWith('employee') && dataView === 'employee-directory') ||
       (viewName.startsWith('attendance') && dataView === 'attendance-daily') ||
-       (viewName === 'claims' && dataView === 'claims') ||
-       (viewName === 'messages' && dataView === 'messages') ||
-       ((viewName === 'logs' || viewName === 'profile' || viewName === 'my-details') && dataView === 'logs') ||
-       (viewName === 'settings' && dataView === 'settings')) {
+      (viewName === 'claims' && dataView === 'claims') ||
+      (viewName === 'messages' && dataView === 'messages') ||
+      ((viewName === 'logs' || viewName === 'profile' || viewName === 'my-details') && dataView === 'logs') ||
+      (viewName === 'settings' && dataView === 'settings')) {
       link.classList.add('active');
     } else {
       link.classList.remove('active');
@@ -521,7 +521,7 @@ const KUMON_TOUR_STEPS = [
 ];
 let kumonTourIndex = -1;
 function startTour() {
-  try { localStorage.removeItem(KUMON_TOUR_KEY); } catch (e) {}
+  try { localStorage.removeItem(KUMON_TOUR_KEY); } catch (e) { }
   kumonTourIndex = -1; nextTourStep();
 }
 function nextTourStep() {
@@ -535,7 +535,7 @@ function endTour() {
   kumonTourIndex = -1;
   const b = document.getElementById("tourBubble");
   if (b) b.remove();
-  try { localStorage.setItem(KUMON_TOUR_KEY, "1"); } catch (e) {}
+  try { localStorage.setItem(KUMON_TOUR_KEY, "1"); } catch (e) { }
 }
 function showTourBubble(step, n, total) {
   const old = document.getElementById("tourBubble");
@@ -614,7 +614,7 @@ function initTour() {
 function toggleAccordion(summaryElement) {
   const card = summaryElement.closest('.roster-accordion-card');
   const tag = summaryElement.querySelector('.acc-toggle-tag');
-  
+
   if (card.classList.contains('open')) {
     card.classList.remove('open');
     card.querySelector('.acc-expanded-body')?.setAttribute('hidden', '');
@@ -910,7 +910,7 @@ async function handleOnboarding(e) {
               ? Object.entries(data.error).flatMap(([field, messages]) =>
                 (Array.isArray(messages) ? messages : [messages]).map((message) => `${field}: ${message}`)
               ).join(' ')
-            : 'Unable to create employee. Check the form and try again.';
+              : 'Unable to create employee. Check the form and try again.';
         showToast(err);
         return null;
       }
@@ -2316,6 +2316,11 @@ async function loadSettingsView() {
   } catch (e) {
     setApiMode('demo');
     showToast('Settings unreachable — showing defaults', 'error');
+    const errNote = document.getElementById('settingsLoadError');
+    if (errNote) errNote.style.display = 'block';
+    document.querySelectorAll('#view-settings .btn-navy-cta').forEach((b) => {
+      b.disabled = true;
+    });
   }
 }
 
@@ -2669,7 +2674,7 @@ function navigateToLogin(mode = 'login') {
 function signOut() {
   showToast('Signing out of corporate session...');
   apiFetch('/api/session-logout/', { method: 'POST' })
-    .catch(() => {})
+    .catch(() => { })
     .finally(() => navigateToLogin(window.location.pathname.startsWith('/hr') ? 'hr' : 'login'));
 }
 
@@ -2757,15 +2762,15 @@ function exportAuditLogs() {
     [
       ['Timestamp', 'Administrator', 'Action Class', 'Action', 'Target Record', 'Details', 'Status', 'Audit ID'],
       ['2026-06-09 14:32:00', 'Marcus Williams (Admin)', 'Personnel', 'Added Employee: Sofia Taylor', 'EMP-10482', 'Created employee profile, issued portal credentials', 'Completed', 'LOG-9482'],
-    ['2026-06-09 11:15:00', 'Elena Rostova (Admin)', 'Leaves', 'Approved Leave Request', 'EMP-10291', 'Approved 3 days Medical Leave', 'Approved', 'LOG-9481'],
-    ['2026-06-08 16:45:00', 'Marcus Williams (Admin)', 'Personnel', 'Promoted Staff: Marcus Chen', 'EMP-10334', 'Promoted to Lead Instructor', 'Completed', 'LOG-9480'],
-    ['2026-06-08 10:20:00', 'David Kim (Admin)', 'Claims', 'Approved Expense Claim', 'CLM-2026-088', 'Educational materials reimbursement ($420.50)', 'Disbursed', 'LOG-9479'],
-    ['2026-06-07 15:10:00', 'Elena Rostova (Admin)', 'Shifts', 'Modified Shift Roster', 'ROSTER-2026-W24', 'Reassigned 12 instructors to Morning Shift', 'Applied', 'LOG-9478'],
-    ['2026-06-07 09:30:00', 'Marcus Williams (Admin)', 'Claims', 'Disbursed Advance Pay', 'ADV-2026-014', 'Approved emergency payroll advance ($800.00)', 'Disbursed', 'LOG-9477'],
-    ['2026-06-06 17:00:00', 'Elena Rostova (Admin)', 'Grievance', 'Resolved Grievance Case', 'GRV-4091', 'Mediation completed and agreed', 'Resolved', 'LOG-9476'],
-    ['2026-06-06 13:40:00', 'Marcus Williams (Admin)', 'Personnel', 'Transferred Employee Center', 'EMP-10255', 'Transferred to West Campus Center', 'Completed', 'LOG-9475'],
-    ['2026-06-05 18:00:00', 'System Bot', 'Leaves', 'Accrued Monthly Leave Balances', 'ALL INSTRUCTORS', 'Automated 1.5 days annual leave accrual', 'Executed', 'LOG-9474'],
-    ['2026-06-05 11:25:00', 'David Kim (Admin)', 'Claims', 'Rejected Non-Compliant Claim', 'CLM-2026-079', 'Rejected fuel claim missing tax invoice', 'Rejected', 'LOG-9473']
+      ['2026-06-09 11:15:00', 'Elena Rostova (Admin)', 'Leaves', 'Approved Leave Request', 'EMP-10291', 'Approved 3 days Medical Leave', 'Approved', 'LOG-9481'],
+      ['2026-06-08 16:45:00', 'Marcus Williams (Admin)', 'Personnel', 'Promoted Staff: Marcus Chen', 'EMP-10334', 'Promoted to Lead Instructor', 'Completed', 'LOG-9480'],
+      ['2026-06-08 10:20:00', 'David Kim (Admin)', 'Claims', 'Approved Expense Claim', 'CLM-2026-088', 'Educational materials reimbursement ($420.50)', 'Disbursed', 'LOG-9479'],
+      ['2026-06-07 15:10:00', 'Elena Rostova (Admin)', 'Shifts', 'Modified Shift Roster', 'ROSTER-2026-W24', 'Reassigned 12 instructors to Morning Shift', 'Applied', 'LOG-9478'],
+      ['2026-06-07 09:30:00', 'Marcus Williams (Admin)', 'Claims', 'Disbursed Advance Pay', 'ADV-2026-014', 'Approved emergency payroll advance ($800.00)', 'Disbursed', 'LOG-9477'],
+      ['2026-06-06 17:00:00', 'Elena Rostova (Admin)', 'Grievance', 'Resolved Grievance Case', 'GRV-4091', 'Mediation completed and agreed', 'Resolved', 'LOG-9476'],
+      ['2026-06-06 13:40:00', 'Marcus Williams (Admin)', 'Personnel', 'Transferred Employee Center', 'EMP-10255', 'Transferred to West Campus Center', 'Completed', 'LOG-9475'],
+      ['2026-06-05 18:00:00', 'System Bot', 'Leaves', 'Accrued Monthly Leave Balances', 'ALL INSTRUCTORS', 'Automated 1.5 days annual leave accrual', 'Executed', 'LOG-9474'],
+      ['2026-06-05 11:25:00', 'David Kim (Admin)', 'Claims', 'Rejected Non-Compliant Claim', 'CLM-2026-079', 'Rejected fuel claim missing tax invoice', 'Rejected', 'LOG-9473']
     ]
   );
 }
@@ -2798,6 +2803,27 @@ if (typeof window.showToast !== 'function') {
   };
 }
 
+// First-run empty state: point fresh installs at employee onboarding.
+function renderFirstEmployeeCta(total) {
+  const slot = document.getElementById('view-dashboard');
+  if (!slot) return;
+  let cta = document.getElementById('firstEmployeeCta');
+  if (Number(total) !== 0) {
+    if (cta) cta.remove();
+    return;
+  }
+  if (cta) return;
+  cta = document.createElement('div');
+  cta.id = 'firstEmployeeCta';
+  cta.className = 'white-card';
+  cta.innerHTML =
+    '<h2 class="card-title">No employees yet</h2>' +
+    '<p class="card-sub">Add your first employee to unlock attendance, leave, and payroll.</p>' +
+    '<div class="modal-foot" style="justify-content:flex-start;">' +
+    '<button class="btn btn-navy-cta" onclick="switchView(\'employee-directory\')">Add your first employee</button></div>';
+  slot.prepend(cta);
+}
+
 // Public aggregate counts for the landing page.
 function loadDashboardSummary() {
   return apiFetch('/api/dashboard-summary/', { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, cache: 'no-store' })
@@ -2807,6 +2833,7 @@ function loadDashboardSummary() {
     })
     .then((data) => {
       setApiMode('live');
+      renderFirstEmployeeCta(data.total_employees);
       const values = document.querySelectorAll(
         '#view-dashboard .kpi-cards-4grid .kpi-card .kpi-value'
       );
