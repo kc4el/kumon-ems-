@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.utils import timezone
 from rest_framework import serializers
 
+from .constants import NUMERIC_RANGES, SITE_SETTING_DEFAULTS, SITE_SETTING_SPECS
 from .exceptions import Conflict409
 from .models import (
     Attendance,
@@ -29,6 +30,13 @@ from .models import (
     SiteSetting,
     UserSetting,
 )
+
+
+def _resolve_field(data, instance, name):
+    """Resolve a field value from validated data or the existing instance."""
+    if name in data:
+        return data[name]
+    return getattr(instance, name, None) if instance else None
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
@@ -114,11 +122,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
                 raise Conflict409("This employee has already clocked in today.")
 
         # Clock order: direct writes must not invert the pair either.
-        def val(name):
-            if name in data:
-                return data[name]
-            return getattr(self.instance, name, None) if self.instance else None
-
+        val = lambda name: _resolve_field(data, self.instance, name)
         start, end = val("clock_in"), val("clock_out")
         if start is not None and end is not None and end <= start:
             raise serializers.ValidationError("clock_out must be after clock_in.")
@@ -140,11 +144,7 @@ class AttendanceCorrectionSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created_at")
 
     def validate(self, data):
-        def val(name):
-            if name in data:
-                return data[name]
-            return getattr(self.instance, name, None) if self.instance else None
-
+        val = lambda name: _resolve_field(data, self.instance, name)
         proposed_in = val("proposed_clock_in")
         proposed_out = val("proposed_clock_out")
         if not self.instance and proposed_in is None and proposed_out is None:
@@ -204,12 +204,7 @@ class LeaveRequestSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         data = super().validate(data)
-
-        def val(name):
-            if name in data:
-                return data[name]
-            return getattr(self.instance, name, None) if self.instance else None
-
+        val = lambda name: _resolve_field(data, self.instance, name)
         start, end = val("start_date"), val("end_date")
         if start is not None and end is not None and end < start:
             raise serializers.ValidationError("end_date must not precede start_date.")
@@ -268,11 +263,7 @@ class OvertimeSlipSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         data = super().validate(data)
-
-        def val(name):
-            if name in data:
-                return data[name]
-            return getattr(self.instance, name, None) if self.instance else None
+        val = lambda name: _resolve_field(data, self.instance, name)
 
         if self.instance is not None:
             for field in ("employee", "attendance", "hours"):
@@ -393,10 +384,7 @@ class PayrollRunSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def validate(self, data):
-        def val(name):
-            if name in data:
-                return data[name]
-            return getattr(self.instance, name, None) if self.instance else None
+        val = lambda name: _resolve_field(data, self.instance, name)
 
         start, end = val("pay_period_start"), val("pay_period_end")
         if start is not None and end is not None and end < start:
@@ -505,32 +493,6 @@ class ClaimStatusSerializer(serializers.ModelSerializer):
         }
 
 
-SITE_SETTING_SPECS = {
-    "overtime_min_hours": {"min": 0, "max": 24},
-    "overtime_max_hours": {"min": 0, "max": 24},
-    "purge_retention_days": {"min": 1, "max": 365, "integer": True},
-    "onboarding_max_mb": {"min": 1, "max": 100, "integer": True},
-    "leave_restrict_backdated": {"bool": True},
-    "leave_auto_allocate_days": {"min": 0, "max": 365, "integer": True},
-    "shift_allow_double_booking": {"bool": True},
-    "mobile_checkin_enabled": {"bool": True},
-}
-
-# Local SiteSetting reader (kept here instead of importing get_site_setting
-# from .views: views.py imports this module, so that import would be circular).
-# Falls back to SITE_SETTING_DEFAULTS when unset, invalid, or on DB error.
-SITE_SETTING_DEFAULTS = {
-    "overtime_min_hours": "0.01",
-    "overtime_max_hours": "5.00",
-    "purge_retention_days": "30",
-    "onboarding_max_mb": "10",
-    "leave_restrict_backdated": "false",
-    "leave_auto_allocate_days": "0",
-    "shift_allow_double_booking": "false",
-    "mobile_checkin_enabled": "true",
-}
-
-
 def _site_val(key):
     default = SITE_SETTING_DEFAULTS.get(key, "")
     try:
@@ -538,7 +500,7 @@ def _site_val(key):
             SiteSetting.objects.filter(key=key).values_list("value", flat=True).first()
             or default
         )
-        if val != default and key in SiteSetting.NUMERIC_RANGES:
+        if val != default and key in NUMERIC_RANGES:
             float(val)  # corrupt stored values fall through to default + log
         return val
     except Exception:

@@ -551,8 +551,17 @@
     }
     async function employeeLogout() { await portalFetch('/api/session-logout/', { method: 'POST' }).catch(() => { }); window.location.href = '/login/'; }
     loadPortalData().catch(() => showStatus('Portal data could not be loaded.', true));
-    setInterval(() => { if (!document.hidden) loadPortalData().catch(() => showStatus('Portal data could not be refreshed.', true)); }, 60000);
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) loadPortalData().catch(() => showStatus('Portal data could not be refreshed.', true)); });
+    const portalRefreshEveryMs = 30000;
+    setInterval(() => {
+      if (!document.hidden && !portalRefreshInFlight) {
+        loadPortalData().catch(() => showStatus('Portal data could not be refreshed.', true));
+      }
+    }, portalRefreshEveryMs);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && !portalRefreshInFlight) {
+        loadPortalData().catch(() => showStatus('Portal data could not be refreshed.', true));
+      }
+    });
   </script>
 </body>
 

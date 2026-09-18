@@ -20,6 +20,7 @@ from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .constants import SITE_SETTING_DEFAULTS
 from .exceptions import Conflict409
 from .models import (
     Attendance,
@@ -69,7 +70,7 @@ from .serializers import (
     SiteSettingSerializer,
     UserSettingSerializer,
 )
-from .supabase_client import supabase
+from .supabase_client import rollback_supabase_user, supabase
 
 logger = logging.getLogger(__name__)
 
@@ -175,8 +176,6 @@ def hr_dashboard_view(request):
 def employee_portal_view(request):
     if not request.user.is_authenticated:
         return redirect("/login/?next=/employee/")
-    if _is_hr_user(request.user):
-        return redirect("/hr/")
     if not Employee.objects.filter(user=request.user, is_active=True).exists():
         logout(request)
         return redirect("/login/?next=/employee/")
@@ -383,13 +382,7 @@ class EmployeeListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
                 status=status.HTTP_409_CONFLICT,
             )
         except Exception as error:
-            if created_user_id:
-                try:
-                    supabase.auth.admin.delete_user(created_user_id)
-                except Exception:
-                    logger.exception(
-                        f"Unable to roll back Supabase Auth user {created_user_id}"
-                    )
+            rollback_supabase_user(created_user_id, logger)
             logger.warning(f"Unable to create employee: {error}")
             return Response(
                 {"error": "Unable to create employee upstream. Try again later."},
@@ -410,11 +403,6 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
             for field in self.STAFF_ONLY_FIELDS:
                 serializer.validated_data.pop(field, None)
         serializer.save()
-
-    def perform_destroy(self, instance):
-        instance.is_active = False
-        instance.resigned_at = timezone.localdate()
-        instance.save(update_fields=["is_active", "resigned_at"])
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -1473,18 +1461,6 @@ class ChangePasswordView(APIView):
         return Response({"message": "Password changed."})
 
 
-SITE_SETTING_DEFAULTS = {
-    "overtime_min_hours": "0.01",
-    "overtime_max_hours": "5.00",
-    "purge_retention_days": "30",
-    "onboarding_max_mb": "10",
-    "leave_restrict_backdated": "false",
-    "leave_auto_allocate_days": "0",
-    "shift_allow_double_booking": "false",
-    "mobile_checkin_enabled": "true",
-}
-
-
 def get_site_setting(key):
     default = SITE_SETTING_DEFAULTS.get(key, "")
     try:
@@ -1515,7 +1491,6 @@ class SiteSettingsView(APIView):
     def patch(self, request):
         from .models import EmployeeAuditLog as _Audit
 
-        out = {}
         for key, value in request.data.items():
             if key in ("throttle_anon", "throttle_user", "cors_origins"):
                 continue
@@ -1538,7 +1513,6 @@ class SiteSettingsView(APIView):
                 employee=actor,
                 action=f"Site setting {key} changed from {old} to {row.value}.",
             )
-            out[key] = row.value
         stored = {s.key: s.value for s in SiteSetting.objects.all()}
         for k, v in SITE_SETTING_DEFAULTS.items():
             stored.setdefault(k, v)

@@ -6,7 +6,6 @@ from django.dispatch import receiver
 
 from .models import (
     Attendance,
-    AttendanceCorrection,
     Department,
     Employee,
     EmployeeAuditLog,
@@ -19,7 +18,6 @@ from .models import (
     PerformanceReview,
     ShiftRoster,
     ShiftSwap,
-    SiteSetting,
     UserSetting,
 )
 

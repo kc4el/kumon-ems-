@@ -7,6 +7,8 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Q
 
+from .constants import NUMERIC_RANGES
+
 
 class Department(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -61,13 +63,6 @@ class Attendance(models.Model):
     # ADDED: Enforce at the Database level that an employee can only have 1 record per day
     class Meta:
         unique_together = ("employee", "date")
-        constraints = [
-            models.UniqueConstraint(
-                fields=["employee", "date"],
-                condition=Q(clock_out__isnull=True),
-                name="one_open_attendance_per_employee_per_day",
-            )
-        ]
 
 
 class OvertimeSlip(models.Model):
@@ -367,26 +362,13 @@ class SiteSetting(models.Model):
     value = models.CharField(max_length=200)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # Numeric ranges for known keys. Duplicated from
-    # core/serializers.SITE_SETTING_SPECS (importing it here would be
-    # circular: serializers imports models). Update both together.
-    NUMERIC_RANGES = {
-        "overtime_min_hours": (0, 24),
-        "overtime_max_hours": (0, 24),
-        "purge_retention_days": (1, 365),
-        "onboarding_max_mb": (1, 100),
-        "leave_auto_allocate_days": (0, 365),
-    }
-
     def clean(self):
-        from django.core.exceptions import ValidationError
-
-        if self.key in self.NUMERIC_RANGES:
+        if self.key in NUMERIC_RANGES:
             try:
                 num = float(self.value)
             except (TypeError, ValueError):
                 raise ValidationError(f"{self.key} must be numeric.")
-            lo, hi = self.NUMERIC_RANGES[self.key]
+            lo, hi = NUMERIC_RANGES[self.key]
             if not (lo <= num <= hi):
                 raise ValidationError(f"{self.key} must be between {lo} and {hi}.")
 

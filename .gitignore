@@ -1,10 +1,23 @@
+# Python & Virtual Environments
 venv/
+.venv/
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
 
+# Environment variables & local databases
 .env
-
 db.sqlite3
 
+# Media & static uploads
 media/
-peopleops_project/
+
+# IDE & Editor artifacts
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS artifacts
+.DS_Store
+Thumbs.db

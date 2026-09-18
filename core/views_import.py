@@ -18,7 +18,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Department, Employee
-from .supabase_client import supabase
+from .supabase_client import rollback_supabase_user, supabase
 
 logger = logging.getLogger(__name__)
 
@@ -107,15 +107,6 @@ def _validate_rows(data):
     return validated
 
 
-def _rollback_supabase_user(created_user_id):
-    try:
-        supabase.auth.admin.delete_user(created_user_id)
-    except Exception:
-        logger.exception(
-            "import: unable to roll back Supabase user %s", created_user_id
-        )
-
-
 def _commit_rows(validated):
     """Create Supabase users first (per EmployeeListCreateView.post), then
     persist Employee rows with bulk_create. Per-row failures are recorded
@@ -158,8 +149,7 @@ def _commit_rows(validated):
                     )
                 )
         except IntegrityError:
-            if created_user_id:
-                _rollback_supabase_user(created_user_id)
+            rollback_supabase_user(created_user_id, logger)
             logger.warning("import: duplicate employee race for %s", row["email"])
             failed.append(
                 {
@@ -168,8 +158,7 @@ def _commit_rows(validated):
                 }
             )
         except Exception as error:
-            if created_user_id:
-                _rollback_supabase_user(created_user_id)
+            rollback_supabase_user(created_user_id, logger)
             logger.warning(
                 "import: unable to create employee row %s: %s", item["row"], error
             )

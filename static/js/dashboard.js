@@ -58,9 +58,12 @@ async function refreshDashboardLiveData() {
 
 function startDashboardLiveRefresh() {
   if (dashboardRefreshTimer) clearInterval(dashboardRefreshTimer);
-  dashboardRefreshTimer = setInterval(refreshDashboardLiveData, 5000);
-  document.addEventListener('visibilitychange', () => {
+  const refreshEveryMs = 30000;
+  dashboardRefreshTimer = setInterval(() => {
     if (!document.hidden) refreshDashboardLiveData();
+  }, refreshEveryMs);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && !dashboardRefreshInFlight) refreshDashboardLiveData();
   });
 }
 
@@ -1252,12 +1255,6 @@ async function loadShiftEditorForDate(workDate) {
   }
 }
 
-function focusRosterEditor() {
-  const editor = document.getElementById('shiftSlotsContainer');
-  if (editor && editor.scrollIntoView) editor.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  toggleAddStaffForm('morning', true);
-  showToast('Roster editor ready — pick a slot and assign staff.');
-}
 
 async function removeShiftStaff(btn) {
   const userRow = btn.closest('.shift-slot-user-row');
@@ -1991,37 +1988,7 @@ function handleApplyLeave(e) {
 // ==========================================================================
 let activeConversationKey = 'sarah';
 let messagesLoadVersion = 0;
-let mentionInputCursor = 0;
 
-function toggleMentionPicker(event) {
-  event.stopPropagation();
-  const picker = document.getElementById('mentionPicker');
-  const input = document.getElementById('chatTextInput');
-  if (!picker || !input) return;
-
-  mentionInputCursor = input.selectionStart ?? input.value.length;
-  picker.hidden = !picker.hidden;
-}
-
-function insertMention(name) {
-  const picker = document.getElementById('mentionPicker');
-  const input = document.getElementById('chatTextInput');
-  if (!input) return;
-
-  const mention = `@${name}`;
-  const cursor = mentionInputCursor || input.value.length;
-  input.value = `${input.value.slice(0, cursor)}${mention} ${input.value.slice(cursor)}`;
-  input.focus();
-  input.setSelectionRange(cursor + mention.length + 1, cursor + mention.length + 1);
-  if (picker) picker.hidden = true;
-}
-
-document.addEventListener('click', event => {
-  const picker = document.getElementById('mentionPicker');
-  if (picker && !picker.contains(event.target) && !event.target.closest('.composer-tool-btn')) {
-    picker.hidden = true;
-  }
-});
 
 function filterInboxes(input) {
   const q = input.value.toLowerCase();
@@ -2691,6 +2658,43 @@ function signOut() {
 // Audit Logs View Handlers
 // ==========================================================================
 let activeLogTabCategory = 'all';
+
+function classifyAuditAction(actionText = '') {
+  const text = String(actionText || '').toLowerCase();
+  if (!text) return 'Personnel';
+  if (/(leave|vacation|sick|pto|absence|holiday)/.test(text)) return 'Leaves';
+  if (/(claim|expense|payroll|salary|deduction|advance|bonus|reimbursement)/.test(text)) return 'Claims';
+  if (/(shift|roster|schedule|coverage|rotation)/.test(text)) return 'Shifts';
+  if (/(griev|complaint|mediation|investigation|case|resolution)/.test(text)) return 'Grievance';
+  return 'Personnel';
+}
+
+function updateAuditTabCounts(rows) {
+  const counts = { all: rows.length, Personnel: 0, Leaves: 0, Claims: 0, Shifts: 0, Grievance: 0 };
+  rows.forEach((row) => {
+    const bucket = classifyAuditAction(row.action || row.details || row.category || '');
+    counts[bucket] += 1;
+  });
+
+  const tabConfigs = [
+    { key: 'all', label: 'All Classes', value: counts.all },
+    { key: 'Personnel', label: 'Personnel & Staff', value: counts.Personnel },
+    { key: 'Leaves', label: 'Leave Requests', value: counts.Leaves },
+    { key: 'Claims', label: 'Claims & Payroll', value: counts.Claims },
+    { key: 'Shifts', label: 'Shift Rosters', value: counts.Shifts },
+    { key: 'Grievance', label: 'Grievance Cases', value: counts.Grievance },
+  ];
+
+  tabConfigs.forEach(({ key, label, value }) => {
+    const buttons = document.querySelectorAll('#view-logs .tab-pill');
+    buttons.forEach((button) => {
+      const text = (button.textContent || '').replace(/\s*\(\d+\)\s*$/, '');
+      if (text === label || (key === 'all' && text.startsWith('All Classes'))) {
+        button.textContent = `${label} (${value})`;
+      }
+    });
+  });
+}
 
 function filterLogsByTab(category, btnElement) {
   activeLogTabCategory = category;
@@ -3426,6 +3430,7 @@ async function loadAuditView() {
     const payload = await res.json();
     const rows = Array.isArray(payload) ? payload : payload.results || [];
     auditLiveTotal = typeof payload.count === 'number' ? payload.count : rows.length;
+    updateAuditTabCounts(rows);
     let names = {};
     try { names = await liveEmployeeNames(); } catch (_) { /* fall back to System */ }
     body.innerHTML = '';
@@ -3435,14 +3440,15 @@ async function loadAuditView() {
       rows.forEach((log) => {
         const who = names[log.employee] || 'System';
         const when = log.timestamp ? new Date(log.timestamp).toLocaleString() : '—';
+        const category = classifyAuditAction(log.action || '');
         const tr = document.createElement('tr');
         tr.setAttribute('data-live', 'true');
-        tr.setAttribute('data-category', 'General');
+        tr.setAttribute('data-category', category);
         tr.setAttribute('data-admin', who);
         tr.innerHTML =
           `<td><div class="claims-applicant-cell"><div class="claims-applicant-info">` +
           `<strong>${escapeHtml(String(who))}</strong></div></div></td>` +
-          `<td>General</td><td>${escapeHtml(String(when))}</td>` +
+          `<td>${escapeHtml(category)}</td><td>${escapeHtml(String(when))}</td>` +
           `<td>${escapeHtml(String(log.action || ''))}</td><td>—</td>` +
           `<td><span class="penpot-badge badge-present">Logged</span></td>` +
           `<td style="text-align: right;">${escapeHtml(String(log.id || '').slice(0, 8))}</td>`;
