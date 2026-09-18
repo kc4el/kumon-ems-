@@ -417,9 +417,29 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
         deauthed = True
         try:
             supabase.auth.admin.delete_user(str(instance.id))
-        except Exception:
-            deauthed = False
-            logger.exception("resign: Supabase deauth failed for %s", instance.id)
+        except Exception as exc:
+            err_str = str(exc).lower()
+            if "not found" in err_str:
+                deauthed = True
+            else:
+                try:
+                    target_user = next(
+                        (
+                            u
+                            for u in supabase.auth.admin.list_users()
+                            if (u.email or "").lower()
+                            == (instance.email or "").lower()
+                        ),
+                        None,
+                    )
+                    if target_user:
+                        supabase.auth.admin.delete_user(str(target_user.id))
+                        deauthed = True
+                    else:
+                        deauthed = True
+                except Exception:
+                    deauthed = False
+                    logger.exception("resign: Supabase deauth failed for %s", instance.id)
         # Fail-open local kill: resigned staff must lose the Django user row,
         # DRF tokens, and sessions even when Supabase is down (and always —
         # the local credential must not survive a successful remote delete).
@@ -456,6 +476,14 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
                     f"deauthed={deauthed}, local_killed={local_killed}"
                 ),
             )
+        try:
+            Notification.objects.create(
+                employee=instance,
+                kind="personnel",
+                text=f"Exit clearance issued for {instance.first_name} {instance.last_name}.",
+            )
+        except Exception:
+            pass
         return Response(
             {
                 "id": str(instance.id),

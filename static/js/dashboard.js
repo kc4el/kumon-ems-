@@ -505,6 +505,18 @@ function moveWidget(card, dir) {
   refreshWidgetSettings();
 }
 
+function formatAuditActionText(action) {
+  if (!action) return "update";
+  const str = String(action);
+  if (str.startsWith("resigned ")) {
+    const parts = str.split(",");
+    const datePart = (parts[0] || "").trim();
+    const purgePart = (parts[1] || "").trim();
+    return `Employee ${datePart} (${purgePart} • Access revoked)`;
+  }
+  return str;
+}
+
 // D6: "Today" activity feed from the live audit log. Uses raw fetch (not
 // apiFetch) so a logged-out 401/403 renders "Activity unavailable." instead
 // of triggering apiFetch's login redirect; the feed never bounces to login.
@@ -512,12 +524,12 @@ async function loadActivityFeed() {
   const list = document.getElementById("activityFeedList");
   if (!list) return;
   try {
-    const res = await fetch("/api/audit-logs/?page_size=2", { credentials: "same-origin", headers: { Accept: "application/json" } });
+    const res = await fetch("/api/audit-logs/?page_size=5", { credentials: "same-origin", headers: { Accept: "application/json" } });
     if (!res.ok) throw new Error("feed failed");
     const payload = await res.json();
-    const rows = (payload.results || payload || []).slice(0, 2);
+    const rows = (payload.results || payload || []).slice(0, 5);
     list.innerHTML = rows.length
-      ? rows.map((r) => `<li>${escapeHtml(String(r.action || "update"))} <span>${escapeHtml(String(r.timestamp || "").slice(0, 16).replace("T", " "))}</span></li>`).join("")
+      ? rows.map((r) => `<li>${escapeHtml(formatAuditActionText(r.action))} <span>${escapeHtml(String(r.timestamp || "").slice(0, 16).replace("T", " "))}</span></li>`).join("")
       : "<li>No activity yet today.</li>";
   } catch (e) { list.innerHTML = "<li>Activity unavailable.</li>"; }
 }
@@ -818,6 +830,30 @@ async function handleOffboardingSubmit(e) {
     document.getElementById('offboardDeptRole').value = '';
     _offboardEmployees = null;
     populateOffboardDropdown();
+
+    // 1. Instantly update the employee card in-place in the directory DOM
+    const card = document.querySelector(`.roster-accordion-card[data-emp-id="${employeeId}"]`);
+    if (card) {
+      card.setAttribute('data-status', 'Resigned');
+      const badge = card.querySelector('.penpot-badge');
+      if (badge) {
+        badge.className = 'penpot-badge badge-resigned';
+        badge.textContent = 'Resigned';
+      }
+    }
+
+    // 2. Reload employee directory and name caches in background
+    liveEmployeeNameCache = null;
+    if (typeof loadEmployeeDirectory === 'function') loadEmployeeDirectory();
+
+    // 3. Reload activity feed and audit logs
+    if (typeof loadActivityFeed === 'function') loadActivityFeed();
+    if (typeof loadAuditView === 'function') loadAuditView();
+
+    // 4. Update notification bell and attendance
+    if (typeof refreshNotifBell === 'function') refreshNotifBell();
+    if (typeof loadAttendanceView === 'function') loadAttendanceView();
+    if (typeof loadDashboardAttendance === 'function') loadDashboardAttendance();
   } catch (error) {
     showToast('Offboarding could not be completed. Try again later.', 'error');
   }
@@ -3163,6 +3199,7 @@ function loadEmployeeDirectory() {
         const card = document.createElement('div');
         card.className = 'roster-accordion-card';
         card.setAttribute('data-live', 'true');
+        card.setAttribute('data-emp-id', emp.id);
         card.setAttribute('data-dept', deptById[emp.department] || '');
         card.setAttribute('data-role', emp.role || '');
         const isResigned = Boolean(emp.resigned_at || emp.is_active === false);
@@ -3515,7 +3552,7 @@ async function loadAuditView() {
           `<td><div class="claims-applicant-cell"><div class="claims-applicant-info">` +
           `<strong>${escapeHtml(String(who))}</strong></div></div></td>` +
           `<td>${escapeHtml(category)}</td><td>${escapeHtml(String(when))}</td>` +
-          `<td>${escapeHtml(String(log.action || ''))}</td><td>—</td>` +
+          `<td>${escapeHtml(formatAuditActionText(log.action || ''))}</td><td>—</td>` +
           `<td><span class="penpot-badge badge-present">Logged</span></td>` +
           `<td style="text-align: right;">${escapeHtml(String(log.id || '').slice(0, 8))}</td>`;
         body.appendChild(tr);
