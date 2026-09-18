@@ -1018,44 +1018,66 @@
           <div id="promoteFormContainer">
             <div class="inputs-3grid">
               <div class="input-cell">
-                <label>EMPLOYEE RECORD</label>
-                <select class="penpot-select-full">
-                  <option>Amara Okafor • EMP-1024</option>
-                  <option>Sarah Chen • EMP-1011</option>
-                  <option>Marcus Williams • EMP-1012</option>
+                <label>EMPLOYEE RECORD <span class="req-star">*</span></label>
+                <select id="promoteEmployeeSelect" class="penpot-select-full">
+                  <option value="" disabled selected>-- Select Employee --</option>
                 </select>
               </div>
               <div class="input-cell">
-                <label>NEW ROLE</label>
-                <select class="penpot-select-full">
-                  <option>Product Designer</option>
-                  <option>Lead UX Strategist</option>
-                  <option>Staff Engineer</option>
+                <label>NEW ROLE <span class="req-star">*</span></label>
+                <select id="promoteRoleSelect" class="penpot-select-full">
+                  <option value="" disabled selected>-- Select Role --</option>
+                  <option value="Senior Dev">Senior Dev</option>
+                  <option value="Lead Instructor">Lead Instructor</option>
+                  <option value="Senior Instructor">Senior Instructor</option>
+                  <option value="Ops Manager">Ops Manager</option>
+                  <option value="HR Specialist">HR Specialist</option>
+                  <option value="Product Designer">Product Designer</option>
+                  <option value="Lead UX Strategist">Lead UX Strategist</option>
+                  <option value="Senior Analyst">Senior Analyst</option>
+                  <option value="Staff Engineer">Staff Engineer</option>
+                  <option value="Center Director">Center Director</option>
                 </select>
               </div>
               <div class="input-cell">
-                <label>NEW PAY GRADE</label>
-                <input type="text" value="P4 • IC" />
+                <label>NEW PAY GRADE <span class="req-star">*</span></label>
+                <select id="promotePayGradeSelect" class="penpot-select-full">
+                  <option value="P1 • Junior Professional">P1 • Junior Professional</option>
+                  <option value="P2 • Associate Specialist">P2 • Associate Specialist</option>
+                  <option value="P3 • Mid-Level Specialist">P3 • Mid-Level Specialist</option>
+                  <option value="P4 • Senior Specialist / IC" selected>P4 • Senior Specialist / IC</option>
+                  <option value="P5 • Lead / Department Head">P5 • Lead / Department Head</option>
+                  <option value="P6 • Center Director">P6 • Center Director</option>
+                </select>
               </div>
             </div>
 
             <div class="inputs-split-grid">
               <div class="input-cell cell-date">
-                <label>EFFECTIVE DATE</label>
-                <input type="date" value="2026-06-24" />
+                <label>EFFECTIVE DATE <span class="req-star">*</span></label>
+                <select id="promoteEffectiveDateSelect" class="penpot-select-full">
+                  <option value="Immediate (Today)" selected>Immediate (Today)</option>
+                  <option value="Start of Next Week">Start of Next Week</option>
+                  <option value="Start of Next Month">Start of Next Month</option>
+                  <option value="Next Pay Cycle">Next Pay Cycle</option>
+                </select>
               </div>
               <div class="input-cell cell-rationale">
-                <label>PROMOTION RATIONALE</label>
-                <textarea rows="2" placeholder="e.g. Sustained scope expansion and strong cycle results."></textarea>
+                <label>PROMOTION RATIONALE <span class="req-star">*</span></label>
+                <select id="promoteRationaleSelect" class="penpot-select-full">
+                  <option value="Merit & Outstanding Cycle Performance" selected>Merit & Outstanding Cycle Performance</option>
+                  <option value="Scope Expansion & Leadership Responsibility">Scope Expansion & Leadership Responsibility</option>
+                  <option value="Annual Performance Review Progression">Annual Performance Review Progression</option>
+                  <option value="Cross-Functional Competency Advancement">Cross-Functional Competency Advancement</option>
+                  <option value="Key Talent Retention & Recognition">Key Talent Retention & Recognition</option>
+                </select>
               </div>
             </div>
 
             <div class="pt-footer-row">
               <div class="pt-actions">
-                <button type="button" class="btn btn-outline-gray"
-                  onclick="document.getElementById('promoteFormContainer').style.display='none'">Cancel</button>
-                <button type="button" class="btn btn-orange-cta" disabled
-                  title="Promotion workflow is not connected yet.">Record Promotion</button>
+                <button type="button" class="btn btn-outline-gray" onclick="resetPromoteForm()">Cancel</button>
+                <button type="button" id="btnRecordPromotion" class="btn btn-orange-cta" onclick="handlePromotionSubmit()">Record Promotion</button>
               </div>
             </div>
           </div>
@@ -1064,55 +1086,65 @@
           <div id="transferFormContainer" style="display:none;">
             <div class="inputs-3grid">
               <div class="input-cell">
-                <label>EMPLOYEE RECORD</label>
-                <select class="penpot-select-full">
-                  <option>Amara Okafor • EMP-1024</option>
-                  <option>Sarah Chen • EMP-1011</option>
+                <label>EMPLOYEE RECORD <span class="req-star">*</span></label>
+                <select id="transferEmployeeSelect" class="penpot-select-full">
+                  <option value="" disabled selected>-- Select Employee --</option>
                 </select>
               </div>
               <div class="input-cell">
-                <label>TARGET DEPARTMENT</label>
-                <select class="penpot-select-full">
-                  <option>Design</option>
-                  <option>Engineering</option>
-                  <option>Product Pod</option>
+                <label>TARGET DEPARTMENT <span class="req-star">*</span></label>
+                <select id="transferDeptSelect" class="penpot-select-full">
+                  <option value="" disabled selected>-- Select Department --</option>
                 </select>
               </div>
               <div class="input-cell">
-                <label>TARGET LOCATION</label>
-                <select class="penpot-select-full">
-                  <option>Lagos</option>
-                  <option>San Francisco HQ</option>
-                  <option>New York Hub</option>
+                <label>TARGET LOCATION <span class="req-star">*</span></label>
+                <select id="transferLocationSelect" class="penpot-select-full">
+                  <option value="Main Center - Manila" selected>Main Center - Manila</option>
+                  <option value="North Hub - Quezon City">North Hub - Quezon City</option>
+                  <option value="South Campus - Alabang">South Campus - Alabang</option>
+                  <option value="West Branch - Cebu">West Branch - Cebu</option>
+                  <option value="East Branch - Pasig">East Branch - Pasig</option>
+                  <option value="Regional Remote Hub">Regional Remote Hub</option>
                 </select>
               </div>
             </div>
 
             <div class="inputs-split-3grid">
               <div class="input-cell cell-workmode">
-                <label>WORK MODE</label>
-                <select class="penpot-select-full">
-                  <option>Hybrid</option>
-                  <option>Full Remote</option>
-                  <option>On-site</option>
+                <label>WORK MODE <span class="req-star">*</span></label>
+                <select id="transferWorkModeSelect" class="penpot-select-full">
+                  <option value="On-site" selected>On-site</option>
+                  <option value="Hybrid (3 Days On-site)">Hybrid (3 Days On-site)</option>
+                  <option value="Hybrid (2 Days On-site)">Hybrid (2 Days On-site)</option>
+                  <option value="Full Remote">Full Remote</option>
                 </select>
               </div>
               <div class="input-cell cell-date">
-                <label>EFFECTIVE DATE</label>
-                <input type="date" value="2026-06-24" />
+                <label>EFFECTIVE DATE <span class="req-star">*</span></label>
+                <select id="transferEffectiveDateSelect" class="penpot-select-full">
+                  <option value="Immediate (Today)" selected>Immediate (Today)</option>
+                  <option value="Start of Next Week">Start of Next Week</option>
+                  <option value="Start of Next Month">Start of Next Month</option>
+                  <option value="Next Pay Cycle">Next Pay Cycle</option>
+                </select>
               </div>
               <div class="input-cell cell-rationale">
-                <label>TRANSFER REASON</label>
-                <textarea rows="2" placeholder="e.g. Aligning design coverage to the Lagos product pod."></textarea>
+                <label>TRANSFER REASON <span class="req-star">*</span></label>
+                <select id="transferReasonSelect" class="penpot-select-full">
+                  <option value="Branch Coverage & Staffing Balance" selected>Branch Coverage & Staffing Balance</option>
+                  <option value="Inter-Department Skill Alignment">Inter-Department Skill Alignment</option>
+                  <option value="Employee Relocation Request">Employee Relocation Request</option>
+                  <option value="New Center Opening Support">New Center Opening Support</option>
+                  <option value="Project Operational Rotation">Project Operational Rotation</option>
+                </select>
               </div>
             </div>
 
             <div class="pt-footer-row">
               <div class="pt-actions">
-                <button type="button" class="btn btn-outline-gray"
-                  onclick="document.getElementById('transferFormContainer').style.display='none'">Cancel</button>
-                <button type="button" class="btn btn-orange-cta" disabled
-                  title="Transfer workflow is not connected yet.">Record Transfer</button>
+                <button type="button" class="btn btn-outline-gray" onclick="resetTransferForm()">Cancel</button>
+                <button type="button" id="btnRecordTransfer" class="btn btn-orange-cta" onclick="handleTransferSubmit()">Record Transfer</button>
               </div>
             </div>
           </div>

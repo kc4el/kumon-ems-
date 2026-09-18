@@ -19,6 +19,8 @@ from core.views import (
     EmployeeAuditLogListView,
     EmployeeDetailView,
     EmployeeListCreateView,
+    EmployeePromoteView,
+    EmployeeTransferView,
     ExpenseClaimDetailView,
     ExpenseClaimListCreateView,
     GrievanceDetailView,
@@ -84,6 +86,16 @@ urlpatterns = [
         "complaints/<int:pk>/", ComplaintDetailView.as_view(), name="complaint-detail"
     ),
     path("employees/<uuid:pk>/", EmployeeDetailView.as_view(), name="employee-detail"),
+    path(
+        "employees/<uuid:pk>/promote/",
+        EmployeePromoteView.as_view(),
+        name="employee-promote",
+    ),
+    path(
+        "employees/<uuid:pk>/transfer/",
+        EmployeeTransferView.as_view(),
+        name="employee-transfer",
+    ),
     path(
         "grievances/", GrievanceListCreateView.as_view(), name="grievance-list-create"
     ),

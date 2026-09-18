@@ -497,6 +497,108 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
         )
 
 
+class EmployeePromoteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        if not request.user.is_staff and not request.user.is_superuser:
+            return Response(
+                {"error": "Only HR staff can record promotions."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        employee = get_object_or_404(Employee, pk=pk)
+        role = str(request.data.get("role", "")).strip()
+        pay_grade = str(request.data.get("pay_grade", "")).strip()
+        effective_date = str(request.data.get("effective_date", "")).strip()
+        rationale = str(request.data.get("rationale", "")).strip()
+
+        if not role:
+            return Response(
+                {"error": "New role is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        old_role = employee.role or "Unassigned"
+        employee.role = role
+        employee.save(update_fields=["role"])
+
+        details = f"Promoted from {old_role} to {role}"
+        if pay_grade:
+            details += f" ({pay_grade})"
+        if effective_date:
+            details += f" effective {effective_date}"
+        if rationale:
+            details += f" - {rationale}"
+
+        EmployeeAuditLog.objects.create(
+            employee=employee,
+            action=details,
+        )
+        try:
+            Notification.objects.create(
+                employee=employee,
+                kind="personnel",
+                text=f"You have been promoted to {role}!",
+            )
+        except Exception:
+            pass
+
+        return Response(EmployeeSerializer(employee).data, status=status.HTTP_200_OK)
+
+
+class EmployeeTransferView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        if not request.user.is_staff and not request.user.is_superuser:
+            return Response(
+                {"error": "Only HR staff can record transfers."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        employee = get_object_or_404(Employee, pk=pk)
+        department_id = request.data.get("department")
+        location = str(request.data.get("location", "")).strip()
+        work_mode = str(request.data.get("work_mode", "")).strip()
+        effective_date = str(request.data.get("effective_date", "")).strip()
+        reason = str(request.data.get("reason", "")).strip()
+
+        if not department_id:
+            return Response(
+                {"error": "Target department is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        dept = get_object_or_404(Department, pk=department_id)
+        old_dept = employee.department.name if employee.department else "Unassigned"
+        employee.department = dept
+        employee.save(update_fields=["department"])
+
+        details = f"Transferred from {old_dept} to {dept.name}"
+        if location:
+            details += f" ({location})"
+        if work_mode:
+            details += f" [{work_mode}]"
+        if effective_date:
+            details += f" effective {effective_date}"
+        if reason:
+            details += f" - {reason}"
+
+        EmployeeAuditLog.objects.create(
+            employee=employee,
+            action=details,
+        )
+        try:
+            Notification.objects.create(
+                employee=employee,
+                kind="personnel",
+                text=f"You have been transferred to {dept.name}.",
+            )
+        except Exception:
+            pass
+
+        return Response(EmployeeSerializer(employee).data, status=status.HTTP_200_OK)
+
+
 class AttendanceListCreateView(
     ForceOwnerCreateMixin, OwnerQuerysetMixin, generics.ListCreateAPIView
 ):

@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadActivityFeed();
   refreshNotifBell();
   initTour();
+  populatePromotionTransferDropdowns();
   startDashboardLiveRefresh();
 });
 
@@ -711,12 +712,14 @@ function setPtMode(mode) {
     if (promoteContainer) promoteContainer.style.display = 'block';
     if (transferContainer) transferContainer.style.display = 'none';
     if (removeContainer) removeContainer.style.display = 'none';
+    populatePromotionTransferDropdowns();
   } else if (mode === 'transfer') {
     if (title) title.textContent = 'Transfer employee';
     if (subtitle) subtitle.textContent = 'Move a person to a new team or work location and keep the effective date and rationale on the record.';
     if (promoteContainer) promoteContainer.style.display = 'none';
     if (transferContainer) transferContainer.style.display = 'block';
     if (removeContainer) removeContainer.style.display = 'none';
+    populatePromotionTransferDropdowns();
   } else if (mode === 'remove') {
     if (title) title.textContent = 'Employee Offboarding Processing Wizard';
     if (subtitle) subtitle.textContent = 'Complete the following exit procedures for the departing employee.';
@@ -724,6 +727,192 @@ function setPtMode(mode) {
     if (transferContainer) transferContainer.style.display = 'none';
     if (removeContainer) removeContainer.style.display = 'block';
     populateOffboardDropdown();
+  }
+}
+
+// Caches for promotion & transfer dropdowns
+let _activeEmployeesCache = null;
+let _departmentsCache = null;
+
+async function populatePromotionTransferDropdowns() {
+  const promoteEmp = document.getElementById('promoteEmployeeSelect');
+  const transferEmp = document.getElementById('transferEmployeeSelect');
+  const transferDept = document.getElementById('transferDeptSelect');
+
+  try {
+    const [empData, deptData] = await Promise.all([
+      _activeEmployeesCache ? Promise.resolve(_activeEmployeesCache) : apiFetch('/api/employees/?page_size=200&is_active=true').then((r) => r.json()),
+      _departmentsCache ? Promise.resolve(_departmentsCache) : apiFetch('/api/departments/?page_size=200').then((r) => r.json()),
+    ]);
+
+    const emps = Array.isArray(empData) ? empData : empData?.results || [];
+    const depts = Array.isArray(deptData) ? deptData : deptData?.results || [];
+    _activeEmployeesCache = emps;
+    _departmentsCache = depts;
+
+    if (promoteEmp) {
+      const cur = promoteEmp.value;
+      promoteEmp.innerHTML = '<option value="" disabled selected>-- Select Employee --</option>';
+      emps.forEach((emp) => {
+        const opt = document.createElement('option');
+        opt.value = emp.id;
+        opt.textContent = `${emp.first_name} ${emp.last_name} (${emp.role || 'No Role'})`;
+        promoteEmp.appendChild(opt);
+      });
+      if (cur) promoteEmp.value = cur;
+    }
+
+    if (transferEmp) {
+      const cur = transferEmp.value;
+      transferEmp.innerHTML = '<option value="" disabled selected>-- Select Employee --</option>';
+      emps.forEach((emp) => {
+        const opt = document.createElement('option');
+        opt.value = emp.id;
+        opt.textContent = `${emp.first_name} ${emp.last_name} (${emp.department_name || 'No Dept'})`;
+        transferEmp.appendChild(opt);
+      });
+      if (cur) transferEmp.value = cur;
+    }
+
+    if (transferDept) {
+      const cur = transferDept.value;
+      transferDept.innerHTML = '<option value="" disabled selected>-- Select Department --</option>';
+      depts.forEach((dept) => {
+        const opt = document.createElement('option');
+        opt.value = dept.id;
+        opt.textContent = dept.name;
+        transferDept.appendChild(opt);
+      });
+      if (cur) transferDept.value = cur;
+    }
+  } catch (err) {
+    console.error('Could not load promote/transfer dropdown data', err);
+  }
+}
+
+function resetPromoteForm() {
+  const selEmp = document.getElementById('promoteEmployeeSelect');
+  const selRole = document.getElementById('promoteRoleSelect');
+  if (selEmp) selEmp.selectedIndex = 0;
+  if (selRole) selRole.selectedIndex = 0;
+}
+
+async function handlePromotionSubmit() {
+  const employeeId = document.getElementById('promoteEmployeeSelect')?.value;
+  const role = document.getElementById('promoteRoleSelect')?.value;
+  const payGrade = document.getElementById('promotePayGradeSelect')?.value;
+  const effectiveDate = document.getElementById('promoteEffectiveDateSelect')?.value;
+  const rationale = document.getElementById('promoteRationaleSelect')?.value;
+
+  if (!employeeId) {
+    showToast('Please select an employee to promote.', 'error');
+    return;
+  }
+  if (!role) {
+    showToast('Please select the new role.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btnRecordPromotion');
+  if (btn) btn.disabled = true;
+
+  try {
+    const res = await apiFetch(`/api/employees/${employeeId}/promote/`, {
+      method: 'POST',
+      body: JSON.stringify({
+        role,
+        pay_grade: payGrade,
+        effective_date: effectiveDate,
+        rationale,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Promotion could not be recorded.');
+
+    showToast(`Promotion recorded: promoted to ${role}!`);
+    resetPromoteForm();
+    _activeEmployeesCache = null;
+    populatePromotionTransferDropdowns();
+
+    const card = document.querySelector(`.roster-accordion-card[data-emp-id="${employeeId}"]`);
+    if (card) {
+      card.setAttribute('data-role', role);
+      const roleElem = card.querySelector('.acc-role');
+      if (roleElem) {
+        roleElem.innerHTML = `${escapeHtml(role)} &bull; ${escapeHtml(data.email || '')}`;
+      }
+    }
+
+    if (typeof loadEmployeeDirectory === 'function') loadEmployeeDirectory();
+    if (typeof loadActivityFeed === 'function') loadActivityFeed();
+    if (typeof loadAuditView === 'function') loadAuditView();
+    if (typeof refreshNotifBell === 'function') refreshNotifBell();
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function resetTransferForm() {
+  const selEmp = document.getElementById('transferEmployeeSelect');
+  const selDept = document.getElementById('transferDeptSelect');
+  if (selEmp) selEmp.selectedIndex = 0;
+  if (selDept) selDept.selectedIndex = 0;
+}
+
+async function handleTransferSubmit() {
+  const employeeId = document.getElementById('transferEmployeeSelect')?.value;
+  const departmentId = document.getElementById('transferDeptSelect')?.value;
+  const location = document.getElementById('transferLocationSelect')?.value;
+  const workMode = document.getElementById('transferWorkModeSelect')?.value;
+  const effectiveDate = document.getElementById('transferEffectiveDateSelect')?.value;
+  const reason = document.getElementById('transferReasonSelect')?.value;
+
+  if (!employeeId) {
+    showToast('Please select an employee to transfer.', 'error');
+    return;
+  }
+  if (!departmentId) {
+    showToast('Please select the target department.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btnRecordTransfer');
+  if (btn) btn.disabled = true;
+
+  try {
+    const res = await apiFetch(`/api/employees/${employeeId}/transfer/`, {
+      method: 'POST',
+      body: JSON.stringify({
+        department: departmentId,
+        location,
+        work_mode: workMode,
+        effective_date: effectiveDate,
+        reason,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Transfer could not be recorded.');
+
+    showToast(`Transfer recorded: transferred to ${data.department_name || 'new department'}!`);
+    resetTransferForm();
+    _activeEmployeesCache = null;
+    populatePromotionTransferDropdowns();
+
+    const card = document.querySelector(`.roster-accordion-card[data-emp-id="${employeeId}"]`);
+    if (card) {
+      card.setAttribute('data-dept', data.department_name || '');
+    }
+
+    if (typeof loadEmployeeDirectory === 'function') loadEmployeeDirectory();
+    if (typeof loadActivityFeed === 'function') loadActivityFeed();
+    if (typeof loadAuditView === 'function') loadAuditView();
+    if (typeof refreshNotifBell === 'function') refreshNotifBell();
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 
