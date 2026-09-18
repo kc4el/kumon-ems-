@@ -198,8 +198,13 @@ class DashboardSummaryView(APIView):
             pending_leaves = LeaveRequest.objects.filter(
                 status__iexact="pending"
             ).count()
+            today = timezone.localdate()
             attendance_today = Attendance.objects.filter(
-                date=timezone.localdate()
+                date=today
+            ).count()
+            attendance_month = Attendance.objects.filter(
+                date__year=today.year,
+                date__month=today.month,
             ).count()
             claims_count = ExpenseClaim.objects.count()
             open_attendance = Attendance.objects.filter(clock_out__isnull=True).count()
@@ -211,6 +216,7 @@ class DashboardSummaryView(APIView):
                     "approved_leaves": approved_leaves,
                     "pending_leaves": pending_leaves,
                     "attendance_today": attendance_today,
+                    "attendance_month": attendance_month,
                     "claims_count": claims_count,
                     "open_attendance_records": open_attendance,
                 },

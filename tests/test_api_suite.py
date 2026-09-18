@@ -184,6 +184,7 @@ class ApiTests(TestCase):
                 "approved_leaves": 1,
                 "pending_leaves": 1,
                 "attendance_today": 1,
+                "attendance_month": 1,
                 "claims_count": 0,
                 "open_attendance_records": 1,
             },

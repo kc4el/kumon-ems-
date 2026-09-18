@@ -4599,7 +4599,10 @@ body {
 .hero-summary-cards-side{min-width:0;max-width:100%;}
 .summary-box{min-width:0;}
 .pulse-stat-row{flex-wrap:wrap;row-gap:2px;}
-#activityFeed{box-sizing:border-box;min-height:182px;}
+#activityFeed{box-sizing:border-box;display:flex;flex-direction:column;justify-content:flex-start;padding:16px 18px;border-radius:14px;overflow:hidden;}
+#activityFeed h3{margin:0 0 6px;}
+#activityFeedList{flex:1;display:flex;flex-direction:column;justify-content:flex-start;overflow:hidden;}
+#activityFeedList li{padding:4px 0;line-height:1.25;}
 /* Both hero boxes share the right column at equal widths. */
 .hero-summary-cards-side .summary-box{flex:1 1 0;}
 .hero-summary-cards-side #activityFeed{float:none;width:auto;flex:1 1 0;margin:0;}

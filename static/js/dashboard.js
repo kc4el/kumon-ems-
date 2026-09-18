@@ -528,9 +528,19 @@ async function loadActivityFeed() {
     const res = await fetch("/api/audit-logs/?page_size=5", { credentials: "same-origin", headers: { Accept: "application/json" } });
     if (!res.ok) throw new Error("feed failed");
     const payload = await res.json();
-    const rows = (payload.results || payload || []).slice(0, 5);
-    list.innerHTML = rows.length
-      ? rows.map((r) => `<li>${escapeHtml(formatAuditActionText(r.action))} <span>${escapeHtml(String(r.timestamp || "").slice(0, 16).replace("T", " "))}</span></li>`).join("")
+    const rows = (payload.results || payload || []);
+    let totalLen = 0;
+    const maxItems = 3;
+    const filteredRows = [];
+    for (const r of rows) {
+      if (filteredRows.length >= maxItems) break;
+      const textLen = (formatAuditActionText(r.action) || "").length;
+      if (filteredRows.length === 2 && (totalLen > 70 || textLen > 40)) break;
+      filteredRows.push(r);
+      totalLen += textLen;
+    }
+    list.innerHTML = filteredRows.length
+      ? filteredRows.map((r) => `<li>${escapeHtml(formatAuditActionText(r.action))} <span>${escapeHtml(String(r.timestamp || "").slice(0, 16).replace("T", " "))}</span></li>`).join("")
       : "<li>No activity yet today.</li>";
   } catch (e) { list.innerHTML = "<li>Activity unavailable.</li>"; }
 }
@@ -1943,20 +1953,63 @@ function buildClaimRow(c, which, names) {
   return tr;
 }
 
-function exportClaimHistory() {
+async function exportClaimHistory() {
   const rows = [['Claim ID', 'Employee', 'Category', 'Submitted', 'Expense Details', 'Amount', 'Status']];
   const historyRows = document.querySelectorAll('#historyClaimsTableBody tr[data-live="true"]');
-  historyRows.forEach((row) => {
-    rows.push([
-      row.dataset.claimId || '',
-      row.dataset.employee || '',
-      row.dataset.category || '',
-      fmtClaimDate(row.dataset.createdAt || ''),
-      row.dataset.title || '',
-      row.dataset.amount || '0',
-      row.dataset.status || '',
-    ]);
-  });
+  if (historyRows.length) {
+    historyRows.forEach((row) => {
+      rows.push([
+        row.dataset.claimId || '',
+        row.dataset.employee || '',
+        row.dataset.category || '',
+        typeof fmtClaimDate === 'function' ? fmtClaimDate(row.dataset.createdAt || '') : (row.dataset.createdAt || ''),
+        row.dataset.title || '',
+        row.dataset.amount || '0',
+        row.dataset.status || '',
+      ]);
+    });
+  } else {
+    try {
+      const res = await apiFetch('/api/expense-claims/?status=Approved,Rejected&page_size=500', { headers: { Accept: 'application/json' }, cache: 'no-store' });
+      if (res.ok) {
+        const payload = await res.json();
+        const claims = Array.isArray(payload) ? payload : payload.results || [];
+        let names = {};
+        try { names = await liveEmployeeNames(); } catch (_) {}
+        claims.forEach((c) => {
+          const who = String(names[c.employee] || c.employee || 'Unknown');
+          rows.push([
+            String(c.id || ''),
+            who,
+            String(c.category || 'General Expense'),
+            typeof fmtClaimDate === 'function' ? fmtClaimDate(c.created_at || '') : (c.created_at || ''),
+            String(c.title || ''),
+            String(c.amount || '0'),
+            String(c.status || 'Processed'),
+          ]);
+        });
+      }
+    } catch (_) {}
+  }
+
+  if (rows.length === 1) {
+    const anyRows = document.querySelectorAll('#historyClaimsTableBody tr');
+    anyRows.forEach((tr) => {
+      const tds = tr.querySelectorAll('td');
+      if (tds.length >= 6) {
+        rows.push([
+          '',
+          tds[0].textContent.trim(),
+          tds[1].textContent.trim(),
+          tds[2].textContent.trim(),
+          tds[3].textContent.trim(),
+          tds[4].textContent.trim().replace(/^\$/, ''),
+          tds[5].textContent.trim(),
+        ]);
+      }
+    });
+  }
+
   if (rows.length === 1) {
     showToast('No live claim history is available to export.', 'error');
     return;
@@ -3019,48 +3072,162 @@ function filterAuditLogs() {
 
 // Attendance register export: same downloadCsv helper as audit export.
 // Live rows when the table holds them, demo sample otherwise. Same shape.
-function exportAttendanceRegister() {
+async function exportAttendanceRegister() {
   const body = document.getElementById('attendanceTableBody');
   const live = body ? Array.from(body.querySelectorAll('tr[data-live="true"]')) : [];
-  const rows = [['Date', 'Employee', 'Clock In', 'Clock Out', 'Hours']];
+  const rows = [['Date', 'Employee', 'Role', 'Assigned Shift', 'Clock In', 'Clock Out', 'Status']];
+
   if (live.length) {
-    live.forEach((tr) => {
-      rows.push(Array.from(tr.querySelectorAll('td')).map((td) => td.textContent.trim()));
+    const visible = live.filter((tr) => tr.style.display !== 'none');
+    const targets = visible.length ? visible : live;
+    targets.forEach((tr) => {
+      const date = tr.dataset.attendanceDate || (typeof attendanceSelectedDate !== 'undefined' ? attendanceSelectedDate : '') || '';
+      const nameEl = tr.querySelector('.bold-title');
+      const roleEl = tr.querySelector('.sub-role');
+      const tds = tr.querySelectorAll('td');
+      const empName = nameEl ? nameEl.textContent.trim() : (tds[0] ? tds[0].textContent.trim() : '');
+      const empRole = roleEl ? roleEl.textContent.trim() : '';
+      const shift = tds[1] ? tds[1].textContent.trim() : '';
+      const clockIn = tds[2] ? tds[2].textContent.trim() : '';
+      const clockOut = tds[3] ? tds[3].textContent.trim() : '';
+      const status = tds[4] ? tds[4].textContent.trim().replace(/^[●\s]+/, '') : '';
+      rows.push([date, empName, empRole, shift, clockIn, clockOut, status]);
     });
   } else {
-    rows.push(['2026-09-13', 'Sample Instructor', '09:00', '17:00', '8.00']);
+    try {
+      const [attRes, empRes] = await Promise.all([
+        apiFetch('/api/attendance/?page_size=500', { headers: { Accept: 'application/json' }, cache: 'no-store' }),
+        apiFetch('/api/employees/?page_size=500', { headers: { Accept: 'application/json' }, cache: 'no-store' }).catch(() => null),
+      ]);
+      if (attRes.ok) {
+        const payload = await attRes.json();
+        const records = Array.isArray(payload) ? payload : payload.results || [];
+        let empById = {};
+        if (empRes && empRes.ok) {
+          const empData = await empRes.json().catch(() => ({}));
+          const emps = Array.isArray(empData) ? empData : empData.results || [];
+          emps.forEach((e) => { empById[e.id] = e; });
+        }
+        records.forEach((a) => {
+          const emp = empById[a.employee] || {};
+          const empName = a.employee_name || `${emp.first_name || ''} ${emp.last_name || ''}`.trim() || emp.email || a.employee || 'Employee';
+          const empRole = a.employee_role || emp.role || 'Staff';
+          const shiftOrDept = a.employee_department || emp.department_name || 'Standard Shift';
+          const status = a.clock_out ? 'Complete' : 'Clocked in';
+          rows.push([
+            a.date || '',
+            empName,
+            empRole,
+            shiftOrDept,
+            typeof fmtTime === 'function' ? fmtTime(a.clock_in) : (a.clock_in || ''),
+            typeof fmtTime === 'function' ? fmtTime(a.clock_out) : (a.clock_out || ''),
+            status,
+          ]);
+        });
+      }
+    } catch (_) {}
   }
+
+  if (rows.length === 1 && body) {
+    const demoRows = Array.from(body.querySelectorAll('tr:not(.attendance-empty-row)'));
+    demoRows.forEach((tr) => {
+      const tds = tr.querySelectorAll('td');
+      if (tds.length >= 5) {
+        rows.push([
+          (typeof attendanceSelectedDate !== 'undefined' ? attendanceSelectedDate : '') || new Date().toISOString().slice(0, 10),
+          tds[0].textContent.trim(),
+          '',
+          tds[1].textContent.trim(),
+          tds[2].textContent.trim(),
+          tds[3].textContent.trim(),
+          tds[4].textContent.trim().replace(/^[●\s]+/, ''),
+        ]);
+      }
+    });
+  }
+
+  if (rows.length === 1) {
+    showToast('No attendance records available to export.', 'error');
+    return;
+  }
+
   downloadCsv(`kumon_ems_attendance_${new Date().toISOString().slice(0, 10)}.csv`, rows);
-  showToast(live.length ? 'Attendance register exported.' : 'Attendance register exported (demo sample).');
+  showToast(`Exported ${rows.length - 1} attendance record${rows.length === 2 ? '' : 's'}.`);
 }
 
 function downloadCsv(filename, rows) {
-  const csvContent = 'data:text/csv;charset=utf-8,' + rows.map((e) => e.map((i) => `"${i}"`).join(',')).join('\n');
+  if (!rows || !rows.length) return;
+  const escapeCell = (val) => {
+    const s = val == null ? '' : String(val);
+    return `"${s.replace(/"/g, '""')}"`;
+  };
+  const csvContent = '\uFEFF' + rows.map((r) => r.map(escapeCell).join(',')).join('\r\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
-  link.setAttribute('href', encodeURI(csvContent));
+  link.setAttribute('href', url);
   link.setAttribute('download', filename);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function exportAuditLogs() {
-  downloadCsv(
-    `kumon_ems_audit_logs_${new Date().toISOString().slice(0, 10)}.csv`,
-    [
-      ['Timestamp', 'Administrator', 'Action Class', 'Action', 'Target Record', 'Details', 'Status', 'Audit ID'],
-      ['2026-06-09 14:32:00', 'Marcus Williams (Admin)', 'Personnel', 'Added Employee: Sofia Taylor', 'EMP-10482', 'Created employee profile, issued portal credentials', 'Completed', 'LOG-9482'],
-      ['2026-06-09 11:15:00', 'Elena Rostova (Admin)', 'Leaves', 'Approved Leave Request', 'EMP-10291', 'Approved 3 days Medical Leave', 'Approved', 'LOG-9481'],
-      ['2026-06-08 16:45:00', 'Marcus Williams (Admin)', 'Personnel', 'Promoted Staff: Marcus Chen', 'EMP-10334', 'Promoted to Lead Instructor', 'Completed', 'LOG-9480'],
-      ['2026-06-08 10:20:00', 'David Kim (Admin)', 'Claims', 'Approved Expense Claim', 'CLM-2026-088', 'Educational materials reimbursement ($420.50)', 'Disbursed', 'LOG-9479'],
-      ['2026-06-07 15:10:00', 'Elena Rostova (Admin)', 'Shifts', 'Modified Shift Roster', 'ROSTER-2026-W24', 'Reassigned 12 instructors to Morning Shift', 'Applied', 'LOG-9478'],
-      ['2026-06-07 09:30:00', 'Marcus Williams (Admin)', 'Claims', 'Disbursed Advance Pay', 'ADV-2026-014', 'Approved emergency payroll advance ($800.00)', 'Disbursed', 'LOG-9477'],
-      ['2026-06-06 17:00:00', 'Elena Rostova (Admin)', 'Grievance', 'Resolved Grievance Case', 'GRV-4091', 'Mediation completed and agreed', 'Resolved', 'LOG-9476'],
-      ['2026-06-06 13:40:00', 'Marcus Williams (Admin)', 'Personnel', 'Transferred Employee Center', 'EMP-10255', 'Transferred to West Campus Center', 'Completed', 'LOG-9475'],
-      ['2026-06-05 18:00:00', 'System Bot', 'Leaves', 'Accrued Monthly Leave Balances', 'ALL INSTRUCTORS', 'Automated 1.5 days annual leave accrual', 'Executed', 'LOG-9474'],
-      ['2026-06-05 11:25:00', 'David Kim (Admin)', 'Claims', 'Rejected Non-Compliant Claim', 'CLM-2026-079', 'Rejected fuel claim missing tax invoice', 'Rejected', 'LOG-9473']
-    ]
-  );
+async function exportAuditLogs() {
+  const rows = [['Timestamp', 'Administrator', 'Action Class', 'Action', 'Target Record', 'Details', 'Status', 'Audit ID']];
+  try {
+    const res = await apiFetch('/api/audit-logs/?page_size=1000', { headers: { Accept: 'application/json' }, cache: 'no-store' });
+    if (res.ok) {
+      const payload = await res.json();
+      const logs = Array.isArray(payload) ? payload : payload.results || [];
+      let names = {};
+      try { names = await liveEmployeeNames(); } catch (_) {}
+      logs.forEach((log) => {
+        const who = names[log.employee] || (log.employee ? `Employee #${log.employee}` : 'System');
+        const when = log.timestamp ? new Date(log.timestamp).toLocaleString() : '';
+        const category = typeof classifyAuditAction === 'function' ? classifyAuditAction(log.action || '') : 'Personnel';
+        const actionText = typeof formatAuditActionText === 'function' ? formatAuditActionText(log.action || '') : (log.action || '');
+        const target = log.target || log.target_record || (log.employee ? `EMP-${log.employee}` : '—');
+        const details = log.details || log.notes || actionText;
+        rows.push([
+          when,
+          who,
+          category,
+          actionText,
+          target,
+          details,
+          'Logged',
+          String(log.id || '').slice(0, 8),
+        ]);
+      });
+    }
+  } catch (_) {}
+
+  // Fallback to table DOM rows if API returned nothing
+  if (rows.length === 1) {
+    const domRows = document.querySelectorAll('#auditLogsTableBody tr');
+    domRows.forEach((tr) => {
+      const tds = tr.querySelectorAll('td');
+      if (tds.length >= 7) {
+        const who = tr.getAttribute('data-admin') || tds[0].textContent.trim();
+        const cat = tr.getAttribute('data-category') || tds[1].textContent.trim();
+        const when = tds[2].textContent.trim();
+        const action = tds[3].textContent.trim();
+        const details = tds[4].textContent.trim();
+        const status = tds[5].textContent.trim();
+        const id = tds[6].textContent.trim();
+        rows.push([when, who, cat, action, '—', details, status, id]);
+      }
+    });
+  }
+
+  if (rows.length === 1) {
+    showToast('No audit logs available to export.', 'error');
+    return;
+  }
+
+  downloadCsv(`kumon_ems_audit_logs_${new Date().toISOString().slice(0, 10)}.csv`, rows);
+  showToast(`Exported ${rows.length - 1} audit log record${rows.length === 2 ? '' : 's'}.`);
 }
 
 // ==========================================================================
@@ -3134,7 +3301,7 @@ function loadDashboardSummary() {
       const attendanceCount = document.getElementById('dashboardAttendanceCount');
       const leaveCount = document.getElementById('dashboardLeaveCount');
       const claimsCount = document.getElementById('dashboardClaimsCount');
-      if (attendanceCount) attendanceCount.textContent = data.attendance_today || 0;
+      if (attendanceCount) attendanceCount.textContent = (typeof data.attendance_month !== 'undefined' ? data.attendance_month : data.attendance_today) || 0;
       if (leaveCount) leaveCount.textContent = data.approved_leaves || 0;
       if (claimsCount) claimsCount.textContent = data.claims_count || 0;
     })
