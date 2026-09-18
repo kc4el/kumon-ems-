@@ -689,6 +689,24 @@ class AttendanceSelfView(APIView):
 
     def _employee(self, request):
         employee = _request_owner(request)
+        if (employee is None or not employee.is_active) and (
+            request.user.is_staff or request.user.is_superuser
+        ):
+            employee, _ = Employee.objects.get_or_create(
+                user=request.user,
+                defaults={
+                    "first_name": request.user.first_name or request.user.username,
+                    "last_name": request.user.last_name or "Staff",
+                    "email": request.user.email
+                    or f"{request.user.username}@kumon-ems.com",
+                    "role": "HR Administrator",
+                    "is_active": True,
+                },
+            )
+            if not employee.is_active:
+                employee.is_active = True
+                employee.resigned_at = None
+                employee.save(update_fields=["is_active", "resigned_at"])
         if employee is None or not employee.is_active:
             raise PermissionDenied(
                 "No active employee profile is linked to this account."

@@ -90,6 +90,10 @@ class ComplaintSerializer(serializers.ModelSerializer):
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
+    department_name = serializers.CharField(
+        source="department.name", read_only=True, default=""
+    )
+
     class Meta:
         model = Employee
         fields = [
@@ -99,19 +103,34 @@ class EmployeeSerializer(serializers.ModelSerializer):
             "email",
             "role",
             "department",
+            "department_name",
             "date_hired",
             "is_active",
+            "resigned_at",
         ]
         read_only_fields = ["id", "date_hired"]
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
+    employee_name = serializers.SerializerMethodField()
+    employee_role = serializers.CharField(
+        source="employee.role", read_only=True, default=""
+    )
+    employee_department = serializers.CharField(
+        source="employee.department.name", read_only=True, default=""
+    )
+
     class Meta:
         model = Attendance
         fields = "__all__"
         # No auto unique-together validator: the fast-path Conflict409 below
         # plus the DB constraint are the single enforcement path (409 rule).
         validators = []
+
+    def get_employee_name(self, obj):
+        if obj.employee:
+            return f"{obj.employee.first_name} {obj.employee.last_name}".strip() or obj.employee.email
+        return ""
 
     # CUSTOM VALIDATOR: Prevents duplicate clock-ins on the same day
     def validate(self, data):

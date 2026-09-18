@@ -92,6 +92,7 @@ function initializeCurrentDateLabels() {
 
 let attendanceCalendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 let attendanceSelectedDate = new Date().toISOString().slice(0, 10);
+let attendanceLoggedDates = new Set();
 
 function initAttendanceCalendar() {
   const grid = document.getElementById('attendanceCalendarGrid');
@@ -128,10 +129,11 @@ function renderAttendanceCalendar() {
   const lastDay = new Date(year, month + 1, 0).getDate();
   for (let day = 1; day <= lastDay; day += 1) {
     const iso = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const isLogged = attendanceLoggedDates.has(iso);
     const cell = document.createElement('span');
-    cell.className = `attendance-calendar-cell attendance-calendar-day${iso === attendanceSelectedDate ? ' day-active' : ''}${iso === today ? ' day-today' : ''}`;
+    cell.className = `attendance-calendar-cell attendance-calendar-day${iso === attendanceSelectedDate ? ' day-active' : ''}${iso === today ? ' day-today' : ''}${isLogged ? ' day-logged' : ''}`;
     cell.textContent = String(day);
-    cell.title = `Show attendance for ${iso}`;
+    cell.title = isLogged ? `Attendance logged for ${iso}` : `Show attendance for ${iso}`;
     cell.addEventListener('click', () => {
       attendanceSelectedDate = iso;
       renderAttendanceCalendar();
@@ -146,10 +148,26 @@ function filterAttendanceRegisterByDate() {
   const body = document.getElementById('attendanceTableBody');
   const label = document.getElementById('attendanceDateLabel');
   if (!body) return;
-  body.querySelectorAll('tr[data-attendance-date]').forEach((row) => {
-    row.style.display = row.dataset.attendanceDate === attendanceSelectedDate ? '' : 'none';
+  const rows = body.querySelectorAll('tr[data-attendance-date]');
+  let visibleCount = 0;
+  rows.forEach((row) => {
+    const matches = row.dataset.attendanceDate === attendanceSelectedDate;
+    row.style.display = matches ? '' : 'none';
+    if (matches) visibleCount++;
   });
-  if (label) label.textContent = `${formatLeaveDate(attendanceSelectedDate)} • Attendance register`;
+  const existingEmpty = body.querySelector('.attendance-empty-row');
+  if (existingEmpty) existingEmpty.remove();
+
+  if (rows.length > 0 && visibleCount === 0) {
+    const tr = document.createElement('tr');
+    tr.className = 'attendance-empty-row';
+    tr.innerHTML = `<td colspan="5" style="text-align:center; padding: 24px; color: #64748b;">No attendance records for ${escapeHtml(formatLeaveDate(attendanceSelectedDate))}.</td>`;
+    body.appendChild(tr);
+  }
+  if (label) {
+    const formatted = typeof formatLeaveDate === 'function' ? formatLeaveDate(attendanceSelectedDate) : attendanceSelectedDate;
+    label.textContent = `${formatted} • Attendance register`;
+  }
 }
 
 // Bell counts live unread notifications. Same apiFetch + pill style as inbox.
@@ -693,7 +711,43 @@ function setPtMode(mode) {
     if (promoteContainer) promoteContainer.style.display = 'none';
     if (transferContainer) transferContainer.style.display = 'none';
     if (removeContainer) removeContainer.style.display = 'block';
+    populateOffboardDropdown();
   }
+}
+
+// Cache fetched employee list for the offboarding dropdown so repeat
+// mode-switches do not fire redundant network requests.
+let _offboardEmployees = null;
+
+async function populateOffboardDropdown() {
+  const select = document.getElementById('offboardEmployeeSelect');
+  if (!select) return;
+  try {
+    const res = await apiFetch('/api/employees/?page_size=200&is_active=true');
+    if (!res.ok) throw new Error('fetch failed');
+    const payload = await res.json();
+    const rows = Array.isArray(payload) ? payload : payload.results || [];
+    _offboardEmployees = rows;
+    // Keep the placeholder, replace the rest.
+    select.innerHTML = '<option value="" selected disabled>-- Select Employee --</option>';
+    rows.forEach((emp) => {
+      const opt = document.createElement('option');
+      opt.value = emp.id;
+      opt.textContent = `${emp.first_name} ${emp.last_name}`;
+      select.appendChild(opt);
+    });
+  } catch {
+    showToast('Could not load employee list.', 'error');
+  }
+}
+
+function onOffboardEmployeeSelect(select) {
+  if (!_offboardEmployees) return;
+  const emp = _offboardEmployees.find((e) => String(e.id) === select.value);
+  const emailInput = document.getElementById('offboardEmail');
+  const deptInput = document.getElementById('offboardDeptRole');
+  if (emailInput) emailInput.value = emp ? emp.email : '';
+  if (deptInput) deptInput.value = emp ? `${emp.role || 'N/A'} • ${emp.department_name || emp.department || 'N/A'}` : '';
 }
 
 // Purge preview: always dry-run first, render server log. Real delete
@@ -731,12 +785,17 @@ document.querySelectorAll('[data-offboard-file]').forEach((input) => {
   });
 });
 
-// Offboarding handler — resolves the employee by corporate email, then
-// DELETEs via the existing soft-delete (resign) flow.
+// Offboarding handler — uses the dropdown-selected employee ID to
+// DELETE via the existing soft-delete (resign) flow.
 async function handleOffboardingSubmit(e) {
   e.preventDefault();
   const form = e.target;
-  const email = form.querySelector('input[type="email"]')?.value.trim() || '';
+  const select = document.getElementById('offboardEmployeeSelect');
+  const employeeId = select?.value;
+  if (!employeeId) {
+    showToast('Select an employee to offboard.', 'error');
+    return;
+  }
   // Exit docs ride validateOnboardingFile guards. Same rule, no new rule.
   for (const input of form.querySelectorAll('[data-offboard-file]')) {
     const err = input.files?.[0] ? validateOnboardingFile(input.files[0]) : null;
@@ -745,21 +804,8 @@ async function handleOffboardingSubmit(e) {
       return;
     }
   }
-  if (!email) {
-    showToast('Corporate email is required to offboard.', 'error');
-    return;
-  }
   try {
-    const listRes = await apiFetch('/api/employees/?page_size=50');
-    if (!listRes.ok) throw new Error('lookup failed');
-    const payload = await listRes.json();
-    const rows = Array.isArray(payload) ? payload : payload.results || [];
-    const match = rows.find((emp) => (emp.email || '').toLowerCase() === email.toLowerCase());
-    if (!match) {
-      showToast(`No employee found for ${email}.`, 'error');
-      return;
-    }
-    const delRes = await apiFetch(`/api/employees/${match.id}/`, { method: 'DELETE' });
+    const delRes = await apiFetch(`/api/employees/${employeeId}/`, { method: 'DELETE' });
     if (!delRes.ok) throw new Error('offboard failed');
     const delData = await delRes.json().catch(() => ({}));
     if (delData.deauthed === false) {
@@ -768,6 +814,10 @@ async function handleOffboardingSubmit(e) {
       showToast('Offboarding finalized and exit clearance issued successfully!');
     }
     form.reset();
+    document.getElementById('offboardEmail').value = '';
+    document.getElementById('offboardDeptRole').value = '';
+    _offboardEmployees = null;
+    populateOffboardDropdown();
   } catch (error) {
     showToast('Offboarding could not be completed. Try again later.', 'error');
   }
@@ -3115,10 +3165,10 @@ function loadEmployeeDirectory() {
         card.setAttribute('data-live', 'true');
         card.setAttribute('data-dept', deptById[emp.department] || '');
         card.setAttribute('data-role', emp.role || '');
-        card.setAttribute(
-          'data-status',
-          emp.is_active === false ? 'On Leave' : 'Present Today'
-        );
+        const isResigned = Boolean(emp.resigned_at || emp.is_active === false);
+        const empStatus = isResigned ? 'Resigned' : 'Present Today';
+        const badgeClass = isResigned ? 'badge-resigned' : 'badge-present';
+        card.setAttribute('data-status', empStatus);
         card.innerHTML =
           `<div class="acc-summary" onclick="toggleAccordion(this)">` +
           `<div class="acc-left">` +
@@ -3126,8 +3176,8 @@ function loadEmployeeDirectory() {
           `<span class="acc-role">${escapeHtml(emp.role || '')} &bull; ${escapeHtml(emp.email || '')}</span>` +
           `</div>` +
           `<div class="acc-right">` +
-          `<span class="penpot-badge ${emp.is_active === false ? 'badge-leave' : 'badge-present'}">` +
-          `${emp.is_active === false ? 'On Leave' : 'Present Today'}</span>` +
+          `<span class="penpot-badge ${badgeClass}">` +
+          `${empStatus}</span>` +
           `</div></div>` +
           `<div class="acc-expanded-body" hidden>` +
           `<div class="acc-col"><span class="col-head">CONTACT</span>` +
@@ -3175,35 +3225,51 @@ function fmtTime(iso) {
 async function loadAttendanceView() {
   const body = document.getElementById('attendanceTableBody');
   if (!body) return;
-  body.innerHTML = '<tr><td colspan="5">Loading…</td></tr>';
+  body.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">Loading attendance…</td></tr>';
   try {
-    const res = await apiFetch('/api/attendance/me/');
-    if (!res.ok) throw new Error('load failed');
-    const payload = await res.json();
+    const [attRes, empRes] = await Promise.all([
+      apiFetch('/api/attendance/?page_size=200', { headers: { Accept: 'application/json' }, cache: 'no-store' }),
+      apiFetch('/api/employees/?page_size=200', { headers: { Accept: 'application/json' }, cache: 'no-store' }).catch(() => null),
+    ]);
+    if (!attRes.ok) throw new Error('load failed');
+    const payload = await attRes.json();
     const rows = Array.isArray(payload) ? payload : payload.results || [];
-    let names = {};
-    try { names = await liveEmployeeNames(); } catch (_) { /* fall back to ids */ }
+    let empById = {};
+    if (empRes && empRes.ok) {
+      const empData = await empRes.json().catch(() => ({}));
+      const emps = Array.isArray(empData) ? empData : empData.results || [];
+      emps.forEach((e) => { empById[e.id] = e; });
+    }
+
+    attendanceLoggedDates = new Set(rows.map((r) => r.date).filter(Boolean));
+    renderAttendanceCalendar();
+
     body.innerHTML = '';
     if (!rows.length) {
-      body.innerHTML = '<tr><td colspan="5">No records yet.</td></tr>';
+      body.innerHTML = '<tr class="attendance-empty-row"><td colspan="5" style="text-align:center; padding: 28px; color: #64748b;">No attendance records found. Click Clock in above to record attendance.</td></tr>';
     } else {
       rows.forEach((a) => {
         const open = !a.clock_out;
+        const emp = empById[a.employee] || {};
+        const empName = a.employee_name || `${emp.first_name || ''} ${emp.last_name || ''}`.trim() || emp.email || a.employee || 'Employee';
+        const empRole = a.employee_role || emp.role || 'Staff';
+        const shiftOrDept = a.employee_department || emp.department_name || 'Standard Shift';
         const tr = document.createElement('tr');
         tr.setAttribute('data-live', 'true');
         tr.dataset.attendanceDate = a.date || '';
         tr.innerHTML =
-          `<td><div class="bold-title">${escapeHtml(String(names[a.employee] || a.employee || ''))}</div>` +
-          `<div class="sub-role">${escapeHtml(String(a.date || ''))}</div></td>` +
-          `<td>—</td><td>${escapeHtml(fmtTime(a.clock_in))}</td><td>${escapeHtml(fmtTime(a.clock_out))}</td>` +
+          `<td><div class="bold-title">${escapeHtml(String(empName))}</div>` +
+          `<div class="sub-role">${escapeHtml(String(empRole))}</div></td>` +
+          `<td>${escapeHtml(String(shiftOrDept))}</td><td>${escapeHtml(fmtTime(a.clock_in))}</td><td>${escapeHtml(fmtTime(a.clock_out))}</td>` +
           `<td><span class="penpot-badge ${open ? 'badge-present' : 'badge-pending'}">` +
           `${open ? '● Clocked in' : 'Complete'}</span></td>`;
         body.appendChild(tr);
       });
     }
     setApiMode('live');
+    filterAttendanceRegisterByDate();
   } catch (e) {
-    body.innerHTML = '<tr><td colspan="5">Attendance data is unavailable.</td></tr>';
+    body.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: #ef4444;">Attendance data is unavailable.</td></tr>';
     setApiMode('demo');
     showToast('Attendance data could not be loaded.', 'error');
   }

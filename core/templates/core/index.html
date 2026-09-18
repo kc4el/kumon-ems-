@@ -381,6 +381,7 @@
                 <option value="Present Today">Present Today</option>
                 <option value="Probation">Probation</option>
                 <option value="On Leave">On Leave</option>
+                <option value="Resigned">Resigned</option>
               </select>
             </div>
           </div>
@@ -1125,21 +1126,17 @@
                 <div class="inputs-3grid">
                   <div class="input-cell">
                     <label>Full Legal Name <span class="req-star">*</span></label>
-                    <input type="text" value="Samantha Vance" required />
+                    <select id="offboardEmployeeSelect" class="penpot-select-full" required onchange="onOffboardEmployeeSelect(this)">
+                      <option value="" selected disabled>-- Select Employee --</option>
+                    </select>
                   </div>
                   <div class="input-cell">
                     <label>Corporate Email Address <span class="req-star">*</span></label>
-                    <input type="email" value="samantha.v@kumon-ems.com" required />
+                    <input id="offboardEmail" type="email" readonly required />
                   </div>
                   <div class="input-cell">
                     <label>Department & Role <span class="req-star">*</span></label>
-                    <select class="penpot-select-full">
-                      <option selected>Senior Dev • Engineering</option>
-                      <option>Product Designer • Design</option>
-                      <option>Lead UX Strategist • Design</option>
-                      <option>HR Specialist • HR</option>
-                      <option>Ops Manager • Operations</option>
-                    </select>
+                    <input id="offboardDeptRole" type="text" readonly />
                   </div>
                 </div>
 
@@ -1277,12 +1274,6 @@
                       </svg>
                       <span data-offboard-label>Upload File</span>
                     </label>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                      <polyline points="14 2 14 8 20 8"></polyline>
-                    </svg>
-                    <span>Upload File</span>
-                    </button>
                   </div>
                   <div class="doc-upload-cell">
                     <span class="doc-upload-title">Exit Interview Form</span>
@@ -1295,12 +1286,6 @@
                       </svg>
                       <span data-offboard-label>Upload File</span>
                     </label>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                      <polyline points="14 2 14 8 20 8"></polyline>
-                    </svg>
-                    <span>Upload File</span>
-                    </button>
                   </div>
                   <div class="doc-upload-cell">
                     <span class="doc-upload-title">Confidentiality Agreement Renewal</span>
@@ -1313,12 +1298,6 @@
                       </svg>
                       <span data-offboard-label>Upload File</span>
                     </label>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                      <polyline points="14 2 14 8 20 8"></polyline>
-                    </svg>
-                    <span>Upload File</span>
-                    </button>
                   </div>
                   <div class="doc-upload-cell">
                     <span class="doc-upload-title">Final Pay Calculation</span>
@@ -1331,12 +1310,6 @@
                       </svg>
                       <span data-offboard-label>Upload File</span>
                     </label>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                      <polyline points="14 2 14 8 20 8"></polyline>
-                    </svg>
-                    <span>Upload File</span>
-                    </button>
                   </div>
                 </div>
               </div>
