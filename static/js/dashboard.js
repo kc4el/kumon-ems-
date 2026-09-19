@@ -3620,18 +3620,48 @@ async function loadAttendanceView() {
   if (!body) return;
   body.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">Loading attendance…</td></tr>';
   try {
-    const [attRes, empRes] = await Promise.all([
+    const todayLocal = new Date().toLocaleDateString('en-CA');
+    const [attRes, empRes, shiftRes, leaveRes] = await Promise.all([
       apiFetch('/api/attendance/?page_size=200', { headers: { Accept: 'application/json' }, cache: 'no-store' }),
-      apiFetch('/api/employees/?page_size=200', { headers: { Accept: 'application/json' }, cache: 'no-store' }).catch(() => null),
+      apiFetch('/api/employees/?page_size=200&is_active=true', { headers: { Accept: 'application/json' }, cache: 'no-store' }).catch(() => null),
+      apiFetch(`/api/shift-rosters/?page_size=200&work_date=${todayLocal}`, { headers: { Accept: 'application/json' }, cache: 'no-store' }).catch(() => null),
+      apiFetch('/api/leaves/?page_size=200', { headers: { Accept: 'application/json' }, cache: 'no-store' }).catch(() => null)
     ]);
     if (!attRes.ok) throw new Error('load failed');
     const payload = await attRes.json();
     const rows = Array.isArray(payload) ? payload : payload.results || [];
     let empById = {};
+    let empCount = 0;
     if (empRes && empRes.ok) {
       const empData = await empRes.json().catch(() => ({}));
       const emps = Array.isArray(empData) ? empData : empData.results || [];
       emps.forEach((e) => { empById[e.id] = e; });
+      empCount = emps.length;
+    }
+
+    const shiftData = shiftRes && shiftRes.ok ? await shiftRes.json().catch(()=>({})) : {};
+    const shifts = Array.isArray(shiftData) ? shiftData : shiftData.results || [];
+    
+    const leaveData = leaveRes && leaveRes.ok ? await leaveRes.json().catch(()=>({})) : {};
+    const leavesAll = Array.isArray(leaveData) ? leaveData : leaveData.results || [];
+    const leavesToday = leavesAll.filter(l => l.status === 'Approved' && l.start_date <= todayLocal && l.end_date >= todayLocal);
+    
+    const attToday = rows.filter(r => r.date === todayLocal);
+    const presentToday = attToday.filter(r => r.clock_in).length;
+    const scheduled = shifts.length > 0 ? shifts.length : empCount;
+    const onLeaveCount = leavesToday.length;
+    const exceptions = Math.max(0, scheduled - presentToday - onLeaveCount);
+    
+    const prEl = document.getElementById('att-kpi-present');
+    if (prEl) {
+      prEl.textContent = String(presentToday).padStart(2, '0');
+      document.getElementById('att-kpi-present-sub').textContent = `${presentToday} / ${scheduled} Scheduled Staff`;
+      document.getElementById('att-kpi-scheduled').textContent = String(scheduled).padStart(2, '0');
+      document.getElementById('att-kpi-scheduled-sub').textContent = scheduled > 0 ? `${Math.round((presentToday/scheduled)*100)}% Roster Filled` : '0% Roster Filled';
+      document.getElementById('att-kpi-exceptions').textContent = String(exceptions).padStart(2, '0');
+      document.getElementById('att-kpi-exceptions-sub').textContent = `${exceptions} Unexcused Absence${exceptions!==1?'s':''}`;
+      document.getElementById('att-kpi-onleave').textContent = String(onLeaveCount).padStart(2, '0');
+      document.getElementById('att-kpi-onleave-sub').textContent = `${onLeaveCount} Staff on Leave`;
     }
 
     attendanceLoggedDates = new Set(rows.map((r) => r.date).filter(Boolean));
