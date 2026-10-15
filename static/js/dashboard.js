@@ -5,6 +5,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   initBrandLogo();
+  initRememberedLogin();
   initNavigation();
   initializeCurrentDateLabels();
   loadDashboardSummary();
@@ -12,7 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
   loadEmployeeDirectory();
   loadGrievanceView();
   populateRosterEmployeeOptions();
-  populateRosterMatrixEmployees();
   loadLeaveRegister();
   claimsPagerGoto('pending', 1);
   claimsPagerGoto('history', 1);
@@ -20,10 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
   loadClaimsSummary();
   updateBatchApproveCount();
   loadAdvancesView();
-  advancesPagerGoto(1);
   loadEmployeeInbox();
   loadAttendanceView();
   loadShiftRosterView();
+  initializeShiftEditorDate();
   loadMasterShiftCalendar();
   loadPayrollView();
   loadAuditView();
@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
   refreshNotifBell();
   initTour();
   populatePromotionTransferDropdowns();
+  populateOnboardingOptions();
   startDashboardLiveRefresh();
 });
 
@@ -41,9 +42,16 @@ let dashboardRefreshInFlight = false;
 
 async function refreshDashboardLiveData() {
   if (dashboardRefreshInFlight || document.hidden) return;
-  if (!document.getElementById('view-dashboard')) return;
+  const dashboardView = document.getElementById('view-dashboard');
+  if (!dashboardView) return;
   dashboardRefreshInFlight = true;
   try {
+    // Request registers also change while HR is viewing another section.
+    // Keep these lists current without refreshing unrelated dashboard data.
+    if (!dashboardView.classList.contains('active')) {
+      await Promise.all([loadLeaveRegister(), loadGrievanceView(), loadAdvancesView()]);
+      return;
+    }
     await Promise.all([
       loadDashboardSummary(),
       loadDashboardAttendance(),
@@ -71,12 +79,12 @@ function startDashboardLiveRefresh() {
 function initializeCurrentDateLabels() {
   const today = new Date();
   const dateText = today.toLocaleDateString(undefined, {
-    weekday: 'short', day: '2-digit', month: 'long', year: 'numeric',
-  }).toUpperCase();
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  });
   const monthText = today.toLocaleDateString(undefined, {
     month: 'long', year: 'numeric',
-  }).toUpperCase();
-  const isoDate = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
+  });
+  const isoDate = localDateIso(today);
   const dateLabel = document.getElementById('dashboardTodayLabel');
   const monthLabel = document.getElementById('dashboardMonthLabel');
   const attendanceDate = document.getElementById('attendanceDateLabel');
@@ -84,15 +92,18 @@ function initializeCurrentDateLabels() {
   const picker = document.getElementById('shiftDatePicker');
   if (dateLabel) dateLabel.textContent = dateText;
   if (monthLabel) monthLabel.textContent = monthText;
-  if (attendanceDate) attendanceDate.textContent = `${dateText} • Status: Logged & Verified`;
+  if (attendanceDate) attendanceDate.textContent = `Attendance for ${dateText}`;
   if (attendanceMonth) attendanceMonth.textContent = monthText;
   if (picker && !picker.value) picker.value = isoDate;
-  if (picker) handleShiftDateChange(picker.value);
   initAttendanceCalendar();
 }
 
+function localDateIso(date = new Date()) {
+  return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+}
+
 let attendanceCalendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-let attendanceSelectedDate = new Date().toISOString().slice(0, 10);
+let attendanceSelectedDate = localDateIso();
 let attendanceLoggedDates = new Set();
 
 function initAttendanceCalendar() {
@@ -126,7 +137,7 @@ function renderAttendanceCalendar() {
     placeholder.setAttribute('aria-hidden', 'true');
     grid.appendChild(placeholder);
   }
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateIso();
   const lastDay = new Date(year, month + 1, 0).getDate();
   for (let day = 1; day <= lastDay; day += 1) {
     const iso = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -203,7 +214,7 @@ function openNotifInbox(e) {
 // Same-origin dashboard calls use session auth + CSRF; DRF tokens stay for
 // scripts/operator use. apiFetch is the single helper for ALL API calls:
 // it sends cookies + CSRF and bounces logged-out users to /login/?next=.
-// setApiMode drives the #apiModeBadge (LIVE green / DEMO DATA amber).
+// setApiMode tracks the dashboard summary request, not unrelated panel errors.
 // ==========================================================================
 function apiFetch(url, options = {}) {
   const csrf = document.cookie.split('; ').find((c) => c.startsWith('csrftoken='))?.split('=')[1];
@@ -218,25 +229,46 @@ function apiFetch(url, options = {}) {
     credentials: 'same-origin',
     ...options,
     headers,
-  }).then((res) => {
+  }).then(async (res) => {
     // Logged-out viewers bouncing around /login/?next=/login/ loop forever:
     // serve the login page instead of redirecting to itself.
-    if (res.status === 401 && (window.location.pathname.startsWith('/login') || window.location.pathname.startsWith('/hr/login'))) return res;
+    const loginPage = window.location.pathname.startsWith('/login') || window.location.pathname.startsWith('/hr/login');
+    if ((res.status === 401 || res.status === 403) && loginPage) return res;
     const loginPath = window.location.pathname.startsWith('/hr') ? '/hr/login/' : '/login/';
-    if (res.status === 401) { window.location.href = loginPath + '?next=' + encodeURIComponent(window.location.pathname); throw new Error("auth"); }
+    let authenticationRequired = res.status === 401;
+    if (res.status === 403) {
+      const body = await res.clone().json().catch(() => null);
+      authenticationRequired = body?.error === 'Authentication required.';
+    }
+    if (authenticationRequired) { window.location.href = loginPath + '?next=' + encodeURIComponent(window.location.pathname); throw new Error("auth"); }
     return res;
   });
 }
 
 function setApiMode(mode) {
+  if (mode === 'live') {
+    dashboardSummaryFailures = 0;
+  } else if (mode === 'offline') {
+    dashboardSummaryFailures += 1;
+    mode = dashboardSummaryFailures < 2 ? 'retrying' : 'offline';
+  }
   document.body.dataset.api = mode;
   const badge = document.getElementById('apiModeBadge');
   if (badge) {
-    const live = mode === 'live';
-    badge.textContent = live ? 'LIVE' : 'DEMO DATA';
-    badge.className = 'penpot-badge ' + (live ? 'badge-present' : 'badge-pending');
+    const states = {
+      live: ['Data live', 'badge-present'],
+      retrying: ['Retrying', 'badge-pending'],
+      offline: ['Data issue', 'badge-resigned'],
+    };
+    const [label, badgeClass] = states[mode] || states.retrying;
+    badge.textContent = label;
+    badge.className = `penpot-badge ${badgeClass}`;
   }
 }
+
+let dashboardSummaryFailures = 0;
+let dashboardSummaryInFlight = false;
+let dashboardSummaryRetryTimer = null;
 
 // Automatic Logo Path Resolver for file:// and http:// protocols
 function initBrandLogo() {
@@ -268,7 +300,6 @@ function initBrandLogo() {
   });
 }
 
-
 // View Navigation Mapping
 const viewBreadcrumbs = {
   'dashboard': { active: 'Dashboard' },
@@ -289,6 +320,8 @@ const viewBreadcrumbs = {
 
 
 function initNavigation() {
+  const initialStream = document.getElementById('chatStreamMessages');
+  if (initialStream) initialStream.innerHTML = '<div class="chat-loading-state">Choose a conversation to load its messages.</div>';
   const navLinks = document.querySelectorAll('.nav-link[data-view]');
   navLinks.forEach(link => {
     link.addEventListener('click', (e) => {
@@ -311,7 +344,8 @@ function switchView(viewName) {
       (viewName.startsWith('attendance') && dataView === 'attendance-daily') ||
       (viewName === 'claims' && dataView === 'claims') ||
       (viewName === 'messages' && dataView === 'messages') ||
-      ((viewName === 'logs' || viewName === 'profile' || viewName === 'my-details') && dataView === 'logs') ||
+      (viewName === 'logs' && dataView === 'logs') ||
+      ((viewName === 'profile' || viewName === 'my-details') && dataView === 'profile') ||
       (viewName === 'settings' && dataView === 'settings')) {
       link.classList.add('active');
     } else {
@@ -344,6 +378,12 @@ function switchView(viewName) {
     }
     if (viewName === 'settings') {
       loadSettingsView();
+    }
+    if (viewName === 'profile' || viewName === 'my-details') {
+      loadAccountProfile();
+    }
+    if (viewName === 'dashboard') {
+      refreshDashboardLiveData();
     }
   } else {
     // Show placeholder view with specific title
@@ -545,23 +585,15 @@ async function loadActivityFeed() {
   } catch (e) { list.innerHTML = "<li>Activity unavailable.</li>"; }
 }
 
-// Full-coverage guided tour: one stop per view, demo-only controls disclosed.
-// (Two dashboard stops in a row are deliberate — second covers Customize +
-// feed + badge. Final step returns to the directory as the natural home.)
-const KUMON_TOUR_KEY = "kumon.tourSeen.v1";
+// Short first-run guide; only points to panels backed by current app flows.
+const KUMON_TOUR_KEY = "kumon.tourSeen.v2";
 const KUMON_TOUR_STEPS = [
-  { view: "dashboard", text: "Welcome! This is your home screen. Here you can see at a glance how many employees you have, who is on leave, and what needs your attention today. Those little arrow buttons jump you straight to the right page." },
-  { view: "dashboard", text: "Make this screen yours! Press Customize to show, hide, or reorder these cards however you like. The Today box shows the latest goings-on, and the little badge tells you whether the numbers are fresh from the system or just samples." },
-  { view: "employee-directory", text: "This is your people list — everyone who works here, all in one place you can search. Tap any name to open their details.", demo: "Full staff profiles and chat messaging are on the way soon!" },
-  { view: "employee-manage", text: "This is where people changes happen. The three tabs at the top switch between promoting someone, moving them to another team, or removing them. Further down, the leaving form with its simple yes-or-no questions files a resignation." },
-  { view: "employee-grievance", text: "If someone raises a concern, this is where it gets looked after — you can track each case and schedule sit-downs to sort things out.", demo: "File with the form above; cases land in the team chat thread." },
-  { view: "attendance-daily", text: "This is the daily time sheet. Use the little arrows to hop between days and see who clocked in and out, and when.", demo: "Downloading this as a file is coming soon." },
-  { view: "attendance-shift", text: "This is the roster board. Pick a date (or just press Today), then press Assign to place someone on the morning, evening, or night shift. If you see a little warning flag, it means that person already has an approved leave that day." },
-  { view: "attendance-leave", text: "Time-off requests live here. Press the big button to file one yourself, and you can approve or say no to other people's requests from the same list — they will get a message telling them what you decided." },
-  { view: "claims", text: "Money stuff! This is where repayment requests land. You can search for any request and approve a whole bunch at once with one press.", demo: "History pages below load live from the server." },
-  { view: "messages", text: "This is the team chat. Pick a conversation on the left, type on the right — whatever you send goes out under your own name, automatically." },
-  { view: "logs", text: "Think of this as the diary of everything that happens in the system. Those little category buttons let you look at just people changes, leaves, money, rosters, or concerns.", demo: "Later pages load live from the server." },
-  { view: "employee-directory", text: "And that's the whole tour — well done! Remember, you can press the ? key anytime to see handy keyboard shortcuts, and there's a Replay button back on the home screen whenever you want a refresher." },
+  { view: "dashboard", text: "Your home page brings today’s activity and team summaries together. Use the left menu to move between people, attendance, requests, and account tools." },
+  { view: "employee-directory", text: "Search the directory to find an employee. Open a record to review the details and available HR actions." },
+  { view: "attendance-daily", text: "Review the daily attendance register and move between dates to check clock-in and clock-out records." },
+  { view: "attendance-leave", text: "Review leave requests and submit your own request from the employee portal." },
+  { view: "settings", text: "Set notification and display preferences. Staff administrators can also manage company rules and roster imports here." },
+  { view: "profile", text: "Update your own account details, set a new password, and enable authenticator-based two-factor sign-in." },
 ];
 let kumonTourIndex = -1;
 function startTour() {
@@ -574,6 +606,11 @@ function nextTourStep() {
   const step = KUMON_TOUR_STEPS[kumonTourIndex];
   switchView(step.view);
   showTourBubble(step, kumonTourIndex + 1, KUMON_TOUR_STEPS.length);
+}
+function previousTourStep() {
+  if (kumonTourIndex <= 0) return;
+  kumonTourIndex -= 2;
+  nextTourStep();
 }
 function endTour() {
   kumonTourIndex = -1;
@@ -595,12 +632,13 @@ function showTourBubble(step, n, total) {
   badge.className = "penpot-badge badge-onduty";
   badge.textContent = "Step " + n + " of " + total;
   const title = document.createElement("h3");
-  title.textContent = "Welcome tour";
+  title.textContent = "Quick tour";
   head.appendChild(title);
   head.appendChild(badge);
   const p = document.createElement("p");
   p.className = "tour-text";
   p.textContent = step.text;
+  p.setAttribute("aria-live", "polite");
   const dots = document.createElement("div");
   dots.className = "tour-dots";
   dots.setAttribute("aria-hidden", "true");
@@ -611,6 +649,12 @@ function showTourBubble(step, n, total) {
   }
   const foot = document.createElement("div");
   foot.className = "modal-foot";
+  const back = document.createElement("button");
+  back.type = "button";
+  back.className = "btn btn-outline-gray";
+  back.textContent = "Back";
+  back.disabled = n === 1;
+  back.addEventListener("click", previousTourStep);
   const skip = document.createElement("button");
   skip.type = "button";
   skip.className = "btn-black-sm";
@@ -619,18 +663,13 @@ function showTourBubble(step, n, total) {
   const next = document.createElement("button");
   next.type = "button";
   next.className = "btn-blue-sm";
-  next.textContent = n >= total ? "Finish" : "Next";
+  next.textContent = n >= total ? "Finish" : "Continue";
   next.addEventListener("click", nextTourStep);
+  foot.appendChild(back);
   foot.appendChild(skip);
   foot.appendChild(next);
   b.appendChild(head);
   b.appendChild(p);
-  if (step.demo) {
-    const note = document.createElement("p");
-    note.className = "tour-demo";
-    note.textContent = step.demo;
-    b.appendChild(note);
-  }
   b.appendChild(dots);
   b.appendChild(foot);
   document.body.appendChild(b);
@@ -643,7 +682,7 @@ function initTour() {
     const btn = document.createElement("button");
     btn.id = "replayTourBtn";
     btn.type = "button";
-    btn.textContent = "Replay tour";
+    btn.textContent = "Take a quick tour";
     btn.addEventListener("click", startTour);
     if (settings && settings.nextSibling) settings.parentElement.insertBefore(btn, settings.nextSibling);
     else if (settings) settings.parentElement.appendChild(btn);
@@ -651,10 +690,25 @@ function initTour() {
   }
   let seen = null;
   try { seen = localStorage.getItem(KUMON_TOUR_KEY); } catch (e) { seen = null; }
-  if (!seen && view) setTimeout(startTour, 800);
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && kumonTourIndex >= 0) endTour();
+  });
+  if (!seen && view) setTimeout(startTour, 1100);
 }
 
 // Accordion toggle for Employee Directory
+function focusRosterProfile(button) {
+  const card = button?.closest('.roster-accordion-card');
+  if (!card) return;
+  if (!card.classList.contains('open')) {
+    const summary = card.querySelector('.acc-summary');
+    if (summary) toggleAccordion(summary);
+  }
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  card.classList.add('profile-focus');
+  window.setTimeout(() => card.classList.remove('profile-focus'), 900);
+}
+
 function toggleAccordion(summaryElement) {
   const card = summaryElement.closest('.roster-accordion-card');
   const tag = summaryElement.querySelector('.acc-toggle-tag');
@@ -746,19 +800,26 @@ let _departmentsCache = null;
 
 async function populatePromotionTransferDropdowns() {
   const promoteEmp = document.getElementById('promoteEmployeeSelect');
+  const promoteRoleOptions = document.getElementById('promoteRoleOptions');
   const transferEmp = document.getElementById('transferEmployeeSelect');
   const transferDept = document.getElementById('transferDeptSelect');
 
   try {
     const [empData, deptData] = await Promise.all([
-      _activeEmployeesCache ? Promise.resolve(_activeEmployeesCache) : apiFetch('/api/employees/?page_size=200&is_active=true').then((r) => r.json()),
-      _departmentsCache ? Promise.resolve(_departmentsCache) : apiFetch('/api/departments/?page_size=200').then((r) => r.json()),
+      _activeEmployeesCache ? Promise.resolve(_activeEmployeesCache) : fetchAllApiRows('/api/employees/?page_size=100&is_active=true'),
+      _departmentsCache ? Promise.resolve(_departmentsCache) : fetchAllApiRows('/api/departments/?page_size=100'),
     ]);
 
-    const emps = Array.isArray(empData) ? empData : empData?.results || [];
-    const depts = Array.isArray(deptData) ? deptData : deptData?.results || [];
+    const emps = empData;
+    const depts = deptData;
     _activeEmployeesCache = emps;
     _departmentsCache = depts;
+
+    if (promoteRoleOptions) {
+      promoteRoleOptions.replaceChildren(...[...new Set(emps.map((employee) => employee.role).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b))
+        .map((role) => new Option(role, role)));
+    }
 
     if (promoteEmp) {
       const cur = promoteEmp.value;
@@ -800,11 +861,45 @@ async function populatePromotionTransferDropdowns() {
   }
 }
 
+async function populateOnboardingOptions() {
+  const departmentSelect = document.getElementById('onboardDepartment');
+  const roleOptions = document.getElementById('onboardRoleOptions');
+  const startDate = document.getElementById('onboardStartDate');
+  const today = new Date();
+  if (startDate && !startDate.value) {
+    startDate.value = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
+  }
+  try {
+    const [departments, employees] = await Promise.all([
+      fetchAllApiRows('/api/departments/?page_size=100'),
+      fetchAllApiRows('/api/employees/?page_size=100'),
+    ]);
+    if (departmentSelect) {
+      departmentSelect.replaceChildren(new Option('Select Department...', ''));
+      departments.forEach((department) => {
+        departmentSelect.appendChild(new Option(department.name, department.id));
+      });
+      departmentSelect.disabled = !departments.length;
+    }
+    if (roleOptions) {
+      roleOptions.replaceChildren(...[...new Set(employees.map((employee) => employee.role).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b))
+        .map((role) => new Option(role, role)));
+    }
+  } catch (_) {
+    if (departmentSelect) {
+      departmentSelect.replaceChildren(new Option('Departments unavailable', ''));
+      departmentSelect.disabled = true;
+    }
+    showToast('Onboarding options could not be loaded.', 'error');
+  }
+}
+
 function resetPromoteForm() {
   const selEmp = document.getElementById('promoteEmployeeSelect');
   const selRole = document.getElementById('promoteRoleSelect');
   if (selEmp) selEmp.selectedIndex = 0;
-  if (selRole) selRole.selectedIndex = 0;
+  if (selRole) selRole.value = '';
 }
 
 async function handlePromotionSubmit() {
@@ -934,10 +1029,7 @@ async function populateOffboardDropdown() {
   const select = document.getElementById('offboardEmployeeSelect');
   if (!select) return;
   try {
-    const res = await apiFetch('/api/employees/?page_size=200&is_active=true');
-    if (!res.ok) throw new Error('fetch failed');
-    const payload = await res.json();
-    const rows = Array.isArray(payload) ? payload : payload.results || [];
+    const rows = await fetchAllApiRows('/api/employees/?page_size=100&is_active=true');
     _offboardEmployees = rows;
     // Keep the placeholder, replace the rest.
     select.innerHTML = '<option value="" selected disabled>-- Select Employee --</option>';
@@ -1175,15 +1267,15 @@ async function handleOnboarding(e) {
     email,
     password,
   };
-  const deptName = (form.querySelector('#onboardDepartment')?.value || '').trim();
+  const departmentId = form.querySelector('#onboardDepartment')?.value || '';
   const roleVal = (form.querySelector('#onboardRole')?.value || '').trim();
-  if (roleVal) payload.role = roleVal.split('•')[0].trim();
-  if (deptName) {
-    const depots = await apiFetch('/api/departments/').then((r) => r.json()).catch(() => []);
-    const rows = Array.isArray(depots) ? depots : depots.results || [];
-    const hit = rows.find((d) => (d.name || '').toLowerCase() === deptName.toLowerCase());
-    if (hit) payload.department = hit.id;
+  if (!departmentId) {
+    showToast('Select a department from the database.', 'error');
+    return;
   }
+  payload.department = departmentId;
+  payload.date_hired = document.getElementById('onboardStartDate')?.value;
+  if (roleVal) payload.role = roleVal;
   apiFetch('/api/employees/', {
     method: 'POST',
     body: JSON.stringify(payload),
@@ -1232,15 +1324,10 @@ async function loadGrievanceView() {
   const complainant = document.getElementById('grievComplainant');
   if (!list) return;
   try {
-    const [grievanceRes, employeeRes] = await Promise.all([
-      apiFetch('/api/complaints/?page_size=100', { headers: { Accept: 'application/json' } }),
-      apiFetch('/api/employees/?page_size=100', { headers: { Accept: 'application/json' } }),
+    const [grievances, employees] = await Promise.all([
+      fetchAllApiRows('/api/complaints/?page_size=100'),
+      fetchAllApiRows('/api/employees/?page_size=100'),
     ]);
-    if (!grievanceRes.ok || !employeeRes.ok) throw new Error('grievance data unavailable');
-    const grievancePayload = await grievanceRes.json();
-    const employeePayload = await employeeRes.json();
-    const grievances = Array.isArray(grievancePayload) ? grievancePayload : grievancePayload.results || [];
-    const employees = Array.isArray(employeePayload) ? employeePayload : employeePayload.results || [];
     if (complainant) {
       complainant.innerHTML = '<option value="">Select employee...</option>';
       employees.filter((employee) => employee.is_active !== false).forEach((employee) => {
@@ -1273,7 +1360,6 @@ async function loadGrievanceView() {
     document.getElementById('grievanceOpenCount')?.replaceChildren(String(open).padStart(2, '0'));
     document.getElementById('grievanceMediationCount')?.replaceChildren(String(mediation).padStart(2, '0'));
     document.getElementById('grievanceResolvedCount')?.replaceChildren(String(resolved).padStart(2, '0'));
-    setApiMode('live');
   } catch (_) {
     list.innerHTML = '<p class="card-sub">Grievance data is unavailable.</p>';
     showToast('Grievance data could not be loaded.', 'error');
@@ -1378,6 +1464,17 @@ function setShiftDateToday() {
   showToast('Reset roster view to today.');
 }
 
+function initializeShiftEditorDate() {
+  const picker = document.getElementById('shiftDatePicker');
+  if (!picker) return;
+  const today = new Date();
+  const todayStr = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
+  picker.value = todayStr;
+  const display = document.getElementById('shiftDateDisplay');
+  if (display) display.textContent = `Live allocation for ${formatShiftDisplayDate(today)}`;
+  loadShiftEditorForDate(todayStr);
+}
+
 // Live employee id lookup shared by the advance + roster forms: the
 // directory loaded at startup first, then a fresh /api/employees/ fetch.
 async function resolveEmployeeId(name) {
@@ -1385,10 +1482,7 @@ async function resolveEmployeeId(name) {
   if (!key) return null;
   if (employeeNameIndex[key]) return employeeNameIndex[key];
   try {
-    const res = await apiFetch('/api/employees/?page_size=100');
-    if (!res.ok) return null;
-    const payload = await res.json();
-    const rows = Array.isArray(payload) ? payload : payload.results || [];
+    const rows = await fetchAllApiRows('/api/employees/?page_size=100');
     rows.forEach((e) => {
       const full = `${e.first_name || ''} ${e.last_name || ''}`.trim().toLowerCase();
       if (full) employeeNameIndex[full] = e.id;
@@ -1518,16 +1612,10 @@ async function loadShiftEditorForDate(workDate) {
     if (usersList) usersList.innerHTML = '<div class="shift-empty-placeholder">Loading assignments...</div>';
   });
   try {
-    const [employeeRes, rosterRes] = await Promise.all([
-      apiFetch('/api/employees/?page_size=100', { headers: { Accept: 'application/json' } }),
-      apiFetch(`/api/shift-rosters/?page_size=100&work_date=${encodeURIComponent(workDate)}`, { headers: { Accept: 'application/json' } }),
+    const [employees, rosters] = await Promise.all([
+      fetchAllApiRows('/api/employees/?page_size=100'),
+      fetchAllApiRows(`/api/shift-rosters/?page_size=100&work_date=${encodeURIComponent(workDate)}`),
     ]);
-    if (!employeeRes.ok || !rosterRes.ok) throw new Error('editor data unavailable');
-    const employeePayload = await employeeRes.json();
-    const rosterPayload = await rosterRes.json();
-    const employees = Array.isArray(employeePayload) ? employeePayload : employeePayload.results || [];
-    const rosters = (Array.isArray(rosterPayload) ? rosterPayload : rosterPayload.results || [])
-      .filter((record) => record.work_date === workDate);
     const employeeById = Object.fromEntries(employees.map((employee) => [employee.id, employee]));
     ['morning', 'evening', 'night'].forEach((shiftKey) => renderShiftEditorSlot(shiftKey, rosters, employeeById));
     updateShiftCoverageStatus();
@@ -1687,15 +1775,10 @@ function switchClaimsTab(tabKey) {
 
 async function loadClaimsSummary() {
   try {
-    const [claimsRes, advancesRes] = await Promise.all([
-      apiFetch('/api/expense-claims/?page_size=100', { headers: { Accept: 'application/json' } }),
-      apiFetch('/api/advances/?page_size=100', { headers: { Accept: 'application/json' } }),
+    const [claims, advances] = await Promise.all([
+      fetchAllApiRows('/api/expense-claims/?page_size=100'),
+      fetchAllApiRows('/api/advances/?page_size=100'),
     ]);
-    if (!claimsRes.ok || !advancesRes.ok) throw new Error('summary unavailable');
-    const claimsPayload = await claimsRes.json();
-    const advancesPayload = await advancesRes.json();
-    const claims = Array.isArray(claimsPayload) ? claimsPayload : claimsPayload.results || [];
-    const advances = Array.isArray(advancesPayload) ? advancesPayload : advancesPayload.results || [];
     const count = (rows, status) => rows.filter((row) => row.status === status).length;
     const year = new Date().getFullYear();
     const ytdClaims = claims.filter((claim) => String(claim.created_at || '').slice(0, 4) === String(year));
@@ -1841,8 +1924,7 @@ function updateBatchApproveCount() {
 }
 
 // ==========================================================================
-// Live pagers (D34): every pager button fetches its list with ?page=N and
-// renders the live rows, keeping the static demo markup as offline fallback.
+// Live pagers fetch each page from the API and render an explicit empty/error state.
 // ==========================================================================
 const claimsPagerState = { pending: 1, history: 1 };
 const CLAIMS_PAGE_SIZE = 6;
@@ -1860,6 +1942,31 @@ function markPagerActive(pagerName, page) {
   });
 }
 
+function updatePagerControls(pagerName, page, total, pageSize) {
+  const bar = document.querySelector(`[data-pager="${pagerName}"]`);
+  if (!bar) return;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const pageButtons = Array.from(bar.querySelectorAll('[data-pagenum]'));
+  const firstPage = Math.max(1, Math.min(page - 1, totalPages - pageButtons.length + 1));
+  const pageActions = {
+    'claims-pending': (number) => `claimsPagerGoto('pending', ${number})`,
+    'claims-history': (number) => `claimsPagerGoto('history', ${number})`,
+    advances: (number) => `advancesPagerGoto(${number})`,
+    audit: (number) => `auditPagerGoto(${number})`,
+  };
+  pageButtons.forEach((button, index) => {
+    const pageNumber = firstPage + index;
+    button.dataset.pagenum = String(pageNumber);
+    button.textContent = String(pageNumber);
+    button.hidden = pageNumber > totalPages;
+    if (pageActions[pagerName]) button.setAttribute('onclick', pageActions[pagerName](pageNumber));
+  });
+  const previous = bar.querySelector('[data-page-prev]');
+  const next = bar.querySelector('[data-page-next]');
+  if (previous) previous.disabled = page <= 1;
+  if (next) next.disabled = page >= totalPages;
+}
+
 function claimInitials(name) {
   const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
   if (!parts.length) return '—';
@@ -1872,6 +1979,34 @@ function fmtClaimDate(iso) {
   return isNaN(d) ? '—' : d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+async function fetchAllApiRows(path) {
+  const rows = [];
+  let nextPath = path;
+  const seenPaths = new Set();
+  while (nextPath) {
+    if (seenPaths.has(nextPath)) throw new Error('The API returned a repeated pagination URL.');
+    seenPaths.add(nextPath);
+    const response = await apiFetch(nextPath, {
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
+    });
+    if (!response.ok) throw new Error('Records could not be loaded.');
+    const payload = await response.json();
+    if (Array.isArray(payload)) {
+      rows.push(...payload);
+      break;
+    }
+    rows.push(...(Array.isArray(payload.results) ? payload.results : []));
+    if (!payload.next) break;
+    const next = new URL(payload.next, window.location.origin);
+    if (next.origin !== window.location.origin || !next.pathname.startsWith('/api/')) {
+      throw new Error('The API returned an unsafe pagination URL.');
+    }
+    nextPath = `${next.pathname}${next.search}`;
+  }
+  return rows;
+}
+
 async function claimsPagerGoto(which, page) {
   if (page < 1) return;
   const bodyId = which === 'pending' ? 'pendingClaimsTableBody' : 'historyClaimsTableBody';
@@ -1879,8 +2014,6 @@ async function claimsPagerGoto(which, page) {
   const pagerName = which === 'pending' ? 'claims-pending' : 'claims-history';
   const body = document.getElementById(bodyId);
   if (!body) return;
-  const demo = body.dataset.demoHtml || body.innerHTML;
-  body.dataset.demoHtml = demo;
   body.innerHTML = '<tr><td colspan="7">Loading claims…</td></tr>';
   try {
     const statusFilter = which === 'pending' ? 'Pending' : 'Approved,Rejected';
@@ -1898,10 +2031,13 @@ async function claimsPagerGoto(which, page) {
       rows.forEach((c) => body.appendChild(buildClaimRow(c, which, names)));
     }
     const info = document.getElementById(infoId);
-    if (info) info.textContent = `Showing page ${page} of ${total} live expense claims`;
+    const totalPages = Math.max(1, Math.ceil(total / CLAIMS_PAGE_SIZE));
+    if (info) info.textContent = total
+      ? `Page ${page} of ${totalPages} · ${total} ${which === 'pending' ? 'pending' : 'processed'} claims`
+      : `No ${which === 'pending' ? 'pending claims' : 'claim history'} yet`;
     claimsPagerState[which] = page;
+    updatePagerControls(pagerName, page, total, CLAIMS_PAGE_SIZE);
     markPagerActive(pagerName, page);
-    setApiMode('live');
     if (which === 'pending' && typeof updateBatchApproveCount === 'function') updateBatchApproveCount();
   } catch (e) {
     body.innerHTML = '<tr><td colspan="7">Claims data is unavailable.</td></tr>';
@@ -1955,60 +2091,28 @@ function buildClaimRow(c, which, names) {
 
 async function exportClaimHistory() {
   const rows = [['Claim ID', 'Employee', 'Category', 'Submitted', 'Expense Details', 'Amount', 'Status']];
-  const historyRows = document.querySelectorAll('#historyClaimsTableBody tr[data-live="true"]');
-  if (historyRows.length) {
-    historyRows.forEach((row) => {
-      rows.push([
-        row.dataset.claimId || '',
-        row.dataset.employee || '',
-        row.dataset.category || '',
-        typeof fmtClaimDate === 'function' ? fmtClaimDate(row.dataset.createdAt || '') : (row.dataset.createdAt || ''),
-        row.dataset.title || '',
-        row.dataset.amount || '0',
-        row.dataset.status || '',
-      ]);
-    });
-  } else {
-    try {
-      const res = await apiFetch('/api/expense-claims/?status=Approved,Rejected&page_size=500', { headers: { Accept: 'application/json' }, cache: 'no-store' });
-      if (res.ok) {
-        const payload = await res.json();
-        const claims = Array.isArray(payload) ? payload : payload.results || [];
-        let names = {};
-        try { names = await liveEmployeeNames(); } catch (_) {}
-        claims.forEach((c) => {
-          const who = String(names[c.employee] || c.employee || 'Unknown');
-          rows.push([
-            String(c.id || ''),
-            who,
-            String(c.category || 'General Expense'),
-            typeof fmtClaimDate === 'function' ? fmtClaimDate(c.created_at || '') : (c.created_at || ''),
-            String(c.title || ''),
-            String(c.amount || '0'),
-            String(c.status || 'Processed'),
-          ]);
-        });
-      }
-    } catch (_) {}
+  let claims;
+  let names = {};
+  try {
+    [claims, names] = await Promise.all([
+      fetchAllApiRows('/api/expense-claims/?status=Approved,Rejected&page_size=100'),
+      liveEmployeeNames().catch(() => ({})),
+    ]);
+  } catch (error) {
+    if (error.message !== 'auth') showToast(error.message || 'Claim history could not be loaded.', 'error');
+    return;
   }
-
-  if (rows.length === 1) {
-    const anyRows = document.querySelectorAll('#historyClaimsTableBody tr');
-    anyRows.forEach((tr) => {
-      const tds = tr.querySelectorAll('td');
-      if (tds.length >= 6) {
-        rows.push([
-          '',
-          tds[0].textContent.trim(),
-          tds[1].textContent.trim(),
-          tds[2].textContent.trim(),
-          tds[3].textContent.trim(),
-          tds[4].textContent.trim().replace(/^\$/, ''),
-          tds[5].textContent.trim(),
-        ]);
-      }
-    });
-  }
+  claims.forEach((claim) => {
+    rows.push([
+      String(claim.id || ''),
+      String(names[claim.employee] || claim.employee || 'Unknown'),
+      String(claim.category || 'General Expense'),
+      fmtClaimDate(claim.created_at || ''),
+      String(claim.title || ''),
+      String(claim.amount || '0'),
+      String(claim.status || 'Processed'),
+    ]);
+  });
 
   if (rows.length === 1) {
     showToast('No live claim history is available to export.', 'error');
@@ -2018,8 +2122,7 @@ async function exportClaimHistory() {
   showToast(`Exported ${rows.length - 1} claim history record${rows.length === 2 ? '' : 's'}.`);
 }
 
-// Advances pager (D34): ?page=N against /api/advances/, same register row
-// shape as the static demo markup, which stays as the offline fallback.
+// Advances pager fetches /api/advances/ and renders backend records.
 let advancesPagerPage = 1;
 const ADVANCES_PAGE_SIZE = 4;
 
@@ -2071,8 +2174,6 @@ async function advancesPagerGoto(page) {
   if (page < 1) return;
   const body = document.getElementById('advanceClaimsTableBody');
   if (!body) return;
-  const demo = body.dataset.demoHtml || body.innerHTML;
-  body.dataset.demoHtml = demo;
   body.innerHTML = '<tr><td colspan="7">Loading advances…</td></tr>';
   try {
     const res = await apiFetch(`/api/advances/?page=${page}&page_size=${ADVANCES_PAGE_SIZE}`);
@@ -2089,10 +2190,13 @@ async function advancesPagerGoto(page) {
       rows.forEach((a) => body.appendChild(buildAdvanceRow(a, names)));
     }
     const info = document.getElementById('advancesPagerInfo');
-    if (info) info.textContent = `Showing page ${page} of ${total} live advance pay applications`;
+    const totalPages = Math.max(1, Math.ceil(total / ADVANCES_PAGE_SIZE));
+    if (info) info.textContent = total
+      ? `Page ${page} of ${totalPages} · ${total} advance applications`
+      : 'No advance applications yet';
     advancesPagerPage = page;
+    updatePagerControls('advances', page, total, ADVANCES_PAGE_SIZE);
     markPagerActive('advances', page);
-    setApiMode('live');
   } catch (e) {
     body.innerHTML = '<tr><td colspan="7">Advance data is unavailable.</td></tr>';
     showToast('Advance data is unavailable.', 'error');
@@ -2112,35 +2216,15 @@ function closeAdvanceModal() {
   if (modal) modal.classList.remove('active');
 }
 
-// Live advances register (D36): replaces the static demo tbody with live
-// /api/advances/ rows, keeping the demo markup as the offline fallback.
-async function loadAdvancesView() {
-  const body = document.getElementById('advanceClaimsTableBody');
-  if (!body) return;
-  const demo = body.dataset.demoHtml || body.innerHTML;
-  body.dataset.demoHtml = demo;
-  try {
-    const res = await apiFetch('/api/advances/?page_size=50');
-    if (!res.ok) throw new Error('load failed');
-    const payload = await res.json();
-    const rows = Array.isArray(payload) ? payload : payload.results || [];
-    let names = {};
-    try { names = await liveEmployeeNames(); } catch (_) { /* fall back to ids */ }
-    body.innerHTML = '';
-    if (!rows.length) {
-      body.innerHTML = '<tr><td colspan="7">No advance applications yet.</td></tr>';
-    } else {
-      rows.forEach((a) => body.appendChild(buildAdvanceRow(a, names)));
-    }
-    setApiMode('live');
-  } catch (e) { body.innerHTML = '<tr><td colspan="7">Advance data is unavailable.</td></tr>'; setApiMode('demo'); showToast('Advance data is unavailable.', 'error'); }
+// Shared refresh path keeps the register and its pagination in sync.
+function loadAdvancesView() {
+  return advancesPagerGoto(advancesPagerPage || 1);
 }
 
 async function handleRequestAdvance(e) {
   e.preventDefault();
   const form = e.target;
   const applicant = document.getElementById('advanceApplicant');
-  const applicantName = applicant?.selectedOptions[0]?.textContent || '';
   const amount = document.getElementById('advanceAmount')?.value || '';
   const terms = document.getElementById('advanceTerms')?.value || 'Next Payroll';
   const purpose = document.getElementById('advancePurpose')?.value.trim() || '';
@@ -2198,16 +2282,14 @@ async function loadLeaveRegister() {
   const body = document.getElementById('leaveRegisterTableBody');
   if (!body) return;
   try {
-    const res = await apiFetch('/api/leaves/?page_size=100', {
-      headers: { Accept: 'application/json' },
-    });
-    if (!res.ok) throw new Error('leave register unavailable');
-    const payload = await res.json();
-    const rows = Array.isArray(payload) ? payload : payload.results || [];
-    const today = new Date().toISOString().slice(0, 10);
+    const rows = await fetchAllApiRows('/api/leaves/?page_size=100');
+    const today = localDateIso();
     const pendingCount = rows.filter((leave) => leave.status === 'Pending').length;
     const approvedCount = rows.filter((leave) => leave.status === 'Approved').length;
-    const onLeaveToday = rows.filter((leave) => leave.status === 'Approved' && leave.start_date <= today && leave.end_date >= today).length;
+    const onLeaveToday = new Set(rows
+      .filter((leave) => leave.status === 'Approved' && leave.start_date <= today && leave.end_date >= today)
+      .map((leave) => leave.employee)
+      .filter(Boolean)).size;
     const pendingTarget = document.getElementById('leavePendingCount');
     const approvedTarget = document.getElementById('leaveApprovedCount');
     const todayTarget = document.getElementById('leaveTodayCount');
@@ -2314,7 +2396,7 @@ function handleApplyLeave(e) {
 // ==========================================================================
 // Messages & Channels Handlers
 // ==========================================================================
-let activeConversationKey = 'sarah';
+let activeConversationKey = 'announcements';
 let messagesLoadVersion = 0;
 
 
@@ -2330,17 +2412,16 @@ function filterInboxes(input) {
 async function loadEmployeeInbox() {
   const list = document.getElementById('inboxConversationsList');
   if (!list) return;
+  const previousKey = activeConversationKey;
   try {
-    const response = await apiFetch('/api/employees/?page_size=100&is_active=true', {
-      headers: { Accept: 'application/json' },
-    });
-    if (!response.ok) throw new Error('employee inbox unavailable');
-    const payload = await response.json();
-    const employees = (Array.isArray(payload) ? payload : payload.results || [])
-      .filter((employee) => employee.is_active !== false);
+    const employees = await fetchAllApiRows('/api/employees/?page_size=100&is_active=true');
     list.innerHTML = '';
     if (!employees.length) {
       list.innerHTML = '<div class="card-sub">No active employees in the roster.</div>';
+      activeConversationKey = 'announcements';
+      const channel = document.querySelector('.channel-list-item');
+      if (channel) selectChannel(channel, 'announcements', false);
+      else loadMessagesForConversation('announcements');
       return;
     }
     const avatarClasses = ['avatar-blue', 'avatar-yellow', 'avatar-green', 'avatar-purple', 'avatar-slate'];
@@ -2349,25 +2430,35 @@ async function loadEmployeeInbox() {
       const initials = name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
       const role = employee.role || 'Employee';
       const tile = document.createElement('div');
-      tile.className = `inbox-user-tile${index === 0 ? ' active' : ''}`;
+      const employeeKey = String(employee.id);
+      tile.className = `inbox-user-tile${employeeKey === previousKey ? ' active' : ''}`;
       tile.innerHTML =
         `<div class="avatar-circle-sm ${avatarClasses[index % avatarClasses.length]}">${escapeHtml(initials)}</div>` +
         `<div class="inbox-tile-content"><div class="inbox-tile-top"><strong>${escapeHtml(name)}</strong>` +
         `<span class="inbox-timestamp">Roster</span></div><span class="inbox-snippet">${escapeHtml(role)}</span></div>`;
-      tile.addEventListener('click', () => selectInboxUser(tile, name, initials, role, String(employee.id)));
+      tile.addEventListener('click', () => selectInboxUser(tile, name, initials, role, employeeKey));
       list.appendChild(tile);
-      if (index === 0) {
-        activeConversationKey = String(employee.id);
-        selectInboxUser(tile, name, initials, role, String(employee.id), false);
+      if (employeeKey === previousKey) {
+        selectInboxUser(tile, name, initials, role, employeeKey, false);
       }
     });
+    if (!employees.some((employee) => String(employee.id) === previousKey)) {
+      activeConversationKey = 'announcements';
+      const channel = document.querySelector('.channel-list-item');
+      if (channel) selectChannel(channel, 'announcements', false);
+      else loadMessagesForConversation('announcements');
+    }
   } catch (_) {
     list.innerHTML = '<div class="card-sub">Employee conversations are unavailable.</div>';
+    activeConversationKey = 'announcements';
+    const channel = document.querySelector('.channel-list-item');
+    if (channel) selectChannel(channel, 'announcements', false);
+    else loadMessagesForConversation('announcements');
     showToast('Employee roster could not be loaded for Messages.', 'error');
   }
 }
 
-function selectChannel(elem, channelKey) {
+function selectChannel(elem, channelKey, notify = true) {
   activeConversationKey = channelKey;
   document.querySelectorAll('.channel-list-item, .inbox-user-tile').forEach(el => el.classList.remove('active'));
   elem.classList.add('active');
@@ -2385,18 +2476,18 @@ function selectChannel(elem, channelKey) {
   if (status) status.textContent = '● Broadcast Channel • All Staff';
   if (input) input.placeholder = 'Post an announcement to the team...';
   loadMessagesForConversation(channelKey);
-  showToast('Switched to # Company Announcements channel.');
+  if (notify) showToast('Switched to # Company Announcements channel.');
 }
 
-// Slack is not integrated: route profile "Message on Slack" into the chat tab.
-function messageOnSlack(fullName) {
+// Route profile messages into the in-app conversation view.
+function messageInApp(fullName) {
   switchView('messages');
   const tiles = document.querySelectorAll('.inbox-user-tile');
   const hit = Array.from(tiles).find((t) =>
     (t.textContent || '').toLowerCase().includes((fullName || '').toLowerCase().split(' ')[0])
   );
   if (hit) hit.click();
-  else showToast('Slack is not connected — continue here in the chat tab.');
+  else showToast('No conversation is available for this employee yet.', 'info');
 }
 function selectInboxUser(elem, userName, initials, userRole, key, notify = true) {
   activeConversationKey = key;
@@ -2416,7 +2507,7 @@ function selectInboxUser(elem, userName, initials, userRole, key, notify = true)
     avatar.textContent = initials;
   }
   if (name) name.textContent = userName;
-  if (status) status.textContent = `● ${userRole} • Online Now`;
+  if (status) status.textContent = `● ${userRole}`;
   if (input) input.placeholder = `Type a message to ${userName}...`;
   loadMessagesForConversation(key);
   if (notify) showToast(`Active chat: ${userName}`);
@@ -2427,16 +2518,20 @@ async function loadMessagesForConversation(conversationKey) {
   if (!stream) return;
 
   const loadVersion = ++messagesLoadVersion;
-  const demoMarkup = stream.innerHTML;
   stream.innerHTML = '<div class="chat-loading-state">Loading messages...</div>';
   try {
-    const response = await apiFetch(`/api/messages/?conversation=${encodeURIComponent(conversationKey)}`, {
-      cache: 'no-store'
-    });
-    if (!response.ok) throw new Error('Unable to load messages.');
-    const payload = await response.json();
-    const messages = Array.isArray(payload) ? payload : payload.results || [];
+    const params = new URLSearchParams({ conversation: conversationKey, page_size: '100' });
+    const search = document.getElementById('conversationSearchInput')?.value.trim();
+    if (search) params.set('search', search);
+    const messages = await fetchAllApiRows(`/api/messages/?${params.toString()}`);
     if (loadVersion !== messagesLoadVersion) return;
+    if (conversationKey === 'announcements') {
+      const preview = document.querySelector('.channel-last-msg');
+      if (preview) {
+        const latest = messages[messages.length - 1];
+        preview.textContent = latest?.text || (latest?.attachment_url ? 'Attachment' : 'No messages yet');
+      }
+    }
     stream.innerHTML = '';
     if (!messages.length) {
       stream.innerHTML = '<div class="chat-loading-state">No messages in this conversation yet.</div>';
@@ -2444,9 +2539,30 @@ async function loadMessagesForConversation(conversationKey) {
     messages.forEach(message => appendPersistedMessage(stream, message));
     stream.scrollTop = stream.scrollHeight;
   } catch (error) {
-    stream.innerHTML = demoMarkup;
-    showToast('Messages could not be loaded.');
+    if (loadVersion !== messagesLoadVersion) return;
+    stream.innerHTML = '<div class="chat-loading-state">Messages are unavailable. Check your connection and try again.</div>';
+    showToast('Messages could not be loaded.', 'error');
   }
+}
+
+function toggleConversationSearch() {
+  const form = document.getElementById('conversationSearch');
+  const trigger = document.querySelector('.chat-header-actions button[aria-controls="conversationSearch"]');
+  if (!form) return;
+  form.hidden = !form.hidden;
+  trigger?.setAttribute('aria-expanded', String(!form.hidden));
+  if (!form.hidden) document.getElementById('conversationSearchInput')?.focus();
+}
+
+function searchConversationMessages(event) {
+  event.preventDefault();
+  loadMessagesForConversation(activeConversationKey);
+}
+
+function clearConversationSearch() {
+  const input = document.getElementById('conversationSearchInput');
+  if (input) input.value = '';
+  loadMessagesForConversation(activeConversationKey);
 }
 
 function appendPersistedMessage(stream, message) {
@@ -2502,7 +2618,6 @@ async function handleSendChatMessage(e) {
 
   const formData = new FormData();
   formData.append('conversation_key', activeConversationKey);
-  formData.append('sender_name', 'Marcus Williams');
   formData.append('text', text);
   if (file) formData.append('attachment', file);
 
@@ -2581,6 +2696,137 @@ function settingsSwitchTab(which) {
   });
 }
 
+function renderAccountProfile(data) {
+  const p = data.profile || {};
+  const first = p.first_name || '';
+  const last = p.last_name || '';
+  const name = [first, last].filter(Boolean).join(' ') || p.username || 'Account holder';
+  const initials = [first[0], last[0]].filter(Boolean).join('') || name.slice(0, 2);
+  const role = p.role || 'Account holder';
+  const dept = p.department_name || 'Not assigned';
+  const managed = Array.isArray(p.managed_departments) ? p.managed_departments : [];
+  const put = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value || '—'; };
+  put('accountDisplayName', name);
+  put('accountRoleLine', `${role}${p.department_name ? ` · ${p.department_name}` : ''}`);
+  put('accountEmailLine', p.email || 'No work email');
+  put('accountDepartmentLine', dept);
+  put('accountUsernameLine', p.username || '—');
+  put('accountManagedLine', managed.join(', ') || 'None assigned');
+  put('accountAvatar', initials.toUpperCase());
+  const managedRow = document.getElementById('accountManagedRow');
+  if (managedRow) managedRow.hidden = !managed.length;
+  const kicker = document.getElementById('accountProfileKicker');
+  if (kicker) kicker.textContent = managed.length ? 'MANAGER PROFILE' : 'ACCOUNT PROFILE';
+  const set = (id, value) => { const el = document.getElementById(id); if (el) el.value = value || ''; };
+  set('accountFirstName', first);
+  set('accountLastName', last);
+  set('accountEmail', p.email);
+  set('accountRole', role);
+  setAccountTwoFactorState(!!data.two_factor_enabled);
+}
+
+async function loadAccountProfile() {
+  try {
+    const res = await apiFetch('/api/settings/me/');
+    if (!res.ok) throw new Error('Account profile could not be loaded.');
+    const data = await res.json();
+    renderAccountProfile(data);
+  } catch (error) {
+    const status = document.getElementById('accountProfileStatus');
+    if (status) status.textContent = error.message || 'Account profile could not be loaded.';
+  }
+}
+
+async function saveAccountProfile() {
+  const profile = {
+    first_name: document.getElementById('accountFirstName')?.value.trim() || '',
+    last_name: document.getElementById('accountLastName')?.value.trim() || '',
+    email: document.getElementById('accountEmail')?.value.trim() || '',
+  };
+  const status = document.getElementById('accountProfileStatus');
+  if (status) status.textContent = '';
+  try {
+    const res = await apiFetch('/api/settings/me/', { method: 'PATCH', body: JSON.stringify({ profile }) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || data.email?.join?.(' ') || 'Profile could not be saved.');
+    renderAccountProfile(data);
+    if (status) status.textContent = 'Profile saved.';
+  } catch (error) {
+    if (status) status.textContent = error.message || 'Profile could not be saved.';
+  }
+}
+
+function setAccountTwoFactorState(enabled) {
+  const badge = document.getElementById('accountMfaBadge');
+  const on = document.getElementById('accountMfaEnabled');
+  const off = document.getElementById('accountMfaDisabled');
+  const setup = document.getElementById('accountMfaSetup');
+  if (badge) {
+    badge.textContent = enabled ? 'PROTECTED' : 'NOT ENABLED';
+    badge.classList.toggle('is-enabled', enabled);
+  }
+  if (on) on.hidden = !enabled;
+  if (off) off.hidden = enabled;
+  if (setup && enabled) setup.hidden = true;
+}
+
+async function startAccountTwoFactorSetup() {
+  const password = document.getElementById('accountMfaSetupPassword')?.value || '';
+  if (!password) { showToast('Enter your current password first.', 'error'); return; }
+  try {
+    const res = await apiFetch('/api/settings/2fa/setup/', { method: 'POST', body: JSON.stringify({ current_password: password }) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Authenticator setup could not start.');
+    const secret = document.getElementById('accountMfaSecret');
+    const setup = document.getElementById('accountMfaSetup');
+    if (secret) secret.textContent = data.secret;
+    if (setup) setup.hidden = false;
+    document.getElementById('accountMfaConfirmCode')?.focus();
+  } catch (error) { showToast(error.message, 'error'); }
+}
+
+async function confirmAccountTwoFactorSetup() {
+  const password = document.getElementById('accountMfaSetupPassword')?.value || '';
+  const code = document.getElementById('accountMfaConfirmCode')?.value || '';
+  try {
+    const res = await apiFetch('/api/settings/2fa/confirm/', { method: 'POST', body: JSON.stringify({ current_password: password, code }) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'That code could not be verified.');
+    const list = document.getElementById('accountRecoveryCodeList');
+    const panel = document.getElementById('accountRecoveryCodes');
+    if (list) list.textContent = (data.recovery_codes || []).join('\n');
+    if (panel) panel.hidden = false;
+    const pwd = document.getElementById('accountMfaSetupPassword'); if (pwd) pwd.value = '';
+    const codeInput = document.getElementById('accountMfaConfirmCode'); if (codeInput) codeInput.value = '';
+    setAccountTwoFactorState(true);
+    const status = document.getElementById('accountMfaStatus'); if (status) status.textContent = 'Two-factor authentication is on.';
+  } catch (error) { showToast(error.message, 'error'); }
+}
+
+async function disableAccountTwoFactor() {
+  if (!window.confirm('Turn off two-factor authentication for this account?')) return;
+  const current_password = document.getElementById('accountMfaDisablePassword')?.value || '';
+  const code = document.getElementById('accountMfaDisableCode')?.value || '';
+  try {
+    const res = await apiFetch('/api/settings/2fa/disable/', { method: 'POST', body: JSON.stringify({ current_password, code }) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Two-factor authentication could not be turned off.');
+    document.getElementById('accountMfaDisablePassword').value = '';
+    document.getElementById('accountMfaDisableCode').value = '';
+    document.getElementById('accountRecoveryCodes').hidden = true;
+    setAccountTwoFactorState(false);
+    const status = document.getElementById('accountMfaStatus'); if (status) status.textContent = 'Two-factor authentication is off.';
+  } catch (error) { showToast(error.message, 'error'); }
+}
+
+async function copyRecoveryCodes(elementId) {
+  const value = document.getElementById(elementId)?.textContent || '';
+  try {
+    await navigator.clipboard.writeText(value);
+    showToast('Recovery codes copied. Store them somewhere private.');
+  } catch (_) { showToast('Copy is unavailable here. Select and copy the recovery codes.', 'error'); }
+}
+
 function settingsRevealStaff() {
   document.querySelectorAll('#view-settings [data-staff-only]').forEach((el) => {
     if (settingsIsStaff) el.removeAttribute('hidden');
@@ -2607,10 +2853,8 @@ async function loadSettingsView() {
     } catch (_) { settingsIsStaff = false; }
     settingsRevealStaff();
     applySettingsA11y(data.a11y || {});
-    setApiMode('live');
   } catch (e) {
-    setApiMode('demo');
-    showToast('Settings unreachable — showing defaults', 'error');
+    showToast('Settings are unavailable. Try again later.', 'error');
     const errNote = document.getElementById('settingsLoadError');
     if (errNote) errNote.style.display = 'block';
     document.querySelectorAll('#view-settings .btn-navy-cta').forEach((b) => {
@@ -2776,85 +3020,68 @@ async function saveSettingsSite() {
   });
 }
 
-function settingsImportRows(status) {
-  return (settingsCache && settingsCache._importPreview) || [];
-}
-
 function renderSettingsImportPreview(rows) {
   const body = document.getElementById('settingsImportResults');
   if (!body) return;
   if (!rows.length) {
-    body.innerHTML = '<tr><td colspan="4">Preview is empty — nothing to import.</td></tr>';
+    body.innerHTML = '<tr><td colspan="4">No roster rows found.</td></tr>';
     return;
   }
-  body.innerHTML = '';
-  rows.forEach((row, i) => {
-    const tr = document.createElement('tr');
-    const name = row.name || [row.first_name, row.last_name].filter(Boolean).join(' ') || '—';
-    tr.innerHTML =
-      `<td>${i + 1}</td><td>${escapeHtml(String(name))}</td>` +
-      `<td>${escapeHtml(String(row.email || '—'))}</td>` +
-      `<td>${escapeHtml(String(row.status || 'ready'))}</td>`;
-    body.appendChild(tr);
-  });
+  body.innerHTML = rows.map((row) => {
+    const name = [row.first_name, row.last_name].filter(Boolean).join(' ') || '—';
+    const status = row.errors?.length ? row.errors.join(' ') : row.status || (row.ok ? 'Ready' : 'Needs attention');
+    return `<tr><td>${escapeHtml(String(row.row ?? '—'))}</td><td>${escapeHtml(name)}</td><td>${escapeHtml(String(row.email || '—'))}</td><td title="${escapeHtml(`Row ${row.row ?? '—'}: ${status}`)}">${escapeHtml(String(status))}</td></tr>`;
+  }).join('');
 }
 
-async function settingsReadImportFile() {
-  const input = document.getElementById('settingsImportFile');
-  const file = input?.files?.[0];
-  if (!file) { showToast('Choose a roster file first.', 'error'); return null; }
-  const text = await file.text();
-  const NL = String.fromCharCode(10);
-  const CR = String.fromCharCode(13);
-  const lines = text.split(NL).map((l) => l.split(CR).join("")).filter((l) => l.trim());
-  if (lines.length < 2) { showToast('File has no data rows.', 'error'); return null; }
-  const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
-  const rows = lines.slice(1, 51).map((line) => {
-    const cells = line.split(',');
-    const get = (k) => cells[headers.indexOf(k)]?.trim() || '';
-    return {
-      first_name: get('first_name') || get('firstname') || '',
-      last_name: get('last_name') || get('lastname') || '',
-      name: get('name'),
-      email: get('email'),
-      status: get('email') ? 'ready' : 'missing email',
-    };
-  });
-  return rows;
+function settingsImportFormData() {
+  const file = document.getElementById('settingsImportFile')?.files?.[0];
+  if (!file) { showToast('Choose an .xlsx roster first.', 'error'); return null; }
+  const form = new FormData();
+  form.append('file', file);
+  return { form, file };
 }
 
 async function settingsImportDryRun() {
-  const rows = await settingsReadImportFile();
-  if (!rows) return;
-  settingsCache = { ...(settingsCache || {}), _importPreview: rows };
-  renderSettingsImportPreview(rows);
-  showToast(`Dry-run: ${rows.length} row(s) previewed, nothing imported.`);
+  const upload = settingsImportFormData();
+  if (!upload) return;
+  try {
+    const res = await apiFetch('/api/settings/import-employees/?dry_run=true', { method: 'POST', body: upload.form });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Roster preview failed.');
+    settingsCache = { ...(settingsCache || {}), _importPreview: data.rows || [], _importPreviewFile: upload.file };
+    renderSettingsImportPreview(data.rows || []);
+    const ready = (data.rows || []).filter((row) => row.ok).length;
+    showToast(`Preview ready: ${ready} of ${(data.rows || []).length} row(s) can be imported.`);
+  } catch (error) { showToast(error.message || 'Roster preview failed.', 'error'); }
 }
 
 async function settingsImportCommit() {
-  const rows = (settingsCache && settingsCache._importPreview) || [];
-  if (!rows.length) { showToast('Run a dry-run preview first.', 'error'); return; }
-  const valid = rows.filter((r) => r.email);
-  if (!valid.length) { showToast('No valid rows to import.', 'error'); return; }
-  openSettingsConfirm('Import roster?', `${valid.length} row(s) will be created as employees.`, async () => {
-    let okCount = 0;
-    const results = [];
-    for (const row of valid) {
-      try {
-        const res = await apiFetch('/api/employees/', {
-          method: 'POST',
-          body: JSON.stringify({ first_name: row.first_name || row.name || 'Imported', last_name: row.last_name || '', email: row.email }),
-        });
-        if (!res.ok) throw new Error('create failed');
-        okCount += 1;
-        results.push({ ...row, status: 'imported' });
-      } catch (_) {
-        results.push({ ...row, status: 'failed' });
-      }
-    }
-    settingsCache._importPreview = results;
-    renderSettingsImportPreview(results);
-    showToast(`Import complete: ${okCount}/${valid.length} imported.`);
+  const preview = (settingsCache && settingsCache._importPreview) || [];
+  const ready = preview.filter((row) => row.ok);
+  if (!ready.length) { showToast('Run a preview with at least one valid row first.', 'error'); return; }
+  const upload = settingsImportFormData();
+  if (!upload) return;
+  if (settingsCache?._importPreviewFile !== upload.file) {
+    showToast('The selected file changed. Run a new preview before importing.', 'error');
+    return;
+  }
+  openSettingsConfirm('Import roster?', `${ready.length} valid employee row(s) will be created.`, async () => {
+    try {
+      const res = await apiFetch('/api/settings/import-employees/', { method: 'POST', body: upload.form });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Roster import failed.');
+      const failedByRow = new Map((data.failed || []).map((failure) => [failure.row, failure.error]));
+      const results = preview.map((row) => ({
+        ...row,
+        status: failedByRow.has(row.row) ? failedByRow.get(row.row) : row.ok ? 'Imported' : 'Not imported',
+        errors: [],
+        ok: false,
+      }));
+      settingsCache._importPreview = results;
+      renderSettingsImportPreview(results);
+      showToast(`Import complete: ${data.created || 0} created, ${(data.failed || []).length} failed.`);
+    } catch (error) { showToast(error.message || 'Roster import failed.', 'error'); }
   });
 }
 
@@ -2915,15 +3142,69 @@ function handleAuthLogin(e) {
         showToast(typeof data.error === 'string' ? data.error : 'Invalid credentials.', 'error');
         return null;
       }
+      if (data.requires_2fa) {
+        try {
+          if (document.getElementById('rememberMeCheckbox')?.checked) localStorage.setItem('kumon.employeeLogin', username);
+          else localStorage.removeItem('kumon.employeeLogin');
+        } catch (_) { /* storage can be disabled */ }
+        const form = document.getElementById('employeeLoginForm');
+        const challenge = document.getElementById('employeeMfaChallenge');
+        if (form) form.hidden = true;
+        if (challenge) challenge.hidden = false;
+        document.getElementById('employeeMfaCode')?.focus();
+        return { challenge: true };
+      }
       return data;
     })
     .then((data) => {
       if (!data) return;
-      showToast(`Welcome back, ${username}! Signed in.`);
-      const next = new URLSearchParams(window.location.search).get('next') || data.next_url || '/';
-      window.location.href = next;
+      if (data.challenge) return;
+      const remember = document.getElementById('rememberMeCheckbox')?.checked;
+      try {
+        if (remember) localStorage.setItem('kumon.employeeLogin', username);
+        else localStorage.removeItem('kumon.employeeLogin');
+      } catch (_) { /* storage can be disabled */ }
+      window.kumonLoadingNavigate(data.next_url, '/employee/');
     })
     .catch(() => showToast('Sign-in service unreachable. Try again later.', 'error'));
+}
+
+function initRememberedLogin() {
+  const input = document.getElementById('loginEmployeeId');
+  const checkbox = document.getElementById('rememberMeCheckbox');
+  if (!input) return;
+  try {
+    const saved = localStorage.getItem('kumon.employeeLogin');
+    if (saved) input.value = saved;
+    if (checkbox) checkbox.checked = !!saved;
+  } catch (_) { /* storage can be disabled */ }
+}
+
+async function handleEmployeeTwoFactor(event) {
+  event.preventDefault();
+  const csrf = document.cookie.split('; ').find((cookie) => cookie.startsWith('csrftoken='))?.split('=')[1];
+  try {
+    const response = await fetch('/api/session-verify-2fa/', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', ...(csrf ? { 'X-CSRFToken': csrf } : {}) },
+      body: JSON.stringify({ code: document.getElementById('employeeMfaCode')?.value.trim() || '' }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'That code could not be verified.');
+    window.kumonLoadingNavigate(data.next_url, '/employee/');
+  } catch (error) { showToast(error.message || 'Verification failed.', 'error'); }
+}
+
+async function cancelEmployeeTwoFactor() {
+  const csrf = document.cookie.split('; ').find((cookie) => cookie.startsWith('csrftoken='))?.split('=')[1];
+  await fetch('/api/session-cancel-2fa/', {
+    method: 'POST', credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json', ...(csrf ? { 'X-CSRFToken': csrf } : {}) },
+    body: '{}',
+  });
+  const code = document.getElementById('employeeMfaCode'); if (code) code.value = '';
+  const challenge = document.getElementById('employeeMfaChallenge'); if (challenge) challenge.hidden = true;
+  const form = document.getElementById('employeeLoginForm'); if (form) form.hidden = false;
 }
 
 async function handleAuthSignup(e) {
@@ -2992,36 +3273,9 @@ function classifyAuditAction(actionText = '') {
   if (!text) return 'Personnel';
   if (/(leave|vacation|sick|pto|absence|holiday)/.test(text)) return 'Leaves';
   if (/(claim|expense|payroll|salary|deduction|advance|bonus|reimbursement)/.test(text)) return 'Claims';
-  if (/(shift|roster|schedule|coverage|rotation)/.test(text)) return 'Shifts';
+  if (/(shift|roster|schedule|coverage|rotation|swap)/.test(text)) return 'Shifts';
   if (/(griev|complaint|mediation|investigation|case|resolution)/.test(text)) return 'Grievance';
   return 'Personnel';
-}
-
-function updateAuditTabCounts(rows) {
-  const counts = { all: rows.length, Personnel: 0, Leaves: 0, Claims: 0, Shifts: 0, Grievance: 0 };
-  rows.forEach((row) => {
-    const bucket = classifyAuditAction(row.action || row.details || row.category || '');
-    counts[bucket] += 1;
-  });
-
-  const tabConfigs = [
-    { key: 'all', label: 'All Classes', value: counts.all },
-    { key: 'Personnel', label: 'Personnel & Staff', value: counts.Personnel },
-    { key: 'Leaves', label: 'Leave Requests', value: counts.Leaves },
-    { key: 'Claims', label: 'Claims & Payroll', value: counts.Claims },
-    { key: 'Shifts', label: 'Shift Rosters', value: counts.Shifts },
-    { key: 'Grievance', label: 'Grievance Cases', value: counts.Grievance },
-  ];
-
-  tabConfigs.forEach(({ key, label, value }) => {
-    const buttons = document.querySelectorAll('#view-logs .tab-pill');
-    buttons.forEach((button) => {
-      const text = (button.textContent || '').replace(/\s*\(\d+\)\s*$/, '');
-      if (text === label || (key === 'all' && text.startsWith('All Classes'))) {
-        button.textContent = `${label} (${value})`;
-      }
-    });
-  });
 }
 
 function filterLogsByTab(category, btnElement) {
@@ -3043,7 +3297,7 @@ function filterAuditLogs() {
   const selectedCategory = activeLogTabCategory === 'all' ? '' : activeLogTabCategory;
   const selectedAdmin = adminSelect ? adminSelect.value : '';
 
-  const rows = document.querySelectorAll('#auditLogsTableBody tr');
+  const rows = document.querySelectorAll('#auditLogsTableBody tr[data-live="true"]');
   let visibleCount = 0;
 
   rows.forEach(row => {
@@ -3065,13 +3319,12 @@ function filterAuditLogs() {
 
   const paginationInfo = document.getElementById('auditPaginationInfo');
   if (paginationInfo) {
-    const liveTotal = typeof auditLiveTotal !== 'undefined' && auditLiveTotal ? auditLiveTotal : 1482;
-    paginationInfo.textContent = `Showing ${visibleCount} of ${liveTotal.toLocaleString()} logged admin events`;
+    const liveTotal = Number.isFinite(auditLiveTotal) ? auditLiveTotal : visibleCount;
+    paginationInfo.textContent = `${visibleCount} events on this page · ${liveTotal.toLocaleString()} total`;
   }
 }
 
-// Attendance register export: same downloadCsv helper as audit export.
-// Live rows when the table holds them, demo sample otherwise. Same shape.
+// Attendance register export: use live table rows or fetch backend data.
 async function exportAttendanceRegister() {
   const body = document.getElementById('attendanceTableBody');
   const live = body ? Array.from(body.querySelectorAll('tr[data-live="true"]')) : [];
@@ -3095,55 +3348,31 @@ async function exportAttendanceRegister() {
     });
   } else {
     try {
-      const [attRes, empRes] = await Promise.all([
-        apiFetch('/api/attendance/?page_size=500', { headers: { Accept: 'application/json' }, cache: 'no-store' }),
-        apiFetch('/api/employees/?page_size=500', { headers: { Accept: 'application/json' }, cache: 'no-store' }).catch(() => null),
+      const [records, employees] = await Promise.all([
+        fetchAllApiRows('/api/attendance/?page_size=100'),
+        fetchAllApiRows('/api/employees/?page_size=100').catch(() => []),
       ]);
-      if (attRes.ok) {
-        const payload = await attRes.json();
-        const records = Array.isArray(payload) ? payload : payload.results || [];
-        let empById = {};
-        if (empRes && empRes.ok) {
-          const empData = await empRes.json().catch(() => ({}));
-          const emps = Array.isArray(empData) ? empData : empData.results || [];
-          emps.forEach((e) => { empById[e.id] = e; });
-        }
-        records.forEach((a) => {
-          const emp = empById[a.employee] || {};
-          const empName = a.employee_name || `${emp.first_name || ''} ${emp.last_name || ''}`.trim() || emp.email || a.employee || 'Employee';
-          const empRole = a.employee_role || emp.role || 'Staff';
-          const shiftOrDept = a.employee_department || emp.department_name || 'Standard Shift';
-          const status = a.clock_out ? 'Complete' : 'Clocked in';
-          rows.push([
-            a.date || '',
-            empName,
-            empRole,
-            shiftOrDept,
-            typeof fmtTime === 'function' ? fmtTime(a.clock_in) : (a.clock_in || ''),
-            typeof fmtTime === 'function' ? fmtTime(a.clock_out) : (a.clock_out || ''),
-            status,
-          ]);
-        });
-      }
-    } catch (_) {}
-  }
-
-  if (rows.length === 1 && body) {
-    const demoRows = Array.from(body.querySelectorAll('tr:not(.attendance-empty-row)'));
-    demoRows.forEach((tr) => {
-      const tds = tr.querySelectorAll('td');
-      if (tds.length >= 5) {
+      const empById = Object.fromEntries(employees.map((employee) => [employee.id, employee]));
+      records.forEach((a) => {
+        const emp = empById[a.employee] || {};
+        const empName = a.employee_name || `${emp.first_name || ''} ${emp.last_name || ''}`.trim() || emp.email || a.employee || 'Employee';
+        const empRole = a.employee_role || emp.role || 'Staff';
+        const shiftOrDept = a.employee_department || emp.department_name || 'Standard Shift';
+        const status = a.clock_out ? 'Complete' : 'Clocked in';
         rows.push([
-          (typeof attendanceSelectedDate !== 'undefined' ? attendanceSelectedDate : '') || new Date().toISOString().slice(0, 10),
-          tds[0].textContent.trim(),
-          '',
-          tds[1].textContent.trim(),
-          tds[2].textContent.trim(),
-          tds[3].textContent.trim(),
-          tds[4].textContent.trim().replace(/^[●\s]+/, ''),
+          a.date || '',
+          empName,
+          empRole,
+          shiftOrDept,
+          typeof fmtTime === 'function' ? fmtTime(a.clock_in) : (a.clock_in || ''),
+          typeof fmtTime === 'function' ? fmtTime(a.clock_out) : (a.clock_out || ''),
+          status,
         ]);
-      }
-    });
+      });
+    } catch (error) {
+      showToast(error.message || 'Attendance records could not be loaded.', 'error');
+      return;
+    }
   }
 
   if (rows.length === 1) {
@@ -3175,51 +3404,35 @@ function downloadCsv(filename, rows) {
 
 async function exportAuditLogs() {
   const rows = [['Timestamp', 'Administrator', 'Action Class', 'Action', 'Target Record', 'Details', 'Status', 'Audit ID']];
+  let logs;
+  let names = {};
   try {
-    const res = await apiFetch('/api/audit-logs/?page_size=1000', { headers: { Accept: 'application/json' }, cache: 'no-store' });
-    if (res.ok) {
-      const payload = await res.json();
-      const logs = Array.isArray(payload) ? payload : payload.results || [];
-      let names = {};
-      try { names = await liveEmployeeNames(); } catch (_) {}
-      logs.forEach((log) => {
-        const who = names[log.employee] || (log.employee ? `Employee #${log.employee}` : 'System');
-        const when = log.timestamp ? new Date(log.timestamp).toLocaleString() : '';
-        const category = typeof classifyAuditAction === 'function' ? classifyAuditAction(log.action || '') : 'Personnel';
-        const actionText = typeof formatAuditActionText === 'function' ? formatAuditActionText(log.action || '') : (log.action || '');
-        const target = log.target || log.target_record || (log.employee ? `EMP-${log.employee}` : '—');
-        const details = log.details || log.notes || actionText;
-        rows.push([
-          when,
-          who,
-          category,
-          actionText,
-          target,
-          details,
-          'Logged',
-          String(log.id || '').slice(0, 8),
-        ]);
-      });
-    }
-  } catch (_) {}
-
-  // Fallback to table DOM rows if API returned nothing
-  if (rows.length === 1) {
-    const domRows = document.querySelectorAll('#auditLogsTableBody tr');
-    domRows.forEach((tr) => {
-      const tds = tr.querySelectorAll('td');
-      if (tds.length >= 7) {
-        const who = tr.getAttribute('data-admin') || tds[0].textContent.trim();
-        const cat = tr.getAttribute('data-category') || tds[1].textContent.trim();
-        const when = tds[2].textContent.trim();
-        const action = tds[3].textContent.trim();
-        const details = tds[4].textContent.trim();
-        const status = tds[5].textContent.trim();
-        const id = tds[6].textContent.trim();
-        rows.push([when, who, cat, action, '—', details, status, id]);
-      }
-    });
+    [logs, names] = await Promise.all([
+      fetchAllApiRows('/api/audit-logs/?page_size=100'),
+      liveEmployeeNames().catch(() => ({})),
+    ]);
+  } catch (error) {
+    if (error.message !== 'auth') showToast(error.message || 'Audit logs could not be loaded.', 'error');
+    return;
   }
+  logs.forEach((log) => {
+    const who = names[log.employee] || (log.employee ? `Employee #${log.employee}` : 'System');
+    const when = log.timestamp ? new Date(log.timestamp).toLocaleString() : '';
+    const category = classifyAuditAction(log.action || '');
+    const actionText = formatAuditActionText(log.action || '');
+    const target = log.target || log.target_record || (log.employee ? `EMP-${log.employee}` : '—');
+    const details = log.details || log.notes || actionText;
+    rows.push([
+      when,
+      who,
+      category,
+      actionText,
+      target,
+      details,
+      'Logged',
+      String(log.id || '').slice(0, 8),
+    ]);
+  });
 
   if (rows.length === 1) {
     showToast('No audit logs available to export.', 'error');
@@ -3234,8 +3447,7 @@ async function exportAuditLogs() {
 // Live API wiring: dashboard summary + employee directory
 // ==========================================================================
 
-// Minimal toast (showToast is called across this file but had no definition;
-// keep the static demo values on screen when the API is unreachable).
+// Minimal toast for pages without the shared dashboard shell.
 if (typeof window.showToast !== 'function') {
   window.showToast = function (message, type) {
     let toast = document.getElementById('liveToast');
@@ -3281,12 +3493,18 @@ function renderFirstEmployeeCta(total) {
 
 // Public aggregate counts for the landing page.
 function loadDashboardSummary() {
+  if (dashboardSummaryInFlight) return Promise.resolve();
+  dashboardSummaryInFlight = true;
   return apiFetch('/api/dashboard-summary/', { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, cache: 'no-store' })
     .then((res) => {
       if (!res.ok) throw new Error('summary unavailable');
       return res.json();
     })
     .then((data) => {
+      if (dashboardSummaryRetryTimer) {
+        clearTimeout(dashboardSummaryRetryTimer);
+        dashboardSummaryRetryTimer = null;
+      }
       setApiMode('live');
       renderFirstEmployeeCta(data.total_employees);
       const values = document.querySelectorAll(
@@ -3307,29 +3525,29 @@ function loadDashboardSummary() {
     })
     .catch((err) => {
       if (err && err.message === 'auth') return; // apiFetch already redirected
-      setApiMode('demo');
-      showToast('Dashboard data could not be loaded.', 'error');
-    });
+      setApiMode('offline');
+      if (dashboardSummaryFailures === 1 && !dashboardSummaryRetryTimer) {
+        dashboardSummaryRetryTimer = window.setTimeout(() => {
+          dashboardSummaryRetryTimer = null;
+          const dashboardView = document.getElementById('view-dashboard');
+          if (!document.hidden && dashboardView?.classList.contains('active')) loadDashboardSummary();
+        }, 2500);
+      }
+    })
+    .finally(() => { dashboardSummaryInFlight = false; });
 }
 
 async function loadDashboardAttendance() {
   const body = document.getElementById('dashboardAttendanceTableBody');
   if (!body) return;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateIso();
   try {
-    const [attendanceRes, employeeRes, departmentRes] = await Promise.all([
-      apiFetch('/api/attendance/?page_size=100', { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, cache: 'no-store' }),
-      apiFetch('/api/employees/?page_size=100', { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, cache: 'no-store' }),
-      apiFetch('/api/departments/?page_size=100', { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }, cache: 'no-store' }),
+    const [attendanceRows, employees, departments] = await Promise.all([
+      fetchAllApiRows('/api/attendance/?page_size=100'),
+      fetchAllApiRows('/api/employees/?page_size=100'),
+      fetchAllApiRows('/api/departments/?page_size=100'),
     ]);
-    if (!attendanceRes.ok || !employeeRes.ok || !departmentRes.ok) throw new Error('dashboard attendance unavailable');
-    const attendancePayload = await attendanceRes.json();
-    const employeePayload = await employeeRes.json();
-    const departmentPayload = await departmentRes.json();
-    const attendance = (Array.isArray(attendancePayload) ? attendancePayload : attendancePayload.results || [])
-      .filter((record) => record.date === today);
-    const employees = Array.isArray(employeePayload) ? employeePayload : employeePayload.results || [];
-    const departments = Array.isArray(departmentPayload) ? departmentPayload : departmentPayload.results || [];
+    const attendance = attendanceRows.filter((record) => record.date === today);
     const employeeById = Object.fromEntries(employees.map((employee) => [employee.id, employee]));
     const departmentById = Object.fromEntries(departments.map((department) => [department.id, department.name]));
     body.innerHTML = '';
@@ -3368,12 +3586,7 @@ async function populateRosterEmployeeOptions() {
     .filter(Boolean);
   if (!selects.length) return;
   try {
-    const res = await apiFetch('/api/employees/?page_size=100', {
-      headers: { Accept: 'application/json' },
-    });
-    if (!res.ok) throw new Error('employee directory unavailable');
-    const payload = await res.json();
-    const rows = (Array.isArray(payload) ? payload : payload.results || [])
+    const rows = (await fetchAllApiRows('/api/employees/?page_size=100'))
       .filter((employee) => employee.is_active !== false);
     selects.forEach((select) => {
       select.innerHTML = '<option value="">Select Employee...</option>';
@@ -3394,37 +3607,7 @@ async function populateRosterEmployeeOptions() {
     selects.forEach((select) => {
       select.innerHTML = '<option value="">Unable to load employees</option>';
     });
-  }
-}
-
-async function populateRosterMatrixEmployees() {
-  const rows = document.querySelectorAll('.shift-matrix-table tbody tr');
-  if (!rows.length) return;
-  try {
-    const res = await apiFetch('/api/employees/?page_size=100', {
-      headers: { Accept: 'application/json' },
-    });
-    if (!res.ok) throw new Error('employee directory unavailable');
-    const payload = await res.json();
-    const employees = (Array.isArray(payload) ? payload : payload.results || [])
-      .filter((employee) => employee.is_active !== false);
-    rows.forEach((row, index) => {
-      const employee = employees[index];
-      if (!employee) {
-        row.remove();
-        return;
-      }
-      const name = `${employee.first_name || ''} ${employee.last_name || ''}`.trim();
-      const nameElement = row.querySelector('.shift-staff-meta strong');
-      const roleElement = row.querySelector('.shift-staff-meta span');
-      const avatar = row.querySelector('.shift-staff-avatar');
-      if (nameElement) nameElement.textContent = name || employee.email || 'Employee';
-      if (roleElement) roleElement.textContent = employee.role || 'Employee';
-      if (avatar) avatar.textContent = (name || employee.email || 'E')
-        .split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
-    });
-  } catch (_) {
-    // Keep the static matrix visible if the directory request fails.
+    showToast('Employee roster could not be loaded.', 'error');
   }
 }
 
@@ -3432,13 +3615,10 @@ async function loadEmployeeOptions(selectId) {
   const select = document.getElementById(selectId);
   if (!select) return;
   try {
-    const res = await apiFetch('/api/employees/?page_size=100', {
-      headers: { Accept: 'application/json' },
-    });
-    if (!res.ok) throw new Error('employee directory unavailable');
-    const payload = await res.json();
-    const rows = Array.isArray(payload) ? payload : payload.results || [];
-    select.innerHTML = '';
+    const rows = await fetchAllApiRows('/api/employees/?page_size=100');
+    select.replaceChildren(new Option('Select an active employee...', ''));
+    select.options[0].disabled = true;
+    select.options[0].selected = true;
     rows.filter((employee) => employee.is_active !== false).forEach((employee) => {
       const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim();
       const option = document.createElement('option');
@@ -3448,84 +3628,11 @@ async function loadEmployeeOptions(selectId) {
       if (fullName) employeeNameIndex[fullName.toLowerCase()] = employee.id;
       if (employee.email) employeeNameIndex[employee.email.toLowerCase()] = employee.id;
     });
-    if (!select.options.length) {
-      select.innerHTML = '<option value="">No active employees found</option>';
-    }
+    if (select.options.length === 1) select.options[0].textContent = 'No active employees found';
   } catch (_) {
-    select.innerHTML = '<option value="">Unable to load employees</option>';
+    select.replaceChildren(new Option('Unable to load employees', ''));
+    select.options[0].disabled = true;
     showToast('Employee directory could not be loaded.', 'error');
-  }
-
-  async function loadRosterEmployeeOptions() {
-    const selects = ['morning', 'evening', 'night']
-      .map((shiftKey) => document.getElementById(`staffSelect-${shiftKey}`))
-      .filter(Boolean);
-    if (!selects.length) return;
-    try {
-      const res = await apiFetch('/api/employees/?page_size=100', {
-        headers: { Accept: 'application/json' },
-      });
-      if (!res.ok) throw new Error('employee directory unavailable');
-      const payload = await res.json();
-      const rows = (Array.isArray(payload) ? payload : payload.results || [])
-        .filter((employee) => employee.is_active !== false);
-      selects.forEach((select) => {
-        select.innerHTML = '<option value="">Select Employee...</option>';
-        rows.forEach((employee) => {
-          const name = `${employee.first_name || ''} ${employee.last_name || ''}`.trim();
-          const option = document.createElement('option');
-          option.value = employee.id;
-          option.dataset.name = name || employee.email || employee.id;
-          option.dataset.role = employee.role || 'Employee';
-          option.dataset.initials = (name || employee.email || 'E')
-            .split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
-          option.textContent = name || employee.email || employee.id;
-          select.appendChild(option);
-        });
-        if (!rows.length) select.innerHTML = '<option value="">No active employees found</option>';
-      });
-    } catch (_) {
-      selects.forEach((select) => {
-        select.innerHTML = '<option value="">Unable to load employees</option>';
-      });
-      showToast('Employee roster could not be loaded.', 'error');
-    }
-
-    async function loadRosterMatrixEmployees() {
-      const rows = document.querySelectorAll('.shift-matrix-table tbody tr');
-      if (!rows.length) return;
-      try {
-        const res = await apiFetch('/api/employees/?page_size=100', {
-          headers: { Accept: 'application/json' },
-        });
-        if (!res.ok) throw new Error('employee directory unavailable');
-        const payload = await res.json();
-        const employees = (Array.isArray(payload) ? payload : payload.results || [])
-          .filter((employee) => employee.is_active !== false);
-        rows.forEach((row, index) => {
-          const employee = employees[index];
-          if (!employee) {
-            row.remove();
-            return;
-          }
-          const name = `${employee.first_name || ''} ${employee.last_name || ''}`.trim();
-          const identity = row.querySelector('.shift-staff-meta');
-          const avatar = row.querySelector('.shift-staff-avatar');
-          if (identity) {
-            const nameElement = identity.querySelector('strong');
-            const roleElement = identity.querySelector('span');
-            if (nameElement) nameElement.textContent = name || employee.email || 'Employee';
-            if (roleElement) roleElement.textContent = employee.role || 'Employee';
-          }
-          if (avatar) {
-            avatar.textContent = (name || employee.email || 'E')
-              .split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
-          }
-        });
-      } catch (_) {
-        // The matrix keeps its static fallback when the directory is unavailable.
-      }
-    }
   }
 }
 
@@ -3533,75 +3640,88 @@ function loadEmployeeDirectory() {
   const list = document.getElementById('employeeRosterList');
   if (!list) return;
   list.innerHTML = '<div class="directory-empty-state">Loading employees from the database...</div>';
-  apiFetch('/api/employees/', { headers: { Accept: 'application/json' } })
-    .then((res) => {
-      if (!res.ok) throw new Error('directory unavailable');
-      return res.json();
-    })
-    .then(async (data) => {
-      setApiMode('live');
-      const rows = Array.isArray(data) ? data : data.results || [];
-      let deptById = {};
-      try {
-        const dRes = await apiFetch('/api/departments/');
-        const dData = await dRes.json();
-        const dRows = Array.isArray(dData) ? dData : dData.results || [];
-        dRows.forEach((d) => { deptById[d.id] = d.name || ''; });
-      } catch (_) { /* dept filter falls back to blank */ }
+  Promise.all([
+    fetchAllApiRows('/api/employees/?page_size=100'),
+    fetchAllApiRows('/api/departments/?page_size=100'),
+  ])
+    .then(([rows, departments]) => {
+      const departmentNames = Object.fromEntries(departments.map((department) => [department.id, department.name || '']));
+      const departmentFilter = document.getElementById('deptFilter');
+      const roleFilter = document.getElementById('roleFilter');
+      const statusFilter = document.getElementById('statusFilter');
+      const setFilterOptions = (select, label, values) => {
+        if (!select) return;
+        const selected = select.value;
+        select.replaceChildren(new Option(label, 'all'));
+        [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b)).forEach((value) => {
+          const option = new Option(value, value);
+          select.appendChild(option);
+        });
+        select.value = [...select.options].some((option) => option.value === selected) ? selected : 'all';
+      };
+      const getStatus = (employee) => employee.resigned_at
+        ? 'Resigned'
+        : employee.is_active === false ? 'Inactive' : 'Active';
+      setFilterOptions(departmentFilter, 'All Departments', [
+        ...departments.map((department) => department.name),
+        ...(rows.some((employee) => !employee.department) ? ['Unassigned'] : []),
+      ]);
+      setFilterOptions(roleFilter, 'All Roles', [
+        ...rows.map((employee) => employee.role || ''),
+        ...(rows.some((employee) => !employee.role) ? ['Unassigned'] : []),
+      ]);
+      setFilterOptions(statusFilter, 'All Statuses', rows.map(getStatus));
       list.innerHTML = '';
       rows.forEach((emp) => {
-        const fullName = `${emp.first_name || ''} ${emp.last_name || ''}`.trim();
+        const fullName = `${emp.first_name || ''} ${emp.last_name || ''}`.trim() || emp.email || 'Employee';
+        const department = emp.department_name || departmentNames[emp.department] || 'Unassigned';
+        const role = emp.role || 'Unassigned';
+        const status = getStatus(emp);
         employeeNameIndex[fullName.toLowerCase()] = emp.id;
         const card = document.createElement('div');
         card.className = 'roster-accordion-card';
         card.setAttribute('data-live', 'true');
         card.setAttribute('data-emp-id', emp.id);
-        card.setAttribute('data-dept', deptById[emp.department] || '');
-        card.setAttribute('data-role', emp.role || '');
-        const isResigned = Boolean(emp.resigned_at || emp.is_active === false);
-        const empStatus = isResigned ? 'Resigned' : 'Present Today';
-        const badgeClass = isResigned ? 'badge-resigned' : 'badge-present';
-        card.setAttribute('data-status', empStatus);
+        card.setAttribute('data-dept', department);
+        card.setAttribute('data-role', role);
+        card.setAttribute('data-status', status);
+        const badgeClass = status === 'Active' ? 'badge-present' : 'badge-pending';
         card.innerHTML =
           `<div class="acc-summary" onclick="toggleAccordion(this)">` +
           `<div class="acc-left">` +
           `<strong class="acc-name">${escapeHtml(fullName)}</strong>` +
-          `<span class="acc-role">${escapeHtml(emp.role || '')} &bull; ${escapeHtml(emp.email || '')}</span>` +
+          `<span class="acc-role">${escapeHtml(role)} &bull; ${escapeHtml(department)}</span>` +
           `</div>` +
           `<div class="acc-right">` +
           `<span class="penpot-badge ${badgeClass}">` +
-          `${empStatus}</span>` +
+          `${escapeHtml(status)}</span>` +
           `</div></div>` +
           `<div class="acc-expanded-body" hidden>` +
           `<div class="acc-col"><span class="col-head">CONTACT</span>` +
           `<div class="perf-text">${escapeHtml(emp.email || '')}</div>` +
           `<div class="acc-btn-row">` +
-          `<button class="btn btn-black-sm" onclick="switchView('employee-directory')">View Full Profile</button>` +
-          `<button class="btn btn-purple-outline-sm" data-name="${escapeHtml(fullName)}" onclick="messageOnSlack(this.dataset.name)">Message on Slack</button>` +
+          `<button class="btn btn-black-sm" onclick="focusRosterProfile(this)">Open profile details</button>` +
+          `<button class="btn btn-purple-outline-sm" data-name="${escapeHtml(fullName)}" onclick="messageInApp(this.dataset.name)">Message in app</button>` +
           `</div></div></div>`;
         list.appendChild(card);
       });
+      if (!rows.length) list.innerHTML = '<div class="directory-empty-state">No employees found in the database.</div>';
       if (typeof filterDirectory === 'function') filterDirectory();
     })
     .catch((err) => {
       if (err && err.message === 'auth') return; // apiFetch already redirected
-      setApiMode('demo');
       list.innerHTML = '<div class="directory-empty-state">Employee data is unavailable.</div>';
       showToast('Employee data could not be loaded.', 'error');
     });
 }
 
 // ==========================================================================
-// Live view wiring (H7): each loader below replaces its static demo tbody
-// with live API rows, keeping the demo markup as the offline fallback.
+// Live view wiring: render backend data and show an explicit unavailable state.
 // ==========================================================================
 let liveEmployeeNameCache = null;
 async function liveEmployeeNames() {
   if (liveEmployeeNameCache) return liveEmployeeNameCache;
-  const res = await apiFetch('/api/employees/?page_size=50');
-  if (!res.ok) throw new Error('load failed');
-  const payload = await res.json();
-  const rows = Array.isArray(payload) ? payload : payload.results || [];
+  const rows = await fetchAllApiRows('/api/employees/?page_size=100');
   liveEmployeeNameCache = {};
   rows.forEach((e) => {
     liveEmployeeNameCache[e.id] = `${e.first_name || ''} ${e.last_name || ''}`.trim() || e.email || e.id;
@@ -3620,30 +3740,15 @@ async function loadAttendanceView() {
   if (!body) return;
   body.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">Loading attendance…</td></tr>';
   try {
-    const todayLocal = new Date().toLocaleDateString('en-CA');
-    const [attRes, empRes, shiftRes, leaveRes] = await Promise.all([
-      apiFetch('/api/attendance/?page_size=200', { headers: { Accept: 'application/json' }, cache: 'no-store' }),
-      apiFetch('/api/employees/?page_size=200&is_active=true', { headers: { Accept: 'application/json' }, cache: 'no-store' }).catch(() => null),
-      apiFetch(`/api/shift-rosters/?page_size=200&work_date=${todayLocal}`, { headers: { Accept: 'application/json' }, cache: 'no-store' }).catch(() => null),
-      apiFetch('/api/leaves/?page_size=200', { headers: { Accept: 'application/json' }, cache: 'no-store' }).catch(() => null)
+    const todayLocal = localDateIso();
+    const [rows, employees, shifts, leavesAll] = await Promise.all([
+      fetchAllApiRows('/api/attendance/?page_size=100'),
+      fetchAllApiRows('/api/employees/?page_size=100&is_active=true').catch(() => []),
+      fetchAllApiRows(`/api/shift-rosters/?page_size=100&work_date=${todayLocal}`).catch(() => []),
+      fetchAllApiRows('/api/leaves/?page_size=100').catch(() => []),
     ]);
-    if (!attRes.ok) throw new Error('load failed');
-    const payload = await attRes.json();
-    const rows = Array.isArray(payload) ? payload : payload.results || [];
-    let empById = {};
-    let empCount = 0;
-    if (empRes && empRes.ok) {
-      const empData = await empRes.json().catch(() => ({}));
-      const emps = Array.isArray(empData) ? empData : empData.results || [];
-      emps.forEach((e) => { empById[e.id] = e; });
-      empCount = emps.length;
-    }
-
-    const shiftData = shiftRes && shiftRes.ok ? await shiftRes.json().catch(()=>({})) : {};
-    const shifts = Array.isArray(shiftData) ? shiftData : shiftData.results || [];
-    
-    const leaveData = leaveRes && leaveRes.ok ? await leaveRes.json().catch(()=>({})) : {};
-    const leavesAll = Array.isArray(leaveData) ? leaveData : leaveData.results || [];
+    const empById = Object.fromEntries(employees.map((employee) => [employee.id, employee]));
+    const empCount = employees.length;
     const leavesToday = leavesAll.filter(l => l.status === 'Approved' && l.start_date <= todayLocal && l.end_date >= todayLocal);
     
     const attToday = rows.filter(r => r.date === todayLocal);
@@ -3689,11 +3794,9 @@ async function loadAttendanceView() {
         body.appendChild(tr);
       });
     }
-    setApiMode('live');
     filterAttendanceRegisterByDate();
   } catch (e) {
     body.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: #ef4444;">Attendance data is unavailable.</td></tr>';
-    setApiMode('demo');
     showToast('Attendance data could not be loaded.', 'error');
   }
 }
@@ -3760,10 +3863,7 @@ async function loadShiftRosterView() {
   const body = document.getElementById('shiftRosterTableBody');
   if (!body) return;
   try {
-    const res = await apiFetch('/api/shift-rosters/?page_size=50');
-    if (!res.ok) throw new Error('load failed');
-    const payload = await res.json();
-    const rows = Array.isArray(payload) ? payload : payload.results || [];
+    const rows = await fetchAllApiRows('/api/shift-rosters/?page_size=100');
     let names = {};
     try { names = await liveEmployeeNames(); } catch (_) { /* fall back to ids */ }
     body.innerHTML = '';
@@ -3784,9 +3884,11 @@ async function loadShiftRosterView() {
         body.appendChild(tr);
       });
     }
-    setApiMode('live');
     refreshShiftConflictBadges();
-  } catch (e) { setApiMode('demo'); showToast('Shift roster unreachable — showing demo data', 'error'); }
+  } catch (e) {
+    body.innerHTML = '<tr><td colspan="5">Shift roster is unavailable. Try refreshing.</td></tr>';
+    showToast('Shift roster could not be loaded.', 'error');
+  }
 }
 
 async function loadMasterShiftCalendar(selectedDate) {
@@ -3807,19 +3909,17 @@ async function loadMasterShiftCalendar(selectedDate) {
   const iso = (date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
   const selectedIso = iso(anchor);
   try {
-    const [employeeRes, rosterRes] = await Promise.all([
-      apiFetch('/api/employees/?page_size=100', { headers: { Accept: 'application/json' } }),
-      apiFetch('/api/shift-rosters/?page_size=100', { headers: { Accept: 'application/json' } }),
+    const [employeeRows, rosters] = await Promise.all([
+      fetchAllApiRows('/api/employees/?page_size=100'),
+      fetchAllApiRows('/api/shift-rosters/?page_size=100'),
     ]);
-    if (!employeeRes.ok || !rosterRes.ok) throw new Error('calendar data unavailable');
-    const employeePayload = await employeeRes.json();
-    const rosterPayload = await rosterRes.json();
-    const employees = (Array.isArray(employeePayload) ? employeePayload : employeePayload.results || [])
-      .filter((employee) => employee.is_active !== false);
-    const rosters = Array.isArray(rosterPayload) ? rosterPayload : rosterPayload.results || [];
+    const employees = employeeRows.filter((employee) => employee.is_active !== false);
     const byEmployeeDate = {};
     rosters.forEach((roster) => {
-      if (roster.work_date) byEmployeeDate[`${roster.employee}:${roster.work_date}`] = roster;
+      if (roster.work_date) {
+        const key = `${roster.employee}:${roster.work_date}`;
+        (byEmployeeDate[key] ||= []).push(roster);
+      }
     });
     head.innerHTML = `<tr><th class="col-staff">EMPLOYEE</th>${dates.map((date) => {
       const isSelected = iso(date) === selectedIso;
@@ -3833,9 +3933,9 @@ async function loadMasterShiftCalendar(selectedDate) {
         const name = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || employee.email || 'Employee';
         const initials = name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
         const cells = dates.map((date) => {
-          const roster = byEmployeeDate[`${employee.id}:${iso(date)}`];
-          if (!roster) return '<td><div class="shift-capsule shift-off"><span class="shift-code">OFF</span><span class="shift-status">Unassigned</span></div></td>';
-          return `<td><div class="shift-capsule ${iso(date) === selectedIso ? 'shift-flex' : ''}"><span class="shift-code">${escapeHtml(String(roster.shift_type || 'SHIFT').toUpperCase())}</span><span class="shift-status">${escapeHtml(String(roster.start_time || '').slice(0, 5))} – ${escapeHtml(String(roster.end_time || '').slice(0, 5))}</span></div></td>`;
+          const dayRosters = byEmployeeDate[`${employee.id}:${iso(date)}`] || [];
+          if (!dayRosters.length) return '<td><div class="shift-capsule shift-off"><span class="shift-code">OFF</span><span class="shift-status">Unassigned</span></div></td>';
+          return `<td>${dayRosters.map((roster) => `<div class="shift-capsule ${iso(date) === selectedIso ? 'shift-flex' : ''}"><span class="shift-code">${escapeHtml(String(roster.shift_type || 'SHIFT').toUpperCase())}</span><span class="shift-status">${escapeHtml(String(roster.start_time || '').slice(0, 5))} – ${escapeHtml(String(roster.end_time || '').slice(0, 5))}</span></div>`).join('')}</td>`;
         }).join('');
         body.insertAdjacentHTML('beforeend', `<tr><td><div class="shift-staff-cell"><div class="shift-staff-avatar">${escapeHtml(initials)}</div><div class="shift-staff-meta"><strong>${escapeHtml(name)}</strong><span>${escapeHtml(employee.role || 'Employee')}</span></div></div></td>${cells}</tr>`);
       });
@@ -3870,18 +3970,10 @@ async function loadPayrollView() {
   const body = document.getElementById('payrollRunsTableBody');
   if (!body) return;
   try {
-    const res = await apiFetch('/api/payroll-runs/?page_size=50');
-    if (!res.ok) throw new Error('load failed');
-    const payload = await res.json();
-    const runs = Array.isArray(payload) ? payload : payload.results || [];
-    let items = [];
-    try {
-      const itemRes = await apiFetch('/api/payroll-items/?page_size=50');
-      if (itemRes.ok) {
-        const itemPayload = await itemRes.json();
-        items = Array.isArray(itemPayload) ? itemPayload : itemPayload.results || [];
-      }
-    } catch (_) { /* lines stay zeroed */ }
+    const [runs, items] = await Promise.all([
+      fetchAllApiRows('/api/payroll-runs/?page_size=100'),
+      fetchAllApiRows('/api/payroll-items/?page_size=100'),
+    ]);
     body.innerHTML = '';
     if (!runs.length) {
       body.innerHTML = '<tr><td colspan="4">No records yet.</td></tr>';
@@ -3899,80 +3991,30 @@ async function loadPayrollView() {
         body.appendChild(tr);
       });
     }
-    setApiMode('live');
   } catch (e) {
-    const wrap = document.getElementById('payrollLiveWrap');
-    if (wrap) wrap.style.display = 'none';
-    setApiMode('demo');
-    showToast('Payroll unreachable — showing demo data', 'error');
+    body.innerHTML = '<tr><td colspan="4">Payroll data is unavailable. Try refreshing.</td></tr>';
+    showToast('Payroll data could not be loaded.', 'error');
   }
 }
 
 async function loadAuditView() {
-  const body = document.getElementById('auditLogsTableBody');
-  if (!body) return;
-  const demo = body.innerHTML;
-  body.innerHTML = '<tr><td colspan="7">Loading…</td></tr>';
-  try {
-    const res = await apiFetch('/api/audit-logs/?page_size=50');
-    if (!res.ok) throw new Error('load failed');
-    const payload = await res.json();
-    const rows = Array.isArray(payload) ? payload : payload.results || [];
-    auditLiveTotal = typeof payload.count === 'number' ? payload.count : rows.length;
-    updateAuditTabCounts(rows);
-    let names = {};
-    try { names = await liveEmployeeNames(); } catch (_) { /* fall back to System */ }
-    body.innerHTML = '';
-    if (!rows.length) {
-      body.innerHTML = '<tr><td colspan="7">No records yet.</td></tr>';
-    } else {
-      rows.forEach((log) => {
-        const who = names[log.employee] || 'System';
-        const when = log.timestamp ? new Date(log.timestamp).toLocaleString() : '—';
-        const category = classifyAuditAction(log.action || '');
-        const tr = document.createElement('tr');
-        tr.setAttribute('data-live', 'true');
-        tr.setAttribute('data-category', category);
-        tr.setAttribute('data-admin', who);
-        tr.innerHTML =
-          `<td><div class="claims-applicant-cell"><div class="claims-applicant-info">` +
-          `<strong>${escapeHtml(String(who))}</strong></div></div></td>` +
-          `<td>${escapeHtml(category)}</td><td>${escapeHtml(String(when))}</td>` +
-          `<td>${escapeHtml(formatAuditActionText(log.action || ''))}</td><td>—</td>` +
-          `<td><span class="penpot-badge badge-present">Logged</span></td>` +
-          `<td style="text-align: right;">${escapeHtml(String(log.id || '').slice(0, 8))}</td>`;
-        body.appendChild(tr);
-      });
-    }
-    setApiMode('live');
-  } catch (e) { body.innerHTML = demo; setApiMode('demo'); showToast('Audit log unreachable — showing demo data', 'error'); }
+  auditPagerPage = 1;
+  return auditPagerGoto(1);
 }
 
-// Audit pager (D34): ?page=N against /api/audit-logs/, same live row shape
-// as loadAuditView, demo markup restored when the API is unreachable.
+// Audit pager (D34): ?page=N against /api/audit-logs/.
 let auditPagerPage = 1;
 const AUDIT_PAGE_SIZE = 10;
-// Live total from the last audit fetch; filterAuditLogs falls back to the
-// static demo total until the first live page lands.
+// Live total from the last audit fetch.
 let auditLiveTotal = 0;
 
 function auditPagerStep(delta) {
   auditPagerGoto(auditPagerPage + delta);
 }
 
-function auditCategory(action) {
-  const text = String(action || '').toLowerCase();
-  if (text.includes('leave')) return 'Leave';
-  if (text.includes('payroll') || text.includes('overtime') || text.includes('claim') || text.includes('advance')) return 'Payroll';
-  if (text.includes('roster') || text.includes('shift') || text.includes('swap') || text.includes('attendance') || text.includes('clock')) return 'Roster';
-  if (text.includes('swap') || text.includes('grievance')) return 'Grievance';
-  if (text.includes('employee') || text.includes('department') || text.includes('resign') || text.includes('purged')) return 'People';
-  return 'General';
-}
-
 function buildAuditRow(log, names) {
   const who = names[log.employee] || 'System';
-  const category = auditCategory(log.action);
+  const category = classifyAuditAction(log.action);
   const when = log.timestamp ? new Date(log.timestamp).toLocaleString() : '—';
   const tr = document.createElement('tr');
   tr.setAttribute('data-live', 'true');
@@ -3992,14 +4034,14 @@ async function auditPagerGoto(page) {
   if (page < 1) return;
   const body = document.getElementById('auditLogsTableBody');
   if (!body) return;
-  const demo = body.dataset.demoHtml || body.innerHTML;
-  body.dataset.demoHtml = demo;
   try {
     const res = await apiFetch(`/api/audit-logs/?page=${page}&page_size=${AUDIT_PAGE_SIZE}`);
     if (!res.ok) throw new Error('load failed');
     const payload = await res.json();
     const rows = Array.isArray(payload) ? payload : payload.results || [];
     const total = typeof payload.count === 'number' ? payload.count : rows.length;
+    const totalPages = Math.max(1, Math.ceil(total / AUDIT_PAGE_SIZE));
+    if (page > totalPages) return auditPagerGoto(totalPages);
     let names = {};
     try { names = await liveEmployeeNames(); } catch (_) { /* fall back to System */ }
     body.innerHTML = '';
@@ -4008,22 +4050,14 @@ async function auditPagerGoto(page) {
     } else {
       rows.forEach((log) => body.appendChild(buildAuditRow(log, names)));
     }
-    const info = document.getElementById('auditPaginationInfo');
-    if (info) info.textContent = `Showing page ${page} of ${total} live logged admin events`;
     auditPagerPage = page;
     auditLiveTotal = total;
+    updatePagerControls('audit', page, total, AUDIT_PAGE_SIZE);
     markPagerActive('audit', page);
-    const prev = document.getElementById('auditPrevBtn');
-    if (prev) {
-      prev.disabled = page <= 1;
-      prev.style.opacity = page <= 1 ? '0.5' : '';
-      prev.style.cursor = page <= 1 ? 'not-allowed' : '';
-    }
-    setApiMode('live');
+    filterAuditLogs();
   } catch (e) {
-    body.innerHTML = demo;
-    setApiMode('demo');
-    showToast('Audit page unreachable — showing demo data', 'error');
+    body.innerHTML = '<tr><td colspan="7">This audit page is unavailable. Try refreshing.</td></tr>';
+    showToast('Audit page could not be loaded.', 'error');
   }
 }
 

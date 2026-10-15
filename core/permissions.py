@@ -1,5 +1,46 @@
 from django.db.models import Q
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import SAFE_METHODS, BasePermission
+
+
+def is_staff_or_hr(user):
+    """Return whether an authenticated user can manage HR records."""
+    if not user or not getattr(user, "is_authenticated", False):
+        return False
+    if user.is_staff or user.is_superuser:
+        return True
+
+    from .models import Employee
+
+    employee = (
+        Employee.objects.select_related("department").filter(user=user).first()
+    )
+    return bool(
+        employee
+        and (
+            (employee.department and employee.department.name.lower() == "hr")
+            or "hr" in (employee.role or "").lower()
+        )
+    )
+
+
+class IsStaffOrHR(BasePermission):
+    """Allow Django staff and linked HR-profile users."""
+
+    def has_permission(self, request, view):
+        return is_staff_or_hr(request.user)
+
+
+class IsAuthenticatedReadOrStaffHRWrite(BasePermission):
+    """Allow authenticated reads; require HR access for writes."""
+
+    def has_permission(self, request, view):
+        return bool(
+            request.user.is_authenticated
+            and (
+                request.method in SAFE_METHODS
+                or is_staff_or_hr(request.user)
+            )
+        )
 
 
 def owns_object(obj, user):
@@ -10,7 +51,7 @@ def owns_object(obj, user):
     notification, roster, review, expense rows), ``attendance.employee``
     (corrections, overtime slips via their attendance), and either swap
     party's roster employee (shift swaps). Anything without a resolvable
-    owner returns False — unlinked rows are staff-only.
+    owner returns False — unlinked rows are staff/HR-only.
     """
     if user is None or not getattr(user, "is_authenticated", False):
         return False
@@ -40,7 +81,7 @@ def owns_object(obj, user):
 
 
 class IsOwnerOrStaff(BasePermission):
-    """Object permission: staff see everything, others only their own rows.
+    """Object permission: staff/HR see everything, others only their own rows.
 
     Inactive non-staff are blocked at the permission gate (staff bypass).
     Inactive means either the Django user is inactive or the linked
@@ -63,13 +104,13 @@ class IsOwnerOrStaff(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         user = request.user
-        if user and user.is_staff:
+        if is_staff_or_hr(user):
             return True
         return owns_object(obj, user)
 
 
 class OwnerQuerysetMixin:
-    """Filter list querysets to the request user's own rows (staff see all).
+    """Filter lists to the request user's rows (staff/HR see all).
 
     Set ``owner_lookup`` to the ORM traversal from the row to its User
     (e.g. ``"employee__user"``), or ``"__swap_parties__"`` for shift
@@ -81,7 +122,11 @@ class OwnerQuerysetMixin:
     def get_queryset(self):
         qs = super().get_queryset()
         user = getattr(self.request, "user", None)
-        if not user or not getattr(user, "is_authenticated", False) or user.is_staff:
+        if (
+            not user
+            or not getattr(user, "is_authenticated", False)
+            or is_staff_or_hr(user)
+        ):
             return qs
         return self._scope_to_owner(qs, user)
 

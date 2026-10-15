@@ -1,0 +1,108 @@
+.kumon-loading-screen {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #f7f8fa;
+  opacity: 0;
+  animation: kumon-screen-in 180ms ease-out forwards;
+}
+
+.kumon-loading-screen[hidden] {
+  display: none !important;
+}
+
+.kumon-loading-card {
+  width: min(100%, 360px);
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 38px 32px 30px;
+  border: 1px solid #e5e9ef;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 24px 64px rgb(21 35 58 / 10%);
+  text-align: center;
+  animation: kumon-card-in 260ms cubic-bezier(.2, .8, .2, 1) both;
+}
+
+.kumon-loading-logo {
+  display: block;
+  width: 156px;
+  max-height: 60px;
+  object-fit: contain;
+  margin-bottom: 28px;
+}
+
+.kumon-loading-spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid #e5e9ef;
+  border-top-color: #d71920;
+  border-right-color: #174a8b;
+  border-radius: 50%;
+  animation: kumon-spin 850ms linear infinite;
+}
+
+.kumon-loading-title {
+  margin: 18px 0 4px;
+  color: #15233a;
+  font: 700 17px/1.4 "Plus Jakarta Sans", Inter, sans-serif;
+  letter-spacing: -.02em;
+}
+
+.kumon-loading-caption {
+  margin: 0;
+  color: #5b6778;
+  font: 500 14px/1.5 Inter, sans-serif;
+}
+
+.kumon-loading-track {
+  width: 100%;
+  height: 3px;
+  overflow: hidden;
+  margin-top: 26px;
+  border-radius: 99px;
+  background: #edf0f4;
+}
+
+.kumon-loading-track span {
+  display: block;
+  width: 38%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #174a8b, #d71920);
+  animation: kumon-progress 950ms ease-in-out infinite alternate;
+}
+
+@keyframes kumon-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes kumon-progress {
+  from { transform: translateX(-20%); }
+  to { transform: translateX(190%); }
+}
+
+@keyframes kumon-screen-in {
+  to { opacity: 1; }
+}
+
+@keyframes kumon-card-in {
+  from { opacity: 0; transform: translateY(8px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kumon-loading-screen,
+  .kumon-loading-card {
+    animation: none;
+  }
+
+  .kumon-loading-spinner,
+  .kumon-loading-track span {
+    animation: none;
+  }
+}

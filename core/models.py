@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Q
+from django.utils import timezone
 
 from .constants import NUMERIC_RANGES
 
@@ -38,7 +39,7 @@ class Employee(models.Model):
     department = models.ForeignKey(
         Department, on_delete=models.SET_NULL, null=True, blank=True
     )
-    date_hired = models.DateField(auto_now_add=True)
+    date_hired = models.DateField(default=timezone.localdate)
     is_active = models.BooleanField(default=True)
     resigned_at = models.DateField(null=True, blank=True)
     user = models.OneToOneField(
@@ -314,8 +315,8 @@ class Complaint(models.Model):
 
 class Message(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    conversation_key = models.CharField(max_length=100, default="sarah", db_index=True)
-    sender_name = models.CharField(max_length=255, default="Marcus Williams")
+    conversation_key = models.CharField(max_length=100, default="announcements", db_index=True)
+    sender_name = models.CharField(max_length=255, default="System")
     text = models.TextField(blank=True)
     attachment = models.FileField(
         upload_to="message-attachments/%Y/%m/%d/", blank=True, null=True
@@ -355,6 +356,36 @@ class UserSetting(models.Model):
 
     def __str__(self):
         return f"settings({self.user_id})"
+
+
+class AuthenticatorDevice(models.Model):
+    """One encrypted TOTP authenticator per user."""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="authenticator_device",
+    )
+    encrypted_secret = models.CharField(max_length=512)
+    is_confirmed = models.BooleanField(default=False)
+    enabled_at = models.DateTimeField(null=True, blank=True)
+    last_verified_counter = models.BigIntegerField(default=-1)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"authenticator({self.user_id})"
+
+
+class AuthenticatorRecoveryCode(models.Model):
+    """A single hashed, one-use recovery code for an authenticator device."""
+
+    device = models.ForeignKey(
+        AuthenticatorDevice,
+        on_delete=models.CASCADE,
+        related_name="recovery_codes",
+    )
+    code_hash = models.CharField(max_length=128)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class SiteSetting(models.Model):

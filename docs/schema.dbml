@@ -1,7 +1,8 @@
 Project "Django DBML" {
   database_type: 'PostgreSQL'
   Note: '''Generated from Django models.
-  Last Updated At 09-15-2026 04:54PM UTC'''
+  Last Updated At 10-15-2026 UTC
+  Includes normalized two-factor authentication tables from core migration 0030.'''
 }
 
 enum core.char_attendancecorrection_status {
@@ -247,6 +248,7 @@ Attendance(id, employee, date, clock_in, clock_out)
 
   indexes {
     (employee_id) [name: 'core_attendance_employee_id_6327f987', type: btree]
+    (date) [type: btree]
     (employee_id,date) [unique, name: 'core_attendance_employee_id_date_905b5953_uniq', type: btree]
     (id) [pk, unique, name: 'core_attendance_pkey', type: btree]
   }
@@ -461,6 +463,8 @@ LeaveRequest(id, employee, leave_type, start_date, end_date, reason, status, cre
 
   indexes {
     (employee_id) [name: 'core_leaverequest_employee_id_eae723bf', type: btree]
+    (start_date) [type: btree]
+    (end_date) [type: btree]
     (id) [pk, unique, name: 'core_leaverequest_pkey', type: btree]
   }
 }
@@ -473,8 +477,8 @@ Message(id, conversation_key, sender_name, text, attachment, created_at)
 '''
 
   id uuid [note: '''*id*''', pk, unique, default:`uuid.uuid4()`, not null]
-  conversation_key char [note: '''*conversation key*''', default:`"sarah"`, not null]
-  sender_name char [note: '''*sender name*''', default:`"Marcus Williams"`, not null]
+  conversation_key char [note: '''*conversation key*''', default:`"announcements"`, not null]
+  sender_name char [note: '''*sender name*''', default:`"System"`, not null]
   text text [note: '''*text*''', not null]
   attachment file [note: '''*attachment*''', null]
   created_at date_time [note: '''*created at*''', not null]
@@ -646,6 +650,7 @@ ShiftRoster(id, name, employee, work_date, shift_type, start_time, end_time, bre
 
   indexes {
     (employee_id) [name: 'core_shiftroster_employee_id_a1fb7bda', type: btree]
+    (work_date) [type: btree]
     (id) [pk, unique, name: 'core_shiftroster_pkey', type: btree]
   }
 }
@@ -672,6 +677,41 @@ ShiftSwap(id, requester_roster, target_roster, reason, status, created_at)
 }
 ref: core_shiftswap.requester_roster_id > core_shiftroster.id
 ref: core_shiftswap.target_roster_id > core_shiftroster.id
+
+
+Table core_authenticatordevice {
+  Note: '''One encrypted time-based authenticator per Django user.'''
+
+  id auto [pk, not null]
+  user_id auto [unique, not null]
+  encrypted_secret varchar(512) [not null]
+  is_confirmed boolean [default: false, not null]
+  enabled_at date_time [null]
+  last_verified_counter bigint [default: -1, not null]
+  created_at date_time [not null]
+
+  indexes {
+    (user_id) [unique, name: 'core_authenticatordevice_user_id_key', type: btree]
+    (id) [pk, unique, name: 'core_authenticatordevice_pkey', type: btree]
+  }
+}
+ref: core_authenticatordevice.user_id > auth_user.id
+
+
+Table core_authenticatorrecoverycode {
+  Note: '''One hashed, single-use recovery credential per row; consumed rows are deleted.'''
+
+  id auto [pk, not null]
+  device_id auto [not null]
+  code_hash varchar(128) [not null]
+  created_at date_time [not null]
+
+  indexes {
+    (device_id) [name: 'core_authenticatorrecoverycode_device_id_idx', type: btree]
+    (id) [pk, unique, name: 'core_authenticatorrecoverycode_pkey', type: btree]
+  }
+}
+ref: core_authenticatorrecoverycode.device_id > core_authenticatordevice.id
 
 
 Table django_content_type {

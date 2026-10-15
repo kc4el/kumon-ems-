@@ -1,6 +1,6 @@
 """Bulk employee import from Excel (T13+T14).
 
-Admin-only endpoint kept in its own module so ``api/urls.py`` stays
+HR-only endpoint kept in its own module so ``api/urls.py`` stays
 parent-owned. The parent wires :data:`import_urls` into the API router.
 """
 
@@ -13,11 +13,11 @@ from django.db import IntegrityError, transaction
 from django.urls import path
 from rest_framework import status
 from rest_framework.parsers import FormParser, MultiPartParser
-from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Department, Employee
+from .permissions import IsStaffOrHR
 from .supabase_client import rollback_supabase_user, supabase
 
 logger = logging.getLogger(__name__)
@@ -191,7 +191,7 @@ def _commit_rows(validated):
 
 
 class EmployeeImportView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsStaffOrHR]
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request):
@@ -215,7 +215,12 @@ class EmployeeImportView(APIView):
                 {
                     "dry_run": True,
                     "rows": [
-                        {"row": item["row"], "ok": item["ok"], "errors": item["errors"]}
+                        {
+                            "row": item["row"],
+                            "ok": item["ok"],
+                            "errors": item["errors"],
+                            **item["data"],
+                        }
                         for item in validated
                     ],
                 }

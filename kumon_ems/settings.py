@@ -10,8 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import base64
+import hashlib
 import os
 from pathlib import Path
+from urllib.parse import parse_qs, unquote, urlsplit
 
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
@@ -33,6 +36,9 @@ if not SECRET_KEY:
         SECRET_KEY = "django-insecure-dev-only-key"
     else:
         raise ImproperlyConfigured("SECRET_KEY env var is required when DEBUG is off.")
+MFA_ENCRYPTION_KEY = os.getenv("MFA_ENCRYPTION_KEY") or base64.urlsafe_b64encode(
+    hashlib.sha256(SECRET_KEY.encode("utf-8")).digest()
+).decode("ascii")
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0").split(
@@ -94,15 +100,54 @@ WSGI_APPLICATION = "kumon_ems.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-# Local dev default: zero-config SQLite. Set USE_SQLITE=false (or DB_HOST) to
-# use Postgres. Upstream switched to USE_SQLITE; both spellings stay supported
-# so older team .env files keep working.
-if os.getenv("USE_SQLITE", "true").strip().lower() in {
+# A Supabase connection URL takes priority. Keep DB_* support for existing
+# deployments and SQLite for local development without a configured DB host.
+DATABASE_URL = os.getenv("SUPABASE_DB_URL") or os.getenv("DATABASE_URL")
+USE_SQLITE = os.getenv("USE_SQLITE", "true").strip().lower() in {
     "1",
     "true",
     "yes",
     "on",
-} and not os.getenv("DB_HOST"):
+}
+
+if DATABASE_URL:
+    parsed_database_url = urlsplit(DATABASE_URL)
+    if parsed_database_url.scheme not in {"postgres", "postgresql"}:
+        raise ImproperlyConfigured("SUPABASE_DB_URL must use a PostgreSQL URL.")
+    try:
+        database_port = parsed_database_url.port or 5432
+    except ValueError as exc:
+        raise ImproperlyConfigured("Database URL has an invalid port.") from exc
+
+    database_host = parsed_database_url.hostname
+    database_name = unquote(parsed_database_url.path.lstrip("/"))
+    database_user = unquote(parsed_database_url.username or "")
+    database_password = unquote(parsed_database_url.password or "")
+    if not database_host or not database_name or not database_user:
+        raise ImproperlyConfigured("Database URL must include host, database, and user.")
+
+    database_options = {
+        key: values[-1]
+        for key, values in parse_qs(parsed_database_url.query).items()
+        if key in {"sslmode", "application_name", "connect_timeout", "options"}
+    }
+    if database_host.endswith((".supabase.co", ".pooler.supabase.com")):
+        database_options["sslmode"] = "require"
+
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": database_name,
+            "USER": database_user,
+            "PASSWORD": database_password,
+            "HOST": database_host,
+            "PORT": database_port,
+            "CONN_MAX_AGE": int(os.getenv("DB_CONN_MAX_AGE", "60")),
+            "CONN_HEALTH_CHECKS": True,
+            "OPTIONS": database_options,
+        }
+    }
+elif USE_SQLITE and not os.getenv("DB_HOST"):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -110,14 +155,20 @@ if os.getenv("USE_SQLITE", "true").strip().lower() in {
         }
     }
 else:
+    database_host = os.getenv("DB_HOST", "localhost")
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
             "NAME": os.getenv("DB_NAME", "postgres"),
             "USER": os.getenv("DB_USER", "postgres"),
             "PASSWORD": os.getenv("DB_PASSWORD", ""),
-            "HOST": os.getenv("DB_HOST", "localhost"),
+            "HOST": database_host,
             "PORT": os.getenv("DB_PORT", "5432"),
+            "CONN_MAX_AGE": int(os.getenv("DB_CONN_MAX_AGE", "60")),
+            "CONN_HEALTH_CHECKS": True,
+            "OPTIONS": {
+                "sslmode": "require"
+            } if database_host.endswith((".supabase.co", ".pooler.supabase.com")) else {},
         }
     }
 
@@ -194,7 +245,12 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
     ],
-    "DEFAULT_THROTTLE_RATES": {"anon": "100/day", "user": "1000/day"},
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/day",
+        "user": "1000/day",
+        "login": "10/minute",
+        "mfa": "5/minute",
+    },
     "EXCEPTION_HANDLER": "core.exception_handler.api_errors",
 }
 

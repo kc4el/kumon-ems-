@@ -1,6 +1,4 @@
 from django.urls import path
-from rest_framework.authtoken.views import obtain_auth_token
-
 from core.views import (
     AttendanceCheckInView,
     AttendanceClockOutView,
@@ -33,6 +31,7 @@ from core.views import (
     LeaveRequestListCreateView,
     MessageListCreateView,
     MySettingsView,
+    MfaAwareAuthTokenView,
     NotificationListView,
     NotificationMarkReadView,
     OvertimeSlipDetailView,
@@ -46,12 +45,17 @@ from core.views import (
     PurgeRunView,
     SessionLoginView,
     SessionLogoutView,
+    SessionCancelTwoFactorView,
+    SessionTwoFactorView,
     ShiftConflictView,
     ShiftRosterDetailView,
     ShiftRosterListCreateView,
     ShiftSwapDetailView,
     ShiftSwapListCreateView,
     SiteSettingsView,
+    TwoFactorConfirmView,
+    TwoFactorDisableView,
+    TwoFactorSetupView,
 )
 from core.views_docs import (
     ClaimDecisionView,
@@ -83,7 +87,7 @@ urlpatterns = [
         "complaints/", ComplaintListCreateView.as_view(), name="complaint-list-create"
     ),
     path(
-        "complaints/<int:pk>/", ComplaintDetailView.as_view(), name="complaint-detail"
+        "complaints/<uuid:pk>/", ComplaintDetailView.as_view(), name="complaint-detail"
     ),
     path("employees/<uuid:pk>/", EmployeeDetailView.as_view(), name="employee-detail"),
     path(
@@ -210,11 +214,16 @@ urlpatterns = [
     ),
     path("audit-logs/", EmployeeAuditLogListView.as_view(), name="audit-log-list"),
     path("logs/", EmployeeAuditLogListView.as_view(), name="logs-alias"),
-    path("auth-token/", obtain_auth_token, name="api-token"),
+    path("auth-token/", MfaAwareAuthTokenView.as_view(), name="api-token"),
     path("session-login/", SessionLoginView.as_view(), name="session-login"),
     path("hr-session-login/", HrSessionLoginView.as_view(), name="hr-session-login"),
+    path("session-verify-2fa/", SessionTwoFactorView.as_view(), name="session-verify-2fa"),
+    path("session-cancel-2fa/", SessionCancelTwoFactorView.as_view(), name="session-cancel-2fa"),
     path("session-logout/", SessionLogoutView.as_view(), name="session-logout"),
     path("settings/me/", MySettingsView.as_view(), name="settings-me"),
+    path("settings/2fa/setup/", TwoFactorSetupView.as_view(), name="settings-2fa-setup"),
+    path("settings/2fa/confirm/", TwoFactorConfirmView.as_view(), name="settings-2fa-confirm"),
+    path("settings/2fa/disable/", TwoFactorDisableView.as_view(), name="settings-2fa-disable"),
     path(
         "settings/password/",
         ChangePasswordView.as_view(),

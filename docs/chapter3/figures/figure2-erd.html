@@ -236,4 +236,45 @@
     <text class="mut" x="40" y="1216">Amber UNDER DEVELOPMENT tag = table exists but has no working feature yet (currently only ExpenseClaim).</text>
   </g>
 </svg>
+<h2 style="margin-top:26px">Account security detail — migration 0030</h2>
+<p class="sub">One user may enable one authenticator. Recovery codes are separate hashed, single-use rows.</p>
+<svg viewBox="0 0 1120 270" role="img" aria-label="A Django user has zero or one authenticator device; each authenticator device has zero to ten recovery code rows">
+  <defs>
+    <marker id="security-crow" viewBox="-10 -7 12 14" refX="0" refY="0" markerWidth="11" markerHeight="11" orient="auto">
+      <path d="M0,0 L-9,-6 M0,0 L-9,0 M0,0 L-9,6" style="stroke:#111;stroke-width:1.4;fill:none"/>
+    </marker>
+    <marker id="security-one" viewBox="-6 -7 12 14" refX="0" refY="0" markerWidth="9" markerHeight="11" orient="auto">
+      <path d="M-2,-6 L-2,6 M2,-6 L2,6" style="stroke:#111;stroke-width:1.4"/>
+    </marker>
+  </defs>
+  <g font-size="12">
+    <rect class="box" x="35" y="35" width="270" height="150" rx="6"/>
+    <text class="t b" x="50" y="59" font-size="14">auth_user</text>
+    <line class="box" x1="35" y1="69" x2="305" y2="69"/>
+    <text class="t" x="50" y="94">id · integer · PK</text>
+    <text class="t" x="50" y="116">username · text · UQ</text>
+    <text class="mut" x="50" y="145">Account owner</text>
+
+    <rect class="box" x="425" y="35" width="330" height="184" rx="6"/>
+    <text class="t b" x="440" y="59" font-size="14">AuthenticatorDevice</text>
+    <line class="box" x1="425" y1="69" x2="755" y2="69"/>
+    <text class="t" x="440" y="94">id · integer · PK</text>
+    <text class="t" x="440" y="116">user_id · integer · FK · UQ</text>
+    <text class="t" x="440" y="138">encrypted_secret · varchar</text>
+    <text class="t" x="440" y="160">is_confirmed · boolean</text>
+    <text class="t" x="440" y="182">last_verified_counter · bigint</text>
+
+    <rect class="box" x="875" y="35" width="210" height="150" rx="6"/>
+    <text class="t b" x="890" y="59" font-size="14">RecoveryCode</text>
+    <line class="box" x1="875" y1="69" x2="1085" y2="69"/>
+    <text class="t" x="890" y="94">id · integer · PK</text>
+    <text class="t" x="890" y="116">device_id · FK</text>
+    <text class="t" x="890" y="138">code_hash · varchar</text>
+    <text class="mut" x="890" y="160">Deleted when used</text>
+  </g>
+  <line class="rel" x1="305" y1="108" x2="425" y2="108" marker-start="url(#security-one)" marker-end="url(#security-one)"/>
+  <text class="mut dlbl" x="314" y="96">0..1 device</text>
+  <line class="rel" x1="755" y1="108" x2="875" y2="108" marker-start="url(#security-one)" marker-end="url(#security-crow)"/>
+  <text class="mut dlbl" x="762" y="96">0..10 one-use codes</text>
+</svg>
 </body></html>

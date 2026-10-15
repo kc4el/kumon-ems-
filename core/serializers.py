@@ -108,7 +108,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             "is_active",
             "resigned_at",
         ]
-        read_only_fields = ["id", "date_hired"]
+        read_only_fields = ["id"]
 
 
 class AttendanceSerializer(serializers.ModelSerializer):

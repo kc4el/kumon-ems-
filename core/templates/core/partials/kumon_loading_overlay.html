@@ -1,0 +1,10 @@
+{% load static %}
+<div class="kumon-loading-screen" id="kumonLoadingScreen" hidden aria-hidden="true">
+  <div class="kumon-loading-card" role="status" aria-live="polite" aria-label="Signing in to Kumon EMS">
+    <img class="kumon-loading-logo" src="{% static 'images/kumon-logo.png' %}" alt="Kumon" />
+    <div class="kumon-loading-spinner" aria-hidden="true"></div>
+    <p class="kumon-loading-title">Preparing your workspace</p>
+    <p class="kumon-loading-caption">Securely opening Kumon EMS</p>
+    <div class="kumon-loading-track" aria-hidden="true"><span></span></div>
+  </div>
+</div>

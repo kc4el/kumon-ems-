@@ -11,7 +11,8 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Source+Sans+Pro:wght@700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=3.0" />
+  <link rel="stylesheet" href="{% static 'css/kumon-loading.css' %}" />
 </head>
 
 <body class="auth-page-body">
@@ -33,13 +34,13 @@
         <div class="penpot-auth-card" id="authScreenLogin">
           <div class="penpot-auth-badge badge-portal">EMPLOYEE LOGIN</div>
           <h1 class="penpot-auth-title">Welcome back</h1>
-          <p class="penpot-auth-sub">Enter your employee credentials to sign in</p>
+          <p class="penpot-auth-sub">Enter your account credentials to sign in</p>
 
-          <form class="penpot-auth-form" onsubmit="handleAuthLogin(event)">
+          <form id="employeeLoginForm" class="penpot-auth-form" onsubmit="handleAuthLogin(event)">
             <div class="penpot-form-group">
-              <label class="penpot-form-label" for="loginEmployeeId">Corporate Email Address</label>
+              <label class="penpot-form-label" for="loginEmployeeId">Username or corporate email</label>
               <div class="penpot-input-wrap">
-                <input type="email" id="loginEmployeeId" class="penpot-input" placeholder="employee@company.com" required />
+                <input type="text" id="loginEmployeeId" class="penpot-input" autocomplete="username" placeholder="username or employee@company.com" required />
               </div>
               <small class="penpot-field-hint">(new staff: use the email HR registered for you)</small>
             </div>
@@ -62,7 +63,19 @@
 
             <button type="submit" class="penpot-btn-primary-navy">Sign In to Portal</button>
           </form>
-          <p class="penpot-auth-sub" style="margin-top: 10px; font-size: 12px;">Use a real account. Demo logins are issued by your HR admin.</p>
+          <p class="penpot-auth-sub" style="margin-top: 10px; font-size: 12px;">Demo accounts come from HR. Superuser sign-ins open the employee portal.</p>
+
+          <section id="employeeMfaChallenge" class="auth-mfa-challenge" hidden>
+            <div class="account-kicker">SECOND STEP</div>
+            <h2>Verify it’s you</h2>
+            <p>Enter the six-digit code from your authenticator app or a one-time recovery code.</p>
+            <form onsubmit="handleEmployeeTwoFactor(event)">
+              <label for="employeeMfaCode">Authenticator or recovery code</label>
+              <input id="employeeMfaCode" class="penpot-input" autocomplete="one-time-code" inputmode="text" required />
+              <button type="submit" class="penpot-btn-primary-navy">Verify and sign in</button>
+              <button type="button" class="auth-mfa-cancel" onclick="cancelEmployeeTwoFactor()">Back to password</button>
+            </form>
+          </section>
 
           <div class="penpot-switcher-row">
             <span>Don't have an account?</span>
@@ -139,7 +152,9 @@
 
   <!-- Toast Notification Stack -->
   <div id="toastContainer" class="toast-stack"></div>
+  {% include "core/partials/kumon_loading_overlay.html" %}
 
+  <script src="{% static 'js/kumon-loading.js' %}"></script>
   <script src="{% static 'js/dashboard.js' %}"></script>
   <script>
     if (typeof switchAuthPage === 'undefined') {

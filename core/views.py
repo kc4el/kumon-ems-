@@ -9,14 +9,15 @@ from django.contrib.sessions.models import Session
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, models, transaction
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.decorators import method_decorator
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from rest_framework import generics, status
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.exceptions import ValidationError as DRFValidationError
-from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -25,6 +26,8 @@ from .exceptions import Conflict409
 from .models import (
     Attendance,
     AttendanceCorrection,
+    AuthenticatorDevice,
+    AuthenticatorRecoveryCode,
     ClaimStatus,
     Complaint,
     Department,
@@ -45,7 +48,13 @@ from .models import (
     SiteSetting,
     UserSetting,
 )
-from .permissions import IsOwnerOrStaff, OwnerQuerysetMixin
+from .permissions import (
+    IsAuthenticatedReadOrStaffHRWrite,
+    IsOwnerOrStaff,
+    IsStaffOrHR,
+    OwnerQuerysetMixin,
+    is_staff_or_hr,
+)
 from .serializers import (
     MUTABLE_PROFILE_FIELDS,
     AttendanceCorrectionSerializer,
@@ -71,6 +80,16 @@ from .serializers import (
     UserSettingSerializer,
 )
 from .supabase_client import rollback_supabase_user, supabase
+from .mfa import (
+    consume_recovery_code,
+    decrypt_secret,
+    encrypt_secret,
+    matching_counter,
+    new_recovery_codes,
+    new_secret,
+    provisioning_uri,
+)
+from .throttles import MfaSessionThrottle, SessionLoginThrottle
 
 logger = logging.getLogger(__name__)
 
@@ -87,10 +106,11 @@ def _request_owner(request):
 
 
 class ForceOwnerCreateMixin:
-    """Non-staff creates must belong to the caller.
+    """Non-staff/HR creates must belong to the caller.
 
-    Staff may file on anyone's behalf. Non-staff who post another
-    employee's id get 403; omitting the field files under themselves.
+    Staff and HR-profile users may file on anyone's behalf. When they omit the
+    employee, a linked profile is used; unlinked staff must choose one. Other
+    users who post another employee's id get 403; omission files under themselves.
     """
 
     def _enforce_owner(self, serializer):
@@ -99,12 +119,24 @@ class ForceOwnerCreateMixin:
             # Unbound view (direct unit call) — nothing to scope against.
             return
         user = request.user
-        if user.is_staff:
+        chosen = serializer.validated_data.get("employee")
+        if is_staff_or_hr(user):
+            # HR may file for a selected employee. If no employee was
+            # selected, use the HR user's own linked profile when available;
+            # otherwise return a useful validation error instead of letting
+            # the non-null employee FK fail as a 500 during save().
+            if chosen is not None:
+                return
+            employee = _request_owner(request)
+            if employee is None:
+                raise DRFValidationError(
+                    {"employee": "Select an employee before submitting this request."}
+                )
+            serializer.validated_data["employee"] = employee
             return
         employee = _request_owner(request)
         if employee is None:
             raise DRFValidationError({"employee": "No linked employee profile."})
-        chosen = serializer.validated_data.get("employee")
         if chosen is not None and chosen.pk != employee.pk:
             raise PermissionDenied("Cannot create records for another employee.")
         serializer.validated_data["employee"] = employee
@@ -137,28 +169,71 @@ def hr_login_view(request):
 
 
 def _is_hr_user(user):
-    if not user or not user.is_authenticated:
-        return False
-    if user.is_staff:
-        return True
-    employee = Employee.objects.select_related("department").filter(user=user).first()
-    if employee is None:
-        return False
-    return (
-        employee.department and employee.department.name.lower() == "hr"
-    ) or "hr" in (employee.role or "").lower()
+    return is_staff_or_hr(user)
 
 
 def _authenticate_login(request, identifier, password):
-    """Authenticate by Django username or the account email address."""
+    """Authenticate by a unique Django username or account email."""
     identifier = str(identifier or "").strip()
-    user = authenticate(request, username=identifier, password=password)
-    if user is not None:
-        return user
-    email_user = User.objects.filter(email__iexact=identifier, is_active=True).first()
-    if email_user is None:
+    user = User.objects.filter(username=identifier, is_active=True).first()
+    if user is None:
+        username_matches = list(
+            User.objects.filter(username__iexact=identifier, is_active=True)[:2]
+        )
+        if len(username_matches) == 1:
+            user = username_matches[0]
+    if user is None:
+        email_matches = list(
+            User.objects.filter(email__iexact=identifier, is_active=True)[:2]
+        )
+        if len(email_matches) == 1:
+            user = email_matches[0]
+    if user is None:
         return None
-    return authenticate(request, username=email_user.username, password=password)
+    return authenticate(request, username=user.username, password=password)
+
+
+def _start_authenticated_login(request, user, next_url):
+    request.session.pop("pending_mfa_user_id", None)
+    request.session.pop("pending_mfa_next_url", None)
+    if AuthenticatorDevice.objects.filter(user=user, is_confirmed=True).exists():
+        request.session.cycle_key()
+        request.session["pending_mfa_user_id"] = str(user.pk)
+        request.session["pending_mfa_next_url"] = next_url
+        request.session.save()
+        return Response({"requires_2fa": True, "next_url": next_url})
+    login(request, user)
+    return Response({"message": "Signed in.", "next_url": next_url})
+
+
+def _consume_device_code(user, code):
+    """Consume one fresh TOTP or one recovery code under a row lock."""
+    with transaction.atomic():
+        device = (
+            AuthenticatorDevice.objects.select_for_update()
+            .filter(user=user, is_confirmed=True)
+            .first()
+        )
+        if device is None:
+            return False
+        try:
+            counter = matching_counter(
+                decrypt_secret(device.encrypted_secret),
+                code,
+                device.last_verified_counter,
+            )
+        except Exception:
+            logger.exception("unable to decrypt authenticator secret for %s", user.pk)
+            return False
+        if counter is not None:
+            device.last_verified_counter = counter
+            device.save(update_fields=["last_verified_counter"])
+            return True
+        for recovery_code in device.recovery_codes.all():
+            if consume_recovery_code([recovery_code.code_hash], code) is not None:
+                recovery_code.delete()
+                return True
+        return False
 
 
 def hr_dashboard_view(request):
@@ -176,10 +251,16 @@ def hr_dashboard_view(request):
 def employee_portal_view(request):
     if not request.user.is_authenticated:
         return redirect("/login/?next=/employee/")
-    if not Employee.objects.filter(user=request.user, is_active=True).exists():
+    employee = Employee.objects.filter(user=request.user, is_active=True).first()
+    is_admin_account = request.user.is_staff or request.user.is_superuser
+    if not is_admin_account and employee is None:
         logout(request)
         return redirect("/login/?next=/employee/")
-    return render(request, "core/employee_portal.html")
+    return render(
+        request,
+        "core/employee_portal.html",
+        {"show_employee_request_picker": is_admin_account and employee is None},
+    )
 
 
 class DashboardSummaryView(APIView):
@@ -233,11 +314,13 @@ class DashboardSummaryView(APIView):
 class DepartmentListCreateView(generics.ListCreateAPIView):
     queryset = Department.objects.all().order_by("name")
     serializer_class = DepartmentSerializer
+    permission_classes = [IsAuthenticatedReadOrStaffHRWrite]
 
 
 class DepartmentDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
+    permission_classes = [IsAuthenticatedReadOrStaffHRWrite]
 
 
 class GrievanceListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
@@ -253,17 +336,11 @@ class GrievanceDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
 
-class ComplaintListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
+class ComplaintListCreateView(
+    ForceOwnerCreateMixin, OwnerQuerysetMixin, generics.ListCreateAPIView
+):
     queryset = Complaint.objects.select_related("employee").all()
     serializer_class = ComplaintSerializer
-
-    def perform_create(self, serializer):
-        employee = _request_owner(self.request)
-        if not self.request.user.is_staff and employee is None:
-            raise DRFValidationError({"employee": "No linked employee profile."})
-        if not self.request.user.is_staff:
-            serializer.validated_data["employee"] = employee
-        super().perform_create(serializer)
 
 
 class ComplaintDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -273,7 +350,7 @@ class ComplaintDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class EmployeeListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
-    queryset = Employee.objects.all().order_by("last_name", "first_name")
+    queryset = Employee.objects.select_related("department").order_by("last_name", "first_name")
     serializer_class = EmployeeSerializer
     owner_lookup = "user"
 
@@ -311,10 +388,16 @@ class EmployeeListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         anonymous = not request.user.is_authenticated
+        if not anonymous and not is_staff_or_hr(request.user):
+            return Response(
+                {"error": "Only HR staff can create employee records."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         if anonymous:
             # Anonymous signup cannot set privileged fields: strip role-like
             # input and force the active default.
             payload.pop("role", None)
+            payload.pop("date_hired", None)
             payload["is_active"] = True
         password = str(payload.get("password", "") or "")
         if password:
@@ -402,10 +485,10 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
     # Owners may edit their own contact details, never their privileges.
-    STAFF_ONLY_FIELDS = ("role", "is_active", "department", "email")
+    STAFF_ONLY_FIELDS = ("role", "is_active", "department", "email", "date_hired")
 
     def perform_update(self, serializer):
-        if not self.request.user.is_staff:
+        if not is_staff_or_hr(self.request.user):
             for field in self.STAFF_ONLY_FIELDS:
                 serializer.validated_data.pop(field, None)
         serializer.save()
@@ -507,7 +590,7 @@ class EmployeePromoteView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
-        if not request.user.is_staff and not request.user.is_superuser:
+        if not is_staff_or_hr(request.user):
             return Response(
                 {"error": "Only HR staff can record promotions."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -556,7 +639,7 @@ class EmployeeTransferView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
-        if not request.user.is_staff and not request.user.is_superuser:
+        if not is_staff_or_hr(request.user):
             return Response(
                 {"error": "Only HR staff can record transfers."},
                 status=status.HTTP_403_FORBIDDEN,
@@ -1296,12 +1379,11 @@ class EmployeeAuditLogListView(OwnerQuerysetMixin, generics.ListAPIView):
     serializer_class = EmployeeAuditLogSerializer
 
 
+@method_decorator(csrf_protect, name="dispatch")
 class SessionLoginView(APIView):
     permission_classes = [AllowAny]
-    # Login must never 429: one office IP shares the anon quota, and a
-    # throttled login locks everyone out. Brute-force hardening is deferred
-    # to the token-lifecycle work (see round-4 findings).
-    throttle_classes = []
+    # Account + IP keys keep shared office networks from sharing a quota.
+    throttle_classes = [SessionLoginThrottle]
 
     def post(self, request):
         user = _authenticate_login(
@@ -1312,6 +1394,8 @@ class SessionLoginView(APIView):
                 {"error": "Invalid credentials."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
+        if user.is_superuser:
+            return _start_authenticated_login(request, user, "/employee/")
         # Staff accounts are HR accounts. Employee accounts must have an
         # active linked Employee row before a session can be created.
         employee = Employee.objects.filter(user=user).first()
@@ -1325,16 +1409,13 @@ class SessionLoginView(APIView):
                 {"error": "HR accounts must use the HR login."},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        login(request, user)
-        return Response(
-            {"message": "Signed in.", "next_url": "/employee/"},
-            status=status.HTTP_200_OK,
-        )
+        return _start_authenticated_login(request, user, "/employee/")
 
 
+@method_decorator(csrf_protect, name="dispatch")
 class HrSessionLoginView(APIView):
     permission_classes = [AllowAny]
-    throttle_classes = []
+    throttle_classes = [SessionLoginThrottle]
 
     def post(self, request):
         user = _authenticate_login(
@@ -1345,18 +1426,218 @@ class HrSessionLoginView(APIView):
                 {"error": "HR credentials are invalid."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-        if not user.is_staff:
+        if not (user.is_staff or user.is_superuser):
             hr_employee = Employee.objects.filter(user=user, is_active=True).first()
             if hr_employee is None:
                 return Response(
                     {"error": "HR credentials are invalid."},
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
+        return _start_authenticated_login(request, user, "/hr/")
+
+
+@method_decorator(csrf_protect, name="dispatch")
+class SessionTwoFactorView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [MfaSessionThrottle]
+
+    def post(self, request):
+        user_id = request.session.get("pending_mfa_user_id")
+        next_url = request.session.get("pending_mfa_next_url")
+        if not user_id or next_url not in ("/employee/", "/hr/"):
+            return Response(
+                {"error": "Start sign-in again."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        user = User.objects.filter(pk=user_id, is_active=True).first()
+        if user is None or not _consume_device_code(user, request.data.get("code")):
+            return Response(
+                {"error": "That code is invalid or already used."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if next_url == "/hr/":
+            if not _is_hr_user(user):
+                request.session.pop("pending_mfa_user_id", None)
+                request.session.pop("pending_mfa_next_url", None)
+                return Response(
+                    {"error": "Start sign-in again."},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+            if not (user.is_staff or user.is_superuser) and not Employee.objects.filter(
+                user=user, is_active=True
+            ).exists():
+                return Response(
+                    {"error": "Start sign-in again."},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+        elif not (user.is_staff or user.is_superuser) and not Employee.objects.filter(
+            user=user, is_active=True
+        ).exists():
+            return Response(
+                {"error": "Start sign-in again."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        request.session.pop("pending_mfa_user_id", None)
+        request.session.pop("pending_mfa_next_url", None)
         login(request, user)
-        return Response(
-            {"message": "HR signed in.", "next_url": "/hr/"},
+        return Response({"message": "Signed in.", "next_url": next_url})
+
+
+@method_decorator(csrf_protect, name="dispatch")
+class SessionCancelTwoFactorView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        request.session.pop("pending_mfa_user_id", None)
+        request.session.pop("pending_mfa_next_url", None)
+        return Response({"message": "Verification cancelled."})
+
+
+class MfaAwareAuthTokenView(APIView):
+    """Keep password-only API tokens from bypassing enabled TOTP."""
+
+    permission_classes = [AllowAny]
+    throttle_classes = [MfaSessionThrottle]
+
+    def post(self, request):
+        user = _authenticate_login(
+            request, request.data.get("username"), request.data.get("password")
+        )
+        if user is None:
+            return Response(
+                {"error": "Invalid credentials."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        device = AuthenticatorDevice.objects.filter(
+            user=user, is_confirmed=True
+        ).first()
+        if device and not _consume_device_code(user, request.data.get("code")):
+            return Response(
+                {"error": "A valid authenticator code is required."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response({"token": token.key})
+
+
+class TwoFactorSetupView(APIView):
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [MfaSessionThrottle]
+
+    def post(self, request):
+        if not request.user.check_password(request.data.get("current_password", "")):
+            return Response(
+                {"error": "Current password is incorrect."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        device = AuthenticatorDevice.objects.filter(user=request.user).first()
+        if device and device.is_confirmed:
+            return Response(
+                {"error": "Turn off two-factor authentication before replacing it."},
+                status=status.HTTP_409_CONFLICT,
+            )
+        secret = new_secret()
+        AuthenticatorDevice.objects.update_or_create(
+            user=request.user,
+            defaults={
+                "encrypted_secret": encrypt_secret(secret),
+                "is_confirmed": False,
+                "enabled_at": None,
+                "last_verified_counter": -1,
+            },
+        )
+        label = request.user.email or request.user.get_username()
+        response = Response(
+            {
+                "secret": secret,
+                "otpauth_uri": provisioning_uri(secret, label),
+            }
+        )
+        response["Cache-Control"] = "no-store"
+        return response
+
+
+class TwoFactorConfirmView(APIView):
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [MfaSessionThrottle]
+
+    def post(self, request):
+        if not request.user.check_password(request.data.get("current_password", "")):
+            return Response(
+                {"error": "Current password is incorrect."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        with transaction.atomic():
+            device = (
+                AuthenticatorDevice.objects.select_for_update()
+                .filter(user=request.user, is_confirmed=False)
+                .first()
+            )
+            if device is None:
+                return Response(
+                    {"error": "Start authenticator setup again."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            try:
+                counter = matching_counter(
+                    decrypt_secret(device.encrypted_secret), request.data.get("code")
+                )
+            except Exception:
+                logger.exception(
+                    "unable to decrypt pending authenticator for %s", request.user.pk
+                )
+                return Response(
+                    {"error": "Authenticator setup expired. Start again."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if counter is None:
+                return Response(
+                    {"error": "That code is invalid or expired."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            recovery_codes, hashes = new_recovery_codes()
+            AuthenticatorRecoveryCode.objects.bulk_create(
+                [
+                    AuthenticatorRecoveryCode(device=device, code_hash=code_hash)
+                    for code_hash in hashes
+                ]
+            )
+            device.is_confirmed = True
+            device.enabled_at = timezone.now()
+            device.last_verified_counter = counter
+            device.save(
+                update_fields=[
+                    "is_confirmed",
+                    "enabled_at",
+                    "last_verified_counter",
+                ]
+            )
+            Token.objects.filter(user=request.user).delete()
+        response = Response(
+            {"enabled": True, "recovery_codes": recovery_codes},
             status=status.HTTP_200_OK,
         )
+        response["Cache-Control"] = "no-store"
+        return response
+
+
+class TwoFactorDisableView(APIView):
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [MfaSessionThrottle]
+
+    def post(self, request):
+        if not request.user.check_password(request.data.get("current_password", "")):
+            return Response(
+                {"error": "Current password is incorrect."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not _consume_device_code(request.user, request.data.get("code")):
+            return Response(
+                {"error": "That code is invalid or already used."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        AuthenticatorDevice.objects.filter(user=request.user).delete()
+        return Response({"enabled": False})
 
 
 class SessionLogoutView(APIView):
@@ -1371,13 +1652,20 @@ class MessageListCreateView(generics.ListCreateAPIView):
     serializer_class = MessageSerializer
 
     def get_queryset(self):
-        conversation_key = self.request.query_params.get("conversation", "sarah")
-        return Message.objects.filter(conversation_key=conversation_key)
+        conversation_key = self.request.query_params.get("conversation", "announcements")
+        queryset = Message.objects.filter(conversation_key=conversation_key)
+        search = (self.request.query_params.get("search") or "").strip()
+        if search:
+            queryset = queryset.filter(
+                models.Q(text__icontains=search)
+                | models.Q(sender_name__icontains=search)
+            )
+        return queryset
 
     def perform_create(self, serializer):
         user = self.request.user
         name = user.get_full_name() or user.username
-        key = self.request.data.get("conversation_key") or "general"
+        key = self.request.data.get("conversation_key") or "announcements"
         serializer.save(conversation_key=key, sender_name=name)
 
 
@@ -1448,7 +1736,7 @@ class NotificationMarkReadView(APIView):
     def patch(self, request, pk):
         note = get_object_or_404(Notification, pk=pk)
         user = request.user
-        if not user.is_staff and getattr(note.employee, "user", None) != user:
+        if not is_staff_or_hr(user) and getattr(note.employee, "user", None) != user:
             return Response({"error": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         note.is_read = True
         note.save(update_fields=["is_read"])
@@ -1456,7 +1744,7 @@ class NotificationMarkReadView(APIView):
 
 
 class PurgeRunView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsStaffOrHR]
 
     def post(self, request):
         from io import StringIO
@@ -1525,11 +1813,33 @@ def _get_user_setting(user):
 class MySettingsView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def _profile_payload(self, user):
+        employee = Employee.objects.select_related("department").filter(user=user).first()
+        if employee:
+            profile = EmployeeSerializer(employee).data
+            profile["department_name"] = employee.department.name if employee.department else ""
+            profile["managed_departments"] = list(
+                employee.managed_departments.order_by("name").values_list("name", flat=True)
+            )
+        else:
+            profile = {
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+                "role": "System administrator" if user.is_superuser else "HR administrator" if user.is_staff else "Account holder",
+                "department_name": "",
+                "managed_departments": [],
+            }
+        profile["username"] = user.get_username()
+        return profile
+
     def get(self, request):
         s = _get_user_setting(request.user)
         data = UserSettingSerializer(s).data
-        emp = Employee.objects.filter(user=request.user).first()
-        data["profile"] = EmployeeSerializer(emp).data if emp else None
+        data["profile"] = self._profile_payload(request.user)
+        data["two_factor_enabled"] = AuthenticatorDevice.objects.filter(
+            user=request.user, is_confirmed=True
+        ).exists()
         return Response(data)
 
     def patch(self, request):
@@ -1542,32 +1852,48 @@ class MySettingsView(APIView):
                 for k, v in payload["profile"].items()
                 if k in MUTABLE_PROFILE_FIELDS
             }
-        ser = UserSettingSerializer(s, data=request.data, partial=True)
+        settings_payload = {
+            key: value
+            for key, value in payload.items()
+            if key in {"page_size", "muted_kinds", "dashboard_widgets", "a11y"}
+        }
+        ser = UserSettingSerializer(s, data=settings_payload, partial=True)
         ser.is_valid(raise_exception=True)
-        ser.save()
-        out = UserSettingSerializer(s).data
-        if profile_data is not None:
-            emp = Employee.objects.filter(user=request.user).first()
-            if emp is None:
-                return Response(
-                    {"error": "No employee profile is linked to this account."},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
-            for k, v in profile_data.items():
-                setattr(emp, k, v)
-            try:
-                emp.full_clean(exclude=["date_hired"])
-                emp.save()
-            except DjangoValidationError as e:
-                if "email" in getattr(e, "message_dict", {}):
+        employee = Employee.objects.filter(user=request.user).first()
+        with transaction.atomic():
+            ser.save()
+            if profile_data is not None:
+                user = request.user
+                try:
+                    for key, value in profile_data.items():
+                        value = str(value or "").strip()
+                        if key == "email" and value:
+                            if User.objects.filter(email__iexact=value).exclude(pk=user.pk).exists():
+                                raise Conflict409("That email is already in use.")
+                            if Employee.objects.filter(email__iexact=value).exclude(pk=getattr(employee, "pk", None)).exists():
+                                raise Conflict409("That email is already in use.")
+                        if employee:
+                            setattr(employee, key, value)
+                        setattr(user, key, value)
+                    if employee:
+                        employee.full_clean(exclude=["date_hired"])
+                        employee.save()
+                    for key in profile_data:
+                        User._meta.get_field(key).clean(getattr(user, key), user)
+                    user.save(update_fields=list(profile_data.keys()))
+                except Conflict409:
+                    raise
+                except DjangoValidationError as e:
+                    if "email" in getattr(e, "message_dict", {}):
+                        raise Conflict409("That email is already in use.")
+                    raise DRFValidationError(getattr(e, "message_dict", {"profile": e.messages}))
+                except IntegrityError:
                     raise Conflict409("That email is already in use.")
-                raise DRFValidationError(e.message_dict)
-            except IntegrityError:
-                raise Conflict409("That email is already in use.")
-            out["profile"] = EmployeeSerializer(emp).data
-        else:
-            emp = Employee.objects.filter(user=request.user).first()
-            out["profile"] = EmployeeSerializer(emp).data if emp else None
+        out = UserSettingSerializer(s).data
+        out["profile"] = self._profile_payload(request.user)
+        out["two_factor_enabled"] = AuthenticatorDevice.objects.filter(
+            user=request.user, is_confirmed=True
+        ).exists()
         return Response(out)
 
 
@@ -1627,7 +1953,7 @@ def get_site_setting(key):
 
 
 class SiteSettingsView(APIView):
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [IsAuthenticated, IsStaffOrHR]
 
     def get(self, request):
         stored = {s.key: s.value for s in SiteSetting.objects.all()}

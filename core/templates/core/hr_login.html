@@ -5,7 +5,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HR Login | Kumon EMS</title>
-  <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=3.0" />
+  <link rel="stylesheet" href="{% static 'css/kumon-loading.css' %}" />
 </head>
 <body class="auth-page-body">
   <div class="auth-standalone-layout">
@@ -21,8 +22,8 @@
         <div class="penpot-auth-card">
           <div class="penpot-auth-badge badge-onboarding">HR ADMINISTRATION</div>
           <h1 class="penpot-auth-title">HR dashboard sign in</h1>
-          <p class="penpot-auth-sub">Use an authorized HR account to manage employees, attendance, leave, payroll, and complaints.</p>
-          <form class="penpot-auth-form" onsubmit="handleHrLogin(event)">
+          <p class="penpot-auth-sub">Use an authorized HR or superuser account to manage employees, attendance, leave, payroll, and complaints.</p>
+          <form id="hrLoginForm" class="penpot-auth-form" onsubmit="handleHrLogin(event)">
             <div class="penpot-form-group">
               <label class="penpot-form-label" for="hrUsername">HR username or email</label>
               <input type="text" id="hrUsername" class="penpot-input" autocomplete="username" required />
@@ -33,6 +34,17 @@
             </div>
             <button type="submit" class="penpot-btn-primary-navy">Enter HR dashboard</button>
           </form>
+          <section id="hrMfaChallenge" class="auth-mfa-challenge" hidden>
+            <div class="account-kicker">SECOND STEP</div>
+            <h2>Verify it’s you</h2>
+            <p>Enter the six-digit code from your authenticator app or a one-time recovery code.</p>
+            <form onsubmit="handleHrTwoFactor(event)">
+              <label for="hrMfaCode">Authenticator or recovery code</label>
+              <input id="hrMfaCode" class="penpot-input" autocomplete="one-time-code" inputmode="text" required />
+              <button type="submit" class="penpot-btn-primary-navy">Verify and sign in</button>
+              <button type="button" class="auth-mfa-cancel" onclick="cancelHrTwoFactor()">Back to password</button>
+            </form>
+          </section>
           <div class="penpot-switcher-row">
             <span>Employee account?</span>
             <a class="penpot-switch-link coral" href="/login/">Go to employee login</a>
@@ -42,6 +54,8 @@
     </main>
   </div>
   <div id="toastContainer" class="toast-stack"></div>
+  {% include "core/partials/kumon_loading_overlay.html" %}
+  <script src="{% static 'js/kumon-loading.js' %}"></script>
   <script>
     function showToast(message) {
       const container = document.getElementById('toastContainer');
@@ -66,10 +80,35 @@
       }).then(async (response) => {
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.error || 'HR credentials are invalid.');
-        window.location.href = data.next_url || '/hr/';
+        if (data.requires_2fa) {
+          document.getElementById('hrLoginForm').hidden = true;
+          document.getElementById('hrMfaChallenge').hidden = false;
+          document.getElementById('hrMfaCode').focus();
+          return;
+        }
+        window.kumonLoadingNavigate(data.next_url, '/hr/');
       }).catch((error) => {
         if (typeof showToast === 'function') showToast(error.message, 'error');
       });
+    }
+
+    async function handleHrTwoFactor(event) {
+      event.preventDefault();
+      const csrf = document.cookie.split('; ').find((cookie) => cookie.startsWith('csrftoken='))?.split('=')[1];
+      try {
+        const response = await fetch('/api/session-verify-2fa/', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', ...(csrf ? { 'X-CSRFToken': csrf } : {}) }, body: JSON.stringify({ code: document.getElementById('hrMfaCode').value.trim() }) });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'That code could not be verified.');
+        window.kumonLoadingNavigate(data.next_url, '/hr/');
+      } catch (error) { showToast(error.message, 'error'); }
+    }
+
+    async function cancelHrTwoFactor() {
+      const csrf = document.cookie.split('; ').find((cookie) => cookie.startsWith('csrftoken='))?.split('=')[1];
+      await fetch('/api/session-cancel-2fa/', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', ...(csrf ? { 'X-CSRFToken': csrf } : {}) }, body: '{}' });
+      document.getElementById('hrMfaCode').value = '';
+      document.getElementById('hrMfaChallenge').hidden = true;
+      document.getElementById('hrLoginForm').hidden = false;
     }
   </script>
 </body>

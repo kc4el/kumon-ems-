@@ -29,8 +29,9 @@ This is the Django equivalent of Supabase RLS: the browser only calls same-origi
 
 ### Auth contract
 
-- Browser dashboard (`static/js/dashboard.js`, via `apiFetch`) uses **session auth + CSRF**: sign in with `POST /api/session-login/` (`{"username", "password"}` → `200` + session cookie; wrong creds → `401`), sign out with `POST /api/session-logout/`. Logged-out API calls get `403` and the JS bounces to `/login/?next=<page>`.
-- Scripts/operator use uses tokens: `POST /api/auth-token/` (`{"username", "password"}` → `{"token"}`), then `Authorization: Token <token>`.
+- Browser dashboard (`static/js/dashboard.js`, via `apiFetch`) uses **session auth + CSRF**: sign in with `POST /api/session-login/`; accounts with 2FA complete `POST /api/session-verify-2fa/` before receiving a session. Sign out with `POST /api/session-logout/`.
+- Scripts/operator use uses tokens: `POST /api/auth-token/` (`{"username", "password"}`; add `code` for accounts with 2FA → `{"token"}`), then `Authorization: Token <token>`.
+- Authenticator setup is available from **My account** (`/api/settings/2fa/setup/`, `/confirm/`, `/disable/`). Recovery codes are shown once, stored as hashes, and consumed individually. Configure a stable `MFA_ENCRYPTION_KEY` for deployments; otherwise the key derives from Django's `SECRET_KEY`, so rotating that key makes saved authenticators unreadable.
 - Logged-out rule: everything returns `403` except the public `GET /api/dashboard-summary/` aggregate.
 
 ### Error envelope
@@ -71,7 +72,16 @@ Create a local `.env` file using your own credentials. Do **not** commit it.
 ```env
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=replace-with-a-server-side-secret
+# Supabase Postgres URL from Project Settings > Connect.
+# Use direct connection on IPv6 (or IPv4 add-on); use session pooler on IPv4-only hosts.
+SUPABASE_DB_URL=postgresql://postgres.<project-ref>:<password>@<pooler-host>:5432/postgres
+# Optional dedicated Fernet key for encrypting authenticator secrets.
+# Generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+# Keep this value stable across deployments and Django SECRET_KEY rotations.
+MFA_ENCRYPTION_KEY=replace-with-a-generated-fernet-key
 ```
+
+`SUPABASE_DB_URL` makes Django use Supabase Postgres as its primary database. Keep the database password private and URL-encode reserved characters. Existing `DB_HOST`/`DB_NAME`/`DB_USER`/`DB_PASSWORD` settings remain supported; without either configuration, local development uses SQLite.
 
 ## Project structure
 

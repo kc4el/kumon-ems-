@@ -19,7 +19,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import ClaimStatus, Employee, ExpenseClaim, SiteSetting
-from .permissions import IsOwnerOrStaff, OwnerQuerysetMixin, owns_object
+from .permissions import (
+    IsOwnerOrStaff,
+    OwnerQuerysetMixin,
+    is_staff_or_hr,
+    owns_object,
+)
 
 ONBOARDING_MAX_BYTES = 10 * 1024 * 1024
 ONBOARDING_ALLOWED_TYPES = {
@@ -33,6 +38,7 @@ DOC_TYPE_CHOICES = (
     ("BIR2316", "BIR Form 2316"),
     ("PSA", "PSA Birth Certificate"),
     ("contract", "Signed Employment Contract"),
+    ("government_records", "SSS / PhilHealth / Pag-IBIG Records"),
 )
 
 DECISION_CHOICES = ("Approved", "Rejected")
@@ -156,9 +162,21 @@ class SalaryAdvanceListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView
 
     def perform_create(self, serializer):
         employee = Employee.objects.filter(user=self.request.user).first()
-        if not self.request.user.is_staff and employee is None:
-            raise DRFValidationError({"employee": "No linked employee profile."})
-        if not self.request.user.is_staff:
+        selected_employee = serializer.validated_data.get("employee")
+        if is_staff_or_hr(self.request.user):
+            if selected_employee is None:
+                if employee is None:
+                    raise DRFValidationError(
+                        {"employee": "Select an employee before submitting this request."}
+                    )
+                serializer.validated_data["employee"] = employee
+        else:
+            if employee is None:
+                raise DRFValidationError({"employee": "No linked employee profile."})
+            if selected_employee is not None and selected_employee.pk != employee.pk:
+                raise DRFValidationError(
+                    {"employee": "You can only submit an advance for your own profile."}
+                )
             serializer.validated_data["employee"] = employee
         serializer.save()
 
@@ -194,7 +212,7 @@ class ClaimDecisionView(APIView):
             )
         claim = ExpenseClaim.objects.filter(pk=pk).first() if _is_uuid(pk) else None
         if claim is not None:
-            if not request.user.is_staff and not owns_object(claim, request.user):
+            if not is_staff_or_hr(request.user) and not owns_object(claim, request.user):
                 return Response(
                     {"error": "Not found."}, status=status.HTTP_404_NOT_FOUND
                 )
