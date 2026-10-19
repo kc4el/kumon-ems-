@@ -11,7 +11,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=3.3" />
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=3.4" />
   <script>
     // Static file / non-Django fallback
     if (window.location.protocol === 'file:' || !window.location.port || window.location.pathname.endsWith('.html')) {
@@ -836,22 +836,49 @@
         <!-- 4 KPI Cards -->
         <div class="kpi-cards-4grid">
           <div class="kpi-card">
-            <div class="kpi-head"><span>OPEN CASES</span></div>
+            <div class="kpi-head">
+              <span>OPEN CASES</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            </div>
             <div class="kpi-value" id="grievanceOpenCount">00</div>
             <div class="kpi-trend">Action Required</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-head"><span>IN MEDIATION</span></div>
+            <div class="kpi-head">
+              <span>IN MEDIATION</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
             <div class="kpi-value" id="grievanceMediationCount">00</div>
             <div class="kpi-trend">HR Session Active</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-head"><span>RESOLVED THIS Q3</span></div>
+            <div class="kpi-head">
+              <span>RESOLVED THIS Q3</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
             <div class="kpi-value" id="grievanceResolvedCount">00</div>
             <div class="kpi-trend">↗ 94% Rate</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-head"><span>AVG RESOLUTION TIME</span></div>
+            <div class="kpi-head">
+              <span>AVG RESOLUTION TIME</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
             <div class="kpi-value">3.2 Days</div>
             <div class="kpi-trend">Target: &lt; 5 Days</div>
           </div>
@@ -953,22 +980,50 @@
         <!-- 4 KPI Cards -->
         <div class="kpi-cards-4grid">
           <div class="kpi-card">
-            <div class="kpi-head"><span>PRESENT TODAY</span></div>
+            <div class="kpi-head">
+              <span>PRESENT TODAY</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <polyline points="17 11 19 13 23 9"></polyline>
+              </svg>
+            </div>
             <div class="kpi-value" id="att-kpi-present">0</div>
             <div class="kpi-subtext" id="att-kpi-present-sub">0 / 0 Scheduled Staff</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-head"><span>SCHEDULED</span></div>
+            <div class="kpi-head">
+              <span>SCHEDULED</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
             <div class="kpi-value" id="att-kpi-scheduled">0</div>
             <div class="kpi-subtext" id="att-kpi-scheduled-sub">0% Roster Filled</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-head"><span>EXCEPTIONS</span></div>
+            <div class="kpi-head">
+              <span>EXCEPTIONS</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            </div>
             <div class="kpi-value" id="att-kpi-exceptions">0</div>
             <div class="kpi-subtext" id="att-kpi-exceptions-sub">0 Unexcused Absence</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-head"><span>ON LEAVE</span></div>
+            <div class="kpi-head">
+              <span>ON LEAVE</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
             <div class="kpi-value" id="att-kpi-onleave">0</div>
             <div class="kpi-subtext" id="att-kpi-onleave-sub">0 Annual Paid Leave</div>
           </div>
@@ -1080,22 +1135,49 @@
         <!-- 4 KPI Cards -->
         <div class="kpi-cards-4grid">
           <div class="kpi-card">
-            <div class="kpi-head"><span>ACTIVE SHIFTS TODAY</span></div>
+            <div class="kpi-head">
+              <span>ACTIVE SHIFTS TODAY</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
             <div class="kpi-value">04</div>
             <div class="kpi-subtext">↗ 4 Shifts Active</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-head"><span>ROSTER COVERAGE</span></div>
+            <div class="kpi-head">
+              <span>ROSTER COVERAGE</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
             <div class="kpi-value">96.8%</div>
             <div class="kpi-subtext">↗ 124 Staff</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-head"><span>OPEN SHIFT SLOTS</span></div>
+            <div class="kpi-head">
+              <span>OPEN SHIFT SLOTS</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
             <div class="kpi-value">04</div>
             <div class="kpi-subtext">↗ Needs Roster</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-head"><span>OVERTIME LOGGED</span></div>
+            <div class="kpi-head">
+              <span>OVERTIME LOGGED</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+            </div>
             <div class="kpi-value">67.67%</div>
             <div class="kpi-subtext">↗ Annual Score</div>
           </div>
@@ -1374,22 +1456,49 @@
         <!-- 4 KPI Cards -->
         <div class="kpi-cards-4grid">
           <div class="kpi-card">
-            <div class="kpi-head"><span>PENDING REQUESTS</span></div>
+            <div class="kpi-head">
+              <span>PENDING REQUESTS</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
             <div class="kpi-value">05</div>
             <div class="kpi-subtext">Requires HR Action</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-head"><span>APPROVED THIS MONTH</span></div>
+            <div class="kpi-head">
+              <span>APPROVED THIS MONTH</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
             <div class="kpi-value" id="leaveApprovedCount">0</div>
             <div class="kpi-subtext">22.5 Days Total</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-head"><span>ON LEAVE TODAY</span></div>
+            <div class="kpi-head">
+              <span>ON LEAVE TODAY</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
             <div class="kpi-value" id="leaveTodayCount">0</div>
             <div class="kpi-subtext">03 Annual • 01 Sick</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-head"><span>AVG LEAVE UTILIZATION</span></div>
+            <div class="kpi-head">
+              <span>AVG LEAVE UTILIZATION</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+            </div>
             <div class="kpi-value">Live</div>
             <div class="kpi-subtext">Annual Score</div>
           </div>
@@ -1471,22 +1580,48 @@
           <!-- 4 KPI Cards -->
           <div class="kpi-cards-4grid">
             <div class="kpi-card">
-              <div class="kpi-head"><span>PENDING CLAIMS</span></div>
+              <div class="kpi-head">
+                <span>PENDING CLAIMS</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+              </div>
               <div class="kpi-value" id="claimsPendingCount">0</div>
               <div class="kpi-subtext">↗ $4,820.50 Total</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-head"><span>APPROVED THIS MONTH</span></div>
+              <div class="kpi-head">
+                <span>APPROVED THIS MONTH</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
               <div class="kpi-value" id="claimsApprovedCount">0</div>
               <div class="kpi-subtext">↗ $18,450 Settled</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-head"><span>REJECTED / FLAGGED</span></div>
+              <div class="kpi-head">
+                <span>REJECTED / FLAGGED</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="15" y1="9" x2="9" y2="15"></line>
+                  <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+              </div>
               <div class="kpi-value" id="claimsRejectedCount">0</div>
               <div class="kpi-subtext">↗ Policy Mismatch</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-head"><span>AVG PROCESSING TIME</span></div>
+              <div class="kpi-head">
+                <span>AVG PROCESSING TIME</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+              </div>
               <div class="kpi-value">1.8d</div>
               <div class="kpi-subtext">↗ Faster by 0.6d</div>
             </div>
@@ -1547,22 +1682,46 @@
           <!-- 4 KPI Cards -->
           <div class="kpi-cards-4grid">
             <div class="kpi-card">
-              <div class="kpi-head"><span>TOTAL SETTLED (YTD)</span></div>
+              <div class="kpi-head">
+                <span>TOTAL SETTLED (YTD)</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="1" x2="12" y2="23"></line>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+              </div>
               <div class="kpi-value" id="claimsHistorySettledCount">0</div>
               <div class="kpi-subtext" id="claimsHistorySettledAmount">$0.00 total</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-head"><span>TOTAL APPROVED</span></div>
+              <div class="kpi-head">
+                <span>TOTAL APPROVED</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
               <div class="kpi-value" id="claimsHistoryApprovedCount">0</div>
               <div class="kpi-subtext" id="claimsHistoryApprovedRate">0% of settled</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-head"><span>TOTAL REJECTED</span></div>
+              <div class="kpi-head">
+                <span>TOTAL REJECTED</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="15" y1="9" x2="9" y2="15"></line>
+                  <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+              </div>
               <div class="kpi-value" id="claimsHistoryRejectedCount">0</div>
               <div class="kpi-subtext" id="claimsHistoryRejectedRate">0% of settled</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-head"><span>REIMBURSEMENT SPEED</span></div>
+              <div class="kpi-head">
+                <span>REIMBURSEMENT SPEED</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+              </div>
               <div class="kpi-value" id="claimsHistorySpeed">—</div>
               <div class="kpi-subtext" id="claimsHistorySpeedSubtext">Awaiting processed claims</div>
             </div>
@@ -1621,22 +1780,46 @@
           <!-- 4 KPI Cards -->
           <div class="kpi-cards-4grid">
             <div class="kpi-card">
-              <div class="kpi-head"><span>PENDING ADVANCES</span></div>
+              <div class="kpi-head">
+                <span>PENDING ADVANCES</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
               <div class="kpi-value" id="advancesPendingCount">0</div>
               <div class="kpi-subtext">↗ $6,500 Requested</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-head"><span>DISBURSED THIS Q2</span></div>
+              <div class="kpi-head">
+                <span>DISBURSED THIS Q2</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="1" x2="12" y2="23"></line>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+              </div>
               <div class="kpi-value">12</div>
               <div class="kpi-subtext">↗ $19,200 Total</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-head"><span>REPAYMENT RECOVERY</span></div>
+              <div class="kpi-head">
+                <span>REPAYMENT RECOVERY</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
               <div class="kpi-value">100%</div>
               <div class="kpi-subtext">↗ Zero Defaults</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-head"><span>PAYROLL CAP LIMIT</span></div>
+              <div class="kpi-head">
+                <span>PAYROLL CAP LIMIT</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </div>
               <div class="kpi-value">50%</div>
               <div class="kpi-subtext">↗ Max Salary Cap</div>
             </div>
