@@ -21,3 +21,4 @@ media/
 # OS artifacts
 .DS_Store
 Thumbs.db
+powershell.cmd

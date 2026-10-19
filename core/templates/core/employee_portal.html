@@ -4,162 +4,260 @@
 
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Employee Portal | Kumon EMS</title>
   <link rel="stylesheet" href="{% static 'css/main.css' %}?v=3.3" />
   <style>
     :root {
+      /* Brand palette directly aligned with main.css */
       --employee-navy: #0f172a;
-      --employee-blue: #2563eb;
-      --employee-canvas: #faf8f5;
-      --employee-line: #e6ecf5;
-      --employee-muted: #64748b;
+      --employee-navy-dark: var(--sidebar-active-pill, #136d94);
+      --employee-blue: var(--sidebar-bg, #1989b9);
+      --employee-blue-hover: #147098;
+      --employee-blue-active: #105979;
+      --employee-canvas: var(--penpot-bg, #faf8f5);
+      --employee-line: var(--card-border, #e6ecf5);
+      --employee-muted: var(--text-muted, #64748b);
+      --employee-card-bg: var(--card-bg, #ffffff);
+      --employee-accent: var(--brand-orange, #f59e0b);
+    }
+
+    html {
+      scrollbar-gutter: stable;
+      overflow-y: scroll;
     }
 
     body.portal-header {
       min-height: 100vh;
       background: var(--employee-canvas);
       color: #334155;
+      font-family: var(--font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+      margin: 0;
+      padding: 0;
     }
 
     .employee-shell {
-      max-width: 1320px;
+      max-width: 1040px;
       margin: 0 auto;
-      padding: 26px 34px 84px;
+      padding: 24px 20px calc(88px + env(safe-area-inset-bottom, 16px));
     }
 
     .employee-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 20px;
-      margin-bottom: 26px;
-      padding-bottom: 20px;
+      gap: 18px;
+      margin-bottom: 22px;
+      padding-bottom: 18px;
       border-bottom: 1px solid var(--employee-line);
-    }
-
-    .employee-brand {
-      color: var(--employee-navy);
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: .01em;
     }
 
     .employee-kicker {
       color: var(--employee-blue);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: .13em;
-      text-transform: uppercase;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .02em;
     }
 
     .employee-heading {
-      margin-top: 5px;
+      margin-top: 4px;
       color: var(--employee-navy);
-      font-size: 32px;
-      line-height: 1.12;
+      font-size: clamp(24px, 3.5vw, 32px);
+      line-height: 1.15;
       font-weight: 800;
+      letter-spacing: -.03em;
     }
 
     .employee-subtitle {
-      margin-top: 7px;
+      margin-top: 4px;
       color: var(--employee-muted);
       font-size: 14px;
+      line-height: 1.45;
     }
 
     .employee-session {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .employee-session-badge {
-      padding: 7px 11px;
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 10px;
       border-radius: 999px;
       background: #dcfce7;
       color: #15803d;
       font-size: 11px;
-      font-weight: 800;
-      letter-spacing: .04em;
+      font-weight: 750;
+      letter-spacing: .02em;
     }
 
-    .portal-tabs {
+    /* Fixed Bottom Navigation Bar */
+    .portal-bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 68px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid var(--employee-line);
+      box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 24px;
-      padding: 5px;
-      border-bottom: 1px solid var(--employee-line);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 0 8px env(safe-area-inset-bottom, 0px);
+    }
+
+    .portal-bottom-nav-inner {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      width: 100%;
+      max-width: 1040px;
+      gap: 4px;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .portal-bottom-nav-inner::-webkit-scrollbar {
+      display: none;
     }
 
     .portal-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      width: 100%;
+      min-width: 0;
+      min-height: 52px;
+      padding: 5px 2px;
       border: 0;
-      border-bottom: 3px solid transparent;
-      border-radius: 0;
+      border-radius: 9px;
       background: transparent;
-      color: #64748b;
-      padding: 12px 18px;
-      font: inherit;
-      font-size: 13px;
-      font-weight: 750;
+      color: var(--employee-muted);
+      font-size: 11px;
+      font-weight: 600;
       cursor: pointer;
-      transition: .18s ease;
+      transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+      text-decoration: none;
+      white-space: nowrap;
+      user-select: none;
+      box-sizing: border-box;
+    }
+
+    .portal-tab span {
+      display: block;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .portal-tab svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      transition: stroke 0.15s ease;
+      flex-shrink: 0;
     }
 
     .portal-tab:hover {
-      color: var(--employee-blue);
-      background: #eff6ff;
+      color: var(--sidebar-bg, #1989b9);
+      background: rgba(25, 137, 185, 0.08);
     }
 
     .portal-tab.active {
-      border-bottom-color: var(--employee-blue);
-      color: var(--employee-blue);
-      background: #eff6ff;
+      color: #ffffff;
+      background: var(--sidebar-bg, #1989b9);
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(25, 137, 185, 0.28);
     }
 
-    .employee-grid {
-      display: block;
+    .portal-tab.active svg {
+      stroke: #ffffff;
     }
 
+    /* Panels */
     .portal-panel {
       display: none;
     }
 
     .portal-panel.active {
       display: block;
-      animation: portalReveal .22s ease-out;
+      animation: portalReveal 0.2s ease-out;
     }
 
+    @keyframes portalReveal {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Card styling */
     .employee-card {
-      background: #fff;
+      background: var(--employee-card-bg);
       border: 1px solid var(--employee-line);
-      border-radius: 10px;
-      padding: 26px;
-      box-shadow: 0 4px 18px -2px rgba(15, 23, 42, .04);
-    }
-
-    .employee-card h2 {
-      margin: 0;
-      color: var(--employee-navy);
-      font-size: 21px;
-      font-weight: 800;
-    }
-
-    .employee-card p {
-      color: var(--employee-muted);
-      margin: 5px 0 20px;
-      line-height: 1.5;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.04);
+      margin-bottom: 20px;
     }
 
     .employee-card-head {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: 18px;
-      margin-bottom: 22px;
+      gap: 16px;
+      margin-bottom: 18px;
     }
 
     .employee-card-label {
+      color: var(--employee-blue);
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .employee-card h2 {
+      margin: 3px 0 0;
+      color: var(--employee-navy);
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .employee-card p {
+      color: var(--employee-muted);
+      margin: 4px 0 0;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* Hero Clock Container */
+    .attendance-hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin: 0 0 22px;
+      padding: 22px 24px;
+      border: 1px solid #d8e5ec;
+      border-radius: 14px;
+      background: linear-gradient(125deg, #f0f7f9 0%, #ffffff 80%);
+    }
+
+    .attendance-hero-label {
       color: var(--employee-blue);
       font-size: 11px;
       font-weight: 800;
@@ -167,249 +265,818 @@
       text-transform: uppercase;
     }
 
+    .attendance-clock {
+      margin-top: 3px;
+      color: var(--employee-navy);
+      font-size: 34px;
+      line-height: 1.1;
+      font-weight: 800;
+      letter-spacing: -.03em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .attendance-day {
+      margin-top: 4px;
+      color: var(--employee-muted);
+      font-size: 14px;
+    }
+
+    .attendance-hero-note {
+      max-width: 250px;
+      color: #475569;
+      font-size: 13px;
+      line-height: 1.5;
+      text-align: right;
+    }
+
+    .employee-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .employee-actions button {
+      min-width: 140px;
+      padding: 12px 20px;
+      border-radius: 9px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-navy-cta {
+      background: var(--sidebar-bg, #1989b9);
+      color: #fff;
+      border: 1.5px solid var(--sidebar-bg, #1989b9);
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 650;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(25, 137, 185, 0.22);
+      transition: all 0.18s cubic-bezier(.2,.8,.2,1);
+    }
+
+    .btn-navy-cta:hover {
+      background: #147098;
+      border-color: #147098;
+      color: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(25, 137, 185, 0.32);
+    }
+
+    .btn-navy-cta:active {
+      background: #105979;
+      border-color: #105979;
+      transform: translateY(1px);
+    }
+
+    .btn-outline-gray {
+      background: rgba(25, 137, 185, 0.06);
+      color: var(--sidebar-bg, #1989b9);
+      border: 1.5px solid var(--sidebar-bg, #1989b9);
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 650;
+      cursor: pointer;
+      transition: all 0.18s cubic-bezier(.2,.8,.2,1);
+    }
+
+    .btn-outline-gray:hover {
+      background: var(--sidebar-bg, #1989b9);
+      color: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(25, 137, 185, 0.22);
+    }
+
+    /* Forms */
     .employee-form {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 15px 18px;
+      gap: 14px 18px;
       padding: 20px;
-      margin-bottom: 24px;
-      border: 1px solid #edf1f7;
-      background: #fbfdff;
-      border-radius: 8px;
+      margin-bottom: 22px;
+      border: 1px solid #edf2f7;
+      background: #f9fbfd;
+      border-radius: 10px;
     }
 
     .employee-form label {
-      margin: 0 0 -7px;
-      color: #475569;
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: .07em;
+      color: var(--text-heading, #0f172a);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 2px;
     }
 
     .employee-form input,
     .employee-form select,
     .employee-form textarea {
       width: 100%;
-      padding: 11px 12px;
-      border: 1px solid #cbd7e6;
-      border-radius: 7px;
-      color: #334155;
-      background: #fff;
+      height: 42px;
+      min-height: 42px;
+      padding: 9px 14px;
+      border: 1px solid var(--card-border, #cbd7e6);
+      border-radius: 8px;
+      color: var(--text-body, #334155);
+      background: #ffffff;
       font: inherit;
+      font-size: 14px;
+      box-sizing: border-box;
       outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .employee-form select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-color: #ffffff;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: calc(100% - 14px) center;
+      background-size: 16px 16px;
+      padding: 9px 40px 9px 14px;
+      cursor: pointer;
+      line-height: 1.4;
+    }
+
+    .employee-form select:focus {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231989b9' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
     }
 
     .employee-form input:focus,
     .employee-form select:focus,
     .employee-form textarea:focus {
-      border-color: var(--employee-blue);
-      box-shadow: 0 0 0 3px #dbeafe;
+      border-color: var(--sidebar-bg, #1989b9);
+      box-shadow: 0 0 0 3px rgba(25, 137, 185, 0.18);
     }
 
     .employee-form textarea {
-      min-height: 92px;
+      height: auto;
+      min-height: 84px;
       resize: vertical;
       grid-column: 1 / -1;
+      line-height: 1.5;
     }
 
-    .employee-form button {
+    .employee-form button[type="submit"] {
       grid-column: 1 / -1;
       justify-self: start;
+      margin-top: 6px;
     }
 
-    .employee-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-
-    .employee-actions button {
-      min-width: 140px;
-    }
-
-    .attendance-hero {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      margin: 0 0 22px;
-      padding: 20px 22px;
-      border: 1px solid #dce6eb;
-      border-radius: 14px;
-      background: linear-gradient(120deg, #f5fafb, #fff 68%);
-    }
-
-    .attendance-hero-label { color: var(--employee-blue); font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-    .attendance-clock { margin-top: 2px; color: var(--employee-navy); font-size: 30px; line-height: 1.15; font-weight: 800; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
-    .attendance-day { margin-top: 4px; color: var(--employee-muted); font-size: 13px; }
-    .attendance-hero-note { max-width: 220px; color: #4e6474; font-size: 12px; line-height: 1.5; text-align: right; }
-    .portal-tab-icon { display: none; }
-    .portal-secret { display:block; margin:7px 0; padding:10px 12px; border-radius:7px; background:#eaf1f4; color:#183b59; font:700 14px ui-monospace,monospace; letter-spacing:.11em; overflow-wrap:anywhere; }
-    .portal-recovery { grid-column:1/-1; padding:14px; border:1px solid #ecd89e; border-radius:9px; background:#fffaf0; }
-    .portal-recovery strong { color:#594617; font-size:13px; }
-    .portal-recovery p { margin:4px 0 8px; font-size:12px; }
-    .portal-recovery pre { margin:10px 0; color:#263b4a; font:700 12px/1.7 ui-monospace,monospace; }
-
-    .employee-status {
-      min-height: 22px;
-      color: #166534;
-      font-size: 13px;
-    }
-
+    /* Data Tables */
     .employee-table-wrap {
-      overflow: auto;
-      border: 1px solid #edf1f7;
-      border-radius: 8px;
+      overflow-x: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      background: #fff;
     }
 
     .employee-table {
       width: 100%;
-      min-width: 520px;
+      min-width: 500px;
       border-collapse: collapse;
-      font-size: 13px;
+      font-size: 14px;
     }
 
     .employee-table th,
     .employee-table td {
-      padding: 13px 14px;
-      border-bottom: 1px solid #edf1f7;
+      padding: 12px 14px;
+      border-bottom: 1px solid #edf2f7;
       text-align: left;
     }
 
     .employee-table th {
       background: #f8fafc;
       color: #64748b;
-      font-size: 10px;
-      letter-spacing: .09em;
-      font-weight: 800;
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: .05em;
+      text-transform: uppercase;
     }
 
     .employee-table tr:last-child td {
       border-bottom: 0;
     }
 
-    .portal-header .btn-outline-gray {
-      border-color: #cbd5e1;
-      color: #e2e8f0;
-      background: transparent;
+    .employee-status {
+      min-height: 22px;
+      color: #166534;
+      font-size: 13px;
+      font-weight: 600;
+      margin: 8px 0;
     }
 
-    @keyframes portalReveal {
-      from {
-        opacity: 0;
-        transform: translateY(4px);
+    /* Profile Specific Cards */
+    .profile-hero {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 20px;
+      background: #f8fbfd;
+      border: 1px solid #dce8ee;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .profile-avatar-circle {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--sidebar-active-pill, #136d94), var(--sidebar-bg, #1989b9));
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 800;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(25, 137, 185, 0.22);
+    }
+
+    .profile-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px 20px;
+      margin-top: 14px;
+    }
+
+    .profile-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .profile-meta-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--employee-muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .profile-meta-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--employee-navy);
+    }
+
+    .leave-stat-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .leave-stat-pill {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .leave-stat-pill strong {
+      font-size: 18px;
+      color: var(--employee-navy);
+    }
+
+    .doc-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background: #fff;
+    }
+
+    .doc-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .doc-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: #e0f2fe;
+      color: #0369a1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 11px;
+    }
+
+    /* ==========================================================================
+       Standard Messaging Platform Layout (Channels & Colleague DMs)
+       ========================================================================== */
+    .chat-platform {
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      height: 600px;
+      background: #ffffff;
+      border: 1px solid var(--employee-line);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05);
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .chat-sidebar {
+      background: #f8fafc;
+      border-right: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-sidebar-header {
+      padding: 14px 14px 12px;
+      border-bottom: 1px solid #edf2f7;
+      background: #ffffff;
+    }
+
+    .chat-sidebar-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--employee-navy);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .chat-search-wrap {
+      position: relative;
+    }
+
+    .chat-search-input {
+      width: 100%;
+      min-height: 36px;
+      padding: 7px 12px 7px 32px;
+      font-size: 13px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #f8fafc;
+      box-sizing: border-box;
+      outline: none;
+      transition: all 0.15s ease;
+    }
+
+    .chat-search-input:focus {
+      background: #ffffff;
+      border-color: var(--sidebar-bg, #1989b9);
+      box-shadow: 0 0 0 3px rgba(25, 137, 185, 0.16);
+    }
+
+    .chat-search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 14px;
+      height: 14px;
+      stroke: #94a3b8;
+      pointer-events: none;
+    }
+
+    .chat-conv-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 6px;
+    }
+
+    .chat-section-title {
+      font-size: 11px;
+      font-weight: 750;
+      color: #94a3b8;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 10px 10px 4px;
+    }
+
+    .chat-conv-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      position: relative;
+      user-select: none;
+    }
+
+    .chat-conv-item:hover {
+      background: #f1f5f9;
+    }
+
+    .chat-conv-item.active {
+      background: #e2e8f0;
+    }
+
+    .chat-conv-item.active .chat-conv-name {
+      font-weight: 750;
+      color: var(--employee-navy);
+    }
+
+    .chat-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--sidebar-active-pill, #136d94), var(--sidebar-bg, #1989b9));
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 750;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .chat-avatar.channel-avatar {
+      border-radius: 9px;
+      background: #e0f2fe;
+      color: #0369a1;
+      font-size: 15px;
+    }
+
+    .chat-conv-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .chat-conv-name {
+      font-size: 13px;
+      font-weight: 650;
+      color: var(--employee-navy);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-conv-preview {
+      font-size: 12px;
+      color: #64748b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+
+    /* Right Main Chat Area */
+    .chat-main {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: #ffffff;
+      position: relative;
+    }
+
+    .chat-header {
+      padding: 12px 18px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      min-height: 60px;
+      box-sizing: border-box;
+    }
+
+    .chat-header-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chat-back-btn {
+      display: none;
+      background: none;
+      border: 0;
+      padding: 6px;
+      margin-right: -4px;
+      cursor: pointer;
+      color: #475569;
+      border-radius: 6px;
+    }
+
+    .chat-back-btn:hover {
+      background: #f1f5f9;
+    }
+
+    .chat-header-name {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--employee-navy);
+      line-height: 1.2;
+    }
+
+    .chat-header-meta {
+      font-size: 12px;
+      color: var(--employee-muted);
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: #fcfdfd;
+    }
+
+    .chat-empty-state {
+      margin: auto;
+      text-align: center;
+      color: #94a3b8;
+      padding: 40px 20px;
+    }
+
+    .chat-empty-icon {
+      width: 44px;
+      height: 44px;
+      margin-bottom: 8px;
+      stroke: #cbd5e1;
+    }
+
+    .message-row {
+      display: flex;
+      gap: 10px;
+      max-width: 80%;
+    }
+
+    .message-row.outgoing {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .message-row.incoming {
+      align-self: flex-start;
+    }
+
+    .msg-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #cbd5e1;
+      color: #1e293b;
+      font-size: 11px;
+      font-weight: 750;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .message-bubble {
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.45;
+      position: relative;
+      word-break: break-word;
+    }
+
+    .message-row.incoming .message-bubble {
+      background: #f1f5f9;
+      color: #1e293b;
+      border-bottom-left-radius: 3px;
+    }
+
+    .message-row.outgoing .message-bubble {
+      background: var(--sidebar-bg, #1989b9);
+      color: #ffffff;
+      border-bottom-right-radius: 3px;
+    }
+
+    .msg-sender-name {
+      font-size: 11px;
+      font-weight: 750;
+      margin-bottom: 3px;
+      color: var(--employee-blue);
+    }
+
+    .message-row.outgoing .msg-sender-name {
+      display: none;
+    }
+
+    .msg-time {
+      font-size: 10px;
+      margin-top: 4px;
+      opacity: 0.75;
+      display: block;
+      text-align: right;
+    }
+
+    .chat-composer {
+      padding: 12px 16px;
+      border-top: 1px solid #e2e8f0;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chat-composer-input {
+      flex: 1;
+      min-height: 42px;
+      max-height: 100px;
+      padding: 10px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 9px;
+      font: inherit;
+      font-size: 14px;
+      color: #1e293b;
+      background: #f8fafc;
+      outline: none;
+      resize: none;
+      box-sizing: border-box;
+      transition: all 0.15s ease;
+    }
+
+    .chat-composer-input:focus {
+      background: #ffffff;
+      border-color: var(--sidebar-bg, #1989b9);
+      box-shadow: 0 0 0 3px rgba(25, 137, 185, 0.16);
+    }
+
+    .chat-send-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 9px;
+      background: var(--sidebar-bg, #1989b9);
+      color: #ffffff;
+      border: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .chat-send-btn:hover {
+      background: #147098;
+    }
+
+    .chat-send-btn:active {
+      transform: scale(0.96);
+      background: #105979;
+    }
+
+    @media (max-width: 760px) {
+      .chat-platform {
+        height: calc(100vh - 210px);
+        min-height: 440px;
+        grid-template-columns: 1fr;
       }
 
-      to {
-        opacity: 1;
-        transform: translateY(0);
+      .chat-sidebar {
+        display: flex;
+      }
+
+      .chat-main {
+        display: none;
+      }
+
+      .chat-platform.mobile-chat-open .chat-sidebar {
+        display: none;
+      }
+
+      .chat-platform.mobile-chat-open .chat-main {
+        display: flex;
+      }
+
+      .chat-back-btn {
+        display: inline-flex;
       }
     }
 
-    @media (max-width:760px) {
+    /* MFA Card components */
+    .portal-secret {
+      display: block;
+      margin: 7px 0;
+      padding: 10px 12px;
+      border-radius: 7px;
+      background: #eaf5fa;
+      color: var(--sidebar-active-pill, #136d94);
+      font: 700 14px ui-monospace, monospace;
+      letter-spacing: .11em;
+      overflow-wrap: anywhere;
+    }
+
+    .portal-recovery {
+      grid-column: 1 / -1;
+      padding: 14px;
+      border: 1px solid #ecd89e;
+      border-radius: 9px;
+      background: #fffaf0;
+    }
+
+    .portal-recovery strong {
+      color: #594617;
+      font-size: 13px;
+    }
+
+    .portal-recovery p {
+      margin: 4px 0 8px;
+      font-size: 12px;
+    }
+
+    .portal-recovery pre {
+      margin: 10px 0;
+      color: #263b4a;
+      font: 700 12px/1.7 ui-monospace, monospace;
+    }
+
+    @media (max-width: 760px) {
       .employee-shell {
-        padding: 16px 14px calc(100px + env(safe-area-inset-bottom, 0px));
+        padding: 16px 14px calc(92px + env(safe-area-inset-bottom, 16px));
       }
 
       .employee-top {
+        flex-direction: column;
         align-items: flex-start;
+        gap: 12px;
       }
 
-      .employee-heading {
-        font-size: 26px;
-      }
-
-      .employee-session-badge {
-        display: none;
+      .employee-session {
+        width: 100%;
+        justify-content: space-between;
       }
 
       .employee-form {
         grid-template-columns: 1fr;
       }
 
-      .portal-tabs {
-        position: fixed;
-        z-index: 100;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        flex-wrap: nowrap;
-        justify-content: space-around;
-        gap: 0;
-        margin: 0;
-        padding: 7px 5px calc(7px + env(safe-area-inset-bottom, 0px));
-        border: 1px solid rgba(219, 229, 235, .9);
-        border-radius: 18px 18px 0 0;
-        background: rgba(255,255,255,.94);
-        box-shadow: 0 -8px 28px rgba(25, 54, 76, .1);
-        backdrop-filter: blur(18px);
+      .attendance-hero {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px;
+      }
+
+      .attendance-hero-note {
+        text-align: left;
+        max-width: none;
+      }
+
+      .portal-bottom-nav {
+        height: 58px;
+      }
+
+      .portal-bottom-nav-inner {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 4px;
       }
 
       .portal-tab {
-        flex: 1 1 20%;
         min-width: 0;
-        min-height: 54px;
-        padding: 6px 2px;
-        border: 0;
-        border-radius: 11px;
-        font-size: 10px;
-        line-height: 1.1;
+        width: 100%;
+        height: 44px;
+        min-height: 44px;
+        padding: 0;
+        border-radius: 10px;
+        justify-content: center;
       }
 
-      .portal-tab.active { background: #eaf3f7; }
-      .attendance-hero { align-items: flex-start; flex-direction: column; gap: 10px; padding: 17px; }
-      .attendance-hero-note { max-width: none; text-align: left; }
-      .employee-card { padding: 20px 16px; }
-      .employee-card-head { gap: 10px; }
-      .employee-actions { display: grid; grid-template-columns: 1fr 1fr; }
-      .employee-actions button { min-width: 0; }
-      .employee-top { flex-direction: column; gap: 12px; }
-      .employee-session { width: 100%; justify-content: space-between; }
-      .employee-session-badge { display: inline-flex; }
-      .employee-table { min-width: 460px; }
-      .attendance-clock { font-size: 28px; }
-    }
+      /* Hide text labels on small mobile dimensions, keep only icons */
+      .portal-tab span {
+        display: none !important;
+      }
 
-    /* Employee portal readability and mobile interaction pass. */
-    :root {
-      --employee-navy: #173449;
-      --employee-blue: #176b8e;
-      --employee-canvas: #f3f7f8;
-      --employee-line: #d7e3e9;
-      --employee-muted: #536b7b;
-    }
-    body.portal-header { background: var(--employee-canvas); color: #2d4658; font-size: 16px; line-height: 1.55; }
-    .employee-shell { max-width: 1240px; }
-    .employee-heading { color: var(--employee-navy); font-size: clamp(29px, 4vw, 36px); letter-spacing: -.035em; }
-    .employee-subtitle { color: var(--employee-muted); font-size: 15px; line-height: 1.5; }
-    .employee-kicker, .employee-card-label { font-size: 12px; font-weight: 700; letter-spacing: .01em; text-transform: none; }
-    .employee-session-badge { font-size: 12px; font-weight: 650; letter-spacing: 0; }
-    .portal-tabs { border: 1px solid var(--employee-line); border-radius: 12px; background: #e8f0f3; }
-    .portal-tab { min-height: 44px; border: 0; border-radius: 8px; font-size: 14px; font-weight: 650; }
-    .portal-tab:hover { color: var(--employee-blue); background: #dcecf2; }
-    .portal-tab.active { color: #fff; background: var(--employee-navy); }
-    .employee-card { border-color: var(--employee-line); border-radius: 12px; box-shadow: 0 1px 3px rgba(19, 47, 67, .05); }
-    .employee-card h2 { color: var(--employee-navy); }
-    .employee-card p { color: var(--employee-muted); font-size: 15px; line-height: 1.55; }
-    .employee-form { border-color: var(--employee-line); background: #f7fafb; }
-    .employee-form label { color: #334e60; font-size: 13px; font-weight: 650; letter-spacing: 0; text-transform: none; }
-    .employee-form input, .employee-form select, .employee-form textarea { min-height: 44px; border-color: #b9cbd4; color: #253f51; font-size: 16px; }
-    .employee-table { font-size: 14px; }
-    .employee-table th { color: #536b7b; font-size: 12px; letter-spacing: 0; }
-    .employee-table td { color: #2d4658; font-size: 14px; line-height: 1.45; }
-    .employee-status { min-height: 24px; font-size: 14px; }
-    .portal-header :focus-visible { outline: 3px solid #c94336; outline-offset: 2px; }
-    @media (max-width: 760px) {
-      .portal-tab { min-height: 58px; padding: 7px 3px; border-radius: 9px; font-size: 12px; line-height: 1.25; }
-      .portal-tab.active { color: #fff; background: var(--employee-navy); }
-      .employee-card { padding: 20px 16px; }
-      .employee-top { padding-bottom: 16px; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .portal-panel.active { animation: none; }
-      .portal-tab { transition: none; }
+      .portal-tab svg {
+        width: 22px;
+        height: 22px;
+        margin: 0;
+      }
+
+      .profile-hero {
+        flex-direction: column;
+        text-align: center;
+      }
     }
   </style>
 </head>
@@ -418,42 +1085,43 @@
   <main class="employee-shell">
     <header class="employee-top">
       <div>
-        <div class="employee-kicker"><span style="color:var(--employee-navy); font-weight:700;">Employee Portal</span>
-          <span style="color:#94a3b8; margin: 0 4px;">/</span> <span id="portalSubpageLabel"
-            style="color:var(--employee-blue); font-weight:600;">Attendance</span></div>
+        <div class="employee-kicker">
+          <span style="color:var(--employee-navy); font-weight:750;">Employee Portal</span>
+          <span style="color:#94a3b8; margin: 0 5px;">/</span>
+          <span id="portalSubpageLabel" style="color:var(--employee-blue); font-weight:700;">Attendance</span>
+        </div>
         <div class="employee-heading" id="portalGreeting">Your employee portal</div>
-        <div class="employee-subtitle">Manage your attendance, requests, and conversations with HR.</div>
+        <div class="employee-subtitle">Manage your attendance, requests, and communications with HR.</div>
       </div>
       <div class="employee-session">
         <span class="employee-session-badge">SESSION ACTIVE</span>
         <button type="button" class="btn btn-outline-gray" onclick="employeeLogout()">Sign out</button>
       </div>
     </header>
-    <nav class="portal-tabs" aria-label="Employee portal modules">
-      <button type="button" class="portal-tab active" data-panel="attendancePanel" aria-label="Attendance">Attendance</button>
-      <button type="button" class="portal-tab" data-panel="leavePanel" aria-label="Leave requests">Leave</button>
-      <button type="button" class="portal-tab" data-panel="advancePanel" aria-label="Salary advance">Advance</button>
-      <button type="button" class="portal-tab" data-panel="complaintPanel" aria-label="Complaints">HR help</button>
-      <button type="button" class="portal-tab" data-panel="settingsPanel" aria-label="Settings">Account</button>
-    </nav>
+
     <section class="employee-grid">
+      <!-- 1. ATTENDANCE PANEL (Default Landing Tab) -->
       <article class="employee-card portal-panel active" id="attendancePanel">
         <div class="attendance-hero">
-          <div><div class="attendance-hero-label">Today at your center</div><div class="attendance-clock" id="portalClock">--:--</div><div class="attendance-day" id="portalToday">Loading date…</div></div>
+          <div>
+            <div class="attendance-hero-label">Today at your center</div>
+            <div class="attendance-clock" id="portalClock">--:--</div>
+            <div class="attendance-day" id="portalToday">Loading date…</div>
+          </div>
           <div class="attendance-hero-note" id="attendanceHeroNote">Your time log is ready. Clock in when your shift begins.</div>
         </div>
         <div class="employee-card-head">
           <div>
             <div class="employee-card-label">Daily time log</div>
             <h2>Attendance logging</h2>
-            <p>Record today's clock-in and clock-out timestamps.</p>
-          </div><span class="employee-session-badge">LIVE</span>
+            <p>Record today's clock-in and clock-out timestamps directly.</p>
+          </div>
         </div>
         <div class="employee-actions">
           <button type="button" class="btn btn-navy-cta" onclick="attendanceAction('clock_in')">Clock in</button>
           <button type="button" class="btn btn-outline-gray" onclick="attendanceAction('clock_out')">Clock out</button>
         </div>
-        <p id="attendanceStatus" class="employee-status"></p>
+        <p id="attendanceStatus" class="employee-status" role="status"></p>
         <div class="employee-table-wrap">
           <table class="employee-table">
             <thead>
@@ -471,30 +1139,300 @@
           </table>
         </div>
       </article>
+
+      <!-- 2. PROFILE PANEL -->
+      <article class="portal-panel" id="profilePanel">
+        <!-- Section: Employee Info -->
+        <div class="employee-card">
+          <div class="employee-card-head">
+            <div>
+              <div class="employee-card-label">Identity & Placement</div>
+              <h2>Employee Info</h2>
+              <p>Your official center assignment and profile credentials.</p>
+            </div>
+          </div>
+          <div class="profile-hero">
+            <div class="profile-avatar-circle" id="profileAvatarInitials">
+              {% if employee %}{{ employee.first_name|slice:":1" }}{{ employee.last_name|slice:":1" }}{% else %}EP{% endif %}
+            </div>
+            <div>
+              <h3 style="margin:0 0 4px; color:var(--employee-navy); font-size:20px; font-weight:800;" id="profFullNameDisplay">
+                {% if employee %}{{ employee.first_name }} {{ employee.last_name }}{% else %}Employee{% endif %}
+              </h3>
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <span class="employee-session-badge" id="profRoleDisplay">{% if employee.role %}{{ employee.role }}{% else %}Staff{% endif %}</span>
+                <span style="color:var(--employee-muted); font-size:13px;" id="profDeptDisplay">{% if employee.department %}{{ employee.department.name }}{% else %}General Staff{% endif %}</span>
+              </div>
+            </div>
+          </div>
+          <div class="profile-meta-grid">
+            <div class="profile-meta-item">
+              <span class="profile-meta-label">Employee ID</span>
+              <span class="profile-meta-value" id="profId">{% if employee.id %}{{ employee.id|stringformat:".8s"|upper }}{% else %}EMP-2026{% endif %}</span>
+            </div>
+            <div class="profile-meta-item">
+              <span class="profile-meta-label">Job Title</span>
+              <span class="profile-meta-value" id="profTitle">{% if employee.role %}{{ employee.role }}{% else %}Staff Instructor{% endif %}</span>
+            </div>
+            <div class="profile-meta-item">
+              <span class="profile-meta-label">Department</span>
+              <span class="profile-meta-value" id="profDepartment">{% if employee.department %}{{ employee.department.name }} ({{ employee.department.code|default:"GEN" }}){% else %}Operations{% endif %}</span>
+            </div>
+            <div class="profile-meta-item">
+              <span class="profile-meta-label">Manager</span>
+              <span class="profile-meta-value" id="profManager">{% if employee.department.manager %}{{ employee.department.manager.first_name }} {{ employee.department.manager.last_name }}{% else %}Center Director{% endif %}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Contact Details -->
+        <div class="employee-card">
+          <div class="employee-card-head">
+            <div>
+              <div class="employee-card-label">Personal Channels</div>
+              <h2>Contact Details</h2>
+              <p>Personal channels on record for center notices and company notifications.</p>
+            </div>
+          </div>
+          <div class="profile-meta-grid">
+            <div class="profile-meta-item">
+              <span class="profile-meta-label">Corporate Email</span>
+              <span class="profile-meta-value" id="profEmail">{% if employee.email %}{{ employee.email }}{% else %}employee@kumon-ems.com{% endif %}</span>
+            </div>
+            <div class="profile-meta-item">
+              <span class="profile-meta-label">Phone</span>
+              <span class="profile-meta-value" id="profPhone">+65 8234 5678</span>
+            </div>
+            <div class="profile-meta-item" style="grid-column: 1 / -1;">
+              <span class="profile-meta-label">Address</span>
+              <span class="profile-meta-value" id="profAddress">Bukit Batok Central, Block 128, Singapore 650128</span>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Section: Employment Details -->
+        <div class="employee-card">
+          <div class="employee-card-head">
+            <div>
+              <div class="employee-card-label">Terms of Work</div>
+              <h2>Employment Details</h2>
+              <p>Contract conditions, appointment date, and center roster.</p>
+            </div>
+          </div>
+          <div class="profile-meta-grid">
+            <div class="profile-meta-item">
+              <span class="profile-meta-label">Hire Date</span>
+              <span class="profile-meta-value" id="profHireDate">{% if employee.date_hired %}{{ employee.date_hired }}{% else %}2024-03-01{% endif %}</span>
+            </div>
+            <div class="profile-meta-item">
+              <span class="profile-meta-label">Employment Status</span>
+              <span class="profile-meta-value"><span class="employee-session-badge">Active Full-Time</span></span>
+            </div>
+            <div class="profile-meta-item" style="grid-column: 1 / -1;">
+              <span class="profile-meta-label">Shift Schedule</span>
+              <span class="profile-meta-value">Standard Center Roster • Mon-Fri 09:00 - 18:00 (UTC+8)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Leave Summary -->
+        <div class="employee-card">
+          <div class="employee-card-head">
+            <div>
+              <div class="employee-card-label">Time Off Overview</div>
+              <h2>Leave Balances</h2>
+              <p>Available balances and recent leave status snapshot.</p>
+            </div>
+          </div>
+          <div class="leave-stat-row">
+            <div class="leave-stat-pill">
+              <span class="profile-meta-label">Annual Leave</span>
+              <strong>12 / 14 Days</strong>
+              <span style="font-size:12px; color:var(--employee-muted);">Remaining this cycle</span>
+            </div>
+            <div class="leave-stat-pill">
+              <span class="profile-meta-label">Sick Leave</span>
+              <strong>10 / 14 Days</strong>
+              <span style="font-size:12px; color:var(--employee-muted);">Medical certificate</span>
+            </div>
+            <div class="leave-stat-pill">
+              <span class="profile-meta-label">Personal Leave</span>
+              <strong>2 / 2 Days</strong>
+              <span style="font-size:12px; color:var(--employee-muted);">Available</span>
+            </div>
+          </div>
+          <button type="button" class="btn btn-outline-gray" onclick="switchPortalTab('leavePanel')">Open Leave Requests tab →</button>
+        </div>
+
+        <!-- Section: Documents -->
+        <div class="employee-card">
+          <div class="employee-card-head">
+            <div>
+              <div class="employee-card-label">Records on File</div>
+              <h2>Documents</h2>
+              <p>Contracts, identification credentials, and HR agreements.</p>
+            </div>
+          </div>
+          <div class="doc-list-item">
+            <div class="doc-info">
+              <div class="doc-icon">PDF</div>
+              <div>
+                <strong style="color:var(--employee-navy); font-size:14px;">Employment Contract</strong>
+                <div style="font-size:12px; color:var(--employee-muted);">Signed &amp; Onboarded</div>
+              </div>
+            </div>
+            <span class="employee-session-badge">ON FILE</span>
+          </div>
+          <div class="doc-list-item">
+            <div class="doc-info">
+              <div class="doc-icon">DOC</div>
+              <div>
+                <strong style="color:var(--employee-navy); font-size:14px;">Government ID &amp; Tax Documentation</strong>
+                <div style="font-size:12px; color:var(--employee-muted);">Identity records validated</div>
+              </div>
+            </div>
+            <span class="employee-session-badge">VERIFIED</span>
+          </div>
+          <div class="doc-list-item">
+            <div class="doc-info">
+              <div class="doc-icon">HR</div>
+              <div>
+                <strong style="color:var(--employee-navy); font-size:14px;">Center Instructor Code of Conduct</strong>
+                <div style="font-size:12px; color:var(--employee-muted);">Annual policy acknowledgment</div>
+              </div>
+            </div>
+            <span class="employee-session-badge">ACKNOWLEDGED</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 3. MESSAGES PANEL (Standard Messaging Platform) -->
+      <article class="portal-panel" id="messagesPanel">
+        <div class="chat-platform" id="chatPlatform">
+          <!-- Sidebar: Conversations & Channels -->
+          <aside class="chat-sidebar">
+            <div class="chat-sidebar-header">
+              <div class="chat-sidebar-title">
+                <span>Conversations</span>
+              </div>
+              <div class="chat-search-wrap">
+                <svg class="chat-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="search" id="chatSearchInput" class="chat-search-input" placeholder="Search people or channels…" oninput="filterChatContacts(this.value)" />
+              </div>
+            </div>
+
+            <div class="chat-conv-list" id="chatConvList">
+              <div class="chat-section-title">Channels</div>
+              <div class="chat-conv-item active" data-conv-key="announcements" onclick="selectChatConversation('announcements', 'Announcements', 'Center-wide broadcast', '#')">
+                <div class="chat-avatar channel-avatar">#</div>
+                <div class="chat-conv-info">
+                  <div class="chat-conv-name"><span># Announcements</span></div>
+                  <div class="chat-conv-preview">Center-wide staff channel</div>
+                </div>
+              </div>
+              <div class="chat-conv-item" data-conv-key="hr" onclick="selectChatConversation('hr', 'HR Helpdesk', 'Private channel with HR Support', 'HR')">
+                <div class="chat-avatar channel-avatar" style="background:#fef3c7; color:#92400e;">HR</div>
+                <div class="chat-conv-info">
+                  <div class="chat-conv-name"><span>HR Helpdesk</span></div>
+                  <div class="chat-conv-preview">Direct channel with HR Staff</div>
+                </div>
+              </div>
+
+              <div class="chat-section-title" style="margin-top:10px;">Direct Messages</div>
+              <div id="chatEmployeesList">
+                {% for col in colleagues %}
+                <div class="chat-conv-item" data-conv-key="{{ col.dm_key }}" onclick="openDirectMessage('{{ col.id }}', '{{ col.full_name|escapejs }}', '{{ col.role|escapejs }}{% if col.department_name %} • {{ col.department_name|escapejs }}{% endif %}', '{{ col.email|escapejs }}')">
+                  <div class="chat-avatar">
+                    {{ col.initials }}
+                  </div>
+                  <div class="chat-conv-info">
+                    <div class="chat-conv-name">
+                      <span>{{ col.full_name }}</span>
+                    </div>
+                    <div class="chat-conv-preview">{{ col.role }}{% if col.department_name %} • {{ col.department_name }}{% endif %}</div>
+                  </div>
+                </div>
+                {% empty %}
+                <div style="padding:12px 10px; color:#94a3b8; font-size:12px;">No colleagues found.</div>
+                {% endfor %}
+              </div>
+            </div>
+          </aside>
+
+          <!-- Main Chat Area -->
+          <section class="chat-main">
+            <header class="chat-header">
+              <div class="chat-header-user">
+                <button type="button" class="chat-back-btn" onclick="closeMobileChat()" aria-label="Back to conversations">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                  </svg>
+                </button>
+                <div class="chat-avatar" id="activeChatAvatar">#</div>
+                <div>
+                  <div class="chat-header-name" id="activeChatName">Announcements</div>
+                  <div class="chat-header-meta" id="activeChatMeta">Center-wide staff channel</div>
+                </div>
+              </div>
+            </header>
+
+            <div class="chat-messages" id="chatMessagesStream">
+              <div class="chat-empty-state">
+                <svg class="chat-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <p>Loading conversation messages…</p>
+              </div>
+            </div>
+
+            <form class="chat-composer" onsubmit="sendChatMessage(event)">
+              <textarea id="chatComposerInput" class="chat-composer-input" placeholder="Type a message… (Press Enter to send)" rows="1" onkeydown="handleChatKeyDown(event)"></textarea>
+              <button type="submit" class="chat-send-btn" aria-label="Send message" title="Send message">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </button>
+            </form>
+          </section>
+        </div>
+      </article>
+
+      <!-- 4. LEAVE REQUESTS PANEL -->
       <article class="employee-card portal-panel" id="leavePanel">
         <div class="employee-card-head">
           <div>
             <div class="employee-card-label">Time away</div>
-            <h2>Leave requests</h2>
-            <p>Submit leave and track Pending, Approved, or Rejected requests.</p>
+            <h2>Leave Requests</h2>
+            <p>Submit leave and track Pending, Approved, or Rejected applications.</p>
           </div>
         </div>
         <p id="leaveActionStatus" class="employee-status" role="status"></p>
         <form class="employee-form" onsubmit="submitLeave(event)">
           {% if show_employee_request_picker %}
-          <label for="leaveEmployee">Employee</label><select id="leaveEmployee" required>
+          <label for="leaveEmployee">Employee</label>
+          <select id="leaveEmployee" required>
             <option value="">Choose an employee</option>
           </select>
           {% endif %}
-          <label for="leaveType">Leave type</label><select id="leaveType">
+          <label for="leaveType">Leave type</label>
+          <select id="leaveType">
             <option>Vacation</option>
             <option>Sick</option>
             <option>Personal</option>
             <option>Parental</option>
           </select>
-          <label for="leaveStart">Start date</label><input id="leaveStart" type="date" required />
-          <label for="leaveEnd">End date</label><input id="leaveEnd" type="date" required />
-          <label for="leaveReason">Reason</label><textarea id="leaveReason" required></textarea>
+          <label for="leaveStart">Start date</label>
+          <input id="leaveStart" type="date" required />
+          <label for="leaveEnd">End date</label>
+          <input id="leaveEnd" type="date" required />
+          <label for="leaveReason">Reason</label>
+          <textarea id="leaveReason" required></textarea>
           <button class="btn btn-navy-cta" type="submit">Submit leave request</button>
         </form>
         <div class="employee-table-wrap">
@@ -514,29 +1452,82 @@
           </table>
         </div>
       </article>
+
+      <!-- 5. SALARY ADVANCE PANEL -->
+      <article class="employee-card portal-panel" id="advancePanel">
+        <div class="employee-card-head">
+          <div>
+            <div class="employee-card-label">Payroll support</div>
+            <h2>Salary Advance</h2>
+            <p>Request an advance linked to center payroll advance records.</p>
+          </div>
+        </div>
+        <p id="advanceActionStatus" class="employee-status" role="status"></p>
+        <form class="employee-form" onsubmit="submitAdvance(event)">
+          {% if show_employee_request_picker %}
+          <label for="advanceEmployee">Employee</label>
+          <select id="advanceEmployee" required>
+            <option value="">Choose an employee</option>
+          </select>
+          {% endif %}
+          <label for="advanceAmount">Amount</label>
+          <input id="advanceAmount" type="number" min="0.01" step="0.01" required />
+          <label for="advanceTerms">Repayment terms</label>
+          <select id="advanceTerms">
+            <option>Next Payroll</option>
+            <option>2 Pay Cycles</option>
+            <option>3 Pay Cycles</option>
+          </select>
+          <label for="advancePurpose">Reason</label>
+          <textarea id="advancePurpose" required></textarea>
+          <button class="btn btn-navy-cta" type="submit">Submit advance request</button>
+        </form>
+        <div class="employee-table-wrap">
+          <table class="employee-table">
+            <thead>
+              <tr>
+                <th>AMOUNT</th>
+                <th>REASON</th>
+                <th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="advanceRows">
+              <tr>
+                <td colspan="3">Loading...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <!-- 6. COMPLAINTS PANEL -->
       <article class="employee-card portal-panel" id="complaintPanel">
         <div class="employee-card-head">
           <div>
             <div class="employee-card-label">Private HR channel</div>
-            <h2>Complaint filing</h2>
-            <p>Send a private workplace complaint to HR.</p>
+            <h2>Complaints</h2>
+            <p>Send a confidential workplace concern or grievance to HR Management.</p>
           </div>
         </div>
         <p id="complaintActionStatus" class="employee-status" role="status"></p>
         <form class="employee-form" onsubmit="submitComplaint(event)">
           {% if show_employee_request_picker %}
-          <label for="complaintEmployee">Employee</label><select id="complaintEmployee" required>
+          <label for="complaintEmployee">Employee</label>
+          <select id="complaintEmployee" required>
             <option value="">Choose an employee</option>
           </select>
           {% endif %}
-          <label for="complaintCategory">Category</label><select id="complaintCategory">
+          <label for="complaintCategory">Category</label>
+          <select id="complaintCategory">
             <option value="general">General</option>
             <option value="workplace">Workplace conduct</option>
             <option value="payroll">Payroll issue</option>
             <option value="harassment">Harassment</option>
           </select>
-          <label for="complaintSubject">Subject</label><input id="complaintSubject" required />
-          <label for="complaintDescription">Details</label><textarea id="complaintDescription" required></textarea>
+          <label for="complaintSubject">Subject</label>
+          <input id="complaintSubject" required />
+          <label for="complaintDescription">Details</label>
+          <textarea id="complaintDescription" required></textarea>
           <button class="btn btn-navy-cta" type="submit">File complaint</button>
         </form>
         <div class="employee-table-wrap">
@@ -557,108 +1548,223 @@
           </table>
         </div>
       </article>
-      <article class="employee-card portal-panel" id="advancePanel">
-        <div class="employee-card-head">
-          <div>
-            <div class="employee-card-label">Payroll support</div>
-            <h2>Salary advance</h2>
-            <p>Request an advance linked to the payroll advance records.</p>
+
+      <!-- 7. SETTINGS PANEL -->
+      <article class="portal-panel" id="settingsPanel">
+        <!-- Section: Account Security -->
+        <div class="employee-card">
+          <div class="employee-card-head">
+            <div>
+              <div class="employee-card-label">Sign-in Protection</div>
+              <h2>Account Security</h2>
+              <p>Keep your sign-in credentials and two-factor authentication protected.</p>
+            </div>
+          </div>
+          <p id="accountActionStatus" class="employee-status" role="status"></p>
+
+          <form class="employee-form" onsubmit="submitPassword(event)" style="border-bottom:1px solid #e2e8f0; padding-bottom:20px; margin-bottom:20px;">
+            <h3 style="grid-column:1/-1; font-size:15px; font-weight:700; margin:0 0 6px; color:var(--employee-navy);">Change Password</h3>
+            <label for="oldPassword">Current Password</label>
+            <input id="oldPassword" type="password" required />
+            <label for="newPassword">New Password</label>
+            <input id="newPassword" type="password" required />
+            <label for="newPassword2">Confirm New Password</label>
+            <input id="newPassword2" type="password" required />
+            <button class="btn btn-navy-cta" type="submit">Update Password</button>
+          </form>
+
+          <div class="employee-form employee-mfa-card" style="margin-bottom:0;">
+            <h3 style="grid-column:1/-1; font-size:15px; font-weight:700; margin:0 0 6px; color:var(--employee-navy);">Two-factor authentication</h3>
+            <p id="portalMfaStatus" class="employee-status" role="status" style="grid-column:1/-1;">Loading security status…</p>
+            <div id="portalMfaDisabled" style="grid-column:1/-1;">
+              <label for="portalMfaSetupPassword">Current password</label>
+              <input id="portalMfaSetupPassword" type="password" autocomplete="current-password" style="margin-bottom:10px;" />
+              <button type="button" class="btn btn-navy-cta" onclick="startPortalTwoFactorSetup()">Set up authenticator</button>
+            </div>
+            <div id="portalMfaSetup" hidden style="grid-column:1/-1;">
+              <label>Manual setup key</label>
+              <code id="portalMfaSecret" class="portal-secret"></code>
+              <label for="portalMfaConfirmCode">Six-digit authenticator code</label>
+              <input id="portalMfaConfirmCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" style="margin-bottom:10px;" />
+              <button type="button" class="btn btn-navy-cta" onclick="confirmPortalTwoFactorSetup()">Verify &amp; enable</button>
+            </div>
+            <div id="portalMfaEnabled" hidden style="grid-column:1/-1;">
+              <label for="portalMfaDisablePassword">Current password</label>
+              <input id="portalMfaDisablePassword" type="password" autocomplete="current-password" />
+              <label for="portalMfaDisableCode">Authenticator or recovery code</label>
+              <input id="portalMfaDisableCode" autocomplete="one-time-code" style="margin-bottom:10px;" />
+              <button type="button" class="btn btn-outline-gray" onclick="disablePortalTwoFactor()">Turn off 2FA</button>
+            </div>
+            <div id="portalRecoveryCodes" class="portal-recovery" hidden>
+              <strong>Save these recovery codes now</strong>
+              <p>Each code works once. They will not appear again.</p>
+              <pre id="portalRecoveryCodeList"></pre>
+              <button type="button" class="btn btn-outline-gray" onclick="copyPortalRecoveryCodes()">Copy codes</button>
+            </div>
           </div>
         </div>
-        <p id="advanceActionStatus" class="employee-status" role="status"></p>
-        <form class="employee-form" onsubmit="submitAdvance(event)">
-          {% if show_employee_request_picker %}
-          <label for="advanceEmployee">Employee</label><select id="advanceEmployee" required>
-            <option value="">Choose an employee</option>
-          </select>
-          {% endif %}
-          <label for="advanceAmount">Amount</label><input id="advanceAmount" type="number" min="0.01" step="0.01"
-            required />
-          <label for="advanceTerms">Repayment terms</label><select id="advanceTerms">
-            <option>Next Payroll</option>
-            <option>2 Pay Cycles</option>
-            <option>3 Pay Cycles</option>
-          </select>
-          <label for="advancePurpose">Reason</label><textarea id="advancePurpose" required></textarea>
-          <button class="btn btn-navy-cta" type="submit">Submit advance request</button>
-        </form>
-        <div class="employee-table-wrap">
-          <table class="employee-table">
-            <thead>
-              <tr>
-                <th>AMOUNT</th>
-                <th>REASON</th>
-                <th>STATUS</th>
-              </tr>
-            </thead>
-            <tbody id="advanceRows">
-              <tr>
-                <td colspan="3">Loading...</td>
-              </tr>
-            </tbody>
-          </table>
+
+        <!-- Section: Display & Notifications -->
+        <div class="employee-card">
+          <div class="employee-card-head">
+            <div>
+              <div class="employee-card-label">Interface Preferences</div>
+              <h2>Display &amp; Notifications</h2>
+              <p>Adjust data density, visual contrast, and notification alerts.</p>
+            </div>
+          </div>
+          <form class="employee-form" onsubmit="submitPrefs(event)">
+            <label for="empPageSize">Page Size</label>
+            <select id="empPageSize">
+              <option value="5">5 per page</option>
+              <option value="10">10 per page</option>
+              <option value="25">25 per page</option>
+            </select>
+            <div style="grid-column: 1 / -1; display:flex; flex-direction:column; gap:10px; margin-top:8px;">
+              <label style="display:flex; align-items:center; gap:10px; font-weight:600; cursor:pointer;">
+                <input type="checkbox" id="empHighContrast" style="width:auto; min-height:auto;" /> Enable High Contrast
+              </label>
+              <label style="display:flex; align-items:center; gap:10px; font-weight:600; cursor:pointer;">
+                <input type="checkbox" id="empMuteLeave" style="width:auto; min-height:auto;" /> Mute Leave Notifications
+              </label>
+              <label style="display:flex; align-items:center; gap:10px; font-weight:600; cursor:pointer;">
+                <input type="checkbox" id="empMutePayroll" style="width:auto; min-height:auto;" /> Mute Payroll Notifications
+              </label>
+            </div>
+            <button class="btn btn-navy-cta" type="submit">Save Preferences</button>
+          </form>
+
+          <!-- Hidden profile edit fields preserved for API compatibility -->
+          <div style="display:none;">
+            <input id="portalFirstName" />
+            <input id="portalLastName" />
+            <input id="portalEmail" />
+          </div>
         </div>
-      </article>
-      <article class="employee-card portal-panel" id="settingsPanel">
-        <div class="employee-card-head"><div><div class="employee-card-label">Profile &amp; Security</div><h2>Account</h2><p>Keep your personal details and sign-in protection up to date.</p></div></div>
-        <p id="accountActionStatus" class="employee-status" role="status"></p>
-        <form class="employee-form" onsubmit="submitAccountProfile(event)">
-          <h3 style="font-size:15px;font-weight:700;margin-bottom:8px;">Profile details</h3>
-          <label for="portalFirstName">First name</label><input id="portalFirstName" autocomplete="given-name" />
-          <label for="portalLastName">Last name</label><input id="portalLastName" autocomplete="family-name" />
-          <label for="portalEmail">Work email</label><input id="portalEmail" type="email" autocomplete="email" />
-          <button class="btn btn-navy-cta" type="submit">Save profile</button>
-        </form>
-        <form class="employee-form" onsubmit="submitPassword(event)" style="border-bottom:1px solid #e2e8f0;padding-bottom:24px;margin-bottom:24px;">
-          <h3 style="font-size:15px;font-weight:600;margin-bottom:16px;">Change Password</h3>
-          <label for="oldPassword">Current Password</label><input id="oldPassword" type="password" required />
-          <label for="newPassword">New Password</label><input id="newPassword" type="password" required />
-          <label for="newPassword2">Confirm New Password</label><input id="newPassword2" type="password" required />
-          <button class="btn btn-navy-cta" type="submit">Update Password</button>
-        </form>
-        <form class="employee-form" onsubmit="submitPrefs(event)">
-          <h3 style="font-size:15px;font-weight:600;margin-bottom:16px;">Display &amp; Notifications</h3>
-          <label for="empPageSize">Page Size</label>
-          <select id="empPageSize"><option value="5">5 per page</option><option value="10">10 per page</option><option value="25">25 per page</option></select>
-          <label style="display:flex;align-items:center;gap:8px;margin-top:16px;"><input type="checkbox" id="empHighContrast" /> Enable High Contrast</label>
-          <label style="display:flex;align-items:center;gap:8px;margin-top:8px;"><input type="checkbox" id="empMuteLeave" /> Mute Leave Notifications</label>
-          <label style="display:flex;align-items:center;gap:8px;margin-top:8px;margin-bottom:16px;"><input type="checkbox" id="empMutePayroll" /> Mute Payroll Notifications</label>
-          <button class="btn btn-navy-cta" type="submit">Save Preferences</button>
-        </form>
-        <div class="employee-form employee-mfa-card">
-          <h3 style="font-size:15px;font-weight:700;margin-bottom:8px;">Two-factor authentication</h3>
-          <p id="portalMfaStatus" class="employee-status" role="status">Loading security status…</p>
-          <div id="portalMfaDisabled">
-            <label for="portalMfaSetupPassword">Current password</label><input id="portalMfaSetupPassword" type="password" autocomplete="current-password" />
-            <button type="button" class="btn btn-navy-cta" onclick="startPortalTwoFactorSetup()">Set up authenticator</button>
+
+        <!-- Section: Session Management -->
+        <div class="employee-card">
+          <div class="employee-card-head">
+            <div>
+              <div class="employee-card-label">Access Control</div>
+              <h2>Session Management</h2>
+              <p>Inspect connection status and safely exit your session.</p>
+            </div>
           </div>
-          <div id="portalMfaSetup" hidden>
-            <label>Manual setup key</label><code id="portalMfaSecret" class="portal-secret"></code>
-            <label for="portalMfaConfirmCode">Six-digit authenticator code</label><input id="portalMfaConfirmCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" />
-            <button type="button" class="btn btn-navy-cta" onclick="confirmPortalTwoFactorSetup()">Verify &amp; enable</button>
-          </div>
-          <div id="portalMfaEnabled" hidden>
-            <label for="portalMfaDisablePassword">Current password</label><input id="portalMfaDisablePassword" type="password" autocomplete="current-password" />
-            <label for="portalMfaDisableCode">Authenticator or recovery code</label><input id="portalMfaDisableCode" autocomplete="one-time-code" />
-            <button type="button" class="btn btn-outline-gray" onclick="disablePortalTwoFactor()">Turn off 2FA</button>
-          </div>
-          <div id="portalRecoveryCodes" class="portal-recovery" hidden>
-            <strong>Save these recovery codes now</strong><p>Each code works once. They will not appear again.</p>
-            <pre id="portalRecoveryCodeList"></pre>
-            <button type="button" class="btn btn-outline-gray" onclick="copyPortalRecoveryCodes()">Copy codes</button>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+            <div>
+              <div style="font-weight:700; color:var(--employee-navy); font-size:15px;">Active Work Session</div>
+              <div style="color:var(--employee-muted); font-size:13px; margin-top:3px;">
+                Connected to Kumon EMS via Same-Origin Authenticated Session.
+              </div>
+            </div>
+            <button type="button" class="btn btn-outline-gray" onclick="employeeLogout()" style="color:#b91c1c; border-color:#fca5a5;">
+              Sign out of portal
+            </button>
           </div>
         </div>
       </article>
     </section>
   </main>
+
+  <!-- Fixed Bottom Navigation Bar -->
+  <nav class="portal-bottom-nav" aria-label="Employee portal navigation">
+    <div class="portal-bottom-nav-inner">
+      <button type="button" class="portal-tab" data-panel="profilePanel" aria-label="Profile" title="Profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <span>Profile</span>
+      </button>
+
+      <button type="button" class="portal-tab active" data-panel="attendancePanel" aria-label="Attendance" title="Attendance">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>Attendance</span>
+      </button>
+
+      <button type="button" class="portal-tab" data-panel="messagesPanel" aria-label="Messages" title="Messages">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>Messages</span>
+      </button>
+
+      <button type="button" class="portal-tab" data-panel="leavePanel" aria-label="Leave Requests" title="Leave Requests">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span>Leave Requests</span>
+      </button>
+
+      <button type="button" class="portal-tab" data-panel="advancePanel" aria-label="Salary Advance" title="Salary Advance">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+          <line x1="12" y1="8" x2="12" y2="16"></line>
+          <line x1="8" y1="12" x2="16" y2="12"></line>
+        </svg>
+        <span>Salary Advance</span>
+      </button>
+
+      <button type="button" class="portal-tab" data-panel="complaintPanel" aria-label="Complaints" title="Complaints">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        </svg>
+        <span>Complaints</span>
+      </button>
+
+      <button type="button" class="portal-tab" data-panel="settingsPanel" aria-label="Settings" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <span>Settings</span>
+      </button>
+    </div>
+  </nav>
+
+  <script id="colleaguesData" type="application/json">{{ colleagues_json|default:"[]"|safe }}</script>
   <script>
-    document.querySelectorAll('.portal-tab').forEach((tab) => tab.addEventListener('click', () => {
-      document.querySelectorAll('.portal-tab').forEach((item) => item.classList.toggle('active', item === tab));
-      document.querySelectorAll('.portal-panel').forEach((panel) => panel.classList.toggle('active', panel.id === tab.dataset.panel));
+    let allEmployeesCache = [];
+    try {
+      allEmployeesCache = JSON.parse(document.getElementById('colleaguesData')?.textContent || '[]');
+    } catch (_) {}
+    let currentConvKey = 'announcements';
+    let currentConvName = 'Announcements';
+    let currentConvMeta = 'Center-wide broadcast';
+    let currentConvAvatar = '#';
+    let currentConvIsDirect = false;
+    let myEmployeeEmail = '{{ employee.email|default:""|escapejs }}';
+    let myEmployeeName = '{{ employee.first_name|default:""|escapejs }} {{ employee.last_name|default:""|escapejs }}'.trim();
+
+    function switchPortalTab(panelId) {
+      const targetTab = document.querySelector(`.portal-tab[data-panel="${panelId}"]`);
+      if (!targetTab) return;
+      document.querySelectorAll('.portal-tab').forEach((t) => t.classList.toggle('active', t === targetTab));
+      document.querySelectorAll('.portal-panel').forEach((p) => p.classList.toggle('active', p.id === panelId));
       const subpageLabel = document.getElementById('portalSubpageLabel');
-      if (subpageLabel) subpageLabel.textContent = tab.textContent.trim();
-    }));
+      if (subpageLabel) {
+        const span = targetTab.querySelector('span');
+        subpageLabel.textContent = span ? span.textContent.trim() : (targetTab.getAttribute('aria-label') || targetTab.textContent.trim());
+      }
+      if (panelId === 'messagesPanel') {
+        loadChatMessages(currentConvKey);
+      }
+      window.scrollTo(0, 0);
+    }
+
+    document.querySelectorAll('.portal-tab').forEach((tab) => {
+      tab.addEventListener('click', () => switchPortalTab(tab.dataset.panel));
+    });
+
     const csrf = () => document.cookie.split('; ').find((cookie) => cookie.startsWith('csrftoken='))?.split('=')[1];
+
     async function portalFetch(url, options = {}) {
       const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
       if (csrf()) headers['X-CSRFToken'] = csrf();
@@ -673,54 +1779,254 @@
       }
       return response;
     }
+
     const payload = async (response) => response.json().catch(() => ({}));
+
     const apiErrorMessage = (data, fallback) => {
       if (typeof data.error === 'string') return data.error;
       if (typeof data.detail === 'string') return data.detail;
       const fields = Object.entries(data || {}).map(([field, value]) => {
         const messages = Array.isArray(value) ? value : [value];
-        const text = messages.map((message) => typeof message === 'string' ? message : '').filter(Boolean).join(' ');
+        const text = messages.map((m) => typeof m === 'string' ? m : '').filter(Boolean).join(' ');
         return text ? `${field.replaceAll('_', ' ')}: ${text}` : '';
       }).filter(Boolean);
       return fields.join(' ') || fallback;
     };
+
     const showStatus = (message, error = false) => {
       const activePanel = document.querySelector('.portal-panel.active');
       const el = activePanel?.querySelector('.employee-status') || document.getElementById('attendanceStatus');
-      if (el) { el.textContent = message; el.style.color = error ? '#b42318' : '#166534'; }
+      if (el) {
+        el.textContent = message;
+        el.style.color = error ? '#b42318' : '#166534';
+      }
     };
+
     const rows = (data) => Array.isArray(data) ? data : data.results || [];
     const safe = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
     const portalValue = (id) => document.getElementById(id)?.value ?? '';
+
     async function loadPortalEmployees() {
-      const selectors = ['leaveEmployee', 'complaintEmployee', 'advanceEmployee']
-        .map((id) => document.getElementById(id)).filter(Boolean);
-      if (!selectors.length) return;
-      const response = await portalFetch('/api/employees/?page_size=100');
-      const data = await payload(response);
-      if (!response.ok) throw new Error(apiErrorMessage(data, 'Employee list could not be loaded.'));
-      const employees = rows(data).filter((employee) => employee.is_active !== false);
-      selectors.forEach((select) => {
-        select.replaceChildren(new Option('Choose an employee', ''));
-        employees.forEach((employee) => {
-          const name = `${employee.first_name || ''} ${employee.last_name || ''}`.trim() || employee.email || 'Employee';
-          select.add(new Option(name, employee.id));
-        });
-      });
+      try {
+        const response = await portalFetch('/api/colleagues/');
+        if (response.ok) {
+          const colleagues = await payload(response);
+          if (Array.isArray(colleagues) && colleagues.length > 0) {
+            allEmployeesCache = colleagues;
+            renderChatEmployees(colleagues);
+          }
+        }
+      } catch (_) {}
     }
+
+    function renderChatEmployees(employees, filterText = '') {
+      const container = document.getElementById('chatEmployeesList');
+      if (!container) return;
+      const currentEmail = (myEmployeeEmail || '').toLowerCase();
+      const q = (filterText || '').toLowerCase().trim();
+
+      const filtered = (employees || []).filter((emp) => {
+        if (currentEmail && (emp.email || '').toLowerCase() === currentEmail) return false;
+        if (!q) return true;
+        const name = (emp.full_name || `${emp.first_name || ''} ${emp.last_name || ''}`).toLowerCase();
+        const role = (emp.role || '').toLowerCase();
+        const dept = (emp.department_name || emp.department?.name || '').toLowerCase();
+        const email = (emp.email || '').toLowerCase();
+        return name.includes(q) || role.includes(q) || dept.includes(q) || email.includes(q);
+      });
+
+      if (!filtered.length) {
+        container.innerHTML = '<div style="padding:12px 10px; color:#94a3b8; font-size:12px;">No matching colleagues.</div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map((emp) => {
+        const fullName = emp.full_name || `${emp.first_name || ''} ${emp.last_name || ''}`.trim() || emp.email || 'Employee';
+        const initials = emp.initials || `${(emp.first_name || 'E')[0]}${(emp.last_name || '')[0] || ''}`.toUpperCase();
+        const roleDept = [emp.role, emp.department_name || emp.department?.name].filter(Boolean).join(' • ') || 'Staff';
+        const empEmail = emp.email || emp.id;
+        const dmKey = emp.dm_key || getDmKey(myEmployeeEmail, empEmail);
+        const isActive = currentConvKey === dmKey;
+
+        return `<div class="chat-conv-item ${isActive ? 'active' : ''}" data-conv-key="${safe(dmKey)}" onclick="openDirectMessage('${safe(emp.id)}', '${safe(fullName)}', '${safe(roleDept)}', '${safe(empEmail)}')">
+          <div class="chat-avatar">
+            ${initials}
+          </div>
+          <div class="chat-conv-info">
+            <div class="chat-conv-name">
+              <span>${safe(fullName)}</span>
+            </div>
+            <div class="chat-conv-preview">${safe(roleDept)}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function filterChatContacts(query) {
+      renderChatEmployees(allEmployeesCache, query);
+    }
+
+    function getDmKey(myEmail, otherEmail) {
+      const userA = (myEmail || 'emp1').split('@')[0].toLowerCase().replace(/[^a-z0-9._-]/g, '').slice(0, 35);
+      const userB = (otherEmail || 'emp2').split('@')[0].toLowerCase().replace(/[^a-z0-9._-]/g, '').slice(0, 35);
+      const sorted = [userA, userB].sort();
+      return `dm_${sorted[0]}_${sorted[1]}`.slice(0, 95);
+    }
+
+    function openDirectMessage(otherId, otherName, roleDept, otherEmail) {
+      const dmKey = getDmKey(myEmployeeEmail, otherEmail);
+      const initials = otherName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() || 'DM';
+      selectChatConversation(dmKey, otherName, `${roleDept} • Direct Message`, initials, true);
+    }
+
+    function selectChatConversation(key, name, meta, avatarText, isDirect = false) {
+      currentConvKey = key;
+      currentConvName = name;
+      currentConvMeta = meta;
+      currentConvAvatar = avatarText;
+      currentConvIsDirect = isDirect;
+
+      document.querySelectorAll('.chat-conv-item').forEach((item) => {
+        const itemKey = item.getAttribute('data-conv-key');
+        if (itemKey) {
+          item.classList.toggle('active', itemKey === key);
+        } else {
+          item.classList.remove('active');
+        }
+      });
+
+      const nameEl = document.getElementById('activeChatName');
+      const metaEl = document.getElementById('activeChatMeta');
+      const avatarEl = document.getElementById('activeChatAvatar');
+      const inputEl = document.getElementById('chatComposerInput');
+
+      if (nameEl) nameEl.textContent = name;
+      if (metaEl) metaEl.textContent = meta;
+      if (avatarEl) {
+        avatarEl.textContent = avatarText;
+        avatarEl.className = isDirect ? 'chat-avatar' : 'chat-avatar channel-avatar';
+      }
+      if (inputEl) {
+        inputEl.placeholder = `Message ${name}… (Press Enter to send)`;
+        inputEl.focus();
+      }
+
+      const platform = document.getElementById('chatPlatform');
+      if (platform) platform.classList.add('mobile-chat-open');
+
+      loadChatMessages(key);
+    }
+
+    function closeMobileChat() {
+      const platform = document.getElementById('chatPlatform');
+      if (platform) platform.classList.remove('mobile-chat-open');
+    }
+
+    async function loadChatMessages(convKey) {
+      const key = convKey || currentConvKey;
+      try {
+        const response = await portalFetch(`/api/messages/?conversation=${encodeURIComponent(key)}&_=${Date.now()}`);
+        if (!response.ok) return;
+        const msgList = rows(await payload(response));
+        const stream = document.getElementById('chatMessagesStream');
+        if (!stream) return;
+
+        if (msgList.length === 0) {
+          const emptyNote = currentConvIsDirect
+            ? `This is the start of your direct chat with <strong>${safe(currentConvName)}</strong>.<br><span style="font-size:12px; color:#64748b;">Send a message below to start chatting directly!</span>`
+            : `No messages in ${safe(currentConvName)} yet.<br><span style="font-size:12px; color:#64748b;">Send a message below to start the conversation!</span>`;
+          stream.innerHTML = `<div class="chat-empty-state">
+            <svg class="chat-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <p>${emptyNote}</p>
+          </div>`;
+          return;
+        }
+
+        const myNameLower = (myEmployeeName || '').toLowerCase();
+        const myEmailLower = (myEmployeeEmail || '').toLowerCase();
+
+        stream.innerHTML = msgList.map((msg) => {
+          const sender = (msg.sender_name || 'Staff').trim();
+          const senderLower = sender.toLowerCase();
+          const isOutgoing = (myNameLower && senderLower === myNameLower) ||
+                             (myEmailLower && senderLower === myEmailLower) ||
+                             senderLower === 'you' ||
+                             senderLower.startsWith('you ');
+          const timeStr = msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : 'Just now';
+          const senderInitials = (sender.split(' ').map((n) => n[0]).join('').slice(0, 2) || 'E').toUpperCase();
+
+          return `<div class="message-row ${isOutgoing ? 'outgoing' : 'incoming'}">
+            ${isOutgoing ? '' : `<div class="msg-avatar">${senderInitials}</div>`}
+            <div class="message-bubble">
+              ${isOutgoing ? '' : `<div class="msg-sender-name">${safe(sender)}</div>`}
+              <div style="white-space:pre-wrap;">${safe(msg.text)}</div>
+              <span class="msg-time">${safe(timeStr)}</span>
+            </div>
+          </div>`;
+        }).join('');
+
+        stream.scrollTop = stream.scrollHeight;
+      } catch (_) {}
+    }
+
+    async function sendChatMessage(event) {
+      if (event) event.preventDefault();
+      const input = document.getElementById('chatComposerInput');
+      if (!input) return;
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+
+      const stream = document.getElementById('chatMessagesStream');
+      if (stream) {
+        const emptyState = stream.querySelector('.chat-empty-state');
+        if (emptyState) emptyState.remove();
+
+        const row = document.createElement('div');
+        row.className = 'message-row outgoing';
+        row.innerHTML = `<div class="message-bubble"><div style="white-space:pre-wrap;">${safe(text)}</div><span class="msg-time">Just now</span></div>`;
+        stream.appendChild(row);
+        stream.scrollTop = stream.scrollHeight;
+      }
+
+      try {
+        const response = await portalFetch('/api/messages/', {
+          method: 'POST',
+          body: JSON.stringify({
+            text: text,
+            conversation_key: currentConvKey
+          })
+        });
+        if (!response.ok) throw new Error('Message could not be sent.');
+        setTimeout(() => loadChatMessages(currentConvKey), 400);
+      } catch (err) {
+        showStatus(err.message, true);
+      }
+    }
+
+    function handleChatKeyDown(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendChatMessage(event);
+      }
+    }
+
     async function refreshRequestLists() {
       const endpoints = ['/api/leaves/?page_size=50', '/api/advances/?page_size=50', '/api/complaints/?page_size=50'];
       const responses = await Promise.all(endpoints.map((url) => portalFetch(`${url}&_=${Date.now()}`)));
-      const lists = await Promise.all(responses.map(async (response) => {
-        const data = await payload(response);
-        if (!response.ok) throw new Error(apiErrorMessage(data, 'Saved request list could not be refreshed.'));
-        return rows(data);
+      const lists = await Promise.all(responses.map(async (r) => {
+        const d = await payload(r);
+        if (!r.ok) throw new Error(apiErrorMessage(d, 'Saved request list could not be refreshed.'));
+        return rows(d);
       }));
       const [leaves, advances, complaints] = lists;
       document.getElementById('leaveRows').innerHTML = leaves.map((item) => `<tr><td>${safe(item.leave_type)}</td><td>${safe(item.start_date)} to ${safe(item.end_date)}</td><td>${safe(item.status)}</td></tr>`).join('') || '<tr><td colspan="3">No leave requests.</td></tr>';
       document.getElementById('advanceRows').innerHTML = advances.map((item) => `<tr><td>${safe(item.amount)}</td><td>${safe(item.purpose)}</td><td>${safe(item.status)}</td></tr>`).join('') || '<tr><td colspan="3">No advance requests.</td></tr>';
       document.getElementById('complaintRows').innerHTML = complaints.map((item) => `<tr><td>${safe(item.subject)}</td><td>${safe(item.category)}</td><td>${safe(item.status)}</td><td>${safe(String(item.created_at || '').slice(0, 10))}</td></tr>`).join('') || '<tr><td colspan="4">No complaints filed.</td></tr>';
     }
+
     async function submitPortalRequest(event, endpoint, body, successMessage, fallbackMessage) {
       event.preventDefault();
       const form = event.target;
@@ -744,8 +2050,10 @@
         if (button) button.disabled = false;
       }
     }
+
     let portalRefreshInFlight = false;
     let portalAccountLoaded = false;
+
     function updatePortalClock() {
       const now = new Date();
       const clock = document.getElementById('portalClock');
@@ -755,35 +2063,97 @@
     }
     updatePortalClock();
     setInterval(updatePortalClock, 30000);
+
     async function loadPortalData() {
       if (portalRefreshInFlight) return;
       portalRefreshInFlight = true;
       try {
-        const [attendance, leaves, advances, complaints, account] = await Promise.all([portalFetch('/api/attendance/me/?_=' + Date.now()), portalFetch('/api/leaves/?page_size=50&_=' + Date.now()), portalFetch('/api/advances/?page_size=50&_=' + Date.now()), portalFetch('/api/complaints/?page_size=50&_=' + Date.now()), portalFetch('/api/settings/me/?_=' + Date.now())]);
+        const [attendance, leaves, advances, complaints, account] = await Promise.all([
+          portalFetch('/api/attendance/me/?_=' + Date.now()),
+          portalFetch('/api/leaves/?page_size=50&_=' + Date.now()),
+          portalFetch('/api/advances/?page_size=50&_=' + Date.now()),
+          portalFetch('/api/complaints/?page_size=50&_=' + Date.now()),
+          portalFetch('/api/settings/me/?_=' + Date.now())
+        ]);
+
         const attendanceData = rows(await payload(attendance));
         const now = new Date();
         const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         const todayRecord = attendanceData.find((item) => item.date === todayKey);
         const attendanceNote = document.getElementById('attendanceHeroNote');
-        if (attendanceNote) attendanceNote.textContent = todayRecord?.clock_in ? todayRecord.clock_out ? 'Your shift is complete. Thanks for today’s work.' : `Clocked in at ${new Date(todayRecord.clock_in).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}. Remember to clock out when you finish.` : 'Your time log is ready. Clock in when your shift begins.';
-        document.getElementById('attendanceRows').innerHTML = attendanceData.map((item) => `<tr><td>${safe(item.date)}</td><td>${safe(item.clock_in || '-')}</td><td>${safe(item.clock_out || '-')}</td></tr>`).join('') || '<tr><td colspan="3">No attendance records.</td></tr>';
-        document.getElementById('leaveRows').innerHTML = rows(await payload(leaves)).map((item) => `<tr><td>${safe(item.leave_type)}</td><td>${safe(item.start_date)} to ${safe(item.end_date)}</td><td>${safe(item.status)}</td></tr>`).join('') || '<tr><td colspan="3">No leave requests.</td></tr>';
-        document.getElementById('advanceRows').innerHTML = rows(await payload(advances)).map((item) => `<tr><td>${safe(item.amount)}</td><td>${safe(item.purpose)}</td><td>${safe(item.status)}</td></tr>`).join('') || '<tr><td colspan="3">No advance requests.</td></tr>';
-        document.getElementById('complaintRows').innerHTML = rows(await payload(complaints)).map((item) => `<tr><td>${safe(item.subject)}</td><td>${safe(item.category)}</td><td>${safe(item.status)}</td><td>${safe(String(item.created_at || '').slice(0, 10))}</td></tr>`).join('') || '<tr><td colspan="4">No complaints filed.</td></tr>';
+        if (attendanceNote) {
+          attendanceNote.textContent = todayRecord?.clock_in
+            ? todayRecord.clock_out
+              ? 'Your shift is complete. Thanks for today’s work.'
+              : `Clocked in at ${new Date(todayRecord.clock_in).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}. Remember to clock out when you finish.`
+            : 'Your time log is ready. Clock in when your shift begins.';
+        }
+
+        document.getElementById('attendanceRows').innerHTML = attendanceData.map((item) =>
+          `<tr><td>${safe(item.date)}</td><td>${safe(item.clock_in || '-')}</td><td>${safe(item.clock_out || '-')}</td></tr>`
+        ).join('') || '<tr><td colspan="3">No attendance records.</td></tr>';
+
+        document.getElementById('leaveRows').innerHTML = rows(await payload(leaves)).map((item) =>
+          `<tr><td>${safe(item.leave_type)}</td><td>${safe(item.start_date)} to ${safe(item.end_date)}</td><td>${safe(item.status)}</td></tr>`
+        ).join('') || '<tr><td colspan="3">No leave requests.</td></tr>';
+
+        document.getElementById('advanceRows').innerHTML = rows(await payload(advances)).map((item) =>
+          `<tr><td>${safe(item.amount)}</td><td>${safe(item.purpose)}</td><td>${safe(item.status)}</td></tr>`
+        ).join('') || '<tr><td colspan="3">No advance requests.</td></tr>';
+
+        document.getElementById('complaintRows').innerHTML = rows(await payload(complaints)).map((item) =>
+          `<tr><td>${safe(item.subject)}</td><td>${safe(item.category)}</td><td>${safe(item.status)}</td><td>${safe(String(item.created_at || '').slice(0, 10))}</td></tr>`
+        ).join('') || '<tr><td colspan="4">No complaints filed.</td></tr>';
+
         const accountData = await payload(account);
         const profile = accountData.profile || {};
         if (!portalAccountLoaded) {
-          document.getElementById('portalFirstName').value = profile.first_name || '';
-          document.getElementById('portalLastName').value = profile.last_name || '';
-          document.getElementById('portalEmail').value = profile.email || '';
+          const fn = document.getElementById('portalFirstName');
+          const ln = document.getElementById('portalLastName');
+          const em = document.getElementById('portalEmail');
+          if (fn) fn.value = profile.first_name || '';
+          if (ln) ln.value = profile.last_name || '';
+          if (em) em.value = profile.email || '';
+
+          // Populate profile tab dynamically if available
+          if (profile.first_name) {
+            const fullName = `${profile.first_name} ${profile.last_name || ''}`.trim();
+            const profNameEl = document.getElementById('profFullNameDisplay');
+            if (profNameEl) profNameEl.textContent = fullName;
+            const initialsEl = document.getElementById('profileAvatarInitials');
+            if (initialsEl) initialsEl.textContent = `${profile.first_name[0]}${(profile.last_name || '')[0] || ''}`.toUpperCase();
+            const profEmailEl = document.getElementById('profEmail');
+            if (profEmailEl && profile.email) profEmailEl.textContent = profile.email;
+          }
           portalAccountLoaded = true;
         }
+
         const greeting = document.getElementById('portalGreeting');
         if (greeting) greeting.textContent = profile.first_name ? `Hello, ${profile.first_name}` : 'Your employee portal';
+        if (profile.email) myEmployeeEmail = profile.email;
+        if (profile.first_name) myEmployeeName = `${profile.first_name} ${profile.last_name || ''}`.trim();
         setPortalTwoFactorState(!!accountData.two_factor_enabled);
-      } finally { portalRefreshInFlight = false; }
+        loadChatMessages(currentConvKey);
+      } finally {
+        portalRefreshInFlight = false;
+      }
     }
-    async function attendanceAction(action) { try { const response = await portalFetch('/api/attendance/me/', { method: 'POST', body: JSON.stringify({ action }) }); const data = await payload(response); if (!response.ok) throw new Error(data.error || 'Attendance could not be recorded.'); showStatus(action === 'clock_in' ? 'Clock-in recorded.' : 'Clock-out recorded.'); loadPortalData(); } catch (error) { if (error.message !== 'auth') showStatus(error.message, true); } }
+
+    async function attendanceAction(action) {
+      try {
+        const response = await portalFetch('/api/attendance/me/', {
+          method: 'POST',
+          body: JSON.stringify({ action })
+        });
+        const data = await payload(response);
+        if (!response.ok) throw new Error(data.error || 'Attendance could not be recorded.');
+        showStatus(action === 'clock_in' ? 'Clock-in recorded.' : 'Clock-out recorded.');
+        loadPortalData();
+      } catch (error) {
+        if (error.message !== 'auth') showStatus(error.message, true);
+      }
+    }
+
     function submitLeave(event) {
       return submitPortalRequest(event, '/api/leaves/', {
         ...(portalValue('leaveEmployee') ? { employee: portalValue('leaveEmployee') } : {}),
@@ -793,6 +2163,7 @@
         reason: portalValue('leaveReason').trim(),
       }, 'Leave request submitted.', 'Leave request could not be submitted.');
     }
+
     function submitComplaint(event) {
       return submitPortalRequest(event, '/api/complaints/', {
         ...(portalValue('complaintEmployee') ? { employee: portalValue('complaintEmployee') } : {}),
@@ -801,6 +2172,7 @@
         description: portalValue('complaintDescription').trim(),
       }, 'HR help request filed securely.', 'HR help request could not be filed.');
     }
+
     function submitAdvance(event) {
       return submitPortalRequest(event, '/api/advances/', {
         ...(portalValue('advanceEmployee') ? { employee: portalValue('advanceEmployee') } : {}),
@@ -809,47 +2181,53 @@
         purpose: portalValue('advancePurpose').trim(),
       }, 'Salary advance request submitted.', 'Salary advance request could not be submitted.');
     }
+
     async function submitPassword(event) {
       event.preventDefault();
       if (newPassword.value !== newPassword2.value) return showStatus('Passwords do not match.', true);
       try {
-        const response = await portalFetch('/api/settings/password/', { method:'POST', body:JSON.stringify({ old_password:oldPassword.value, new_password:newPassword.value }) });
+        const response = await portalFetch('/api/settings/password/', {
+          method: 'POST',
+          body: JSON.stringify({ old_password: oldPassword.value, new_password: newPassword.value })
+        });
         const data = await payload(response);
         if (!response.ok) throw new Error(data.error || 'Password update failed.');
-        event.target.reset(); showStatus('Password updated.');
-      } catch (error) { showStatus(error.message, true); }
+        event.target.reset();
+        showStatus('Password updated.');
+      } catch (error) {
+        showStatus(error.message, true);
+      }
     }
-    async function submitAccountProfile(event) {
-      event.preventDefault();
-      try {
-        const response = await portalFetch('/api/settings/me/', { method:'PATCH', body:JSON.stringify({ profile:{ first_name:portalFirstName.value.trim(), last_name:portalLastName.value.trim(), email:portalEmail.value.trim() } }) });
-        const data = await payload(response);
-        if (!response.ok) throw new Error(data.error || 'Profile could not be saved.');
-        const greeting = document.getElementById('portalGreeting');
-        if (greeting) greeting.textContent = data.profile?.first_name ? `Hello, ${data.profile.first_name}` : 'Your employee portal';
-        portalAccountLoaded = true;
-        showStatus('Profile saved.');
-      } catch (error) { showStatus(error.message, true); }
-    }
+
     function setPortalTwoFactorState(enabled) {
       document.getElementById('portalMfaDisabled').hidden = enabled;
       document.getElementById('portalMfaEnabled').hidden = !enabled;
       const status = document.getElementById('portalMfaStatus');
       if (status) status.textContent = enabled ? 'Protected. An authenticator code is required when you sign in.' : 'Not enabled. Add an authenticator app for another layer of sign-in protection.';
     }
+
     async function startPortalTwoFactorSetup() {
       try {
-        const response = await portalFetch('/api/settings/2fa/setup/', { method:'POST', body:JSON.stringify({ current_password:portalMfaSetupPassword.value }) });
+        const response = await portalFetch('/api/settings/2fa/setup/', {
+          method: 'POST',
+          body: JSON.stringify({ current_password: portalMfaSetupPassword.value })
+        });
         const data = await payload(response);
         if (!response.ok) throw new Error(data.error || 'Authenticator setup could not start.');
         portalMfaSecret.textContent = data.secret;
         portalMfaSetup.hidden = false;
         portalMfaConfirmCode.focus();
-      } catch (error) { showStatus(error.message, true); }
+      } catch (error) {
+        showStatus(error.message, true);
+      }
     }
+
     async function confirmPortalTwoFactorSetup() {
       try {
-        const response = await portalFetch('/api/settings/2fa/confirm/', { method:'POST', body:JSON.stringify({ current_password:portalMfaSetupPassword.value, code:portalMfaConfirmCode.value.trim() }) });
+        const response = await portalFetch('/api/settings/2fa/confirm/', {
+          method: 'POST',
+          body: JSON.stringify({ current_password: portalMfaSetupPassword.value, code: portalMfaConfirmCode.value.trim() })
+        });
         const data = await payload(response);
         if (!response.ok) throw new Error(data.error || 'That code could not be verified.');
         portalRecoveryCodeList.textContent = (data.recovery_codes || []).join('\n');
@@ -859,45 +2237,72 @@
         portalMfaConfirmCode.value = '';
         setPortalTwoFactorState(true);
         showStatus('Two-factor authentication is on. Save your recovery codes.');
-      } catch (error) { showStatus(error.message, true); }
+      } catch (error) {
+        showStatus(error.message, true);
+      }
     }
+
     async function disablePortalTwoFactor() {
       if (!window.confirm('Turn off two-factor authentication?')) return;
       try {
-        const response = await portalFetch('/api/settings/2fa/disable/', { method:'POST', body:JSON.stringify({ current_password:portalMfaDisablePassword.value, code:portalMfaDisableCode.value.trim() }) });
+        const response = await portalFetch('/api/settings/2fa/disable/', {
+          method: 'POST',
+          body: JSON.stringify({ current_password: portalMfaDisablePassword.value, code: portalMfaDisableCode.value.trim() })
+        });
         const data = await payload(response);
         if (!response.ok) throw new Error(data.error || 'Two-factor authentication could not be turned off.');
-        portalMfaDisablePassword.value = ''; portalMfaDisableCode.value = '';
+        portalMfaDisablePassword.value = '';
+        portalMfaDisableCode.value = '';
         portalRecoveryCodes.hidden = true;
         setPortalTwoFactorState(false);
         showStatus('Two-factor authentication is off.');
-      } catch (error) { showStatus(error.message, true); }
+      } catch (error) {
+        showStatus(error.message, true);
+      }
     }
+
     async function copyPortalRecoveryCodes() {
-      try { await navigator.clipboard.writeText(portalRecoveryCodeList.textContent); showStatus('Recovery codes copied. Store them somewhere private.'); }
-      catch (_) { showStatus('Select and copy the recovery codes to save them.', true); }
+      try {
+        await navigator.clipboard.writeText(portalRecoveryCodeList.textContent);
+        showStatus('Recovery codes copied. Store them somewhere private.');
+      } catch (_) {
+        showStatus('Select and copy the recovery codes to save them.', true);
+      }
     }
+
     async function submitPrefs(event) {
       event.preventDefault();
       const muted = [];
       if (empMuteLeave.checked) muted.push('leave');
       if (empMutePayroll.checked) muted.push('payroll');
       try {
-        const response = await portalFetch('/api/settings/me/', { method:'PATCH', body:JSON.stringify({ page_size:parseInt(empPageSize.value), muted_kinds:muted, a11y:{ high_contrast:empHighContrast.checked } }) });
+        const response = await portalFetch('/api/settings/me/', {
+          method: 'PATCH',
+          body: JSON.stringify({ page_size: parseInt(empPageSize.value), muted_kinds: muted, a11y: { high_contrast: empHighContrast.checked } })
+        });
         const data = await payload(response);
         if (!response.ok) throw new Error(data.error || 'Preferences could not be saved.');
         showStatus('Preferences saved.');
-      } catch (error) { showStatus(error.message, true); }
+      } catch (error) {
+        showStatus(error.message, true);
+      }
     }
-    async function employeeLogout() { await portalFetch('/api/session-logout/', { method: 'POST' }).catch(() => { }); window.location.href = '/login/'; }
+
+    async function employeeLogout() {
+      await portalFetch('/api/session-logout/', { method: 'POST' }).catch(() => {});
+      window.location.href = '/login/';
+    }
+
     loadPortalEmployees().catch((error) => showStatus(error.message || 'Employee list could not be loaded.', true));
     loadPortalData().catch(() => showStatus('Portal data could not be loaded.', true));
+
     const portalRefreshEveryMs = 30000;
     setInterval(() => {
       if (!document.hidden && !portalRefreshInFlight) {
         loadPortalData().catch(() => showStatus('Portal data could not be refreshed.', true));
       }
     }, portalRefreshEveryMs);
+
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden && !portalRefreshInFlight) {
         loadPortalData().catch(() => showStatus('Portal data could not be refreshed.', true));
