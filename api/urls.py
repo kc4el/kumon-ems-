@@ -19,6 +19,7 @@ from core.views import (
     EmployeeListCreateView,
     EmployeePromoteView,
     EmployeeTransferView,
+    EmailConfirmationView,
     ExpenseClaimDetailView,
     ExpenseClaimListCreateView,
     GrievanceDetailView,
@@ -83,6 +84,11 @@ urlpatterns = [
         name="department-detail",
     ),
     path("employees/", EmployeeListCreateView.as_view(), name="employee-list-create"),
+    path(
+        "email-confirmation/",
+        EmailConfirmationView.as_view(),
+        name="email-confirmation",
+    ),
     path(
         "complaints/", ComplaintListCreateView.as_view(), name="complaint-list-create"
     ),

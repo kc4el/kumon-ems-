@@ -1119,6 +1119,133 @@ class LeaveValidatorTests(TestCase):
 
 
 class AnonymousSignupTests(TestCase):
+    def test_password_signup_sends_supabase_confirmation_and_disables_local_login(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch as mock_patch
+
+        user_id = "55555555-5555-4555-8555-555555555555"
+        client = APIClient()
+        with mock_patch("core.views.supabase") as supabase:
+            supabase.auth.sign_up.return_value = SimpleNamespace(
+                user=SimpleNamespace(id=user_id)
+            )
+            response = client.post(
+                "/api/employees/",
+                {
+                    "first_name": "New",
+                    "last_name": "User",
+                    "email": "signup@example.com",
+                    "password": "N0t-a-common-password!",
+                },
+                format="json",
+                HTTP_HOST="testserver",
+            )
+
+        self.assertEqual(response.status_code, 202)
+        supabase.auth.sign_up.assert_called_once()
+        signup_options = supabase.auth.sign_up.call_args.args[0]
+        self.assertEqual(
+            signup_options["options"]["email_redirect_to"],
+            "http://testserver/auth/confirm/",
+        )
+        self.assertFalse(User.objects.get(email="signup@example.com").is_active)
+
+    def test_confirmed_supabase_email_activates_matching_local_account(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch as mock_patch
+
+        employee = Employee.objects.create(
+            first_name="New", last_name="User", email="signup@example.com"
+        )
+        user = User.objects.create_user(
+            username="signup@example.com",
+            email="signup@example.com",
+            password="N0t-a-common-password!",
+            is_active=False,
+        )
+        employee.user = user
+        employee.save(update_fields=["user"])
+        client = APIClient()
+        with mock_patch("core.views.supabase") as supabase:
+            supabase.auth.get_user.return_value = SimpleNamespace(
+                user=SimpleNamespace(
+                    id=str(employee.id),
+                    email="signup@example.com",
+                    email_confirmed_at="2026-10-19T00:00:00Z",
+                )
+            )
+            response = client.post(
+                "/api/email-confirmation/",
+                {"access_token": "verified-token"},
+                format="json",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(User.objects.get(email="signup@example.com").is_active)
+
+    def test_unconfirmed_supabase_email_does_not_activate_local_account(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch as mock_patch
+
+        employee = Employee.objects.create(
+            first_name="New", last_name="User", email="signup@example.com"
+        )
+        user = User.objects.create_user(
+            username="signup@example.com",
+            email="signup@example.com",
+            password="N0t-a-common-password!",
+            is_active=False,
+        )
+        employee.user = user
+        employee.save(update_fields=["user"])
+        client = APIClient()
+        with mock_patch("core.views.supabase") as supabase:
+            supabase.auth.get_user.return_value = SimpleNamespace(
+                user=SimpleNamespace(
+                    id=str(employee.id),
+                    email="signup@example.com",
+                    email_confirmed_at=None,
+                )
+            )
+            response = client.post(
+                "/api/email-confirmation/",
+                {"access_token": "unverified-token"},
+                format="json",
+            )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(User.objects.get(email="signup@example.com").is_active)
+
+    def test_password_signup_links_an_existing_unclaimed_employee(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch as mock_patch
+
+        employee = Employee.objects.create(
+            first_name="HR", last_name="Registered", email="signup@example.com"
+        )
+        client = APIClient()
+        with mock_patch("core.views.supabase") as supabase:
+            supabase.auth.sign_up.return_value = SimpleNamespace(
+                user=SimpleNamespace(id="77777777-7777-4777-8777-777777777777")
+            )
+            response = client.post(
+                "/api/employees/",
+                {
+                    "first_name": "New",
+                    "last_name": "User",
+                    "email": "signup@example.com",
+                    "password": "N0t-a-common-password!",
+                },
+                format="json",
+                HTTP_HOST="testserver",
+            )
+
+        self.assertEqual(response.status_code, 202)
+        self.assertEqual(Employee.objects.filter(email="signup@example.com").count(), 1)
+        employee.refresh_from_db()
+        self.assertEqual(employee.user.email, "signup@example.com")
+        self.assertFalse(employee.user.is_active)
+
     def test_anon_known_and_unknown_email_get_identical_response(self):
         from types import SimpleNamespace
         from unittest.mock import patch as mock_patch

@@ -9,6 +9,7 @@ from django.contrib.sessions.models import Session
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, models, transaction
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -161,6 +162,11 @@ def attendance_checkin_view(request):
 @ensure_csrf_cookie
 def login_view(request):
     return render(request, "core/login.html")
+
+
+@ensure_csrf_cookie
+def email_confirmation_view(request):
+    return render(request, "core/email_confirmation.html")
 
 
 @ensure_csrf_cookie
@@ -349,6 +355,51 @@ class ComplaintDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
 
+class EmailConfirmationView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        access_token = str(request.data.get("access_token") or "").strip()
+        if not access_token:
+            return Response(
+                {"error": "The confirmation link is invalid or expired."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            auth_user = supabase.auth.get_user(access_token).user
+        except Exception:
+            logger.exception("Supabase email confirmation verification failed")
+            return Response(
+                {"error": "Unable to verify the email right now. Please retry."},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+        email = getattr(auth_user, "email", None)
+        user_id = getattr(auth_user, "id", None)
+        if (
+            not email
+            or not user_id
+            or not getattr(auth_user, "email_confirmed_at", None)
+            or not Employee.objects.filter(
+                email__iexact=email,
+                user__email__iexact=email,
+            ).exists()
+        ):
+            return Response(
+                {"error": "The confirmation link is invalid or expired."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        updated = User.objects.filter(
+            username__iexact=email,
+            email__iexact=email,
+        ).update(is_active=True)
+        if not updated:
+            return Response(
+                {"error": "The account could not be activated. Contact HR."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response({"message": "Email confirmed. You can now sign in."})
+
+
 class EmployeeListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
     queryset = Employee.objects.select_related("department").order_by("last_name", "first_name")
     serializer_class = EmployeeSerializer
@@ -410,39 +461,84 @@ class EmployeeListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
                     {"error": exc.messages},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-        serializer = self.get_serializer(data=payload)
+        existing_employee = Employee.objects.filter(email__iexact=email).first()
+        can_claim_employee = bool(
+            anonymous
+            and password
+            and existing_employee is not None
+            and existing_employee.is_active
+            and existing_employee.user_id is None
+            and not User.objects.filter(email__iexact=email).exists()
+        )
+        serializer = self.get_serializer(
+            existing_employee if can_claim_employee else None,
+            data=payload,
+        )
         try:
             serializer.is_valid(raise_exception=True)
         except DRFValidationError as exc:
             return Response({"error": exc.detail}, status=status.HTTP_400_BAD_REQUEST)
-        if Employee.objects.filter(email__iexact=email).exists():
-            if anonymous:
+        if existing_employee is not None:
+            if anonymous and not can_claim_employee:
                 return Response(
                     {"message": SIGNUP_NEUTRAL_MESSAGE},
                     status=status.HTTP_202_ACCEPTED,
                 )
-            return Response(
-                {"error": "An employee with this email already exists."},
-                status=status.HTTP_409_CONFLICT,
-            )
+            if not anonymous:
+                return Response(
+                    {"error": "An employee with this email already exists."},
+                    status=status.HTTP_409_CONFLICT,
+                )
         created_user_id = None
         try:
             with transaction.atomic():
                 record_id = str(uuid.uuid4())
-                auth_response = supabase.auth.admin.create_user(
-                    {
-                        "id": record_id,
-                        "email": email,
-                        "email_confirm": True,
-                        **({"password": password} if password else {}),
-                        "user_metadata": {
-                            "first_name": payload.get("first_name", ""),
-                            "last_name": payload.get("last_name", ""),
-                        },
-                    }
-                )
+                if anonymous and password:
+                    auth_response = supabase.auth.sign_up(
+                        {
+                            "email": email,
+                            "password": password,
+                            "options": {
+                                "email_redirect_to": request.build_absolute_uri(
+                                    reverse("email-confirmation-page")
+                                ),
+                                "data": {
+                                    "first_name": payload.get("first_name", ""),
+                                    "last_name": payload.get("last_name", ""),
+                                },
+                            },
+                        }
+                    )
+                else:
+                    auth_response = supabase.auth.admin.create_user(
+                        {
+                            "id": record_id,
+                            "email": email,
+                            "email_confirm": True,
+                            **({"password": password} if password else {}),
+                            "user_metadata": {
+                                "first_name": payload.get("first_name", ""),
+                                "last_name": payload.get("last_name", ""),
+                            },
+                        }
+                    )
+                if not getattr(auth_response, "user", None):
+                    return Response(
+                        {"message": SIGNUP_NEUTRAL_MESSAGE},
+                        status=status.HTTP_202_ACCEPTED,
+                    )
+                identities = getattr(auth_response.user, "identities", None)
+                if anonymous and password and identities is not None and not identities:
+                    return Response(
+                        {"message": SIGNUP_NEUTRAL_MESSAGE},
+                        status=status.HTTP_202_ACCEPTED,
+                    )
                 created_user_id = str(auth_response.user.id)
-                employee = serializer.save(id=created_user_id)
+                employee = (
+                    existing_employee
+                    if existing_employee is not None
+                    else serializer.save(id=created_user_id)
+                )
                 if password:
                     django_user = User.objects.create_user(
                         username=email,
@@ -450,6 +546,7 @@ class EmployeeListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
                         password=password,
                         first_name=payload.get("first_name", ""),
                         last_name=payload.get("last_name", ""),
+                        is_active=not anonymous,
                     )
                     employee.user = django_user
                     employee.save(update_fields=["user"])
