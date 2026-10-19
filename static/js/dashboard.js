@@ -37,25 +37,24 @@ function toggleTheme() {
   try {
     localStorage.setItem('kumon_theme', next);
   } catch (e) { }
-  applyTheme(next);
+  const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (document.startViewTransition && !prefersReducedMotion) {
+    document.startViewTransition(() => applyTheme(next));
+  } else {
+    applyTheme(next);
+  }
 }
 
 function updateThemeToggleUI(theme) {
-  const moon = document.getElementById('themeIconMoon');
-  const sun = document.getElementById('themeIconSun');
   const btn = document.getElementById('themeToggleBtn');
   const label = document.getElementById('themeToggleLabel');
   if (theme === 'dark') {
-    if (moon) moon.style.display = 'none';
-    if (sun) sun.style.display = 'block';
     if (label) label.textContent = 'Light mode';
     if (btn) {
       btn.title = 'Switch to light mode';
       btn.setAttribute('aria-label', 'Switch to light mode');
     }
   } else {
-    if (moon) moon.style.display = 'block';
-    if (sun) sun.style.display = 'none';
     if (label) label.textContent = 'Dark mode';
     if (btn) {
       btn.title = 'Switch to dark mode';
