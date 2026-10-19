@@ -3,5 +3,6 @@
     "python.defaultInterpreterPath": "C:\\Users\\Lara\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe",
     "terminal.integrated.env.windows": {
         "PATH": "C:\\Users\\Lara\\AppData\\Local\\Python\\pythoncore-3.14-64;${env:PATH}"
-    }
+    },
+    "python.terminal.useEnvFile": true
 }

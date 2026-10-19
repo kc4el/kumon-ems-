@@ -3750,21 +3750,21 @@ async function loadAttendanceView() {
     const empById = Object.fromEntries(employees.map((employee) => [employee.id, employee]));
     const empCount = employees.length;
     const leavesToday = leavesAll.filter(l => l.status === 'Approved' && l.start_date <= todayLocal && l.end_date >= todayLocal);
-    
+
     const attToday = rows.filter(r => r.date === todayLocal);
     const presentToday = attToday.filter(r => r.clock_in).length;
     const scheduled = shifts.length > 0 ? shifts.length : empCount;
     const onLeaveCount = leavesToday.length;
     const exceptions = Math.max(0, scheduled - presentToday - onLeaveCount);
-    
+
     const prEl = document.getElementById('att-kpi-present');
     if (prEl) {
       prEl.textContent = String(presentToday).padStart(2, '0');
       document.getElementById('att-kpi-present-sub').textContent = `${presentToday} / ${scheduled} Scheduled Staff`;
       document.getElementById('att-kpi-scheduled').textContent = String(scheduled).padStart(2, '0');
-      document.getElementById('att-kpi-scheduled-sub').textContent = scheduled > 0 ? `${Math.round((presentToday/scheduled)*100)}% Roster Filled` : '0% Roster Filled';
+      document.getElementById('att-kpi-scheduled-sub').textContent = scheduled > 0 ? `${Math.round((presentToday / scheduled) * 100)}% Roster Filled` : '0% Roster Filled';
       document.getElementById('att-kpi-exceptions').textContent = String(exceptions).padStart(2, '0');
-      document.getElementById('att-kpi-exceptions-sub').textContent = `${exceptions} Unexcused Absence${exceptions!==1?'s':''}`;
+      document.getElementById('att-kpi-exceptions-sub').textContent = `${exceptions} Unexcused Absence${exceptions !== 1 ? 's' : ''}`;
       document.getElementById('att-kpi-onleave').textContent = String(onLeaveCount).padStart(2, '0');
       document.getElementById('att-kpi-onleave-sub').textContent = `${onLeaveCount} Staff on Leave`;
     }

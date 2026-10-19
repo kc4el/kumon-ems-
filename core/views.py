@@ -1,3 +1,4 @@
+import json
 import logging
 import uuid
 from datetime import timedelta
@@ -253,6 +254,15 @@ def hr_dashboard_view(request):
     return render(request, "core/index.html")
 
 
+def get_dm_key(email1, email2):
+    user_a = (email1 or "emp1").split("@")[0].lower()
+    user_b = (email2 or "emp2").split("@")[0].lower()
+    clean_a = "".join(c for c in user_a if c.isalnum() or c in "._-")[:35]
+    clean_b = "".join(c for c in user_b if c.isalnum() or c in "._-")[:35]
+    sorted_users = sorted([clean_a, clean_b])
+    return f"dm_{sorted_users[0]}_{sorted_users[1]}"[:95]
+
+
 @ensure_csrf_cookie
 def employee_portal_view(request):
     if not request.user.is_authenticated:
@@ -262,10 +272,43 @@ def employee_portal_view(request):
     if not is_admin_account and employee is None:
         logout(request)
         return redirect("/login/?next=/employee/")
+
+    colleagues_qs = (
+        Employee.objects.filter(is_active=True)
+        .select_related("department")
+        .order_by("first_name", "last_name")
+    )
+    my_email = employee.email if employee else request.user.email
+
+    colleagues_list = []
+    for c in colleagues_qs:
+        if employee and c.pk == employee.pk:
+            continue
+        if not employee and c.email == my_email:
+            continue
+        full_name = f"{c.first_name} {c.last_name}".strip() or c.email
+        initials = f"{c.first_name[:1] if c.first_name else 'E'}{c.last_name[:1] if c.last_name else ''}".upper()
+        colleagues_list.append({
+            "id": str(c.id),
+            "first_name": c.first_name,
+            "last_name": c.last_name,
+            "full_name": full_name,
+            "email": c.email,
+            "role": c.role or "Staff",
+            "department_name": c.department.name if c.department else "Kumon Center",
+            "initials": initials,
+            "dm_key": get_dm_key(my_email, c.email),
+        })
+
     return render(
         request,
         "core/employee_portal.html",
-        {"show_employee_request_picker": is_admin_account and employee is None},
+        {
+            "show_employee_request_picker": is_admin_account and employee is None,
+            "employee": employee,
+            "colleagues": colleagues_list,
+            "colleagues_json": json.dumps(colleagues_list),
+        },
     )
 
 
@@ -1761,9 +1804,48 @@ class MessageListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         user = self.request.user
-        name = user.get_full_name() or user.username
+        emp = Employee.objects.filter(user=user).first()
+        if emp and (emp.first_name or emp.last_name):
+            name = f"{emp.first_name} {emp.last_name}".strip()
+        else:
+            name = user.get_full_name() or user.username
         key = self.request.data.get("conversation_key") or "announcements"
         serializer.save(conversation_key=key, sender_name=name)
+
+
+class ColleagueDirectoryView(APIView):
+    """Return active colleague directory for employee direct messaging."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        curr_user = request.user
+        emp = Employee.objects.filter(user=curr_user, is_active=True).first()
+        my_email = emp.email if emp else curr_user.email
+        qs = (
+            Employee.objects.filter(is_active=True)
+            .select_related("department")
+            .order_by("first_name", "last_name")
+        )
+        data = []
+        for c in qs:
+            if emp and c.pk == emp.pk:
+                continue
+            if not emp and c.email == my_email:
+                continue
+            full_name = f"{c.first_name} {c.last_name}".strip() or c.email
+            initials = f"{c.first_name[:1] if c.first_name else 'E'}{c.last_name[:1] if c.last_name else ''}".upper()
+            data.append({
+                "id": str(c.id),
+                "first_name": c.first_name,
+                "last_name": c.last_name,
+                "full_name": full_name,
+                "email": c.email,
+                "role": c.role or "Staff",
+                "department_name": c.department.name if c.department else "Kumon Center",
+                "initials": initials,
+                "dm_key": get_dm_key(my_email, c.email),
+            })
+        return Response(data)
 
 
 class ClaimStatusListCreateView(generics.ListCreateAPIView):
