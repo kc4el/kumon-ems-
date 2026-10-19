@@ -1,0 +1,2622 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kumon EMS (Employee Management System)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="static/css/main.css?v=3.3" />
+
+</head>
+
+<body>
+  <div class="app-layout">
+
+    <!-- 220px Sky Blue Sidebar -->
+    <aside class="sidebar">
+      <div class="brand-header">
+        <div class="brand-logo-box brand-kumon-box">
+          <img src="static/images/kumon-logo.png" alt="Kumon Logo" class="brand-logo-img"
+            onerror="this.onerror=null; this.src='../../../static/images/kumon-logo.png';" />
+        </div>
+      </div>
+
+      <nav class="sidebar-navigation">
+        <a href="#" class="nav-link active" data-view="dashboard">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-link" data-view="employee-directory">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <span>Employees</span>
+        </a>
+        <a href="#" class="nav-link" data-view="attendance-daily">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>Attendance</span>
+        </a>
+        <a href="#" class="nav-link" data-view="claims">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <span>Claims</span>
+        </a>
+        <a href="#" class="nav-link" data-view="messages">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>Messages</span>
+        </a>
+        <a href="#" class="nav-link" data-view="logs">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <span>Logs</span>
+        </a>
+        <a href="#" class="nav-link" data-view="settings">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
+            </path>
+          </svg>
+          <span>Settings</span>
+        </a>
+        <a href="#" class="nav-link" data-view="profile">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="8" r="4"></circle>
+            <path d="M5 21v-2a7 7 0 0 1 14 0v2"></path>
+          </svg>
+          <span>My account</span>
+        </a>
+      </nav>
+
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content-area">
+      <!-- Top Header Bar -->
+      <header class="top-header-bar">
+        <div class="header-breadcrumbs" id="breadcrumbTrail">
+          <span class="bc-page" id="currentCrumb">Dashboard</span>
+        </div>
+
+
+        <div class="header-right-tools">
+          <span id="apiModeBadge" class="penpot-badge badge-pending" role="status" aria-live="polite"
+            title="Status of the dashboard data connection">Connecting</span>
+          <button class="header-icon-btn" title="Notifications" onclick="openNotifInbox(event)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span id="notifUnreadPill" class="unread-count-pill" style="display:none;">0</span>
+          </button>
+
+          <button type="button" class="user-avatar-circle" title="Open my account" aria-label="Open my account" onclick="switchView('profile')">
+            <span>{% if user.is_authenticated %}{% if user.first_name and user.last_name %}{{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}{% elif user.employee_profile.first_name and user.employee_profile.last_name %}{{ user.employee_profile.first_name|slice:":1"|upper }}{{ user.employee_profile.last_name|slice:":1"|upper }}{% elif user.first_name %}{{ user.first_name|slice:":2"|upper }}{% elif user.employee_profile.first_name %}{{ user.employee_profile.first_name|slice:":2"|upper }}{% else %}{{ user.username|slice:":2"|upper }}{% endif %}{% else %}GU{% endif %}</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- ======================================================================
+           VIEW 1: DASHBOARD / OVERVIEW (dashboard)
+           ====================================================================== -->
+      <section class="view-panel active" id="view-dashboard">
+        <div class="dashboard-hero-layout">
+          <div class="hero-text-side">
+            <span class="hero-date-tag" id="dashboardTodayLabel">Today</span>
+            <h1 class="hero-heading">Welcome, {% firstof user.first_name user.employee_profile.first_name user.username "there" %}</h1>
+            <p class="hero-subtext">Here’s what’s happening with your team today.</p>
+            <div class="hero-cta-buttons">
+              <button class="btn btn-blue-cta" onclick="switchView('employee-manage')">Add employee</button>
+              <button class="btn btn-light-blue-cta" onclick="switchView('attendance-leave')">Review leave</button>
+            </div>
+          </div>
+          <div class="hero-summary-cards-side">
+            <!-- D6: team activity feed (filled from /api/audit-logs/) -->
+            <aside id="activityFeed">
+              <h3>Today</h3>
+              <ul id="activityFeedList">
+                <li>Loading…</li>
+              </ul>
+            </aside>
+            <!-- June 2026 Card -->
+            <div class="summary-box dark-navy-box">
+              <span class="summary-tag" id="dashboardMonthLabel">CURRENT MONTH</span>
+              <div class="pulse-stat-row">
+                <svg class="pulse-stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>Attendance this month</span>
+                <strong id="dashboardAttendanceCount">0</strong>
+              </div>
+              <div class="pulse-stat-row">
+                <svg class="pulse-stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span>Approved leave</span>
+                <strong id="dashboardLeaveCount">0</strong>
+              </div>
+              <div class="pulse-stat-row">
+                <svg class="pulse-stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                <span>Expense claims</span>
+                <strong id="dashboardClaimsCount">0</strong>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Aesthetic 4 KPI Cards Row -->
+        <div class="kpi-cards-4grid">
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span>Total employees</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <div class="kpi-value">—</div>
+            <div class="kpi-trend">All employee records</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span>Active employees</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <line x1="20" y1="8" x2="20" y2="14"></line>
+                <line x1="23" y1="11" x2="17" y2="11"></line>
+              </svg>
+            </div>
+            <div class="kpi-value">—</div>
+            <div class="kpi-trend">Currently employed</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span>Approved leave</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+            <div class="kpi-value">—</div>
+            <div class="kpi-trend">Approved requests</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-head">
+              <span>Pending leave</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <div class="kpi-value">—</div>
+            <div class="kpi-trend">Needs review</div>
+          </div>
+        </div>
+
+        <!-- Split Content Row: Attendance Today (Left) & Priority Actions (Right) -->
+        <div class="dashboard-split-row">
+          <!-- Left: Attendance Today Table Card -->
+          <div class="white-card card-attendance">
+            <div class="card-header-simple">
+              <h2 class="card-title">Attendance Today</h2>
+              <p class="card-sub">Real-time employee arrivals and active status across departments</p>
+            </div>
+            <div class="table-wrap">
+              <table class="penpot-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Arrival time</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboardAttendanceTableBody">
+                  <tr>
+                    <td colspan="5">Loading attendance from the database...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Right: Priority Actions Card -->
+          <div class="white-card card-priority">
+            <h2 class="card-title" style="margin-bottom:16px;">Priority Actions</h2>
+            <div class="priority-actions-stack">
+              <div class="action-tile tile-yellow">
+                <div class="tile-content">
+                  <strong>Leave requests</strong>
+                  <span>Review pending time-off applications.</span>
+                </div>
+                <button class="btn btn-black-sm" onclick="switchView('attendance-leave')">Review</button>
+              </div>
+
+              <div class="action-tile tile-green">
+                <div class="tile-content">
+                  <strong>People directory</strong>
+                  <span>Find a staff record and review its details.</span>
+                </div>
+                <button class="btn btn-outline-white-sm" onclick="switchView('employee-directory')">Open</button>
+              </div>
+
+              <div class="action-tile tile-purple">
+                <div class="tile-content">
+                  <strong>Company settings</strong>
+                  <span>Manage rules and import the employee roster.</span>
+                </div>
+                <button class="btn btn-blue-sm" onclick="switchView('settings')">Manage ↗</button>
+              </div>
+
+              <div class="action-tile tile-pink">
+                <div class="tile-content">
+                  <strong>Account security</strong>
+                  <span>Review your profile, password, and two-factor sign-in.</span>
+                </div>
+                <button class="btn btn-outline-white-sm" onclick="switchView('profile')">Open</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           VIEW 2: EMPLOYEE DIRECTORY & PROFILES (employee - directory)
+           ====================================================================== -->
+      <section class="view-panel" id="view-employee-directory">
+        <div class="page-title-block">
+          <h1 class="penpot-page-heading">Employee Directory & Profiles</h1>
+          <p class="penpot-page-sub">Comprehensive corporate employee directory, organizational structure, profiles, and
+            team contact details.</p>
+        </div>
+
+        <!-- Subnav Pill Tabs -->
+        <div class="penpot-subnav-row">
+          <div class="pill-tabs-container">
+            <button class="tab-pill active" onclick="switchView('employee-directory')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              <span>Employee List</span>
+            </button>
+            <button class="tab-pill" onclick="switchView('employee-manage')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Manage Staff</span>
+            </button>
+            <button class="tab-pill" onclick="switchView('employee-grievance')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+              <span>Grievance Tracker</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Corporate Employee Roster Card -->
+        <div class="white-card card-roster">
+          <div class="roster-top-bar">
+            <h2 class="card-title">Corporate Employee Roster & Expandable Profiles</h2>
+            <div class="roster-filters">
+              <input id="empSearch" class="penpot-select" placeholder="Search name or email"
+                oninput="filterDirectory()">
+              <select class="penpot-select" id="deptFilter" onchange="filterDirectory()">
+                <option value="all">All Departments</option>
+              </select>
+              <select class="penpot-select" id="roleFilter" onchange="filterDirectory()">
+                <option value="all">All Roles</option>
+              </select>
+              <select class="penpot-select" id="statusFilter" onchange="filterDirectory()">
+                <option value="all">All Statuses</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="accordion-roster-list" id="employeeRosterList">
+            <div class="directory-empty-state">Loading employees from the database...</div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           VIEW 3: EMPLOYEE MANAGEMENT (employee - mgmt - promote & transfer)
+           ====================================================================== -->
+      <section class="view-panel" id="view-employee-manage">
+        <div class="page-title-block">
+          <h1 class="penpot-page-heading">Employee Management</h1>
+          <p class="penpot-page-sub">Onboard new hires, manage internal promotions & department transfers, and process
+            employee offboarding.</p>
+        </div>
+
+        <!-- Subnav Pill Tabs -->
+        <div class="penpot-subnav-row">
+          <div class="pill-tabs-container">
+            <button class="tab-pill" onclick="switchView('employee-directory')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              <span>Employee List</span>
+            </button>
+            <button class="tab-pill active" onclick="switchView('employee-manage')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Manage Staff</span>
+            </button>
+            <button class="tab-pill" onclick="switchView('employee-grievance')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+              <span>Grievance Tracker</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Promote / Transfer Switchable Card -->
+        <div class="white-card card-promotetransfer">
+          <div class="pt-segmented-head">
+            <div>
+              <h2 class="card-title" id="ptCardTitle">Promote Employee</h2>
+              <p class="card-sub" id="ptCardSubtitle">Record the next role and pay-grade step with a clear effective
+                date and promotion rationale.</p>
+            </div>
+            <div class="segmented-switch">
+              <button class="seg-btn active" id="btnModePromote" onclick="setPtMode('promote')">Promotion</button>
+              <button class="seg-btn" id="btnModeTransfer" onclick="setPtMode('transfer')">Transfer</button>
+              <button class="seg-btn" id="btnModeRemove" onclick="setPtMode('remove')">Remove Employee</button>
+            </div>
+          </div>
+
+          <!-- Promotion Form -->
+          <div id="promoteFormContainer">
+            <div class="inputs-3grid">
+              <div class="input-cell">
+                <label>EMPLOYEE RECORD <span class="req-star">*</span></label>
+                <select id="promoteEmployeeSelect" class="penpot-select-full">
+                  <option value="" disabled selected>-- Select Employee --</option>
+                </select>
+              </div>
+              <div class="input-cell">
+                <label>NEW ROLE <span class="req-star">*</span></label>
+                <input id="promoteRoleSelect" class="penpot-select-full" list="promoteRoleOptions" maxlength="100" placeholder="Enter or select a role" required />
+                <datalist id="promoteRoleOptions"></datalist>
+              </div>
+              <div class="input-cell">
+                <label>NEW PAY GRADE <span class="req-star">*</span></label>
+                <select id="promotePayGradeSelect" class="penpot-select-full">
+                  <option value="P1 • Junior Professional">P1 • Junior Professional</option>
+                  <option value="P2 • Associate Specialist">P2 • Associate Specialist</option>
+                  <option value="P3 • Mid-Level Specialist">P3 • Mid-Level Specialist</option>
+                  <option value="P4 • Senior Specialist / IC" selected>P4 • Senior Specialist / IC</option>
+                  <option value="P5 • Lead / Department Head">P5 • Lead / Department Head</option>
+                  <option value="P6 • Center Director">P6 • Center Director</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="inputs-split-grid">
+              <div class="input-cell cell-date">
+                <label>EFFECTIVE DATE <span class="req-star">*</span></label>
+                <select id="promoteEffectiveDateSelect" class="penpot-select-full">
+                  <option value="Immediate (Today)" selected>Immediate (Today)</option>
+                  <option value="Start of Next Week">Start of Next Week</option>
+                  <option value="Start of Next Month">Start of Next Month</option>
+                  <option value="Next Pay Cycle">Next Pay Cycle</option>
+                </select>
+              </div>
+              <div class="input-cell cell-rationale">
+                <label>PROMOTION RATIONALE <span class="req-star">*</span></label>
+                <select id="promoteRationaleSelect" class="penpot-select-full">
+                  <option value="Merit & Outstanding Cycle Performance" selected>Merit & Outstanding Cycle Performance</option>
+                  <option value="Scope Expansion & Leadership Responsibility">Scope Expansion & Leadership Responsibility</option>
+                  <option value="Annual Performance Review Progression">Annual Performance Review Progression</option>
+                  <option value="Cross-Functional Competency Advancement">Cross-Functional Competency Advancement</option>
+                  <option value="Key Talent Retention & Recognition">Key Talent Retention & Recognition</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="pt-footer-row">
+              <div class="pt-actions">
+                <button type="button" class="btn btn-outline-gray" onclick="resetPromoteForm()">Cancel</button>
+                <button type="button" id="btnRecordPromotion" class="btn btn-orange-cta" onclick="handlePromotionSubmit()">Record Promotion</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transfer Form -->
+          <div id="transferFormContainer" style="display:none;">
+            <div class="inputs-3grid">
+              <div class="input-cell">
+                <label>EMPLOYEE RECORD <span class="req-star">*</span></label>
+                <select id="transferEmployeeSelect" class="penpot-select-full">
+                  <option value="" disabled selected>-- Select Employee --</option>
+                </select>
+              </div>
+              <div class="input-cell">
+                <label>TARGET DEPARTMENT <span class="req-star">*</span></label>
+                <select id="transferDeptSelect" class="penpot-select-full">
+                  <option value="" disabled selected>-- Select Department --</option>
+                </select>
+              </div>
+              <div class="input-cell">
+                <label>TARGET LOCATION <span class="req-star">*</span></label>
+                <select id="transferLocationSelect" class="penpot-select-full">
+                  <option value="Main Center - Manila" selected>Main Center - Manila</option>
+                  <option value="North Hub - Quezon City">North Hub - Quezon City</option>
+                  <option value="South Campus - Alabang">South Campus - Alabang</option>
+                  <option value="West Branch - Cebu">West Branch - Cebu</option>
+                  <option value="East Branch - Pasig">East Branch - Pasig</option>
+                  <option value="Regional Remote Hub">Regional Remote Hub</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="inputs-split-3grid">
+              <div class="input-cell cell-workmode">
+                <label>WORK MODE <span class="req-star">*</span></label>
+                <select id="transferWorkModeSelect" class="penpot-select-full">
+                  <option value="On-site" selected>On-site</option>
+                  <option value="Hybrid (3 Days On-site)">Hybrid (3 Days On-site)</option>
+                  <option value="Hybrid (2 Days On-site)">Hybrid (2 Days On-site)</option>
+                  <option value="Full Remote">Full Remote</option>
+                </select>
+              </div>
+              <div class="input-cell cell-date">
+                <label>EFFECTIVE DATE <span class="req-star">*</span></label>
+                <select id="transferEffectiveDateSelect" class="penpot-select-full">
+                  <option value="Immediate (Today)" selected>Immediate (Today)</option>
+                  <option value="Start of Next Week">Start of Next Week</option>
+                  <option value="Start of Next Month">Start of Next Month</option>
+                  <option value="Next Pay Cycle">Next Pay Cycle</option>
+                </select>
+              </div>
+              <div class="input-cell cell-rationale">
+                <label>TRANSFER REASON <span class="req-star">*</span></label>
+                <select id="transferReasonSelect" class="penpot-select-full">
+                  <option value="Branch Coverage & Staffing Balance" selected>Branch Coverage & Staffing Balance</option>
+                  <option value="Inter-Department Skill Alignment">Inter-Department Skill Alignment</option>
+                  <option value="Employee Relocation Request">Employee Relocation Request</option>
+                  <option value="New Center Opening Support">New Center Opening Support</option>
+                  <option value="Project Operational Rotation">Project Operational Rotation</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="pt-footer-row">
+              <div class="pt-actions">
+                <button type="button" class="btn btn-outline-gray" onclick="resetTransferForm()">Cancel</button>
+                <button type="button" id="btnRecordTransfer" class="btn btn-orange-cta" onclick="handleTransferSubmit()">Record Transfer</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Remove Employee / Offboarding Container -->
+          <div id="removeFormContainer" style="display:none;">
+            <form onsubmit="handleOffboardingSubmit(event)" class="offboard-wizard-container">
+              <!-- STEP 1: EMPLOYEE EXIT INFORMATION -->
+              <div>
+                <h3 class="wizard-section-head">STEP 1: EMPLOYEE EXIT INFORMATION</h3>
+                <div class="inputs-3grid">
+                  <div class="input-cell">
+                    <label>Full Legal Name <span class="req-star">*</span></label>
+                    <select id="offboardEmployeeSelect" class="penpot-select-full" required onchange="onOffboardEmployeeSelect(this)">
+                      <option value="" selected disabled>-- Select Employee --</option>
+                    </select>
+                  </div>
+                  <div class="input-cell">
+                    <label>Corporate Email Address <span class="req-star">*</span></label>
+                    <input id="offboardEmail" type="email" readonly required />
+                  </div>
+                  <div class="input-cell">
+                    <label>Department & Role <span class="req-star">*</span></label>
+                    <input id="offboardDeptRole" type="text" readonly />
+                  </div>
+                </div>
+
+                <div class="inputs-3grid">
+                  <div class="input-cell">
+                    <label>Last Working Day <span class="req-star">*</span></label>
+                    <input type="date" value="2026-10-31" required />
+                  </div>
+                  <div class="input-cell">
+                    <label>Reason for Leaving <span class="req-star">*</span></label>
+                    <select class="penpot-select-full">
+                      <option selected>Voluntary Resignation - Better Career</option>
+                      <option>Voluntary Resignation - Relocation</option>
+                      <option>Career Transition</option>
+                      <option>End of Contract</option>
+                      <option>Retirement</option>
+                    </select>
+                  </div>
+                  <div class="input-cell">
+                    <label>Notice Period Met? <span class="req-star">*</span></label>
+                    <div class="radio-inline-group">
+                      <label class="radio-inline-label">
+                        <input type="radio" name="noticePeriodMet" value="yes" checked />
+                        <span>Yes</span>
+                      </label>
+                      <label class="radio-inline-label">
+                        <input type="radio" name="noticePeriodMet" value="no" />
+                        <span>No</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- STEP 2: ASSET RECOVERY & ACCESS REVOCATION -->
+              <div>
+                <h3 class="wizard-section-head">STEP 2: ASSET RECOVERY & ACCESS REVOCATION</h3>
+                <div class="asset-recovery-3grid">
+                  <label class="asset-check-item">
+                    <input type="checkbox" checked />
+                    <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                      <line x1="2" y1="20" x2="22" y2="20"></line>
+                    </svg>
+                    <span>Laptop (16" MacBook Pro) and Power Adapter</span>
+                  </label>
+                  <label class="asset-check-item">
+                    <input type="checkbox" />
+                    <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                      <line x1="8" y1="21" x2="16" y2="21"></line>
+                      <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                    <span>External Monitor (27" 4K)</span>
+                  </label>
+                  <label class="asset-check-item">
+                    <input type="checkbox" />
+                    <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path
+                        d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83">
+                      </path>
+                    </svg>
+                    <span>Company-Issued Accessories</span>
+                  </label>
+
+                  <label class="asset-check-item">
+                    <input type="checkbox" />
+                    <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path
+                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                      </path>
+                    </svg>
+                    <span>Desk Phone/Desk Accessories</span>
+                  </label>
+                  <label class="asset-check-item">
+                    <input type="checkbox" checked />
+                    <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+                      <circle cx="9" cy="10" r="2"></circle>
+                      <line x1="15" y1="8" x2="17" y2="8"></line>
+                      <line x1="15" y1="12" x2="17" y2="12"></line>
+                    </svg>
+                    <span>Company-Issued Keycard</span>
+                  </label>
+                  <label class="asset-check-item">
+                    <input type="checkbox" checked />
+                    <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                      <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                    </svg>
+                    <span>Figma Phone License (Revoked)</span>
+                  </label>
+
+                  <label class="asset-check-item">
+                    <input type="checkbox" checked />
+                    <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span>Slack & Google Workspace Access Revoked</span>
+                  </label>
+                  <label class="asset-check-item">
+                    <input type="checkbox" checked />
+                    <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polygon
+                        points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                      </polygon>
+                    </svg>
+                    <span>Figma Enterprise License</span>
+                  </label>
+                  <div class="it-clearance-status-badge">
+                    <span>Status: IT Clearance Confirmed</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                      stroke-linecap="round" stroke-linejoin="round" style="color: #16a34a;">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- STEP 3: EXIT DOCUMENTS & COMPLIANCE -->
+              <div>
+                <h3 class="wizard-section-head">STEP 3: EXIT DOCUMENTS & COMPLIANCE</h3>
+                <p class="card-sub">Optional attachments, stored as onboarding documents for the employee.</p>
+                <div class="docs-compliance-grid">
+                  <div class="doc-upload-cell">
+                    <span class="doc-upload-title">Resignation Letter</span>
+                    <label class="btn-upload-file" data-offboard-doc="Resignation Letter">
+                      <input type="file" hidden data-offboard-file accept=".pdf,.jpg,.jpeg,.png" />
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                      <span data-offboard-label>Upload File</span>
+                    </label>
+                  </div>
+                  <div class="doc-upload-cell">
+                    <span class="doc-upload-title">Exit Interview Form</span>
+                    <label class="btn-upload-file" data-offboard-doc="Exit Interview Form">
+                      <input type="file" hidden data-offboard-file accept=".pdf,.jpg,.jpeg,.png" />
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                      <span data-offboard-label>Upload File</span>
+                    </label>
+                  </div>
+                  <div class="doc-upload-cell">
+                    <span class="doc-upload-title">Confidentiality Agreement Renewal</span>
+                    <label class="btn-upload-file" data-offboard-doc="Confidentiality Agreement Renewal">
+                      <input type="file" hidden data-offboard-file accept=".pdf,.jpg,.jpeg,.png" />
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                      <span data-offboard-label>Upload File</span>
+                    </label>
+                  </div>
+                  <div class="doc-upload-cell">
+                    <span class="doc-upload-title">Final Pay Calculation</span>
+                    <label class="btn-upload-file" data-offboard-doc="Final Pay Calculation">
+                      <input type="file" hidden data-offboard-file accept=".pdf,.jpg,.jpeg,.png" />
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                      <span data-offboard-label>Upload File</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- FOOTER ACTIONS -->
+              <div class="wizard-footer-actions">
+                <button type="button" class="btn btn-outline-gray" onclick="setPtMode('promote')">Cancel</button>
+                <button type="button" class="btn btn-outline-gray" onclick="previewPurge(event)">Preview Purge
+                  (30d)</button>
+                <button type="submit" class="btn-finalize-offboard">Finalize Offboarding & Issue Clearance</button>
+              </div>
+              <div id="purgePreviewBox" class="card-sub" style="display:none; margin-top:8px;"></div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Dedicated Onboard Action Row below the white box -->
+        <div class="onboard-bottom-row">
+          <button type="button" class="btn-onboard-dedicated" onclick="openOnboardingModal()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Onboard New Employee</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           VIEW 4: GRIEVANCE TRACKER (employee - grievance)
+           ====================================================================== -->
+      <section class="view-panel" id="view-employee-grievance">
+        <div class="page-title-block">
+          <h1 class="penpot-page-heading">Employee Grievance & Case Tracker</h1>
+          <p class="penpot-page-sub">Review, investigate, and resolve workplace grievances, mediation requests, and
+            conduct logs.</p>
+        </div>
+
+        <!-- Subnav Pill Tabs -->
+        <div class="penpot-subnav-row">
+          <div class="pill-tabs-container">
+            <button class="tab-pill" onclick="switchView('employee-directory')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              <span>Employee List</span>
+            </button>
+            <button class="tab-pill" onclick="switchView('employee-manage')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Manage Staff</span>
+            </button>
+            <button class="tab-pill active" onclick="switchView('employee-grievance')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+              <span>Grievance Tracker</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 KPI Cards -->
+        <div class="kpi-cards-4grid">
+          <div class="kpi-card">
+            <div class="kpi-head"><span>OPEN CASES</span></div>
+            <div class="kpi-value" id="grievanceOpenCount">00</div>
+            <div class="kpi-trend">Action Required</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>IN MEDIATION</span></div>
+            <div class="kpi-value" id="grievanceMediationCount">00</div>
+            <div class="kpi-trend">HR Session Active</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>RESOLVED THIS Q3</span></div>
+            <div class="kpi-value" id="grievanceResolvedCount">00</div>
+            <div class="kpi-trend">↗ 94% Rate</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>AVG RESOLUTION TIME</span></div>
+            <div class="kpi-value">3.2 Days</div>
+            <div class="kpi-trend">Target: &lt; 5 Days</div>
+          </div>
+        </div>
+
+        <!-- Split View: Active Cases (Left) & Confidential Grievance Form (Right) -->
+        <div class="grievance-split-grid">
+          <!-- Left Column: Active Cases -->
+          <div class="white-card grievance-cases-card">
+            <h2 class="card-title" style="margin-bottom:16px;">Active & Recent Workplace Grievance Cases</h2>
+
+            <div class="grievance-case-list" id="grievanceCaseList">
+              <p class="card-sub">Loading confidential cases…</p>
+            </div>
+          </div>
+
+          <!-- Right Column: File Confidential Grievance Record -->
+          <div class="white-card grievance-file-card">
+            <h2 class="card-title">File Confidential Grievance Record</h2>
+            <p class="card-sub" style="margin-bottom:16px;">Log a formal internal complaint or mediation request for HR
+              review</p>
+
+            <form onsubmit="handleGrievanceSubmit(event)">
+              <div class="input-cell" style="margin-bottom:12px;">
+                <label for="grievComplainant">COMPLAINANT EMPLOYEE</label>
+                <select class="penpot-select-full" id="grievComplainant" required>
+                  <option value="">Select employee...</option>
+                </select>
+              </div>
+
+              <div class="input-cell" style="margin-bottom:12px;">
+                <label>GRIEVANCE CATEGORY</label>
+                <select class="penpot-select-full" id="grievCategory" required>
+                  <option value="general">General concern</option>
+                  <option value="workplace">Workplace conduct</option>
+                  <option value="payroll">Payroll issue</option>
+                  <option value="harassment">Harassment</option>
+                </select>
+              </div>
+
+              <div class="input-cell" style="margin-bottom:12px;">
+                <label>CASE TITLE / SUMMARY</label>
+                <input type="text" id="grievTitle" placeholder="e.g. Schedule Overlap & Roster Dispute" required />
+              </div>
+
+              <div class="input-cell" style="margin-bottom:16px;">
+                <label>DESCRIPTION / EVIDENCE NOTES</label>
+                <textarea rows="4" id="grievDetails"
+                  placeholder="Detail the situation, involved parties, dates, and requested resolution..."
+                  required></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-navy-full">Submit Confidential Grievance</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           VIEW 6: DAILY ATTENDANCE & TIME LOG (attendance - daily log)
+           ====================================================================== -->
+      <section class="view-panel" id="view-attendance-daily">
+        <div class="page-title-block">
+          <h1 class="penpot-page-heading">Daily Attendance & Time Log</h1>
+          <p class="penpot-page-sub">Comprehensive daily employee check-ins, time stamps, shift statuses, and real-time
+            attendance register.</p>
+        </div>
+
+        <!-- Subnav Tabs -->
+        <div class="penpot-subnav-row">
+          <div class="pill-tabs-container">
+            <button class="tab-pill active" onclick="switchView('attendance-daily')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              <span>Daily Log</span>
+            </button>
+            <button class="tab-pill" onclick="switchView('attendance-shift')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Shift Management</span>
+            </button>
+            <button class="tab-pill" onclick="switchView('attendance-leave')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+              <span>Leave Management</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 KPI Cards -->
+        <div class="kpi-cards-4grid">
+          <div class="kpi-card">
+            <div class="kpi-head"><span>PRESENT TODAY</span></div>
+            <div class="kpi-value" id="att-kpi-present">0</div>
+            <div class="kpi-subtext" id="att-kpi-present-sub">0 / 0 Scheduled Staff</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>SCHEDULED</span></div>
+            <div class="kpi-value" id="att-kpi-scheduled">0</div>
+            <div class="kpi-subtext" id="att-kpi-scheduled-sub">0% Roster Filled</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>EXCEPTIONS</span></div>
+            <div class="kpi-value" id="att-kpi-exceptions">0</div>
+            <div class="kpi-subtext" id="att-kpi-exceptions-sub">0 Unexcused Absence</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>ON LEAVE</span></div>
+            <div class="kpi-value" id="att-kpi-onleave">0</div>
+            <div class="kpi-subtext" id="att-kpi-onleave-sub">0 Annual Paid Leave</div>
+          </div>
+        </div>
+
+        <!-- Split Card: Mini Calendar (Left) & Register (Right) -->
+        <div class="white-card daily-log-container">
+          <div class="daily-log-header">
+            <div>
+              <h2 class="card-title">Daily Attendance & Time Register</h2>
+              <p class="card-sub" id="attendanceDateLabel">Today • Status: Logged & Verified</p>
+            </div>
+            <div class="hero-cta-buttons">
+              <button type="button" id="portalClockInButton" class="btn btn-navy-cta"
+                onclick="submitSelfAttendance('clock_in')">Clock in</button>
+              <button type="button" id="portalClockOutButton" class="btn btn-outline-gray"
+                onclick="submitSelfAttendance('clock_out')">Clock out</button>
+              <button type="button" class="btn btn-outline-gray" onclick="exportAttendanceRegister()">Export
+                Register</button>
+            </div>
+          </div>
+
+          <div class="daily-log-split">
+            <!-- Left: Calendar Navigator -->
+            <div class="cal-nav-panel">
+              <span class="cal-title-tag">CALENDAR NAVIGATOR</span>
+              <div class="cal-month-nav">
+                <button type="button" class="cal-nav-arr" id="attendancePrevMonth"
+                  aria-label="Previous month">◀</button>
+                <strong class="cal-month-txt" id="attendanceMonthLabel">Current Month</strong>
+                <button type="button" class="cal-nav-arr" id="attendanceNextMonth" aria-label="Next month">▶</button>
+              </div>
+
+              <div class="cal-days-table" id="attendanceCalendarGrid">
+                <span class="cal-h">SU</span><span class="cal-h">MO</span><span class="cal-h">TU</span><span
+                  class="cal-h">WE</span><span class="cal-h">TH</span><span class="cal-h">FR</span><span
+                  class="cal-h">SA</span>
+              </div>
+
+              <div class="cal-legend-tags">
+                <span class="leg-green">● DAILY LOGGED</span>
+                <span class="leg-orange">● UNEXCUSED GAP</span>
+              </div>
+            </div>
+
+            <!-- Right: Punch Table -->
+            <div class="table-wrap flex-fill">
+              <table class="penpot-table">
+                <thead>
+                  <tr>
+                    <th>EMPLOYEE</th>
+                    <th>ASSIGNED SHIFT</th>
+                    <th>CHECK IN</th>
+                    <th>CHECK OUT</th>
+                    <th>STATUS</th>
+                  </tr>
+                </thead>
+                <tbody id="attendanceTableBody">
+                  <tr>
+                    <td colspan="5">Loading attendance from the database...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           VIEW 6: SHIFT SCHEDULING & ROSTER (attendance - shift mgmt)
+           ====================================================================== -->
+      <section class="view-panel" id="view-attendance-shift">
+        <div class="page-title-block">
+          <h1 class="penpot-page-heading">Shift Scheduling & Roster Management</h1>
+          <p class="penpot-page-sub">Comprehensive monthly shift coverage, employee roster assignments, and coverage gap
+            tracking.</p>
+        </div>
+
+        <!-- Subnav Tabs -->
+        <div class="penpot-subnav-row">
+          <div class="pill-tabs-container">
+            <button class="tab-pill" onclick="switchView('attendance-daily')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              <span>Daily Log</span>
+            </button>
+            <button class="tab-pill active" onclick="switchView('attendance-shift')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Shift Management</span>
+            </button>
+            <button class="tab-pill" onclick="switchView('attendance-leave')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+              <span>Leave Management</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 KPI Cards -->
+        <div class="kpi-cards-4grid">
+          <div class="kpi-card">
+            <div class="kpi-head"><span>ACTIVE SHIFTS TODAY</span></div>
+            <div class="kpi-value">04</div>
+            <div class="kpi-subtext">↗ 4 Shifts Active</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>ROSTER COVERAGE</span></div>
+            <div class="kpi-value">96.8%</div>
+            <div class="kpi-subtext">↗ 124 Staff</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>OPEN SHIFT SLOTS</span></div>
+            <div class="kpi-value">04</div>
+            <div class="kpi-subtext">↗ Needs Roster</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>OVERTIME LOGGED</span></div>
+            <div class="kpi-value">67.67%</div>
+            <div class="kpi-subtext">↗ Annual Score</div>
+          </div>
+        </div>
+
+        <!-- Master Shift Roster Calendar Card -->
+        <div class="shift-master-card">
+          <div class="shift-header-toolbar">
+            <div>
+              <h2 class="card-title">Shift Roster Master Calendar</h2>
+              <p class="card-sub">Weekly shift coverage roster and employee schedule matrix</p>
+            </div>
+            <div class="shift-header-actions">
+              <div class="shift-week-nav">
+                <span id="shiftWeekLabel">Current week</span>
+              </div>
+              <button class="btn btn-outline-gray" id="btnToggleShiftCal" onclick="toggleShiftCalendar()">
+                <span id="shiftCalToggleText">Collapse Calendar</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="shift-calendar-container" id="shiftCalendarContainer">
+            <table class="shift-matrix-table">
+              <thead id="shiftMatrixHead">
+                <tr>
+                  <th class="col-staff">EMPLOYEE</th>
+                  <th>MON<br><strong style="color:#0f172a;">15 Jun</strong></th>
+                  <th>TUE<br><strong style="color:#0f172a;">16 Jun</strong></th>
+                  <th>WED<br><strong style="color:#0f172a;">17 Jun</strong></th>
+                  <th class="col-today">THU<br><strong style="color:#0284c7;">18 Jun • Today</strong></th>
+                  <th>FRI<br><strong style="color:#0f172a;">19 Jun</strong></th>
+                  <th>SAT<br><strong style="color:#64748b;">20 Jun</strong></th>
+                  <th>SUN<br><strong style="color:#64748b;">21 Jun</strong></th>
+                </tr>
+              </thead>
+              <tbody id="shiftMatrixBody">
+                <tr><td colspan="8">Loading roster from the database...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Shift Assignment & Roster Editor Card -->
+        <!-- Shift Assignment & Roster Editor Card -->
+        <div class="white-card" style="padding:24px; margin-bottom:24px;">
+          <div class="shift-editor-head">
+            <div class="shift-editor-title-group">
+              <h2 class="card-title">Shift Assignment & Roster Editor</h2>
+              <p class="card-sub" id="shiftDateDisplay">Live allocation for today</p>
+            </div>
+            <div class="shift-editor-controls">
+              <div class="shift-date-selector-group">
+                <button type="button" class="btn-date-nav" onclick="stepShiftDate(-1)" title="Previous Day"
+                  aria-label="Previous Day">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <div class="shift-date-input-wrap">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  <input type="date" id="shiftDatePicker" class="shift-date-input"
+                    onchange="handleShiftDateChange(this.value)" aria-label="Select Shift Date">
+                </div>
+                <button type="button" class="btn-date-nav" onclick="stepShiftDate(1)" title="Next Day"
+                  aria-label="Next Day">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+                <button type="button" class="btn-date-today" onclick="setShiftDateToday()">Today</button>
+              </div>
+              <span class="penpot-badge badge-present" id="shiftOverallCoverage"
+                style="font-size:12px; padding:6px 14px;">● 100% Covered</span>
+            </div>
+          </div>
+
+          <div class="shift-slots-3grid" id="shiftSlotsContainer">
+            <!-- Morning Slot -->
+            <div class="shift-slot-card">
+              <div>
+                <div class="shift-slot-card-head">
+                  <div>
+                    <span class="shift-slot-name">Morning Shift</span>
+                    <span class="shift-slot-time"> • 08:00 - 16:00</span>
+                  </div>
+                  <span class="penpot-badge badge-pending" id="shiftBadge-morning"
+                    style="font-size:11px;">Loading</span>
+                </div>
+                <div class="shift-slot-users-list" id="shiftUsers-morning">
+                  <div class="shift-empty-placeholder">Loading assignments...</div>
+                </div>
+              </div>
+
+              <div>
+                <button class="btn btn-outline-gray" id="btnAddStaff-morning"
+                  style="width:100%; font-size:12px; padding:7px;" onclick="toggleAddStaffForm('morning', true)">+ Add
+                  Staff</button>
+
+                <div class="shift-inline-assign-form" id="addStaffForm-morning" style="display:none;">
+                  <div class="shift-inline-fields">
+                    <select class="shift-inline-select" id="staffSelect-morning" aria-label="Select Employee">
+                      <option value="">Loading employees...</option>
+                    </select>
+                    <select class="shift-inline-select" id="roleSelect-morning" aria-label="Select Shift Role">
+                      <option value="Primary Lead">Primary Lead</option>
+                      <option value="Duty Staff">Duty Staff</option>
+                      <option value="Standby Relief">Standby Relief</option>
+                    </select>
+                  </div>
+                  <div class="shift-inline-actions">
+                    <button type="button" class="btn btn-outline-gray btn-sm"
+                      style="font-size:11.5px; padding:4px 10px;"
+                      onclick="toggleAddStaffForm('morning', false)">Cancel</button>
+                    <button type="button" class="btn btn-navy-cta btn-sm" style="font-size:11.5px; padding:4px 12px;"
+                      onclick="confirmAddStaff('morning')">Assign</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Evening Slot -->
+            <div class="shift-slot-card">
+              <div>
+                <div class="shift-slot-card-head">
+                  <div>
+                    <span class="shift-slot-name">Evening Shift</span>
+                    <span class="shift-slot-time"> • 16:00 - 00:00</span>
+                  </div>
+                  <span class="penpot-badge badge-pending" id="shiftBadge-evening"
+                    style="font-size:11px;">Loading</span>
+                </div>
+                <div class="shift-slot-users-list" id="shiftUsers-evening">
+                  <div class="shift-empty-placeholder">Loading assignments...</div>
+                </div>
+              </div>
+
+              <div>
+                <button class="btn btn-outline-gray" id="btnAddStaff-evening"
+                  style="width:100%; font-size:12px; padding:7px;" onclick="toggleAddStaffForm('evening', true)">+ Add
+                  Staff</button>
+
+                <div class="shift-inline-assign-form" id="addStaffForm-evening" style="display:none;">
+                  <div class="shift-inline-fields">
+                    <select class="shift-inline-select" id="staffSelect-evening" aria-label="Select Employee">
+                      <option value="">Loading employees...</option>
+                    </select>
+                    <select class="shift-inline-select" id="roleSelect-evening" aria-label="Select Shift Role">
+                      <option value="Primary Lead">Primary Lead</option>
+                      <option value="Duty Staff" selected>Duty Staff</option>
+                      <option value="Standby Relief">Standby Relief</option>
+                    </select>
+                  </div>
+                  <div class="shift-inline-actions">
+                    <button type="button" class="btn btn-outline-gray btn-sm"
+                      style="font-size:11.5px; padding:4px 10px;"
+                      onclick="toggleAddStaffForm('evening', false)">Cancel</button>
+                    <button type="button" class="btn btn-navy-cta btn-sm" style="font-size:11.5px; padding:4px 12px;"
+                      onclick="confirmAddStaff('evening')">Assign</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Night Slot -->
+            <div class="shift-slot-card">
+              <div>
+                <div class="shift-slot-card-head">
+                  <div>
+                    <span class="shift-slot-name">Night Shift</span>
+                    <span class="shift-slot-time"> • 00:00 - 08:00</span>
+                  </div>
+                  <span class="penpot-badge badge-pending" id="shiftBadge-night"
+                    style="font-size:11px;">Loading</span>
+                </div>
+                <div class="shift-slot-users-list" id="shiftUsers-night">
+                  <div class="shift-empty-placeholder">Loading assignments...</div>
+                </div>
+              </div>
+
+              <div>
+                <button class="btn btn-outline-gray" id="btnAddStaff-night"
+                  style="width:100%; font-size:12px; padding:7px;" onclick="toggleAddStaffForm('night', true)">+ Add
+                  Staff</button>
+
+                <div class="shift-inline-assign-form" id="addStaffForm-night" style="display:none;">
+                  <div class="shift-inline-fields">
+                    <select class="shift-inline-select" id="staffSelect-night" aria-label="Select Employee">
+                      <option value="">Loading employees...</option>
+                    </select>
+                    <select class="shift-inline-select" id="roleSelect-night" aria-label="Select Shift Role">
+                      <option value="Primary Lead">Primary Lead</option>
+                      <option value="Duty Staff">Duty Staff</option>
+                      <option value="Standby Relief" selected>Standby Relief</option>
+                    </select>
+                  </div>
+                  <div class="shift-inline-actions">
+                    <button type="button" class="btn btn-outline-gray btn-sm"
+                      style="font-size:11.5px; padding:4px 10px;"
+                      onclick="toggleAddStaffForm('night', false)">Cancel</button>
+                    <button type="button" class="btn btn-navy-cta btn-sm" style="font-size:11.5px; padding:4px 12px;"
+                      onclick="confirmAddStaff('night')">Assign</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Live roster assignments (H7b: live API rows; demo calendar above stays as fallback) -->
+        <div class="white-card" id="shiftLiveWrap">
+          <h2 class="card-title">Live Roster Assignments</h2>
+          <p class="card-sub">Current shift assignments from the API</p>
+          <div class="table-wrap">
+            <table class="penpot-table">
+              <thead>
+                <tr>
+                  <th>EMPLOYEE</th>
+                  <th>WORK DATE</th>
+                  <th>SHIFT</th>
+                  <th>TIME</th>
+                  <th>CONFLICT</th>
+                </tr>
+              </thead>
+              <tbody id="shiftRosterTableBody">
+                <tr>
+                  <td colspan="5">Loading…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           VIEW 7: LEAVE & ABSENCE MANAGEMENT (attendance - leave mgmt)
+           ====================================================================== -->
+      <section class="view-panel" id="view-attendance-leave">
+        <div class="page-title-block">
+          <h1 class="penpot-page-heading">Leave & Absence Management</h1>
+          <p class="penpot-page-sub">Review employee leave balances, process pending vacation and sick leave requests,
+            and manage leave policies.</p>
+        </div>
+
+        <!-- Subnav Tabs -->
+        <div class="penpot-subnav-row">
+          <div class="pill-tabs-container">
+            <button class="tab-pill" onclick="switchView('attendance-daily')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              <span>Daily Log</span>
+            </button>
+            <button class="tab-pill" onclick="switchView('attendance-shift')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Shift Management</span>
+            </button>
+            <button class="tab-pill active" onclick="switchView('attendance-leave')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+              <span>Leave Management</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 KPI Cards -->
+        <div class="kpi-cards-4grid">
+          <div class="kpi-card">
+            <div class="kpi-head"><span>PENDING REQUESTS</span></div>
+            <div class="kpi-value">05</div>
+            <div class="kpi-subtext">Requires HR Action</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>APPROVED THIS MONTH</span></div>
+            <div class="kpi-value" id="leaveApprovedCount">0</div>
+            <div class="kpi-subtext">22.5 Days Total</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>ON LEAVE TODAY</span></div>
+            <div class="kpi-value" id="leaveTodayCount">0</div>
+            <div class="kpi-subtext">03 Annual • 01 Sick</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-head"><span>AVG LEAVE UTILIZATION</span></div>
+            <div class="kpi-value">Live</div>
+            <div class="kpi-subtext">Annual Score</div>
+          </div>
+        </div>
+
+        <!-- Leave Applications Register Card -->
+        <div class="white-card leave-master-card">
+          <div class="leave-master-head">
+            <div>
+              <h2 class="card-title">Employee Leave Applications Register</h2>
+              <p class="card-sub">Showing active employee leave requests, department allocations, duration periods, and
+                approval status.</p>
+            </div>
+            <button class="btn btn-navy-cta" onclick="openLeaveModal()">+ Apply for Leave</button>
+          </div>
+
+          <div class="table-wrap">
+            <table class="penpot-table">
+              <thead>
+                <tr>
+                  <th>APPLICANT & DEPARTMENT</th>
+                  <th>LEAVE TYPE</th>
+                  <th>REQUESTED DURATION</th>
+                  <th>DATE FILED</th>
+                  <th>APPROVAL STATUS</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="leaveRegisterTableBody">
+                <tr><td colspan="6">Loading leave requests from the database...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           VIEW 8: CLAIMS & REIMBURSEMENT MANAGEMENT (claims - pending, history, advance)
+           ====================================================================== -->
+      <section class="view-panel" id="view-claims">
+        <div class="page-title-block">
+          <h1 class="penpot-page-heading">Claims & Reimbursement Management</h1>
+          <p class="penpot-page-sub">Review employee expense claims, reimbursement audit history, and advance salary
+            requests.</p>
+        </div>
+
+        <!-- Subnav Tabs -->
+        <div class="penpot-subnav-row">
+          <div class="pill-tabs-container">
+            <button class="tab-pill active" id="claimsTabBtnPending" onclick="switchClaimsTab('pending')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span>Pending Claims</span>
+            </button>
+            <button class="tab-pill" id="claimsTabBtnHistory" onclick="switchClaimsTab('history')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              <span>Claims History</span>
+            </button>
+            <button class="tab-pill" id="claimsTabBtnAdvance" onclick="switchClaimsTab('advance')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
+                <path d="M12 6v12"></path>
+              </svg>
+              <span>Advance Pay Requests</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ================= SUB-PANEL 1: PENDING CLAIMS ================= -->
+        <div class="claims-subpanel active" id="claimsSubpanelPending">
+          <!-- 4 KPI Cards -->
+          <div class="kpi-cards-4grid">
+            <div class="kpi-card">
+              <div class="kpi-head"><span>PENDING CLAIMS</span></div>
+              <div class="kpi-value" id="claimsPendingCount">0</div>
+              <div class="kpi-subtext">↗ $4,820.50 Total</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>APPROVED THIS MONTH</span></div>
+              <div class="kpi-value" id="claimsApprovedCount">0</div>
+              <div class="kpi-subtext">↗ $18,450 Settled</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>REJECTED / FLAGGED</span></div>
+              <div class="kpi-value" id="claimsRejectedCount">0</div>
+              <div class="kpi-subtext">↗ Policy Mismatch</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>AVG PROCESSING TIME</span></div>
+              <div class="kpi-value">1.8d</div>
+              <div class="kpi-subtext">↗ Faster by 0.6d</div>
+            </div>
+          </div>
+
+          <!-- Pending Claims Table Card -->
+          <div class="white-card" style="padding:0; overflow:hidden; margin-bottom:24px;">
+            <div
+              style="padding:22px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+              <div>
+                <h2 class="card-title">Active Pending Claims Register</h2>
+                <p class="card-sub">Showing 6 submitted expense claims requiring managerial review and settlement
+                  approval.</p>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <input type="text" placeholder="Search claim ID, applicant, or category..." class="penpot-select-full"
+                  style="width:280px; padding:8px 14px; font-size:13px;"
+                  onkeyup="filterClaimsTable(this, 'pendingClaimsTableBody')" />
+                <button class="btn btn-navy-cta" id="batchApproveBtn" data-batch-approve-count
+                  onclick="batchApproveClaims()">+ Batch Approve (0)</button>
+              </div>
+            </div>
+
+            <div class="claims-table-wrapper">
+              <table class="claims-table">
+                <thead>
+                  <tr>
+                    <th>CLAIM ID & APPLICANT</th>
+                    <th>CATEGORY</th>
+                    <th>DATE FILED</th>
+                    <th>EXPENSE DETAILS & RECEIPT</th>
+                    <th>AMOUNT</th>
+                    <th>STATUS</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="pendingClaimsTableBody">
+                <tr><td colspan="7">Loading pending claims from the database...</td></tr>
+              </tbody>
+              </table>
+            </div>
+
+            <div class="claims-pagination-bar" data-pager="claims-pending" data-page="1">
+              <span id="pendingPagerInfo">Loading claims…</span>
+              <div class="claims-page-buttons">
+                <button class="btn-page-arr" data-page-prev onclick="claimsPagerStep('pending', -1)">‹ Prev</button>
+                <button class="btn-page-num active" data-pagenum="1" onclick="claimsPagerGoto('pending', 1)">1</button>
+                <button class="btn-page-num" data-pagenum="2" onclick="claimsPagerGoto('pending', 2)">2</button>
+                <button class="btn-page-num" data-pagenum="3" onclick="claimsPagerGoto('pending', 3)">3</button>
+                <button class="btn-page-arr" data-page-next onclick="claimsPagerStep('pending', 1)">Next ›</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= SUB-PANEL 2: CLAIMS HISTORY ================= -->
+        <div class="claims-subpanel" id="claimsSubpanelHistory" style="display:none;">
+          <!-- 4 KPI Cards -->
+          <div class="kpi-cards-4grid">
+            <div class="kpi-card">
+              <div class="kpi-head"><span>TOTAL SETTLED (YTD)</span></div>
+              <div class="kpi-value" id="claimsHistorySettledCount">0</div>
+              <div class="kpi-subtext" id="claimsHistorySettledAmount">$0.00 total</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>TOTAL APPROVED</span></div>
+              <div class="kpi-value" id="claimsHistoryApprovedCount">0</div>
+              <div class="kpi-subtext" id="claimsHistoryApprovedRate">0% of settled</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>TOTAL REJECTED</span></div>
+              <div class="kpi-value" id="claimsHistoryRejectedCount">0</div>
+              <div class="kpi-subtext" id="claimsHistoryRejectedRate">0% of settled</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>REIMBURSEMENT SPEED</span></div>
+              <div class="kpi-value" id="claimsHistorySpeed">—</div>
+              <div class="kpi-subtext" id="claimsHistorySpeedSubtext">Awaiting processed claims</div>
+            </div>
+          </div>
+
+          <!-- Claims History Table Card -->
+          <div class="white-card" style="padding:0; overflow:hidden; margin-bottom:24px;">
+            <div
+              style="padding:22px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+              <div>
+                <h2 class="card-title">Claims Settlement & Audit History</h2>
+                <p class="card-sub">Showing 6 recently processed expense claims with manager approval audit records.</p>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <input type="text" placeholder="Search past claim ID, employee, or approver..."
+                  class="penpot-select-full" style="width:300px; padding:8px 14px; font-size:13px;"
+                  onkeyup="filterClaimsTable(this, 'historyClaimsTableBody')" />
+                <button class="btn btn-outline-gray" onclick="exportClaimHistory()">Export Audit CSV</button>
+              </div>
+            </div>
+
+            <div class="claims-table-wrapper">
+              <table class="claims-table">
+                <thead>
+                  <tr>
+                    <th>CLAIM ID & APPLICANT</th>
+                    <th>CATEGORY</th>
+                    <th>SUBMITTED / SETTLED</th>
+                    <th>EXPENSE DETAILS</th>
+                    <th>AMOUNT</th>
+                    <th>STATUS</th>
+                    <th>APPROVED / AUDITED BY</th>
+                  </tr>
+                </thead>
+                <tbody id="historyClaimsTableBody">
+                <tr><td colspan="7">Loading claim history from the database...</td></tr>
+              </tbody>
+              </table>
+            </div>
+
+            <div class="claims-pagination-bar" data-pager="claims-history" data-page="1">
+              <span id="historyPagerInfo">Loading claim history…</span>
+              <div class="claims-page-buttons">
+                <button class="btn-page-arr" data-page-prev onclick="claimsPagerStep('history', -1)">‹ Prev</button>
+                <button class="btn-page-num active" data-pagenum="1" onclick="claimsPagerGoto('history', 1)">1</button>
+                <button class="btn-page-num" data-pagenum="2" onclick="claimsPagerGoto('history', 2)">2</button>
+                <button class="btn-page-num" data-pagenum="3" onclick="claimsPagerGoto('history', 3)">3</button>
+                <button class="btn-page-arr" data-page-next onclick="claimsPagerStep('history', 1)">Next ›</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= SUB-PANEL 3: ADVANCE PAY REQUESTS ================= -->
+        <div class="claims-subpanel" id="claimsSubpanelAdvance" style="display:none;">
+          <!-- 4 KPI Cards -->
+          <div class="kpi-cards-4grid">
+            <div class="kpi-card">
+              <div class="kpi-head"><span>PENDING ADVANCES</span></div>
+              <div class="kpi-value" id="advancesPendingCount">0</div>
+              <div class="kpi-subtext">↗ $6,500 Requested</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>DISBURSED THIS Q2</span></div>
+              <div class="kpi-value">12</div>
+              <div class="kpi-subtext">↗ $19,200 Total</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>REPAYMENT RECOVERY</span></div>
+              <div class="kpi-value">100%</div>
+              <div class="kpi-subtext">↗ Zero Defaults</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>PAYROLL CAP LIMIT</span></div>
+              <div class="kpi-value">50%</div>
+              <div class="kpi-subtext">↗ Max Salary Cap</div>
+            </div>
+          </div>
+
+          <!-- Advance Pay Table Card -->
+          <div class="white-card" style="padding:0; overflow:hidden; margin-bottom:24px;">
+            <div
+              style="padding:22px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+              <div>
+                <h2 class="card-title">Employee Advance Pay & Salary Loan Register</h2>
+                <p class="card-sub">Showing 4 submitted salary advance applications subject to HR policy cap
+                  verification.</p>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <input type="text" placeholder="Search advance request ID, employee..." class="penpot-select-full"
+                  style="width:280px; padding:8px 14px; font-size:13px;"
+                  onkeyup="filterClaimsTable(this, 'advanceClaimsTableBody')" />
+                <button class="btn btn-navy-cta" onclick="openAdvanceModal()">+ Request Advance Pay</button>
+              </div>
+            </div>
+
+            <div class="claims-table-wrapper">
+              <table class="claims-table">
+                <thead>
+                  <tr>
+                    <th>REQUEST ID & APPLICANT</th>
+                    <th>REQUESTED AMOUNT</th>
+                    <th>REPAYMENT TERMS</th>
+                    <th>PURPOSE / JUSTIFICATION</th>
+                    <th>BASE SALARY / CAP</th>
+                    <th>STATUS</th>
+                    <th>ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody id="advanceClaimsTableBody">
+                <tr><td colspan="7">Loading advance requests from the database...</td></tr>
+              </tbody>
+              </table>
+            </div>
+
+            <div class="claims-pagination-bar" data-pager="advances" data-page="1">
+              <span id="advancesPagerInfo">Loading advance applications…</span>
+              <div class="claims-page-buttons">
+                <button class="btn-page-arr" data-page-prev onclick="advancesPagerStep(-1)">‹ Prev</button>
+                <button class="btn-page-num active" data-pagenum="1" onclick="advancesPagerGoto(1)">1</button>
+                <button class="btn-page-num" data-pagenum="2" onclick="advancesPagerGoto(2)">2</button>
+                <button class="btn-page-num" data-pagenum="3" onclick="advancesPagerGoto(3)">3</button>
+                <button class="btn-page-arr" data-page-next onclick="advancesPagerStep(1)">Next ›</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           VIEW 6: MESSAGES & COMMUNICATIONS (messages - all)
+           ====================================================================== -->
+      <section class="view-panel" id="view-messages">
+        <!-- Messages Split Container -->
+        <div class="messages-layout-card">
+          <!-- Left Panel: Inboxes & Channels List -->
+          <div class="messages-inbox-sidebar">
+            <div class="inbox-search-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="inboxFilterInput" placeholder="Filter inboxes & channels..."
+                onkeyup="filterInboxes(this)" />
+            </div>
+
+            <div class="inbox-section-label">BROADCAST CHANNEL</div>
+            <div class="channel-list-item active" onclick="selectChannel(this, 'announcements')">
+              <div class="channel-icon-hash">#</div>
+              <div class="channel-info-text">
+                <strong class="channel-name">Company Announcements</strong>
+                <span class="channel-last-msg">Loading latest message...</span>
+              </div>
+              <span class="channel-badge-all">ALL</span>
+            </div>
+
+            <div class="inbox-section-label" style="margin-top:12px;">EMPLOYEE INBOXES</div>
+            <div class="inbox-list" id="inboxConversationsList">
+              <div class="card-sub">Loading employees from the roster...</div>
+            </div>
+          </div>
+
+          <!-- Right Panel: Active Conversation Stream -->
+          <div class="messages-chat-area">
+            <!-- Chat Header -->
+            <div class="chat-header-bar">
+              <div class="chat-header-user">
+                <div class="avatar-circle-md avatar-slate" id="activeChatAvatar">#</div>
+                <div class="chat-header-meta">
+                  <strong class="chat-header-name" id="activeChatName">Company Announcements</strong>
+                  <span class="chat-header-status" id="activeChatStatus">● Broadcast Channel • All Staff</span>
+                </div>
+              </div>
+
+              <div class="chat-header-actions">
+                <button class="btn btn-outline-white-sm" onclick="toggleConversationSearch()" aria-expanded="false" aria-controls="conversationSearch">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <span>Search</span>
+                </button>
+                <button class="btn btn-outline-white-sm" onclick="switchView('employee-directory')">
+                  <span>View Profile</span>
+                </button>
+              </div>
+            </div>
+
+            <form id="conversationSearch" class="conversation-search" onsubmit="searchConversationMessages(event)" hidden>
+              <label for="conversationSearchInput">Search this conversation</label>
+              <input id="conversationSearchInput" type="search" placeholder="Search messages or sender" />
+              <button type="submit" class="btn btn-blue-sm">Find</button>
+              <button type="button" class="btn btn-outline-gray" onclick="clearConversationSearch()">Clear</button>
+            </form>
+
+            <!-- Conversation Stream -->
+            <div class="chat-stream-container" id="chatStreamMessages">
+              <div class="chat-loading-state">Loading messages from the database...</div>
+            </div>
+
+            <!-- Composer Toolbar & Input -->
+            <div class="chat-composer-bar">
+              <form id="chatMessageForm" onsubmit="handleSendChatMessage(event)">
+                <input type="file" id="chatFileInput" hidden onchange="handleChatFileSelected(this)" />
+                <input type="file" id="chatImageInput" accept="image/*" hidden
+                  onchange="handleChatFileSelected(this)" />
+                <div class="composer-input-row">
+                  <input type="text" id="chatTextInput" placeholder="Post an announcement to the team..." autocomplete="off"
+                    required />
+                  <button type="button" class="composer-tool-btn" title="Attach file"
+                    onclick="document.getElementById('chatFileInput').click()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path
+                        d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48">
+                      </path>
+                    </svg>
+                  </button>
+                  <button type="button" class="composer-tool-btn" title="Upload image"
+                    onclick="document.getElementById('chatImageInput').click()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                      <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                  </button>
+                  <button type="submit" class="btn btn-navy-cta" style="padding: 8px 18px;">
+                    <span>Send Message</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2.5">
+                      <line x1="22" y1="2" x2="11" y2="13"></line>
+                      <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           VIEW 10: ADMIN AUDIT & ACTIVITY LOGS (view-logs)
+           ====================================================================== -->
+      <section class="view-panel" id="view-logs">
+        <!-- Page Title Block -->
+        <div class="page-title-block">
+          <div class="title-with-badge">
+            <h1 class="penpot-page-heading">Audit &amp; Activity Logs</h1>
+          </div>
+          <p class="penpot-page-sub">Comprehensive chronological record of administrative actions, personnel updates,
+            and security events across Kumon EMS.</p>
+        </div>
+
+        <!-- Table Card -->
+        <div class="white-card" style="padding:0; overflow:hidden; margin-bottom:24px;">
+          <div style="padding:20px 24px; border-bottom:1px solid #e2e8f0;">
+            <div
+              style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:16px;">
+              <div>
+                <h2 class="card-title" style="margin-bottom:4px;">System &amp; Administrative Audit Trail</h2>
+                <p class="card-sub" style="color:#64748b; font-size:13.5px; margin:0;">Every privileged action is
+                  signed,
+                  timestamped, and categorized by class for security compliance.</p>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <div class="audit-search-box">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <input type="text" id="auditSearchInput" placeholder="Search admin, action, employee, or detail..."
+                    oninput="filterAuditLogs()" />
+                </div>
+                <input class="audit-select-control" id="auditAdminFilter" type="search" aria-label="Filter audit events by administrator" placeholder="Filter by administrator" oninput="filterAuditLogs()" />
+                <button class="btn btn-navy-cta" onclick="exportAuditLogs()"
+                  style="height:38px; display:inline-flex; align-items:center; gap:6px; padding:0 14px; font-size:13px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>Export CSV</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Subtabs Navigation: Full-width stretched below search toolbar -->
+            <div class="pill-tabs-container">
+              <button class="tab-pill active" onclick="filterLogsByTab('all', this)">All Classes</button>
+              <button class="tab-pill" onclick="filterLogsByTab('Personnel', this)">Personnel &amp; Staff</button>
+              <button class="tab-pill" onclick="filterLogsByTab('Leaves', this)">Leave Requests</button>
+              <button class="tab-pill" onclick="filterLogsByTab('Claims', this)">Claims &amp; Payroll</button>
+              <button class="tab-pill" onclick="filterLogsByTab('Shifts', this)">Shift Rosters</button>
+              <button class="tab-pill" onclick="filterLogsByTab('Grievance', this)">Grievance Cases</button>
+            </div>
+          </div>
+
+          <!-- Table Content -->
+          <div class="claims-table-wrapper">
+            <table class="claims-table audit-logs-table" id="auditLogsTable">
+              <thead>
+                <tr>
+                  <th style="width: 210px;">ADMINISTRATOR</th>
+                  <th style="width: 140px;">ACTION CLASS</th>
+                  <th style="width: 150px;">TIMESTAMP</th>
+                  <th style="width: 250px;">ACTION &amp; TARGET RECORD</th>
+                  <th>DETAILS &amp; AUDIT NOTES</th>
+                  <th style="width: 120px;">STATUS</th>
+                  <th style="width: 110px; text-align: right;">AUDIT ID</th>
+                </tr>
+              </thead>
+              <tbody id="auditLogsTableBody">
+                <tr><td colspan="7">Loading audit records from the database...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Footer -->
+          <div class="claims-pagination-bar" data-pager="audit" data-page="1">
+            <span id="auditPaginationInfo">Loading audit events…</span>
+            <div class="claims-page-buttons">
+              <button class="btn-page-num" id="auditPrevBtn" data-page-prev onclick="auditPagerStep(-1)">&lt;</button>
+              <button class="btn-page-num active" data-pagenum="1" onclick="auditPagerGoto(1)">1</button>
+              <button class="btn-page-num" data-pagenum="2" onclick="auditPagerGoto(2)">2</button>
+              <button class="btn-page-num" data-pagenum="3" onclick="auditPagerGoto(3)">3</button>
+              <button class="btn-page-num" data-page-next onclick="auditPagerStep(1)">&gt;</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           VIEW: MY ACCOUNT
+           ====================================================================== -->
+      <section class="view-panel" id="view-profile">
+        <div class="account-page-head">
+          <div>
+            <span class="account-kicker">Your account</span>
+            <h1 class="penpot-page-heading">My account</h1>
+            <p class="penpot-page-sub">Manage your work profile and sign-in security.</p>
+          </div>
+          <button type="button" class="btn btn-outline-gray" onclick="switchView('settings')">Preferences &amp; company settings</button>
+        </div>
+        <div class="account-layout">
+          <article class="white-card account-identity-card">
+            <div class="account-identity-top">
+              <div class="account-avatar" id="accountAvatar">—</div>
+              <div>
+                <span class="account-kicker" id="accountProfileKicker">ACCOUNT PROFILE</span>
+                <h2 id="accountDisplayName">Loading account…</h2>
+                <p id="accountRoleLine">Your role and department</p>
+              </div>
+            </div>
+            <dl class="account-facts">
+              <div><dt>Work email</dt><dd id="accountEmailLine">—</dd></div>
+              <div><dt>Department</dt><dd id="accountDepartmentLine">—</dd></div>
+              <div><dt>Account ID</dt><dd id="accountUsernameLine">—</dd></div>
+              <div id="accountManagedRow" hidden><dt>Managed centers</dt><dd id="accountManagedLine">—</dd></div>
+            </dl>
+            <div class="account-card-actions">
+              <button type="button" class="btn btn-outline-gray" onclick="signOut()">Sign out</button>
+            </div>
+          </article>
+          <article class="white-card account-editor-card">
+            <div class="account-section-head">
+              <div><span class="account-kicker">PERSONAL DETAILS</span><h2>Profile information</h2></div>
+              <span class="account-edit-tag">HR controls your role</span>
+            </div>
+            <div class="inputs-2grid account-fields">
+              <div class="input-cell"><label for="accountFirstName">FIRST NAME</label><input id="accountFirstName" class="penpot-input" autocomplete="given-name" /></div>
+              <div class="input-cell"><label for="accountLastName">LAST NAME</label><input id="accountLastName" class="penpot-input" autocomplete="family-name" /></div>
+              <div class="input-cell"><label for="accountEmail">WORK EMAIL</label><input id="accountEmail" type="email" class="penpot-input" autocomplete="email" /></div>
+              <div class="input-cell"><label for="accountRole">ROLE</label><input id="accountRole" class="penpot-input" disabled /></div>
+            </div>
+            <div class="account-card-actions"><button type="button" class="btn btn-navy-cta" onclick="saveAccountProfile()">Save profile</button><span id="accountProfileStatus" class="account-inline-status" role="status"></span></div>
+          </article>
+          <article class="white-card account-security-card">
+            <div class="account-section-head">
+              <div><span class="account-kicker">SIGN-IN SECURITY</span><h2>Two-factor authentication</h2></div>
+              <span id="accountMfaBadge" class="account-security-badge">Checking…</span>
+            </div>
+            <p class="card-sub">Add a time-based code from an authenticator app whenever you sign in. Save recovery codes somewhere private.</p>
+            <div id="accountMfaEnabled" hidden>
+              <p class="account-security-copy">Your account asks for an authenticator code at each sign-in.</p>
+              <div class="inputs-2grid account-fields">
+                <div class="input-cell"><label for="accountMfaDisablePassword">CURRENT PASSWORD</label><input id="accountMfaDisablePassword" class="penpot-input" type="password" autocomplete="current-password" /></div>
+                <div class="input-cell"><label for="accountMfaDisableCode">AUTHENTICATOR OR RECOVERY CODE</label><input id="accountMfaDisableCode" class="penpot-input" inputmode="text" autocomplete="one-time-code" /></div>
+              </div>
+              <button type="button" class="btn btn-outline-gray" onclick="disableAccountTwoFactor()">Turn off 2FA</button>
+            </div>
+            <div id="accountMfaDisabled">
+              <div class="inputs-2grid account-fields">
+                <div class="input-cell"><label for="accountMfaSetupPassword">CURRENT PASSWORD</label><input id="accountMfaSetupPassword" class="penpot-input" type="password" autocomplete="current-password" /></div>
+              </div>
+              <button type="button" class="btn btn-navy-cta" onclick="startAccountTwoFactorSetup()">Set up authenticator</button>
+            </div>
+            <div id="accountMfaSetup" class="account-mfa-setup" hidden>
+              <div class="account-secret-label">Enter this key in your authenticator app</div>
+              <code id="accountMfaSecret" class="account-secret-key"></code>
+              <p class="card-sub">Use manual setup with the time-based (TOTP) option. Then enter the current six-digit code below.</p>
+              <div class="account-code-row"><label for="accountMfaConfirmCode">6-digit code</label><input id="accountMfaConfirmCode" class="penpot-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" /><button type="button" class="btn btn-navy-cta" onclick="confirmAccountTwoFactorSetup()">Verify &amp; enable</button></div>
+            </div>
+            <div id="accountRecoveryCodes" class="account-recovery-codes" hidden>
+              <strong>Save these one-time recovery codes now</strong>
+              <p>They are shown once. Each code works once if you lose your authenticator.</p>
+              <pre id="accountRecoveryCodeList"></pre>
+              <button type="button" class="btn btn-outline-gray" onclick="copyRecoveryCodes('accountRecoveryCodeList')">Copy codes</button>
+            </div>
+            <p id="accountMfaStatus" class="account-inline-status" role="status"></p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           VIEW: SETTINGS (T9+T15 frontend)
+           ====================================================================== -->
+      <section class="view-panel" id="view-settings">
+        <div class="page-title-block">
+          <h1 class="penpot-page-heading">Settings</h1>
+          <p class="penpot-page-sub">Personal profile, notification &amp; display preferences, and company-wide
+            configuration.</p>
+          <p id="settingsLoadError" class="card-sub" style="display:none; color:#991b1b;">Settings could not be loaded.
+            Check your connection and retry.</p>
+        </div>
+
+        <!-- Subnav Pill Tabs -->
+        <div class="penpot-subnav-row">
+          <div class="pill-tabs-container">
+            <button class="tab-pill active" id="settingsTabProfile" onclick="settingsSwitchTab('profile')">
+              <span>My profile</span>
+            </button>
+            <button class="tab-pill" id="settingsTabNotif" onclick="settingsSwitchTab('notif')">
+              <span>Notifications &amp; display</span>
+            </button>
+            <button class="tab-pill" id="settingsTabCompany" onclick="settingsSwitchTab('company')" data-staff-only
+              hidden title="Staff only — contact your HR admin">
+              <span>Company</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB: MY PROFILE -->
+        <div id="settingsPaneProfile">
+          <div class="white-card">
+            <h2 class="card-title">My profile</h2>
+            <p class="card-sub">Update your name and email. HR manages your assigned role.</p>
+            <div class="inputs-2grid" style="margin-bottom:12px; margin-top:16px;">
+              <div class="input-cell">
+                <label>FIRST NAME</label>
+                <input id="setFirstName" class="penpot-input" placeholder="First name" />
+              </div>
+              <div class="input-cell">
+                <label>LAST NAME</label>
+                <input id="setLastName" class="penpot-input" placeholder="Last name" />
+              </div>
+            </div>
+            <div class="inputs-2grid" style="margin-bottom:20px;">
+              <div class="input-cell">
+                <label>EMAIL</label>
+                <input id="setEmail" type="email" class="penpot-input" placeholder="you@company.com" />
+              </div>
+              <div class="input-cell">
+                <label>ROLE</label>
+                <input id="setRole" class="penpot-input" placeholder="Role" disabled />
+                <small class="penpot-field-hint">Role is assigned by HR.</small>
+              </div>
+            </div>
+            <div class="modal-foot" style="justify-content:flex-start;">
+              <button class="btn btn-navy-cta" onclick="saveSettingsProfile()">Save profile</button>
+            </div>
+          </div>
+
+          <div class="white-card">
+            <h2 class="card-title">Change password</h2>
+            <p class="card-sub">Minimum 8 characters. Other sessions are signed out.</p>
+            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
+              <label>CURRENT PASSWORD</label>
+              <input id="setOldPassword" type="password" class="penpot-input" placeholder="Current password"
+                autocomplete="current-password" />
+            </div>
+            <div class="inputs-2grid" style="margin-bottom:20px;">
+              <div class="input-cell">
+                <label>NEW PASSWORD</label>
+                <input id="setNewPassword" type="password" class="penpot-input" placeholder="New password"
+                  autocomplete="new-password" />
+              </div>
+              <div class="input-cell">
+                <label>CONFIRM NEW PASSWORD</label>
+                <input id="setNewPassword2" type="password" class="penpot-input" placeholder="Repeat new password"
+                  autocomplete="new-password" />
+              </div>
+            </div>
+            <div class="modal-foot" style="justify-content:flex-start;">
+              <button class="btn btn-navy-cta" onclick="saveSettingsPassword()">Change password</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: NOTIFICATIONS & DISPLAY -->
+        <div id="settingsPaneNotif" style="display:none;">
+          <div class="white-card">
+            <h2 class="card-title">Notifications &amp; display</h2>
+            <p class="card-sub">Mute notification kinds, page size, and accessibility display options.</p>
+            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
+              <label>MUTED NOTIFICATION KINDS</label>
+              <div style="display:flex; gap:18px; flex-wrap:wrap; margin-top:8px;">
+                <label
+                  style="font-size:13px; color:#334155; display:flex; gap:6px; align-items:center; text-transform:none;">
+                  <input type="checkbox" id="setMuteLeave" value="leave" /> Leave
+                </label>
+                <label
+                  style="font-size:13px; color:#334155; display:flex; gap:6px; align-items:center; text-transform:none;">
+                  <input type="checkbox" id="setMuteShift" value="shift" /> Shift
+                </label>
+                <label
+                  style="font-size:13px; color:#334155; display:flex; gap:6px; align-items:center; text-transform:none;">
+                  <input type="checkbox" id="setMutePayroll" value="payroll" /> Payroll
+                </label>
+              </div>
+            </div>
+            <div class="inputs-2grid" style="margin-bottom:12px;">
+              <div class="input-cell">
+                <label>PAGE SIZE</label>
+                <select id="setPageSize" class="penpot-select-full">
+                  <option value="5">5 per page</option>
+                  <option value="10">10 per page</option>
+                  <option value="25">25 per page</option>
+                  <option value="50">50 per page</option>
+                  <option value="100">100 per page</option>
+                </select>
+              </div>
+              <div class="input-cell">
+                <label>FONT SCALE</label>
+                <select id="setFontScale" class="penpot-select-full">
+                  <option value="87.5">Compact (87.5%)</option>
+                  <option value="100">Default (100%)</option>
+                  <option value="112.5">Large (112.5%)</option>
+                  <option value="125">Extra large (125%)</option>
+                </select>
+              </div>
+            </div>
+            <div class="inputs-2grid" style="margin-bottom:20px;">
+              <div class="input-cell">
+                <label>HIGH CONTRAST</label>
+                <label
+                  style="font-size:13px; color:#334155; display:flex; gap:6px; align-items:center; text-transform:none; margin-top:8px;">
+                  <input type="checkbox" id="setHighContrast" /> Enable high contrast
+                </label>
+              </div>
+              <div class="input-cell">
+                <label>REDUCE MOTION</label>
+                <label
+                  style="font-size:13px; color:#334155; display:flex; gap:6px; align-items:center; text-transform:none; margin-top:8px;">
+                  <input type="checkbox" id="setReduceMotion" /> Reduce motion &amp; transitions
+                </label>
+              </div>
+            </div>
+            <div class="modal-foot" style="justify-content:flex-start;">
+              <button class="btn btn-navy-cta" onclick="saveSettingsPrefs()">Save preferences</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: COMPANY (staff-only) -->
+        <div id="settingsPaneCompany" style="display:none;" data-staff-only hidden>
+          <div class="white-card">
+            <h2 class="card-title">Leave rules</h2>
+            <p class="card-sub">Staff only. Mirrors FrappeHR leave settings: backdated control and automatic grants on
+              hire (Vacation, this year).</p>
+            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
+              <label class="penpot-checkbox-label">
+                <input type="checkbox" id="setLeaveBackdated" />
+                <span>Restrict backdated leave applications</span>
+              </label>
+            </div>
+            <div class="input-cell" style="margin-bottom:12px;">
+              <label>AUTO-ALLOCATE DAYS ON HIRE (0 = OFF)</label>
+              <input id="setLeaveAutoDays" type="number" step="1" min="0" max="365" class="penpot-input"
+                placeholder="0" />
+            </div>
+          </div>
+          <div class="white-card">
+            <h2 class="card-title">Shift rules</h2>
+            <p class="card-sub">Staff only. Mirrors FrappeHR shift settings.</p>
+            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
+              <label class="penpot-checkbox-label">
+                <input type="checkbox" id="setShiftDouble" />
+                <span>Allow double-booking the same person on one date</span>
+              </label>
+            </div>
+          </div>
+          <div class="white-card">
+            <h2 class="card-title">Payroll rules</h2>
+            <p class="card-sub">Staff only. Overtime bounds applied to every slip.</p>
+            <div class="inputs-2grid" style="margin-bottom:12px; margin-top:16px;">
+              <div class="input-cell">
+                <label>OVERTIME MIN HOURS</label>
+                <input id="setOtMin" type="number" step="0.01" min="0" max="24" class="penpot-input"
+                  placeholder="0.01" />
+              </div>
+              <div class="input-cell">
+                <label>OVERTIME MAX HOURS</label>
+                <input id="setOtMax" type="number" step="0.01" min="0" max="24" class="penpot-input"
+                  placeholder="5.00" />
+              </div>
+            </div>
+          </div>
+          <div class="white-card">
+            <h2 class="card-title">Mobile</h2>
+            <p class="card-sub">Staff only. Gates kiosk + self-service clock-in for the future mobile client.</p>
+            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
+              <label class="penpot-checkbox-label">
+                <input type="checkbox" id="setMobileCheckin" checked />
+                <span>Allow mobile check-in</span>
+              </label>
+            </div>
+          </div>
+          <div class="white-card">
+            <h2 class="card-title">System</h2>
+            <p class="card-sub">Staff only. Retention, upload cap. Throttle and CORS values are
+              read-only here.</p>
+            <div class="inputs-2grid" style="margin-bottom:12px; margin-top:16px;">
+              <div class="input-cell">
+                <label>PURGE RETENTION DAYS</label>
+                <input id="setPurgeDays" type="number" step="1" min="1" max="365" class="penpot-input"
+                  placeholder="30" />
+              </div>
+              <div class="input-cell">
+                <label>UPLOAD CAP (MB)</label>
+                <input id="setUploadCap" type="number" step="1" min="1" max="100" class="penpot-input"
+                  placeholder="10" />
+              </div>
+            </div>
+            <div class="input-cell" style="margin-bottom:12px;">
+              <label>THROTTLE / CORS (READ-ONLY)</label>
+              <div id="setReadOnlyNet" style="font-size:13px; color:#475569; margin-top:8px;">Contact your HR admin for
+                throttle/CORS values.</div>
+            </div>
+            <div class="input-cell" style="margin-bottom:20px;">
+              <label>LOGIN DOORS</label>
+              <p style="font-size:13px; color:#475569; margin:8px 0 0 0;">Not sure which login? Staff use HR login
+                (/hr/login/); everyone else uses Employee login (/login/).</p>
+            </div>
+            <div class="modal-foot" style="justify-content:flex-start;">
+              <button class="btn btn-outline-gray" onclick="loadSettingsView()">Discard</button>
+              <button class="btn btn-navy-cta" onclick="saveSettingsSite()">Save company settings</button>
+            </div>
+          </div>
+
+          <div class="white-card">
+            <h2 class="card-title">Excel import</h2>
+            <p class="card-sub">Upload an .xlsx roster to preview rows first (dry-run), then confirm to import.</p>
+            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
+              <label>ROSTER FILE (.XLSX)</label>
+              <input id="settingsImportFile" type="file" accept=".xlsx" class="penpot-input" />
+            </div>
+            <div class="modal-foot" style="justify-content:flex-start; margin-bottom:16px;">
+              <button class="btn btn-outline-gray" onclick="settingsImportDryRun()">Dry-run preview</button>
+              <button class="btn btn-navy-cta" onclick="settingsImportCommit()">Confirm import</button>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="penpot-table">
+                <thead>
+                  <tr>
+                    <th>ROW</th>
+                    <th>NAME</th>
+                    <th>EMAIL</th>
+                    <th>STATUS</th>
+                  </tr>
+                </thead>
+                <tbody id="settingsImportResults">
+                  <tr>
+                    <td colspan="4">No preview yet — choose a file and run a dry-run.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings confirm modal (reuses modal-backdrop/modal-card) -->
+        <div class="modal-backdrop" id="settingsConfirmModal">
+          <div class="modal-card">
+            <div class="modal-head">
+              <h3 id="settingsConfirmTitle">Confirm change</h3>
+              <button class="modal-close" onclick="closeSettingsConfirm()">&times;</button>
+            </div>
+            <p id="settingsConfirmText" style="font-size:14px; color:#475569; margin:0 0 20px 0;"></p>
+            <div class="modal-foot">
+              <button type="button" class="btn btn-outline-gray" onclick="closeSettingsConfirm()">Cancel</button>
+              <button type="button" class="btn btn-navy-cta" id="settingsConfirmOk">Confirm</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           GENERIC PLACEHOLDER VIEW (Payroll, Reports)
+           ====================================================================== -->
+      <section class="view-panel" id="view-placeholder">
+        <div class="page-title-block">
+          <h1 class="penpot-page-heading" id="placeholderTitle">Feature Module</h1>
+          <p class="penpot-page-sub">Detailed module analytics, exportable ledger, and transactional audit trails.</p>
+        </div>
+        <div class="white-card" style="text-align:center; padding: 70px 20px;">
+          <div style="margin-bottom:16px;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#2563eb"
+              stroke-width="1.75">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg></div>
+          <h3 style="font-size:22px; font-weight:800; color:#0f172a; margin-bottom:8px;">Production Module Active</h3>
+          <p style="color:#64748b; max-width:480px; margin:0 auto 24px auto;">This module connects directly with
+            Kumon EMS records and HR analytics.</p>
+          <!-- Live payroll runs (H7c: filled from /api/payroll-runs/ when a payroll view opens) -->
+          <div id="payrollLiveWrap" style="display:none; text-align:left; max-width:720px; margin:0 auto 24px auto;">
+            <table class="penpot-table">
+              <thead>
+                <tr>
+                  <th>PAY PERIOD</th>
+                  <th>PROCESSED</th>
+                  <th>LINES</th>
+                  <th>TOTAL NET</th>
+                </tr>
+              </thead>
+              <tbody id="payrollRunsTableBody">
+                <tr>
+                  <td colspan="4">Loading…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <button class="btn btn-navy-cta" onclick="switchView('dashboard')">Back to Overview</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Leave Modal -->
+  <div class="modal-backdrop" id="leaveModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Submit Leave Application</h3>
+        <button class="modal-close" onclick="closeLeaveModal()">&times;</button>
+      </div>
+      <form onsubmit="handleApplyLeave(event)">
+        <div class="input-cell" style="margin-bottom:12px;">
+          <label>APPLICANT</label>
+          <select id="leaveApplicant" class="penpot-select-full" required>
+            <option value="" disabled selected>Loading employees...</option>
+          </select>
+        </div>
+        <div class="input-cell" style="margin-bottom:12px;">
+          <label>LEAVE TYPE</label>
+          <select id="leaveType" class="penpot-select-full" required>
+            <option value="Vacation">Annual Vacation</option>
+            <option value="Sick">Medical / Sick Leave</option>
+            <option value="Personal">Casual Leave</option>
+            <option value="Parental">Parental Leave</option>
+            <option value="Emergency">Emergency Personal</option>
+            <option value="Compensatory">Compensatory Off</option>
+          </select>
+        </div>
+        <div class="inputs-2grid" style="margin-bottom:12px;">
+          <div class="input-cell">
+            <label>START DATE</label>
+            <input id="leaveStartDate" type="date" required />
+          </div>
+          <div class="input-cell">
+            <label>END DATE</label>
+            <input id="leaveEndDate" type="date" required />
+          </div>
+        </div>
+        <div class="input-cell" style="margin-bottom:20px;">
+          <label>REASON / HANDOVER NOTES</label>
+          <textarea id="leaveReason" rows="3" placeholder="Describe coverage and handover arrangements..."
+            required></textarea>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-outline-gray" onclick="closeLeaveModal()">Cancel</button>
+          <button type="submit" class="btn btn-navy-cta">Submit Application</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Advance Pay Request Modal -->
+  <div class="modal-backdrop" id="advanceModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Request Salary Advance / Loan</h3>
+        <button class="modal-close" onclick="closeAdvanceModal()">&times;</button>
+      </div>
+      <form onsubmit="handleRequestAdvance(event)">
+        <div class="input-cell" style="margin-bottom:12px;">
+          <label>APPLICANT EMPLOYEE</label>
+          <select class="penpot-select-full" id="advanceApplicant" required>
+            <option value="" disabled selected>Open this form to load employees...</option>
+          </select>
+        </div>
+        <div class="inputs-2grid" style="margin-bottom:12px;">
+          <div class="input-cell">
+            <label>REQUESTED AMOUNT ($)</label>
+            <input type="number" id="advanceAmount" min="100" max="5000" placeholder="e.g. 1500" required />
+          </div>
+          <div class="input-cell">
+            <label>REPAYMENT TERMS</label>
+            <select class="penpot-select-full" id="advanceTerms" required>
+              <option>Next Payroll (Full Deduction)</option>
+              <option>2 Pay Cycles (50% each)</option>
+              <option>3 Pay Cycles (33% each)</option>
+              <option>4 Pay Cycles (25% each)</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-cell" style="margin-bottom:20px;">
+          <label>PURPOSE & FINANCIAL JUSTIFICATION</label>
+          <textarea rows="3" id="advancePurpose"
+            placeholder="State reason for advance request (subject to HR policy cap review)..." required></textarea>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-outline-gray" onclick="closeAdvanceModal()">Cancel</button>
+          <button type="submit" class="btn btn-navy-cta">Submit Advance Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       NEW EMPLOYEE ONBOARDING WIZARD MODAL POP-UP
+       ====================================================================== -->
+  <div id="onboardingModal" class="modal-backdrop" style="display:none;"
+    onclick="if(event.target===this) closeOnboardingModal()">
+    <div class="modal-dialog-wizard" role="dialog" aria-modal="true" aria-labelledby="onboardingModalTitle">
+      <div class="modal-wizard-header">
+        <h2 id="onboardingModalTitle" class="modal-wizard-title">NEW EMPLOYEE ONBOARDING WIZARD</h2>
+        <p class="modal-wizard-sub">Complete the following sections to generate a new employee profile.</p>
+        <button type="button" class="modal-close-btn" onclick="closeOnboardingModal()" aria-label="Close dialog">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <form onsubmit="handleOnboarding(event)" class="onboard-modal-form">
+        <!-- STEP 1: EMPLOYEE INFORMATION -->
+        <div>
+          <h3 class="wizard-section-head">STEP 1: EMPLOYEE INFORMATION</h3>
+          <div class="inputs-3grid">
+            <div class="input-cell">
+              <label>Full Legal Name <span class="req-star">*</span></label>
+              <input type="text" placeholder="First and last name" required />
+            </div>
+            <div class="input-cell">
+              <label>Corporate Email Address <span class="req-star">*</span></label>
+              <input type="email" placeholder="name@company.com" required />
+            </div>
+            <div class="input-cell">
+              <label>Department <span class="req-star">*</span></label>
+              <select id="onboardDepartment" class="penpot-select-full" required>
+                <option value="">Loading departments...</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="inputs-3grid">
+            <div class="input-cell">
+              <label>Job Role <span class="req-star">*</span></label>
+              <input id="onboardRole" class="penpot-select-full" list="onboardRoleOptions" maxlength="100" required />
+              <datalist id="onboardRoleOptions"></datalist>
+            </div>
+            <div class="input-cell">
+              <label>Start Date <span class="req-star">*</span></label>
+              <input id="onboardStartDate" type="date" required />
+            </div>
+            <div class="input-cell">
+              <label>Initial Login Password <span class="req-star">*</span></label>
+              <input id="onboardPassword" type="password" minlength="8" placeholder="At least 8 characters" required />
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: IT INVENTORY & ASSET ALLOCATION (Multi-Select) -->
+        <div>
+          <h3 class="wizard-section-head">STEP 2: IT INVENTORY & ASSET ALLOCATION (Multi-Select)</h3>
+          <div class="it-inventory-3grid">
+            <!-- Col 1: Hardware -->
+            <div class="it-category-col">
+              <label class="it-category-header">
+                <input type="checkbox" checked />
+                <span>HARDWARE</span>
+              </label>
+              <label class="it-asset-item">
+                <input type="checkbox" checked />
+                <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                  <line x1="2" y1="20" x2="22" y2="20"></line>
+                </svg>
+                <span>16" Apple MacBook Pro</span>
+              </label>
+              <label class="it-asset-item">
+                <input type="checkbox" />
+                <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M3 8h18M5 8v10M19 8v10M2 18h20"></path>
+                </svg>
+                <span>Ergonomic Standing Desk</span>
+              </label>
+            </div>
+
+            <!-- Col 2: Displays & Cloud -->
+            <div class="it-category-col">
+              <label class="it-category-header" style="visibility:hidden; height:18px;">
+                <span>OTHER</span>
+              </label>
+              <label class="it-asset-item">
+                <input type="checkbox" />
+                <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                  <line x1="8" y1="21" x2="16" y2="21"></line>
+                  <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+                <span>27" 4K Monitor</span>
+              </label>
+              <label class="it-asset-item">
+                <input type="checkbox" checked />
+                <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+                </svg>
+                <span>Slack & Google Workspace (SaaS)</span>
+              </label>
+            </div>
+
+            <!-- Col 3: Software Licenses -->
+            <div class="it-category-col">
+              <label class="it-category-header">
+                <input type="checkbox" />
+                <span>SOFTWARE LICENSES</span>
+              </label>
+              <label class="it-asset-item">
+                <input type="checkbox" checked />
+                <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>Slack & Google Workspace</span>
+              </label>
+              <label class="it-asset-item">
+                <input type="checkbox" checked />
+                <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polygon
+                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                  </polygon>
+                </svg>
+                <span>Figma Enterprise</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: COMPLIANCE & STATUTORY DOCUMENTATION -->
+        <div>
+          <h3 class="wizard-section-head">STEP 3: COMPLIANCE & STATUTORY DOCUMENTATION</h3>
+          <div class="compliance-2col-grid">
+            <div class="compliance-doc-cell">
+              <span class="compliance-doc-title">NBI Clearance</span>
+              <label class="btn-upload-clean">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+                <span data-doc-label="NBI">Upload File</span>
+                <input type="file" data-doc-type="NBI" accept=".pdf,.jpg,.jpeg,.png" hidden
+                  onchange="handleDocFileSelected(this)" />
+              </label>
+            </div>
+            <div class="compliance-doc-cell">
+              <span class="compliance-doc-title">BIR Form 2316 (Tax Record)</span>
+              <label class="btn-upload-clean">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+                <span data-doc-label="BIR2316">Upload File</span>
+                <input type="file" data-doc-type="BIR2316" accept=".pdf,.jpg,.jpeg,.png" hidden
+                  onchange="handleDocFileSelected(this)" />
+              </label>
+            </div>
+
+            <div class="compliance-doc-cell">
+              <span class="compliance-doc-title">PSA Birth Certificate</span>
+              <label class="btn-upload-clean">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+                <span data-doc-label="PSA">Upload File</span>
+                <input type="file" data-doc-type="PSA" accept=".pdf,.jpg,.jpeg,.png" hidden
+                  onchange="handleDocFileSelected(this)" />
+              </label>
+            </div>
+            <div class="compliance-doc-cell">
+              <span class="compliance-doc-title">Signed Employment Contract</span>
+              <label class="btn-upload-clean">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+                <span data-doc-label="contract">Upload File</span>
+                <input type="file" data-doc-type="contract" accept=".pdf,.jpg,.jpeg,.png" hidden
+                  onchange="handleDocFileSelected(this)" />
+              </label>
+            </div>
+
+            <div class="compliance-doc-cell">
+              <span class="compliance-doc-title">SSS / PhilHealth / Pag-IBIG Records</span>
+              <label class="btn-upload-clean">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+                <span data-doc-label="government_records">Upload File</span>
+                <input type="file" data-doc-type="government_records" accept=".pdf,.jpg,.jpeg,.png" hidden onchange="handleDocFileSelected(this)" />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- FOOTER ACTIONS -->
+        <div class="wizard-footer-actions">
+          <button type="button" class="btn btn-outline-gray" onclick="closeOnboardingModal()">Cancel</button>
+          <button type="submit" class="btn-create-profile">Create Profile & Issue Credentials</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- D4: keyboard shortcut cheat sheet (opened by "?", closed by Esc) -->
+  <div class="modal-backdrop" id="shortcutHelp">
+    <div class="modal-card" role="dialog" aria-label="Keyboard shortcuts">
+      <div class="modal-head">
+        <h3>Keyboard shortcuts</h3>
+        <button class="modal-close" onclick="hideShortcutHelp()">&times;</button>
+      </div>
+      <ul>
+        <li><b>g then d</b> — dashboard</li>
+        <li><b>g then e</b> — employee directory</li>
+        <li><b>g then a / s / l</b> — attendance daily / shifts / leaves</li>
+        <li><b>g then c / m</b> — claims / messages</li>
+        <li><b>?</b> — this panel · <b>Esc</b> — close</li>
+      </ul>
+      <button class="btn btn-navy-cta" onclick="hideShortcutHelp()">Close</button>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-stack"></div>
+
+  <script src="static/js/dashboard.js?v=1.1"></script>
+  <script>
+    (function () { if (!window.chatbase || window.chatbase("getState") !== "initialized") { window.chatbase = (...arguments) => { if (!window.chatbase.q) { window.chatbase.q = [] } window.chatbase.q.push(arguments) }; window.chatbase = new Proxy(window.chatbase, { get(target, prop) { if (prop === "q") { return target.q } return (...args) => target(prop, ...args) } }) } const onLoad = function () { const script = document.createElement("script"); script.src = "https://www.chatbase.co/embed.min.js"; script.id = "ZR84LaAfbmdAWKswjfurQ"; script.domain = "www.chatbase.co"; document.body.appendChild(script) }; if (document.readyState === "complete") { onLoad() } else { window.addEventListener("load", onLoad) } })(); 
+  </script>
+
+</body>
+
+
+</html>
+

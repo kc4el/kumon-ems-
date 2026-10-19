@@ -11,14 +11,24 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=3.0" />
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=3.3" />
+  <script>
+    // Static file / non-Django fallback
+    if (window.location.protocol === 'file:' || !window.location.port || window.location.pathname.endsWith('.html')) {
+      const relPrefix = window.location.protocol === 'file:' ? '../../../' : '/';
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = relPrefix + 'static/css/main.css?v=3.3';
+      document.head.appendChild(link);
+    }
+  </script>
 
 </head>
 
 <body>
   <div class="app-layout">
 
-    <!-- 220px Dark Navy / Slate Blue Sidebar -->
+    <!-- 220px Sky Blue Sidebar -->
     <aside class="sidebar">
       <div class="brand-header">
         <div class="brand-logo-box brand-kumon-box">
@@ -1203,9 +1213,8 @@
                   </div>
                   <div class="shift-inline-actions">
                     <button type="button" class="btn btn-outline-gray btn-sm"
-                      style="font-size:11.5px; padding:4px 10px;"
                       onclick="toggleAddStaffForm('morning', false)">Cancel</button>
-                    <button type="button" class="btn btn-navy-cta btn-sm" style="font-size:11.5px; padding:4px 12px;"
+                    <button type="button" class="btn btn-navy-cta btn-sm"
                       onclick="confirmAddStaff('morning')">Assign</button>
                   </div>
                 </div>
@@ -1246,9 +1255,8 @@
                   </div>
                   <div class="shift-inline-actions">
                     <button type="button" class="btn btn-outline-gray btn-sm"
-                      style="font-size:11.5px; padding:4px 10px;"
                       onclick="toggleAddStaffForm('evening', false)">Cancel</button>
-                    <button type="button" class="btn btn-navy-cta btn-sm" style="font-size:11.5px; padding:4px 12px;"
+                    <button type="button" class="btn btn-navy-cta btn-sm"
                       onclick="confirmAddStaff('evening')">Assign</button>
                   </div>
                 </div>
@@ -1289,9 +1297,8 @@
                   </div>
                   <div class="shift-inline-actions">
                     <button type="button" class="btn btn-outline-gray btn-sm"
-                      style="font-size:11.5px; padding:4px 10px;"
                       onclick="toggleAddStaffForm('night', false)">Cancel</button>
-                    <button type="button" class="btn btn-navy-cta btn-sm" style="font-size:11.5px; padding:4px 12px;"
+                    <button type="button" class="btn btn-navy-cta btn-sm"
                       onclick="confirmAddStaff('night')">Assign</button>
                   </div>
                 </div>
@@ -1781,7 +1788,7 @@
                       <polyline points="21 15 16 10 5 21"></polyline>
                     </svg>
                   </button>
-                  <button type="submit" class="btn btn-navy-cta" style="padding: 8px 18px;">
+                  <button type="submit" class="btn btn-navy-cta">
                     <span>Send Message</span>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                       stroke-width="2.5">
@@ -2613,7 +2620,8 @@
   <script src="{% static 'js/dashboard.js' %}?v=1.1"></script>
   <script>
     if (typeof switchView === 'undefined') {
-      document.write('<script src="../../../static/js/dashboard.js"><\/script>');
+      const relPrefix = window.location.protocol === 'file:' ? '../../../' : '/';
+      document.write('<script src="' + relPrefix + 'static/js/dashboard.js"><\/script>');
     }
   </script>
   <script>
