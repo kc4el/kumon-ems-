@@ -3,7 +3,77 @@
    ========================================================================== */
 
 
+// ==========================================================================
+// Theme (Light / Dark Mode) Management
+// Persisted in localStorage ('kumon_theme'), defaults to system or light.
+// ==========================================================================
+function initTheme() {
+  let theme = 'light';
+  try {
+    const saved = localStorage.getItem('kumon_theme');
+    if (saved === 'dark' || saved === 'light') {
+      theme = saved;
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      theme = 'dark';
+    }
+  } catch (e) { }
+  applyTheme(theme);
+}
+
+function applyTheme(theme) {
+  if (theme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    if (document.body) document.body.classList.add('dark-theme');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    if (document.body) document.body.classList.remove('dark-theme');
+  }
+  updateThemeToggleUI(theme);
+}
+
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const next = isDark ? 'light' : 'dark';
+  try {
+    localStorage.setItem('kumon_theme', next);
+  } catch (e) { }
+  applyTheme(next);
+}
+
+function updateThemeToggleUI(theme) {
+  const moon = document.getElementById('themeIconMoon');
+  const sun = document.getElementById('themeIconSun');
+  const btn = document.getElementById('themeToggleBtn');
+  const label = document.getElementById('themeToggleLabel');
+  if (theme === 'dark') {
+    if (moon) moon.style.display = 'none';
+    if (sun) sun.style.display = 'block';
+    if (label) label.textContent = 'Light mode';
+    if (btn) {
+      btn.title = 'Switch to light mode';
+      btn.setAttribute('aria-label', 'Switch to light mode');
+    }
+  } else {
+    if (moon) moon.style.display = 'block';
+    if (sun) sun.style.display = 'none';
+    if (label) label.textContent = 'Dark mode';
+    if (btn) {
+      btn.title = 'Switch to dark mode';
+      btn.setAttribute('aria-label', 'Switch to dark mode');
+    }
+  }
+}
+
+window.initTheme = initTheme;
+window.applyTheme = applyTheme;
+window.toggleTheme = toggleTheme;
+window.updateThemeToggleUI = updateThemeToggleUI;
+
+// Run theme detection immediately
+initTheme();
+
 document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
   initBrandLogo();
   initRememberedLogin();
   initNavigation();
@@ -277,26 +347,53 @@ function initBrandLogo() {
 
   const logoImgs = document.querySelectorAll('.brand-logo-img');
   logoImgs.forEach(img => {
-    let bestSrc = '/static/images/kumon-logo.png';
+    // If image is already loaded and valid, do not disrupt it
+    if (img.complete && img.naturalWidth > 0) {
+      return;
+    }
+
+    let candidates = [];
     if (isFileProtocol) {
       if (currentPath.includes('templates') || currentPath.includes('core')) {
-        bestSrc = '../../../static/images/kumon-logo.png';
-      } else if (currentPath.includes('pages')) {
-        bestSrc = '../static/images/kumon-logo.png';
+        candidates = [
+          '../../../static/images/kumon-logo.png',
+          'static/images/kumon-logo.png',
+          '../static/images/kumon-logo.png',
+          'images/kumon-logo.png'
+        ];
       } else {
-        bestSrc = 'static/images/kumon-logo.png';
+        candidates = [
+          'static/images/kumon-logo.png',
+          'images/kumon-logo.png',
+          '../static/images/kumon-logo.png',
+          '../../../static/images/kumon-logo.png'
+        ];
       }
+    } else {
+      candidates = [
+        '/static/images/kumon-logo.png',
+        'static/images/kumon-logo.png',
+        'images/kumon-logo.png',
+        '../static/images/kumon-logo.png'
+      ];
     }
-    img.src = bestSrc;
-    img.onerror = () => {
-      if (img.src.includes('../../../static') || img.src.includes('../../static')) {
-        img.src = '../static/images/kumon-logo.png';
-      } else if (img.src.includes('static/')) {
-        img.src = '/static/images/kumon-logo.png';
-      } else {
-        img.src = 'images/kumon-logo.png';
+
+    let idx = 0;
+    const tryNext = () => {
+      if (idx < candidates.length) {
+        const nextUrl = candidates[idx++];
+        img.src = nextUrl;
       }
     };
+
+    img.onerror = () => {
+      tryNext();
+    };
+
+    const currentSrc = img.getAttribute('src') || '';
+    if (!currentSrc || currentSrc.includes('{') || currentSrc.includes('%') || !img.complete) {
+      tryNext();
+    }
   });
 }
 
