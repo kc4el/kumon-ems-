@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Confirm your email</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 0; padding: 3rem 1rem; color: #172b4d; }
+      main { max-width: 34rem; margin: 0 auto; }
+      a { color: #c9534d; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Confirm your email</h1>
+      <p id="confirmationStatus" role="status" aria-live="polite">Checking your confirmation link…</p>
+      <a id="loginLink" href="/login/" hidden>Continue to sign in</a>
+    </main>
+    <script>
+      (async function () {
+        const status = document.getElementById('confirmationStatus');
+        const loginLink = document.getElementById('loginLink');
+        const params = new URLSearchParams(window.location.hash.slice(1));
+        const accessToken = params.get('access_token');
+        const confirmationError = params.get('error_description');
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        if (confirmationError) {
+          status.textContent = confirmationError;
+          return;
+        }
+        if (!accessToken) {
+          status.textContent = 'This confirmation link is invalid or has expired. Request a new sign-up email.';
+          return;
+        }
+
+        const csrf = document.cookie.split('; ').find((cookie) => cookie.startsWith('csrftoken='))?.split('=')[1];
+        try {
+          const response = await fetch('/api/email-confirmation/', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(csrf ? { 'X-CSRFToken': csrf } : {}),
+            },
+            body: JSON.stringify({ access_token: accessToken }),
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || 'Email confirmation failed.');
+          status.textContent = data.message;
+          loginLink.hidden = false;
+        } catch (error) {
+          status.textContent = error.message || 'Email confirmation failed. Please try again.';
+        }
+      })();
+    </script>
+  </body>
+</html>

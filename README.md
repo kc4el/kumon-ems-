@@ -83,6 +83,21 @@ MFA_ENCRYPTION_KEY=replace-with-a-generated-fernet-key
 
 `SUPABASE_DB_URL` makes Django use Supabase Postgres as its primary database. Keep the database password private and URL-encode reserved characters. Existing `DB_HOST`/`DB_NAME`/`DB_USER`/`DB_PASSWORD` settings remain supported; without either configuration, local development uses SQLite.
 
+### Supabase sign-up email confirmation
+
+Anonymous sign-up sends the password and email to Supabase Auth. The local Django
+account stays inactive until the user follows the Supabase confirmation link and
+returns to `/auth/confirm/`.
+
+In Supabase, enable email confirmations under **Authentication > Providers > Email**.
+Under **Authentication > URL Configuration**, allow the callback URL for each
+environment (for local development, `http://127.0.0.1:8000/auth/confirm/`) and
+set the appropriate Site URL. Configure custom SMTP under **Authentication >
+SMTP Settings** for reliable delivery to addresses outside the Supabase team;
+the built-in mail service is limited and rate-limited. Keep the default
+confirmation email template using `{{ .ConfirmationURL }}` so Supabase can
+verify the address and redirect back to the application.
+
 ## Project structure
 
 - `pages/`: standalone HTML previews (`dashboard.html`, `dashboard-preview.html`, and `login.html`)

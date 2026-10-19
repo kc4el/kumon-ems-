@@ -4,12 +4,24 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView
 
-from core.views import dashboard_view, employee_portal_view, hr_dashboard_view, hr_login_view, login_view
+from core.views import (
+    dashboard_view,
+    email_confirmation_view,
+    employee_portal_view,
+    hr_dashboard_view,
+    hr_login_view,
+    login_view,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", dashboard_view, name="dashboard"),
     path("login/", login_view, name="login"),
+    path(
+        "auth/confirm/",
+        email_confirmation_view,
+        name="email-confirmation-page",
+    ),
     path("hr/login/", hr_login_view, name="hr-login"),
     path("hr/", hr_dashboard_view, name="hr-dashboard"),
     path("employee/", employee_portal_view, name="employee-portal"),

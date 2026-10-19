@@ -3234,7 +3234,7 @@ async function handleAuthSignup(e) {
       showToast(detail, 'error');
       return;
     }
-    window.location.href = '/login/?next=/';
+    showToast('If an account can be created, check your email for a confirmation link.', 'success');
   } catch (err) {
     showToast('Sign-up service unreachable. Try again later.', 'error');
   }
@@ -4060,5 +4060,4 @@ async function auditPagerGoto(page) {
     showToast('Audit page could not be loaded.', 'error');
   }
 }
-
 
