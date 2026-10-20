@@ -2547,34 +2547,137 @@ html[data-theme="dark"] .theme-toggle-icon--sun {
   font-size: 11.5px;
 }
 
-#widgetSettings {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 10px 14px;
-  margin-bottom: 16px;
-  font-size: 13px;
-  color: #0f172a;
+/* ==========================================================================
+   Dashboard Widgets Customization in Settings
+   ========================================================================== */
+.widget-settings-card {
+  margin-top: 20px;
 }
 
-#widgetSettings summary {
-  cursor: pointer;
-  font-weight: 700;
+.widget-settings-content {
+  margin-top: 2px;
 }
 
-#widgetSettingsList div {
+.widget-settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 520px;
+  margin-top: 6px;
+}
+
+.widget-setting-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 0;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 12px;
+  min-height: 38px;
+  border: 1px solid var(--card-border);
+  border-radius: 7px;
+  background-color: #f8fafc;
+  transition: all 0.16s ease;
+  box-sizing: border-box;
 }
 
-#widgetSettingsList label {
+.widget-setting-row:hover {
+  background-color: #ffffff;
+  border-color: #9dbac8;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(25, 137, 185, 0.08);
+}
+
+.widget-setting-row:has(input:checked) {
+  background-color: rgba(25, 137, 185, 0.05);
+  border-color: var(--sidebar-bg);
+}
+
+.widget-setting-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
   flex: 1;
-  color: #334155;
+  min-width: 0;
+  user-select: none;
+  margin: 0;
 }
 
-#widgetSettingsList button,
+.widget-setting-toggle input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--sidebar-bg);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.widget-setting-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  background: rgba(25, 137, 185, 0.1);
+  color: var(--sidebar-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 0.16s ease, color 0.16s ease;
+}
+
+.widget-setting-row:hover .widget-setting-icon,
+.widget-setting-row:has(input:checked) .widget-setting-icon {
+  background: var(--sidebar-bg);
+  color: #ffffff;
+}
+
+.widget-setting-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.widget-order-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.btn-widget-order {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--card-border);
+  border-radius: 5px;
+  background-color: #ffffff;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-widget-order:hover:not(:disabled) {
+  background-color: #f1f5f9;
+  border-color: var(--sidebar-bg);
+  color: var(--sidebar-bg);
+  transform: translateY(-1px);
+}
+
+.btn-widget-order:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: var(--card-border);
+  background-color: #f8fafc;
+  color: var(--text-muted);
+}
+
 #replayTourBtn {
   background: #f1f5f9;
   color: #0f172a;
@@ -2583,15 +2686,11 @@ html[data-theme="dark"] .theme-toggle-icon--sun {
   padding: 4px 10px;
   font-size: 12px;
   cursor: pointer;
+  margin-bottom: 16px;
 }
 
-#widgetSettingsList button:hover,
 #replayTourBtn:hover {
   background: #e2e8f0;
-}
-
-#replayTourBtn {
-  margin-bottom: 16px;
 }
 
 .toast-stack {
@@ -7001,7 +7100,7 @@ html[data-theme="dark"],
   --brand-navy-dark: var(--dark-canvas-deepest);
   --brand-orange: #fbbf24;
 
-  --metric-card-grad: linear-gradient(135deg, #131c2e 0%, #1e293b 55%, #243047 100%);
+  --metric-card-grad: linear-gradient(135deg, #0e295e 0%, #164496 50%, #2062cc 100%);
   --metric-card-text: #ffffff;
 
   --badge-green-bg: rgba(52, 211, 153, 0.12);
@@ -7240,9 +7339,15 @@ html[data-theme="dark"] {
 
 /* Metric KPI Cards (4-Row Boxes) */
 [data-theme="dark"] .kpi-card {
-  background: linear-gradient(135deg, #0e2d52 0%, #143e72 50%, #091e38 100%) !important;
+  background: linear-gradient(135deg, #0e295e 0%, #164496 50%, #2062cc 100%) !important;
   border: 1px solid rgba(56, 189, 248, 0.25) !important;
-  box-shadow: 0 8px 22px rgba(8, 26, 50, 0.5) !important;
+  box-shadow: 0 8px 22px rgba(10, 30, 68, 0.45) !important;
+}
+
+[data-theme="dark"] .kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.45) !important;
+  box-shadow: 0 12px 28px rgba(10, 30, 68, 0.6), 0 0 16px rgba(32, 98, 204, 0.22) !important;
 }
 
 [data-theme="dark"] .kpi-head {
@@ -7895,6 +8000,56 @@ html[data-theme="dark"] {
 
 [data-theme="dark"] .notif-compact-meta span {
   color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .widget-setting-row {
+  background-color: #131c2e !important;
+  border-color: #334155 !important;
+}
+
+[data-theme="dark"] .widget-setting-row:hover {
+  background-color: #243047 !important;
+  border-color: #475569 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="dark"] .widget-setting-row:has(input:checked) {
+  background-color: rgba(56, 189, 248, 0.12) !important;
+  border-color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .widget-setting-icon {
+  background: rgba(56, 189, 248, 0.15) !important;
+  color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .widget-setting-row:hover .widget-setting-icon,
+[data-theme="dark"] .widget-setting-row:has(input:checked) .widget-setting-icon {
+  background: #38bdf8 !important;
+  color: #0b111e !important;
+}
+
+[data-theme="dark"] .widget-setting-name {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .btn-widget-order {
+  background-color: #1e293b !important;
+  border-color: #475569 !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .btn-widget-order:hover:not(:disabled) {
+  background-color: #334155 !important;
+  border-color: #38bdf8 !important;
+  color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .btn-widget-order:disabled {
+  opacity: 0.25 !important;
+  border-color: #334155 !important;
+  background-color: rgba(15, 23, 42, 0.4) !important;
+  color: #64748b !important;
 }
 
 [data-theme="dark"] .settings-tabs-strip {

@@ -553,6 +553,9 @@ function initDashboardWidgets() {
   const cards = [...document.querySelectorAll("#view-dashboard .kpi-card")];
   if (!cards.length) return;
   cards.forEach((card, i) => {
+    if (!card.dataset.defaultOrder) {
+      card.dataset.defaultOrder = String(i);
+    }
     if (!card.dataset.widget) {
       const text = (card.innerText != null ? card.innerText : card.textContent) || "";
       const label = (text.split("\n")[0] || ("card-" + i)).trim();
@@ -583,18 +586,52 @@ function writeWidgetPrefs() {
   };
   try { localStorage.setItem(KUMON_WIDGETS_KEY, JSON.stringify(prefs)); } catch (e) { /* degrade silently */ }
 }
+function resetWidgetPrefs() {
+  try {
+    localStorage.removeItem(KUMON_WIDGETS_KEY);
+  } catch (e) { /* degrade silently */ }
+  const grid = document.querySelector("#view-dashboard .kpi-cards-4grid");
+  if (grid) {
+    const cards = [...grid.querySelectorAll(".kpi-card")];
+    cards.sort((a, b) => {
+      const orderA = parseInt(a.dataset.defaultOrder, 10) || 0;
+      const orderB = parseInt(b.dataset.defaultOrder, 10) || 0;
+      return orderA - orderB;
+    });
+    cards.forEach((c) => {
+      c.style.display = "";
+      grid.appendChild(c);
+    });
+  }
+  refreshWidgetSettings();
+  if (typeof showToast === "function") {
+    showToast("Dashboard widgets reset to default layout");
+  }
+}
 function renderWidgetSettings() {
-  const view = document.getElementById("view-settings");
-  if (!view || document.getElementById("widgetSettings")) return;
-  const details = document.createElement("details");
-  details.id = "widgetSettings";
-  const summary = document.createElement("summary");
-  summary.textContent = "Customize dashboard";
-  details.appendChild(summary);
-  const list = document.createElement("div");
-  list.id = "widgetSettingsList";
-  details.appendChild(list);
-  view.prepend(details);
+  let list = document.getElementById("widgetSettingsList");
+  if (!list) {
+    const notifPane = document.getElementById("settingsPaneNotif") || document.getElementById("view-settings");
+    if (!notifPane) return;
+    const card = document.createElement("div");
+    card.className = "white-card notif-settings-card widget-settings-card";
+    card.id = "widgetSettingsCard";
+    card.style.marginTop = "24px";
+    card.innerHTML = `
+      <div class="notif-card-header">
+        <div>
+          <h2 class="card-title">Customize dashboard</h2>
+          <p class="card-sub">Choose which KPI cards are visible on your overview and arrange their order.</p>
+        </div>
+        <button type="button" class="btn btn-outline-gray btn-sm" id="btnResetWidgets" onclick="resetWidgetPrefs()">Reset to default</button>
+      </div>
+      <div class="widget-settings-content">
+        <span class="settings-group-label" style="margin-bottom: 8px;">DASHBOARD KPI CARDS</span>
+        <div id="widgetSettingsList" class="widget-settings-list"></div>
+      </div>
+    `;
+    notifPane.appendChild(card);
+  }
   refreshWidgetSettings();
 }
 function refreshWidgetSettings() {
@@ -602,34 +639,81 @@ function refreshWidgetSettings() {
   if (!list) return;
   list.innerHTML = "";
   const cards = [...document.querySelectorAll("#view-dashboard .kpi-card")];
-  cards.forEach((card) => {
+  cards.forEach((card, index) => {
     const id = card.dataset.widget;
+    const titleEl = card.querySelector(".kpi-head span");
+    const svgEl = card.querySelector(".kpi-head svg");
+    const title = (titleEl && titleEl.textContent.trim()) || id.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
     const row = document.createElement("div");
-    const label = document.createElement("label");
+    row.className = "widget-setting-row";
+
+    const toggle = document.createElement("label");
+    toggle.className = "widget-setting-toggle";
+    toggle.setAttribute("for", "widget-toggle-" + id);
+
     const box = document.createElement("input");
     box.type = "checkbox";
+    box.id = "widget-toggle-" + id;
     box.checked = card.style.display !== "none";
-    box.setAttribute("aria-label", "Show " + id);
+    box.setAttribute("aria-label", "Show " + title);
     box.addEventListener("change", () => {
       card.style.display = box.checked ? "" : "none";
       writeWidgetPrefs();
       refreshWidgetSettings();
     });
-    label.appendChild(box);
-    label.appendChild(document.createTextNode(" " + id));
-    row.appendChild(label);
+
+    const iconBox = document.createElement("div");
+    iconBox.className = "widget-setting-icon notif-compact-icon";
+    if (svgEl) {
+      const clone = svgEl.cloneNode(true);
+      clone.setAttribute("width", "14");
+      clone.setAttribute("height", "14");
+      iconBox.appendChild(clone);
+    } else {
+      iconBox.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>';
+    }
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "widget-setting-name";
+    nameSpan.textContent = title;
+
+    toggle.appendChild(box);
+    toggle.appendChild(iconBox);
+    toggle.appendChild(nameSpan);
+    row.appendChild(toggle);
+
+    const controls = document.createElement("div");
+    controls.className = "widget-order-controls";
+
     const up = document.createElement("button");
     up.type = "button";
-    up.textContent = "↑";
-    up.setAttribute("aria-label", "Move " + id + " up");
-    up.addEventListener("click", () => { moveWidget(card, -1); });
+    up.className = "btn-widget-order";
+    up.setAttribute("aria-label", "Move " + title + " up");
+    up.setAttribute("title", "Move up");
+    up.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>';
+    if (index === 0) {
+      up.disabled = true;
+    } else {
+      up.addEventListener("click", () => { moveWidget(card, -1); });
+    }
+
     const down = document.createElement("button");
     down.type = "button";
-    down.textContent = "↓";
-    down.setAttribute("aria-label", "Move " + id + " down");
-    down.addEventListener("click", () => { moveWidget(card, 1); });
-    row.appendChild(up);
-    row.appendChild(down);
+    down.className = "btn-widget-order";
+    down.setAttribute("aria-label", "Move " + title + " down");
+    down.setAttribute("title", "Move down");
+    down.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+    if (index === cards.length - 1) {
+      down.disabled = true;
+    } else {
+      down.addEventListener("click", () => { moveWidget(card, 1); });
+    }
+
+    controls.appendChild(up);
+    controls.appendChild(down);
+    row.appendChild(controls);
+
     list.appendChild(row);
   });
 }
@@ -773,16 +857,13 @@ function showTourBubble(step, n, total) {
 }
 function initTour() {
   const view = document.getElementById("view-dashboard");
-  const settings = document.getElementById("widgetSettings");
   if (view && !document.getElementById("replayTourBtn")) {
     const btn = document.createElement("button");
     btn.id = "replayTourBtn";
     btn.type = "button";
     btn.textContent = "Take a quick tour";
     btn.addEventListener("click", startTour);
-    if (settings && settings.nextSibling) settings.parentElement.insertBefore(btn, settings.nextSibling);
-    else if (settings) settings.parentElement.appendChild(btn);
-    else view.prepend(btn);
+    view.prepend(btn);
   }
   let seen = null;
   try { seen = localStorage.getItem(KUMON_TOUR_KEY); } catch (e) { seen = null; }
