@@ -749,15 +749,11 @@ async function loadActivityFeed() {
     if (!res.ok) throw new Error("feed failed");
     const payload = await res.json();
     const rows = (payload.results || payload || []);
-    let totalLen = 0;
-    const maxItems = 3;
+    const maxItems = 5;
     const filteredRows = [];
     for (const r of rows) {
       if (filteredRows.length >= maxItems) break;
-      const textLen = (formatAuditActionText(r.action) || "").length;
-      if (filteredRows.length === 2 && (totalLen > 70 || textLen > 40)) break;
       filteredRows.push(r);
-      totalLen += textLen;
     }
     list.innerHTML = filteredRows.length
       ? filteredRows.map((r) => `<li>${escapeHtml(formatAuditActionText(r.action))} <span>${escapeHtml(String(r.timestamp || "").slice(0, 16).replace("T", " "))}</span></li>`).join("")
