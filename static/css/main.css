@@ -450,7 +450,7 @@ html[data-theme="dark"] .theme-toggle-icon--sun {
 }
 
 .tab-pill {
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
   border-radius: 24px;
   padding: 8px 18px;
@@ -1280,6 +1280,8 @@ html[data-theme="dark"] .theme-toggle-icon--sun {
 .acc-btn-row {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 /* --------------------------------------------------------------------------
@@ -1419,6 +1421,8 @@ html[data-theme="dark"] .theme-toggle-icon--sun {
   align-items: center;
   justify-content: flex-end;
   margin-top: 14px;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .pt-log-note {
@@ -1429,6 +1433,8 @@ html[data-theme="dark"] .theme-toggle-icon--sun {
 .pt-actions {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .offboarding-header {
@@ -1679,8 +1685,9 @@ html[data-theme="dark"] .theme-toggle-icon--sun {
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
+  flex-wrap: wrap;
   padding-top: 14px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--card-border);
 }
 
 .btn-finalize-offboard {
@@ -5783,13 +5790,9 @@ h4 {
   outline-offset: 1px;
 }
 
-.btn,
-.btn-blue-sm,
-.btn-black-sm,
-.btn-purple-outline-sm,
-.header-icon-btn {
-  min-height: 42px;
-  font-size: 14px;
+.btn:not(.btn-sm):not([class*="-sm"]):not(.btn-claim-approve):not(.btn-claim-reject):not(.btn-date-today):not(.header-icon-btn):not(.btn-date-nav) {
+  min-height: 40px;
+  font-size: 13.5px;
 }
 
 .btn:focus-visible,
@@ -5798,7 +5801,7 @@ h4 {
 .user-avatar-circle:focus-visible,
 .tab-pill:focus-visible,
 .portal-tab:focus-visible {
-  outline: 3px solid #d44b3d;
+  outline: 3px solid rgba(25, 137, 185, 0.45);
   outline-offset: 3px;
 }
 
@@ -5843,7 +5846,7 @@ h4 {
   position: absolute;
   inset: 0 auto 0 0;
   width: 5px;
-  background: var(--brand-orange);
+  background: linear-gradient(180deg, #38bdf8 0%, #1989b9 100%);
   content: "";
 }
 
@@ -6129,38 +6132,40 @@ h4 {
 .account-sub,
 .account-security-copy,
 .employee-subtitle,
-.penpot-auth-sub,
-.priority-actions-stack .tile-content span {
+.penpot-auth-sub {
   font-size: 15.5px !important;
   line-height: 1.55 !important;
+  color: var(--text-muted) !important;
+}
+
+.priority-actions-stack .tile-content span {
+  font-size: 13px !important;
+  line-height: 1.4 !important;
   color: var(--text-muted) !important;
 }
 
 /* ==========================================================================
    Uniform Buttons Across All Pages (Matching Sidebar Color #1989b9)
    ========================================================================== */
-:where(.btn,
+
+/* 1. Standard Primary / CTA Buttons */
+:where(.btn:not(.btn-sm):not([class*="-sm"]):not(.btn-claim-approve):not(.btn-claim-reject):not(.btn-date-today):not(.header-icon-btn):not(.btn-date-nav),
   .btn-blue-cta,
   .btn-navy-cta,
-  .btn-black-sm,
-  .btn-blue-sm,
-  .btn-navy-sm,
-  .btn-orange-cta,
-  .btn-burgundy-cta,
   .btn-navy-full,
   .btn-burgundy-full,
   .btn-finalize-offboard,
   .btn-onboard-dedicated,
   .btn-onboard-trigger,
   .btn-create-profile,
-  .btn-claim-approve,
   .penpot-btn-primary-navy,
   .hero-cta-buttons .btn-blue-cta) {
-  min-height: 42px !important;
-  height: 42px !important;
-  padding: 9px 20px !important;
+  min-height: 40px !important;
+  height: 40px !important;
+  max-height: 40px !important;
+  padding: 0 18px !important;
   border-radius: 8px !important;
-  font-size: 14px !important;
+  font-size: 13.5px !important;
   font-weight: 600 !important;
   font-family: var(--font-family) !important;
   background-color: var(--sidebar-bg) !important;
@@ -6175,23 +6180,18 @@ h4 {
   transition: all 0.18s cubic-bezier(.2, .8, .2, 1) !important;
   box-sizing: border-box !important;
   white-space: nowrap !important;
+  line-height: 1 !important;
 }
 
-:where(.btn,
+:where(.btn:not(.btn-sm):not([class*="-sm"]):not(.btn-claim-approve):not(.btn-claim-reject):not(.btn-date-today):not(.header-icon-btn):not(.btn-date-nav),
   .btn-blue-cta,
   .btn-navy-cta,
-  .btn-black-sm,
-  .btn-blue-sm,
-  .btn-navy-sm,
-  .btn-orange-cta,
-  .btn-burgundy-cta,
   .btn-navy-full,
   .btn-burgundy-full,
   .btn-finalize-offboard,
   .btn-onboard-dedicated,
   .btn-onboard-trigger,
   .btn-create-profile,
-  .btn-claim-approve,
   .penpot-btn-primary-navy,
   .hero-cta-buttons .btn-blue-cta):hover {
   background-color: #147098 !important;
@@ -6201,21 +6201,15 @@ h4 {
   box-shadow: 0 4px 14px rgba(25, 137, 185, 0.32) !important;
 }
 
-:where(.btn,
+:where(.btn:not(.btn-sm):not([class*="-sm"]):not(.btn-claim-approve):not(.btn-claim-reject):not(.btn-date-today):not(.header-icon-btn):not(.btn-date-nav),
   .btn-blue-cta,
   .btn-navy-cta,
-  .btn-black-sm,
-  .btn-blue-sm,
-  .btn-navy-sm,
-  .btn-orange-cta,
-  .btn-burgundy-cta,
   .btn-navy-full,
   .btn-burgundy-full,
   .btn-finalize-offboard,
   .btn-onboard-dedicated,
   .btn-onboard-trigger,
   .btn-create-profile,
-  .btn-claim-approve,
   .penpot-btn-primary-navy,
   .hero-cta-buttons .btn-blue-cta):active {
   transform: translateY(1px) scale(0.985) !important;
@@ -6223,19 +6217,63 @@ h4 {
   border-color: #105979 !important;
 }
 
-/* Secondary / outline buttons: uniform size & matching sidebar tone */
-:where(.btn-light-blue-cta,
-  .btn-outline-gray,
-  .btn-outline-white-sm,
-  .btn-outline-dark-sm,
-  .btn-purple-outline-sm,
-  .btn-date-today,
-  .hero-cta-buttons .btn-light-blue-cta) {
-  min-height: 42px !important;
-  height: 42px !important;
-  padding: 9px 20px !important;
+/* Specific Accent CTA Buttons */
+.btn-orange-cta {
+  min-height: 40px !important;
+  height: 40px !important;
+  padding: 0 18px !important;
   border-radius: 8px !important;
-  font-size: 14px !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  background-color: #ea580c !important;
+  border: 1.5px solid #ea580c !important;
+  color: #ffffff !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.25) !important;
+}
+
+.btn-orange-cta:hover {
+  background-color: #c2410c !important;
+  border-color: #c2410c !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-burgundy-cta {
+  min-height: 40px !important;
+  height: 40px !important;
+  padding: 0 18px !important;
+  border-radius: 8px !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  background-color: #881337 !important;
+  border: 1.5px solid #881337 !important;
+  color: #ffffff !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+}
+
+.btn-burgundy-cta:hover {
+  background-color: #9f1239 !important;
+  border-color: #9f1239 !important;
+  color: #ffffff !important;
+}
+
+/* 2. Secondary / Outline Buttons */
+:where(.btn-light-blue-cta,
+  .btn-outline-gray:not(.btn-sm),
+  .hero-cta-buttons .btn-light-blue-cta) {
+  min-height: 40px !important;
+  height: 40px !important;
+  max-height: 40px !important;
+  padding: 0 18px !important;
+  border-radius: 8px !important;
+  font-size: 13.5px !important;
   font-weight: 600 !important;
   font-family: var(--font-family) !important;
   background-color: rgba(25, 137, 185, 0.08) !important;
@@ -6249,20 +6287,153 @@ h4 {
   transition: all 0.18s cubic-bezier(.2, .8, .2, 1) !important;
   box-sizing: border-box !important;
   white-space: nowrap !important;
+  line-height: 1 !important;
 }
 
 :where(.btn-light-blue-cta,
-  .btn-outline-gray,
-  .btn-outline-white-sm,
-  .btn-outline-dark-sm,
-  .btn-purple-outline-sm,
-  .btn-date-today,
+  .btn-outline-gray:not(.btn-sm),
   .hero-cta-buttons .btn-light-blue-cta):hover {
   background-color: var(--sidebar-bg) !important;
   border-color: var(--sidebar-bg) !important;
   color: #ffffff !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 4px 12px rgba(25, 137, 185, 0.22) !important;
+}
+
+:where(.btn-light-blue-cta,
+  .btn-outline-gray:not(.btn-sm),
+  .hero-cta-buttons .btn-light-blue-cta):active {
+  transform: translateY(1px) scale(0.985) !important;
+  background-color: #105979 !important;
+  border-color: #105979 !important;
+  color: #ffffff !important;
+}
+
+/* 3. Small / Compact Buttons (Tiles, Directory Cards, Tables, Inline Forms) */
+:where(.btn-sm,
+  .btn-black-sm,
+  .btn-blue-sm,
+  .btn-navy-sm,
+  .btn-outline-white-sm,
+  .btn-outline-dark-sm,
+  .btn-purple-outline-sm,
+  .btn-green-outline-sm,
+  .btn-claim-approve,
+  .btn-claim-reject) {
+  min-height: 32px !important;
+  height: 32px !important;
+  max-height: 32px !important;
+  padding: 0 12px !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  font-family: var(--font-family) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  cursor: pointer !important;
+  transition: all 0.18s cubic-bezier(.2, .8, .2, 1) !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+}
+
+/* Small solid buttons */
+:where(.btn-black-sm,
+  .btn-blue-sm,
+  .btn-navy-sm,
+  .btn-navy-cta.btn-sm,
+  .btn-claim-approve) {
+  background-color: var(--sidebar-bg) !important;
+  border: 1px solid var(--sidebar-bg) !important;
+  color: #ffffff !important;
+}
+
+:where(.btn-black-sm,
+  .btn-blue-sm,
+  .btn-navy-sm,
+  .btn-navy-cta.btn-sm,
+  .btn-claim-approve):hover {
+  background-color: #147098 !important;
+  border-color: #147098 !important;
+  color: #ffffff !important;
+}
+
+/* Small outline buttons */
+:where(.btn-outline-white-sm,
+  .btn-outline-dark-sm,
+  .btn-purple-outline-sm,
+  .btn-green-outline-sm,
+  .btn-outline-gray.btn-sm) {
+  background-color: rgba(25, 137, 185, 0.08) !important;
+  border: 1px solid var(--sidebar-bg) !important;
+  color: var(--sidebar-bg) !important;
+}
+
+:where(.btn-outline-white-sm,
+  .btn-outline-dark-sm,
+  .btn-purple-outline-sm,
+  .btn-green-outline-sm,
+  .btn-outline-gray.btn-sm):hover {
+  background-color: var(--sidebar-bg) !important;
+  border-color: var(--sidebar-bg) !important;
+  color: #ffffff !important;
+}
+
+/* Claims table reject button */
+.btn-claim-reject {
+  background-color: #ffffff !important;
+  border: 1px solid #fca5a5 !important;
+  color: #ef4444 !important;
+}
+
+.btn-claim-reject:hover {
+  background-color: #fee2e2 !important;
+  border-color: #ef4444 !important;
+  color: #dc2626 !important;
+}
+
+/* 4. Date Picker Buttons */
+.btn-date-today {
+  min-height: 28px !important;
+  height: 28px !important;
+  max-height: 28px !important;
+  padding: 0 10px !important;
+  border-radius: 6px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  font-family: var(--font-family) !important;
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #475569 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+}
+
+.btn-date-today:hover {
+  background-color: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+}
+
+/* 5. Circular Header Icon Buttons (Theme toggle, Notifications) */
+.header-icon-btn {
+  width: 38px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
 }
 
 .btn-page-num.active {
@@ -6426,12 +6597,8 @@ tbody tr:hover {
     font-size: 12px;
   }
 
-  .btn,
-  .btn-blue-sm,
-  .btn-black-sm,
-  .btn-purple-outline-sm,
-  .header-icon-btn {
-    min-height: 44px;
+  .btn:not(.btn-sm):not([class*="-sm"]):not(.btn-claim-approve):not(.btn-claim-reject):not(.btn-date-today):not(.header-icon-btn):not(.btn-date-nav) {
+    min-height: 40px;
   }
 }
 
@@ -7157,22 +7324,20 @@ html[data-theme="dark"],
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237fa4ba' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
 }
 
-/* Uniform Buttons Across System */
-[data-theme="dark"] :where(.btn,
+/* ==========================================================================
+   Uniform Buttons Across System (Dark Mode)
+   ========================================================================== */
+
+/* 1. Dark Mode Standard Primary Buttons */
+[data-theme="dark"] :where(.btn:not(.btn-sm):not([class*="-sm"]):not(.btn-claim-approve):not(.btn-claim-reject):not(.btn-date-today):not(.header-icon-btn):not(.btn-date-nav),
   .btn-blue-cta,
   .btn-navy-cta,
-  .btn-black-sm,
-  .btn-blue-sm,
-  .btn-navy-sm,
-  .btn-orange-cta,
-  .btn-burgundy-cta,
   .btn-navy-full,
   .btn-burgundy-full,
   .btn-finalize-offboard,
   .btn-onboard-dedicated,
   .btn-onboard-trigger,
   .btn-create-profile,
-  .btn-claim-approve,
   .penpot-btn-primary-navy) {
   background-color: #38bdf8 !important;
   border-color: #38bdf8 !important;
@@ -7180,21 +7345,15 @@ html[data-theme="dark"],
   box-shadow: 0 2px 8px rgba(56, 189, 248, 0.12) !important;
 }
 
-[data-theme="dark"] :where(.btn,
+[data-theme="dark"] :where(.btn:not(.btn-sm):not([class*="-sm"]):not(.btn-claim-approve):not(.btn-claim-reject):not(.btn-date-today):not(.header-icon-btn):not(.btn-date-nav),
   .btn-blue-cta,
   .btn-navy-cta,
-  .btn-black-sm,
-  .btn-blue-sm,
-  .btn-navy-sm,
-  .btn-orange-cta,
-  .btn-burgundy-cta,
   .btn-navy-full,
   .btn-burgundy-full,
   .btn-finalize-offboard,
   .btn-onboard-dedicated,
   .btn-onboard-trigger,
   .btn-create-profile,
-  .btn-claim-approve,
   .penpot-btn-primary-navy):hover {
   background-color: #7dd3fc !important;
   border-color: #7dd3fc !important;
@@ -7202,26 +7361,182 @@ html[data-theme="dark"],
   box-shadow: 0 4px 14px rgba(56, 189, 248, 0.2) !important;
 }
 
+[data-theme="dark"] :where(.btn:not(.btn-sm):not([class*="-sm"]):not(.btn-claim-approve):not(.btn-claim-reject):not(.btn-date-today):not(.header-icon-btn):not(.btn-date-nav),
+  .btn-blue-cta,
+  .btn-navy-cta,
+  .btn-navy-full,
+  .btn-burgundy-full,
+  .btn-finalize-offboard,
+  .btn-onboard-dedicated,
+  .btn-onboard-trigger,
+  .btn-create-profile,
+  .penpot-btn-primary-navy):active {
+  background-color: #0284c7 !important;
+  border-color: #0284c7 !important;
+  color: #ffffff !important;
+  transform: translateY(1px) scale(0.985) !important;
+}
+
+/* Dark Mode Specific Accent CTA Buttons */
+[data-theme="dark"] .btn-orange-cta {
+  background-color: #f97316 !important;
+  border-color: #f97316 !important;
+  color: #0b111e !important;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.2) !important;
+}
+
+[data-theme="dark"] .btn-orange-cta:hover {
+  background-color: #fb923c !important;
+  border-color: #fb923c !important;
+  color: #0b111e !important;
+}
+
+[data-theme="dark"] .btn-burgundy-cta {
+  background-color: #be123c !important;
+  border-color: #be123c !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .btn-burgundy-cta:hover {
+  background-color: #e11d48 !important;
+  border-color: #e11d48 !important;
+  color: #ffffff !important;
+}
+
+/* 2. Dark Mode Standard Outline / Secondary Buttons */
 [data-theme="dark"] :where(.btn-light-blue-cta,
-  .btn-outline-gray,
-  .btn-outline-white-sm,
-  .btn-outline-dark-sm,
-  .btn-purple-outline-sm,
-  .btn-date-today) {
+  .btn-outline-gray:not(.btn-sm)) {
   background-color: rgba(56, 189, 248, 0.1) !important;
   border-color: rgba(56, 189, 248, 0.35) !important;
   color: #38bdf8 !important;
 }
 
 [data-theme="dark"] :where(.btn-light-blue-cta,
-  .btn-outline-gray,
-  .btn-outline-white-sm,
-  .btn-outline-dark-sm,
-  .btn-purple-outline-sm,
-  .btn-date-today):hover {
+  .btn-outline-gray:not(.btn-sm)):hover {
   background-color: rgba(56, 189, 248, 0.16) !important;
   border-color: #38bdf8 !important;
   color: #38bdf8 !important;
+}
+
+[data-theme="dark"] :where(.btn-light-blue-cta,
+  .btn-outline-gray:not(.btn-sm)):active {
+  background-color: rgba(56, 189, 248, 0.25) !important;
+  border-color: #38bdf8 !important;
+  color: #ffffff !important;
+}
+
+/* 3. Dark Mode Small Solid Buttons */
+[data-theme="dark"] :where(.btn-black-sm,
+  .btn-blue-sm,
+  .btn-navy-sm,
+  .btn-navy-cta.btn-sm,
+  .btn-claim-approve) {
+  background-color: #38bdf8 !important;
+  border-color: #38bdf8 !important;
+  color: #0b111e !important;
+  box-shadow: 0 2px 6px rgba(56, 189, 248, 0.15) !important;
+}
+
+[data-theme="dark"] :where(.btn-black-sm,
+  .btn-blue-sm,
+  .btn-navy-sm,
+  .btn-navy-cta.btn-sm,
+  .btn-claim-approve):hover {
+  background-color: #7dd3fc !important;
+  border-color: #7dd3fc !important;
+  color: #0b111e !important;
+}
+
+/* Dark Mode Small Outline Buttons */
+[data-theme="dark"] :where(.btn-outline-white-sm,
+  .btn-outline-dark-sm,
+  .btn-purple-outline-sm,
+  .btn-green-outline-sm,
+  .btn-outline-gray.btn-sm) {
+  background-color: rgba(56, 189, 248, 0.08) !important;
+  border-color: rgba(56, 189, 248, 0.3) !important;
+  color: #38bdf8 !important;
+}
+
+[data-theme="dark"] :where(.btn-outline-white-sm,
+  .btn-outline-dark-sm,
+  .btn-purple-outline-sm,
+  .btn-green-outline-sm,
+  .btn-outline-gray.btn-sm):hover {
+  background-color: rgba(56, 189, 248, 0.16) !important;
+  border-color: #38bdf8 !important;
+  color: #38bdf8 !important;
+}
+
+/* Dark Mode Claim Reject Button */
+[data-theme="dark"] .btn-claim-reject {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  border: 1px solid rgba(239, 68, 68, 0.4) !important;
+  color: #f87171 !important;
+}
+
+[data-theme="dark"] .btn-claim-reject:hover {
+  background-color: rgba(239, 68, 68, 0.25) !important;
+  border-color: #f87171 !important;
+  color: #fca5a5 !important;
+}
+
+/* Dark Mode Date Today Button */
+[data-theme="dark"] .btn-date-today {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .btn-date-today:hover {
+  background-color: #243047 !important;
+  border-color: #38bdf8 !important;
+  color: #38bdf8 !important;
+}
+
+/* Dark Mode Segmented Controls */
+[data-theme="dark"] .segmented-switch {
+  background-color: #131c2e !important;
+  border: 1px solid #334155 !important;
+}
+
+[data-theme="dark"] .seg-btn {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .seg-btn:hover {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .seg-btn.active {
+  background-color: #38bdf8 !important;
+  color: #0b111e !important;
+}
+
+/* Dark Mode Upload & Form Buttons */
+[data-theme="dark"] .btn-upload-file,
+[data-theme="dark"] .btn-upload-clean {
+  background-color: #1e293b !important;
+  border: 1px solid #475569 !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .btn-upload-file:hover,
+[data-theme="dark"] .btn-upload-clean:hover {
+  background-color: #334155 !important;
+  border-color: #38bdf8 !important;
+  color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .btn-reupload {
+  background-color: rgba(52, 211, 153, 0.15) !important;
+  border: 1px solid rgba(52, 211, 153, 0.35) !important;
+  color: #34d399 !important;
+}
+
+[data-theme="dark"] .btn-reupload:hover {
+  background-color: rgba(52, 211, 153, 0.25) !important;
+  color: #6ee7b7 !important;
 }
 
 /* Modals & Dialogs */
@@ -7349,7 +7664,7 @@ html[data-theme="dark"],
 [data-theme="dark"] #view-logs .tab-pill {
   color: #94a3b8 !important;
   background-color: transparent !important;
-  border: none !important;
+  border: 1px solid transparent !important;
 }
 
 [data-theme="dark"] .tab-pill svg,
@@ -7378,7 +7693,7 @@ html[data-theme="dark"],
 
 [data-theme="dark"] .tab-pill.active svg,
 [data-theme="dark"] #view-logs .tab-pill.active svg {
-  stroke: #ffffff !important;
+  stroke: #38bdf8 !important;
 }
 
 /* ==========================================================================
