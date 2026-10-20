@@ -48,14 +48,18 @@ function toggleTheme() {
 function updateThemeToggleUI(theme) {
   const btn = document.getElementById('themeToggleBtn');
   const label = document.getElementById('themeToggleLabel');
+  const moon = document.getElementById('themeIconMoon');
+  const sun = document.getElementById('themeIconSun');
+  if (moon) moon.style.display = '';
+  if (sun) sun.style.display = '';
   if (theme === 'dark') {
-    if (label) label.textContent = 'Light mode';
+    if (label) label.textContent = 'Dark mode';
     if (btn) {
       btn.title = 'Switch to light mode';
       btn.setAttribute('aria-label', 'Switch to light mode');
     }
   } else {
-    if (label) label.textContent = 'Dark mode';
+    if (label) label.textContent = 'Light mode';
     if (btn) {
       btn.title = 'Switch to dark mode';
       btn.setAttribute('aria-label', 'Switch to dark mode');
@@ -2864,8 +2868,8 @@ async function applySettingsA11yOnLoad() {
 }
 
 function settingsSwitchTab(which) {
-  const panes = { profile: 'settingsPaneProfile', notif: 'settingsPaneNotif', company: 'settingsPaneCompany' };
-  const tabs = { profile: 'settingsTabProfile', notif: 'settingsTabNotif', company: 'settingsTabCompany' };
+  const panes = { notif: 'settingsPaneNotif', company: 'settingsPaneCompany' };
+  const tabs = { notif: 'settingsTabNotif', company: 'settingsTabCompany' };
   Object.entries(panes).forEach(([key, id]) => {
     const pane = document.getElementById(id);
     if (pane && !(key === 'company' && !settingsIsStaff)) {

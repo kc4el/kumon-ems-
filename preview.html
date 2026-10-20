@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="static/css/main.css?v=7.0" />
+  <link rel="stylesheet" href="static/css/main.css?v=7.3" />
   <script>
     function applyTheme(theme) {
       if (theme === 'dark') {
@@ -35,18 +35,16 @@
       var sun = document.getElementById('themeIconSun');
       var btn = document.getElementById('themeToggleBtn');
       var label = document.getElementById('themeToggleLabel');
+      if (moon) moon.style.display = '';
+      if (sun) sun.style.display = '';
       if (theme === 'dark') {
-        if (moon) moon.style.display = 'none';
-        if (sun) sun.style.display = 'block';
-        if (label) label.textContent = 'Light mode';
+        if (label) label.textContent = 'Dark mode';
         if (btn) {
           btn.title = 'Switch to light mode';
           btn.setAttribute('aria-label', 'Switch to light mode');
         }
       } else {
-        if (moon) moon.style.display = 'block';
-        if (sun) sun.style.display = 'none';
-        if (label) label.textContent = 'Dark mode';
+        if (label) label.textContent = 'Light mode';
         if (btn) {
           btn.title = 'Switch to dark mode';
           btn.setAttribute('aria-label', 'Switch to dark mode');
@@ -171,10 +169,7 @@
       <div class="sidebar-bottom-actions">
         <button type="button" class="sidebar-theme-toggle" id="themeToggleBtn" title="Switch to dark mode" aria-label="Switch to dark mode" onclick="toggleTheme()">
           <span class="sidebar-theme-icon-box">
-            <svg id="themeIconMoon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-            </svg>
-            <svg id="themeIconSun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+            <svg id="themeIconSun" class="theme-toggle-icon theme-toggle-icon--sun" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="5"></circle>
               <line x1="12" y1="1" x2="12" y2="3"></line>
               <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -185,8 +180,11 @@
               <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
               <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
             </svg>
+            <svg id="themeIconMoon" class="theme-toggle-icon theme-toggle-icon--moon" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
           </span>
-          <span class="sidebar-theme-label" id="themeToggleLabel">Dark mode</span>
+          <span class="sidebar-theme-label" id="themeToggleLabel">Light mode</span>
         </button>
       </div>
 
@@ -2262,6 +2260,29 @@
                 onclick="saveAccountProfile()">Save profile</button><span id="accountProfileStatus"
                 class="account-inline-status" role="status"></span></div>
           </article>
+          <article class="white-card account-editor-card">
+            <div class="account-section-head">
+              <div><span class="account-kicker">PASSWORD</span><h2>Change password</h2></div>
+              <span class="account-edit-tag">Minimum 8 characters</span>
+            </div>
+            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
+              <label for="setOldPassword">CURRENT PASSWORD</label>
+              <input id="setOldPassword" type="password" class="penpot-input" placeholder="Current password" autocomplete="current-password" />
+            </div>
+            <div class="inputs-2grid account-fields" style="margin-bottom:16px;">
+              <div class="input-cell">
+                <label for="setNewPassword">NEW PASSWORD</label>
+                <input id="setNewPassword" type="password" class="penpot-input" placeholder="New password" autocomplete="new-password" />
+              </div>
+              <div class="input-cell">
+                <label for="setNewPassword2">CONFIRM NEW PASSWORD</label>
+                <input id="setNewPassword2" type="password" class="penpot-input" placeholder="Repeat new password" autocomplete="new-password" />
+              </div>
+            </div>
+            <div class="account-card-actions">
+              <button type="button" class="btn btn-navy-cta" onclick="saveSettingsPassword()">Change password</button>
+            </div>
+          </article>
           <article class="white-card account-security-card">
             <div class="account-section-head">
               <div><span class="account-kicker">SIGN-IN SECURITY</span>
@@ -2325,8 +2346,7 @@
       <section class="view-panel" id="view-settings">
         <div class="page-title-block">
           <h1 class="penpot-page-heading">Settings</h1>
-          <p class="penpot-page-sub">Personal profile, notification &amp; display preferences, and company-wide
-            configuration.</p>
+          <p class="penpot-page-sub">Notification &amp; display preferences and company-wide configuration. To update your profile or sign-in credentials, visit <a href="#" onclick="switchView('profile')" style="color:#0284c7; font-weight:600; text-decoration:underline;">My account</a>.</p>
           <p id="settingsLoadError" class="card-sub" style="display:none; color:#991b1b;">Settings could not be loaded.
             Check your connection and retry.</p>
         </div>
@@ -2334,10 +2354,7 @@
         <!-- Subnav Pill Tabs -->
         <div class="penpot-subnav-row">
           <div class="pill-tabs-container">
-            <button class="tab-pill active" id="settingsTabProfile" onclick="settingsSwitchTab('profile')">
-              <span>My profile</span>
-            </button>
-            <button class="tab-pill" id="settingsTabNotif" onclick="settingsSwitchTab('notif')">
+            <button class="tab-pill active" id="settingsTabNotif" onclick="settingsSwitchTab('notif')">
               <span>Notifications &amp; display</span>
             </button>
             <button class="tab-pill" id="settingsTabCompany" onclick="settingsSwitchTab('company')" data-staff-only
@@ -2347,65 +2364,8 @@
           </div>
         </div>
 
-        <!-- TAB: MY PROFILE -->
-        <div id="settingsPaneProfile">
-          <div class="white-card">
-            <h2 class="card-title">My profile</h2>
-            <p class="card-sub">Update your name and email. HR manages your assigned role.</p>
-            <div class="inputs-2grid" style="margin-bottom:12px; margin-top:16px;">
-              <div class="input-cell">
-                <label>FIRST NAME</label>
-                <input id="setFirstName" class="penpot-input" placeholder="First name" />
-              </div>
-              <div class="input-cell">
-                <label>LAST NAME</label>
-                <input id="setLastName" class="penpot-input" placeholder="Last name" />
-              </div>
-            </div>
-            <div class="inputs-2grid" style="margin-bottom:20px;">
-              <div class="input-cell">
-                <label>EMAIL</label>
-                <input id="setEmail" type="email" class="penpot-input" placeholder="you@company.com" />
-              </div>
-              <div class="input-cell">
-                <label>ROLE</label>
-                <input id="setRole" class="penpot-input" placeholder="Role" disabled />
-                <small class="penpot-field-hint">Role is assigned by HR.</small>
-              </div>
-            </div>
-            <div class="settings-card-actions">
-              <button class="btn btn-navy-cta" onclick="saveSettingsProfile()">Save profile</button>
-            </div>
-          </div>
-
-          <div class="white-card">
-            <h2 class="card-title">Change password</h2>
-            <p class="card-sub">Minimum 8 characters. Other sessions are signed out.</p>
-            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
-              <label>CURRENT PASSWORD</label>
-              <input id="setOldPassword" type="password" class="penpot-input" placeholder="Current password"
-                autocomplete="current-password" />
-            </div>
-            <div class="inputs-2grid" style="margin-bottom:20px;">
-              <div class="input-cell">
-                <label>NEW PASSWORD</label>
-                <input id="setNewPassword" type="password" class="penpot-input" placeholder="New password"
-                  autocomplete="new-password" />
-              </div>
-              <div class="input-cell">
-                <label>CONFIRM NEW PASSWORD</label>
-                <input id="setNewPassword2" type="password" class="penpot-input" placeholder="Repeat new password"
-                  autocomplete="new-password" />
-              </div>
-            </div>
-            <div class="settings-card-actions">
-              <button class="btn btn-navy-cta" onclick="saveSettingsPassword()">Change password</button>
-            </div>
-          </div>
-        </div>
-
         <!-- TAB: NOTIFICATIONS & DISPLAY -->
-        <div id="settingsPaneNotif" style="display:none;">
+        <div id="settingsPaneNotif">
           <div class="white-card notif-settings-card">
             <div class="notif-card-header">
               <div>
@@ -3043,7 +3003,7 @@
   <!-- Toast Container -->
   <div id="toastContainer" class="toast-stack"></div>
 
-  <script src="static/js/dashboard.js?v=5.8"></script>
+  <script src="static/js/dashboard.js?v=6.0"></script>
   <script>
     (function () { if (!window.chatbase || window.chatbase("getState") !== "initialized") { window.chatbase = (...arguments) => { if (!window.chatbase.q) { window.chatbase.q = [] } window.chatbase.q.push(arguments) }; window.chatbase = new Proxy(window.chatbase, { get(target, prop) { if (prop === "q") { return target.q } return (...args) => target(prop, ...args) } }) } const onLoad = function () { const script = document.createElement("script"); script.src = "https://www.chatbase.co/embed.min.js"; script.id = "ZR84LaAfbmdAWKswjfurQ"; script.domain = "www.chatbase.co"; document.body.appendChild(script) }; if (document.readyState === "complete") { onLoad() } else { window.addEventListener("load", onLoad) } })(); 
   </script>

@@ -256,16 +256,15 @@ body {
 
 .sidebar-theme-icon-box {
   position: relative;
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.18);
+  width: 20px;
+  height: 20px;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   color: #ffffff;
-  transition: transform 0.34s cubic-bezier(.2, .75, .25, 1), background-color 0.28s ease;
+  transition: transform 0.34s cubic-bezier(.2, .75, .25, 1);
 }
 
 .sidebar-theme-icon-box .theme-toggle-icon {
@@ -277,29 +276,31 @@ body {
   will-change: opacity, transform;
 }
 
-.theme-toggle-icon--moon {
+.theme-toggle-icon--sun {
   opacity: 1;
   transform: rotate(0deg) scale(1);
 }
 
-.theme-toggle-icon--sun {
-  opacity: 0;
-  transform: rotate(65deg) scale(.55);
-}
-
-html[data-theme="dark"] .theme-toggle-icon--moon {
+.theme-toggle-icon--moon {
   opacity: 0;
   transform: rotate(-65deg) scale(.55);
 }
 
-html[data-theme="dark"] .theme-toggle-icon--sun {
+html[data-theme="dark"] .theme-toggle-icon--sun,
+[data-theme="dark"] .theme-toggle-icon--sun {
+  opacity: 0;
+  transform: rotate(65deg) scale(.55);
+}
+
+html[data-theme="dark"] .theme-toggle-icon--moon,
+[data-theme="dark"] .theme-toggle-icon--moon {
   opacity: 1;
   transform: rotate(0deg) scale(1);
 }
 
 .sidebar-theme-toggle:hover .sidebar-theme-icon-box {
   transform: rotate(15deg);
-  background: rgba(255, 255, 255, 0.32);
+  background: transparent;
 }
 
 .sidebar-theme-label {
@@ -5437,7 +5438,8 @@ body {
 }
 
 .account-identity-card {
-  grid-row: span 2;
+  grid-row: span 3;
+  align-self: start;
   overflow: hidden;
   color: var(--text-body, #334155);
   background: var(--card-bg, #ffffff);
@@ -7297,13 +7299,13 @@ html[data-theme="dark"] {
 }
 
 [data-theme="dark"] .sidebar-theme-icon-box {
-  background: rgba(56, 189, 248, 0.2) !important;
+  background: transparent !important;
   color: #38bdf8 !important;
 }
 
 [data-theme="dark"] .sidebar-theme-toggle:hover .sidebar-theme-icon-box {
-  background: #38bdf8 !important;
-  color: #0b111e !important;
+  background: transparent !important;
+  color: #38bdf8 !important;
 }
 
 [data-theme="dark"] .sidebar-theme-label {
