@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="static/css/main.css?v=6.2" />
+  <link rel="stylesheet" href="static/css/main.css?v=6.4" />
   <script>
     function applyTheme(theme) {
       if (theme === 'dark') {
@@ -518,15 +518,15 @@
         <!-- Promote / Transfer Switchable Card -->
         <div class="white-card card-promotetransfer">
           <div class="pt-segmented-head">
-            <div>
+            <div class="pt-head-text">
               <h2 class="card-title" id="ptCardTitle">Promote Employee</h2>
               <p class="card-sub" id="ptCardSubtitle">Record the next role and pay-grade step with a clear effective
                 date and promotion rationale.</p>
             </div>
             <div class="segmented-switch">
-              <button class="seg-btn active" id="btnModePromote" onclick="setPtMode('promote')">Promotion</button>
-              <button class="seg-btn" id="btnModeTransfer" onclick="setPtMode('transfer')">Transfer</button>
-              <button class="seg-btn" id="btnModeRemove" onclick="setPtMode('remove')">Remove Employee</button>
+              <button type="button" class="seg-btn active" id="btnModePromote" onclick="setPtMode('promote')">Promotion</button>
+              <button type="button" class="seg-btn" id="btnModeTransfer" onclick="setPtMode('transfer')">Transfer</button>
+              <button type="button" class="seg-btn" id="btnModeRemove" onclick="setPtMode('remove')">Remove Employee</button>
             </div>
           </div>
 

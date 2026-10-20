@@ -1387,33 +1387,96 @@ html[data-theme="dark"] .theme-toggle-icon--sun {
   color: #166534;
 }
 
-.pt-segmented-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
+.card-promotetransfer {
+  position: relative;
 }
 
-.segmented-switch {
+.pt-segmented-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  min-height: 48px;
+}
+
+.pt-head-text,
+.pt-segmented-head > div:first-child {
+  flex: 1;
+  min-width: 0;
+  padding-right: 350px;
+}
+
+.card-promotetransfer .segmented-switch {
+  position: absolute;
+  top: 24px;
+  right: 24px;
   display: inline-flex;
+  align-items: center;
   background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 3px;
+  gap: 3px;
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .card-promotetransfer .segmented-switch {
+    position: static;
+    margin-top: 12px;
+    width: 100%;
+    display: flex;
+  }
+  .card-promotetransfer .segmented-switch .seg-btn {
+    flex: 1;
+    text-align: center;
+  }
+  .pt-head-text,
+  .pt-segmented-head > div:first-child {
+    padding-right: 0;
+  }
 }
 
 .seg-btn {
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
-  padding: 6px 16px;
+  padding: 0 16px;
+  height: 34px;
+  min-height: 34px;
+  max-height: 34px;
   font-size: 13px;
   font-weight: 600;
+  font-family: inherit;
   border-radius: 6px;
   cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  color: #64748b;
+  transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+  outline: none;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.seg-btn:hover {
+  color: #0f172a;
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 .seg-btn.active {
   background-color: #0f172a;
   color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.seg-btn:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 1px;
 }
 
 .pt-footer-row {
@@ -7540,15 +7603,25 @@ html[data-theme="dark"] {
 
 [data-theme="dark"] .seg-btn {
   color: #94a3b8 !important;
+  background: transparent !important;
+  border-color: transparent !important;
 }
 
 [data-theme="dark"] .seg-btn:hover {
   color: #f8fafc !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
 }
 
 [data-theme="dark"] .seg-btn.active {
   background-color: #38bdf8 !important;
+  border-color: #38bdf8 !important;
   color: #0b111e !important;
+  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.25) !important;
+}
+
+[data-theme="dark"] .seg-btn:focus-visible {
+  outline: 2px solid #38bdf8 !important;
+  outline-offset: 1px !important;
 }
 
 /* Dark Mode Upload & Form Buttons */
