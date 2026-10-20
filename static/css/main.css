@@ -3876,6 +3876,15 @@ html[data-theme="dark"] .theme-toggle-icon--sun {
   box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
 }
 
+.penpot-input:disabled {
+  background-color: #f1f5f9;
+  color: #334155;
+  cursor: not-allowed;
+  opacity: 1;
+  -webkit-text-fill-color: #334155;
+  border-color: #cbd5e1;
+}
+
 .penpot-input::placeholder {
   color: #94a3b8;
 }
@@ -5233,10 +5242,11 @@ body {
 .account-identity-card {
   grid-row: span 2;
   overflow: hidden;
-  color: #f8fbfc;
-  background: linear-gradient(150deg, #183b59 0%, #102c44 100%);
-  border-color: #183b59;
-  box-shadow: 0 16px 32px -24px rgba(8, 32, 50, .9);
+  color: var(--text-body, #334155);
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--card-border, #e6ecf5);
+  border-radius: var(--card-radius, 12px);
+  box-shadow: var(--card-shadow, none);
 }
 
 .account-identity-top {
@@ -5244,7 +5254,7 @@ body {
   align-items: center;
   gap: 15px;
   padding-bottom: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, .14);
+  border-bottom: 1px solid var(--card-border, #e6ecf5);
 }
 
 .account-avatar {
@@ -5252,28 +5262,35 @@ body {
   place-items: center;
   flex: 0 0 62px;
   height: 62px;
-  border: 1px solid rgba(255, 255, 255, .48);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 50%;
   background: #f0c45e;
   color: #18344c;
   font-size: 18px;
   font-weight: 800;
+  box-shadow: 0 2px 8px rgba(240, 196, 94, 0.25);
 }
 
 .account-identity-card .account-kicker {
-  color: #9fd4ef;
+  color: #176da0;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  display: inline-block;
 }
 
 .account-identity-card h2 {
   margin: 4px 0 2px;
-  color: #fff;
+  color: var(--text-heading, #0f172a);
   font-size: 22px;
   letter-spacing: -.03em;
+  font-weight: 750;
 }
 
 .account-identity-card p {
-  color: #c3d3dd;
-  font-size: 13px;
+  color: var(--text-muted, #64748b);
+  font-size: 13.5px;
 }
 
 .account-facts {
@@ -5287,18 +5304,19 @@ body {
 }
 
 .account-facts dt {
-  color: #94b4c7;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: .1em;
+  color: var(--text-muted, #64748b);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .08em;
   text-transform: uppercase;
 }
 
 .account-facts dd {
-  margin-top: 3px;
-  color: #f8fbfc;
+  margin-top: 4px;
+  color: var(--text-heading, #0f172a);
+  font-weight: 600;
   overflow-wrap: anywhere;
-  font-size: 14px;
+  font-size: 14.5px;
 }
 
 .account-card-actions {
@@ -5835,11 +5853,26 @@ h4 {
 }
 
 .hero-date-tag,
-.account-kicker,
 .summary-tag,
-.account-edit-tag,
 .cal-title-tag {
   display: none !important;
+}
+
+.account-kicker {
+  display: inline-block;
+  color: #176da0;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.account-edit-tag {
+  display: inline-block;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .hero-heading {
@@ -7916,3 +7949,92 @@ html[data-theme="dark"],
 [data-theme="dark"] #view-logs .audit-logs-table tbody tr:hover .claims-applicant-info span {
   color: #cbd5e1 !important;
 }
+
+/* My Account / Profile View in Dark Mode */
+[data-theme="dark"] .account-identity-card {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .account-identity-top {
+  border-bottom-color: #334155 !important;
+}
+
+[data-theme="dark"] .account-avatar {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+[data-theme="dark"] .account-identity-card .account-kicker,
+[data-theme="dark"] .account-kicker {
+  color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .account-identity-card h2 {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .account-identity-card p {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .account-facts dt {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .account-facts dd {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .account-edit-tag {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .account-security-badge {
+  background-color: rgba(251, 191, 36, 0.15) !important;
+  color: #fbbf24 !important;
+  border-color: rgba(251, 191, 36, 0.3) !important;
+}
+
+[data-theme="dark"] .account-security-badge.is-enabled {
+  background-color: rgba(52, 211, 153, 0.15) !important;
+  color: #34d399 !important;
+  border-color: rgba(52, 211, 153, 0.3) !important;
+}
+
+[data-theme="dark"] .account-mfa-setup,
+[data-theme="dark"] .account-recovery-codes {
+  background-color: #131c2e !important;
+  border-color: #334155 !important;
+}
+
+[data-theme="dark"] .account-secret-label,
+[data-theme="dark"] .account-code-row label {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .account-secret-key {
+  background-color: #1e293b !important;
+  color: #38bdf8 !important;
+  border: 1px solid #334155 !important;
+}
+
+[data-theme="dark"] .account-recovery-codes strong {
+  color: #fbbf24 !important;
+}
+
+[data-theme="dark"] .account-recovery-codes p {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .account-recovery-codes pre {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .penpot-input:disabled {
+  background-color: #131c2e !important;
+  color: #94a3b8 !important;
+  -webkit-text-fill-color: #94a3b8 !important;
+  border-color: #334155 !important;
+}
+
