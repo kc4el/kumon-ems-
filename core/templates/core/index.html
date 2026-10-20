@@ -11,7 +11,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=5.7" />
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=6.2" />
   <script>
     function applyTheme(theme) {
       if (theme === 'dark') {
@@ -82,7 +82,7 @@
       const relPrefix = window.location.protocol === 'file:' ? '../../../' : '/';
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = relPrefix + 'static/css/main.css?v=5.7';
+      link.href = relPrefix + 'static/css/main.css?v=6.2';
       document.head.appendChild(link);
     }
   </script>
@@ -383,7 +383,6 @@
               <div class="action-tile tile-yellow">
                 <div class="tile-content">
                   <strong>Leave requests</strong>
-                  <span>Review pending time-off applications.</span>
                 </div>
                 <button class="btn btn-black-sm" onclick="switchView('attendance-leave')">Review</button>
               </div>
@@ -391,7 +390,6 @@
               <div class="action-tile tile-green">
                 <div class="tile-content">
                   <strong>People directory</strong>
-                  <span>Find a staff record and review its details.</span>
                 </div>
                 <button class="btn btn-outline-white-sm" onclick="switchView('employee-directory')">Open</button>
               </div>
@@ -399,15 +397,13 @@
               <div class="action-tile tile-purple">
                 <div class="tile-content">
                   <strong>Company settings</strong>
-                  <span>Manage rules and import the employee roster.</span>
                 </div>
-                <button class="btn btn-blue-sm" onclick="switchView('settings')">Manage ↗</button>
+                <button class="btn btn-blue-sm" onclick="switchView('settings')">Manage</button>
               </div>
 
               <div class="action-tile tile-pink">
                 <div class="tile-content">
                   <strong>Account security</strong>
-                  <span>Review your profile, password, and two-factor sign-in.</span>
                 </div>
                 <button class="btn btn-outline-white-sm" onclick="switchView('profile')">Open</button>
               </div>
@@ -2223,13 +2219,17 @@
                 <div class="input-cell"><label for="accountMfaDisablePassword">CURRENT PASSWORD</label><input id="accountMfaDisablePassword" class="penpot-input" type="password" autocomplete="current-password" /></div>
                 <div class="input-cell"><label for="accountMfaDisableCode">AUTHENTICATOR OR RECOVERY CODE</label><input id="accountMfaDisableCode" class="penpot-input" inputmode="text" autocomplete="one-time-code" /></div>
               </div>
-              <button type="button" class="btn btn-outline-gray" onclick="disableAccountTwoFactor()">Turn off 2FA</button>
+              <div class="account-card-actions">
+                <button type="button" class="btn btn-outline-gray" onclick="disableAccountTwoFactor()">Turn off 2FA</button>
+              </div>
             </div>
             <div id="accountMfaDisabled">
               <div class="inputs-2grid account-fields">
                 <div class="input-cell"><label for="accountMfaSetupPassword">CURRENT PASSWORD</label><input id="accountMfaSetupPassword" class="penpot-input" type="password" autocomplete="current-password" /></div>
               </div>
-              <button type="button" class="btn btn-navy-cta" onclick="startAccountTwoFactorSetup()">Set up authenticator</button>
+              <div class="account-card-actions">
+                <button type="button" class="btn btn-navy-cta" onclick="startAccountTwoFactorSetup()">Set up authenticator</button>
+              </div>
             </div>
             <div id="accountMfaSetup" class="account-mfa-setup" hidden>
               <div class="account-secret-label">Enter this key in your authenticator app</div>
@@ -2241,7 +2241,9 @@
               <strong>Save these one-time recovery codes now</strong>
               <p>They are shown once. Each code works once if you lose your authenticator.</p>
               <pre id="accountRecoveryCodeList"></pre>
-              <button type="button" class="btn btn-outline-gray" onclick="copyRecoveryCodes('accountRecoveryCodeList')">Copy codes</button>
+              <div class="account-card-actions">
+                <button type="button" class="btn btn-outline-gray" onclick="copyRecoveryCodes('accountRecoveryCodeList')">Copy codes</button>
+              </div>
             </div>
             <p id="accountMfaStatus" class="account-inline-status" role="status"></p>
           </article>
@@ -2302,7 +2304,7 @@
                 <small class="penpot-field-hint">Role is assigned by HR.</small>
               </div>
             </div>
-            <div class="modal-foot" style="justify-content:flex-start;">
+            <div class="settings-card-actions">
               <button class="btn btn-navy-cta" onclick="saveSettingsProfile()">Save profile</button>
             </div>
           </div>
@@ -2327,7 +2329,7 @@
                   autocomplete="new-password" />
               </div>
             </div>
-            <div class="modal-foot" style="justify-content:flex-start;">
+            <div class="settings-card-actions">
               <button class="btn btn-navy-cta" onclick="saveSettingsPassword()">Change password</button>
             </div>
           </div>
@@ -2537,7 +2539,7 @@
               <p style="font-size:13px; color:#475569; margin:8px 0 0 0;">Not sure which login? Staff use HR login
                 (/hr/login/); everyone else uses Employee login (/login/).</p>
             </div>
-            <div class="modal-foot" style="justify-content:flex-start;">
+            <div class="settings-card-actions">
               <button class="btn btn-outline-gray" onclick="loadSettingsView()">Discard</button>
               <button class="btn btn-navy-cta" onclick="saveSettingsSite()">Save company settings</button>
             </div>
@@ -2550,7 +2552,7 @@
               <label>ROSTER FILE (.XLSX)</label>
               <input id="settingsImportFile" type="file" accept=".xlsx" class="penpot-input" />
             </div>
-            <div class="modal-foot" style="justify-content:flex-start; margin-bottom:16px;">
+            <div class="settings-card-actions" style="margin-bottom:16px;">
               <button class="btn btn-outline-gray" onclick="settingsImportDryRun()">Dry-run preview</button>
               <button class="btn btn-navy-cta" onclick="settingsImportCommit()">Confirm import</button>
             </div>

@@ -3582,7 +3582,7 @@ function renderFirstEmployeeCta(total) {
   cta.innerHTML =
     '<h2 class="card-title">No employees yet</h2>' +
     '<p class="card-sub">Add your first employee to unlock attendance, leave, and payroll.</p>' +
-    '<div class="modal-foot" style="justify-content:flex-start;">' +
+    '<div class="settings-card-actions">' +
     '<button class="btn btn-navy-cta" onclick="switchView(\'employee-directory\')">Add your first employee</button></div>';
   slot.prepend(cta);
 }

@@ -5326,11 +5326,28 @@ body {
   font-size: 14.5px;
 }
 
-.account-card-actions {
+.account-card-actions,
+.settings-card-actions,
+.card-actions {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-top: 18px;
+}
+
+#accountMfaDisabled .btn,
+#accountMfaEnabled .btn,
+#accountRecoveryCodes .btn,
+.account-security-card .btn:not(.account-code-row .btn),
+.account-fields + .btn,
+.account-fields + button {
+  margin-top: 18px;
+}
+
+.account-card-actions .btn,
+.settings-card-actions .btn,
+.card-actions .btn {
+  margin-top: 0;
 }
 
 .account-section-head {
@@ -6109,17 +6126,40 @@ h4 {
   border-radius: 9px;
   background: #f7fafb;
   box-shadow: none;
+  min-height: 52px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.priority-actions-stack .tile-content {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
 }
 
 .priority-actions-stack .tile-content strong {
   color: var(--text-heading);
-  font-size: 15px;
+  font-size: 16.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
 }
 
-.priority-actions-stack .tile-content span {
-  color: var(--text-muted);
-  font-size: 14px;
-  line-height: 1.45;
+.priority-actions-stack .action-tile .btn {
+  width: 80px !important;
+  min-width: 80px !important;
+  max-width: 80px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  padding: 0 8px !important;
+  justify-content: center !important;
+  text-align: center !important;
+  flex-shrink: 0 !important;
 }
 
 .card-title {
@@ -6135,12 +6175,6 @@ h4 {
 .penpot-auth-sub {
   font-size: 15.5px !important;
   line-height: 1.55 !important;
-  color: var(--text-muted) !important;
-}
-
-.priority-actions-stack .tile-content span {
-  font-size: 13px !important;
-  line-height: 1.4 !important;
   color: var(--text-muted) !important;
 }
 
@@ -6921,6 +6955,10 @@ html[data-theme="dark"],
 }
 
 /* Global Canvas & Typography in Dark Mode */
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
 [data-theme="dark"] body {
   background-color: #0f172a;
   color: #cbd5e1;
@@ -7572,8 +7610,157 @@ html[data-theme="dark"],
   color: #38bdf8 !important;
 }
 
-[data-theme="dark"] .modal-foot {
+[data-theme="dark"] .modal-card .modal-foot,
+[data-theme="dark"] .modal-backdrop .modal-foot {
   border-top: 1px solid #334155 !important;
+}
+
+[data-theme="dark"] .settings-card-actions,
+[data-theme="dark"] .account-card-actions,
+[data-theme="dark"] .card-actions {
+  border-top: none !important;
+}
+
+/* ==========================================================================
+   Employee Management: Offboarding & Onboarding Wizards (Dark Mode)
+   ========================================================================== */
+
+/* Wizard Section Headings & Subtexts */
+[data-theme="dark"] .wizard-section-head {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .modal-wizard-sub {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .wizard-footer-actions {
+  border-top: 1px solid #334155 !important;
+}
+
+/* Offboarding Form: Step 1 Radios */
+[data-theme="dark"] .radio-inline-label {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .radio-inline-label input[type="radio"] {
+  accent-color: #38bdf8 !important;
+}
+
+/* Offboarding Form: Step 2 Asset Recovery & Access Revocation */
+[data-theme="dark"] .asset-recovery-3grid {
+  background-color: #0f172a !important;
+  border: 1px solid #334155 !important;
+}
+
+[data-theme="dark"] .asset-check-item {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .asset-check-item:hover {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .asset-check-item input[type="checkbox"] {
+  accent-color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .asset-check-item .icon-svg-asset {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .asset-check-item:hover .icon-svg-asset {
+  color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .it-clearance-status-badge {
+  color: #34d399 !important;
+}
+
+/* Offboarding Form: Step 3 Exit Documents & Compliance */
+[data-theme="dark"] .doc-upload-cell {
+  background-color: #0f172a !important;
+  border: 1px solid #334155 !important;
+}
+
+[data-theme="dark"] .doc-upload-title {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .exit-clearance-banner {
+  background-color: rgba(52, 211, 153, 0.12) !important;
+  border: 1px solid rgba(52, 211, 153, 0.3) !important;
+  color: #34d399 !important;
+}
+
+[data-theme="dark"] .exit-file-remove {
+  color: #34d399 !important;
+}
+
+[data-theme="dark"] .exit-file-remove:hover {
+  color: #f87171 !important;
+}
+
+[data-theme="dark"] .hr-cleared-tag {
+  color: #34d399 !important;
+}
+
+/* Onboarding Wizard Modal: Step 2 IT Inventory & Asset Allocation */
+[data-theme="dark"] .it-inventory-3grid {
+  background-color: #0f172a !important;
+  border: 1px solid #334155 !important;
+}
+
+[data-theme="dark"] .it-category-header {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .it-category-header input[type="checkbox"] {
+  accent-color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .it-asset-item {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .it-asset-item:hover {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .it-asset-item input[type="checkbox"] {
+  accent-color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .it-asset-item .icon-svg-asset {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .it-asset-item:hover .icon-svg-asset {
+  color: #38bdf8 !important;
+}
+
+/* Onboarding Wizard Modal: Step 3 Compliance & Statutory Documentation Grid */
+[data-theme="dark"] .compliance-2col-grid {
+  gap: 8px 16px;
+}
+
+[data-theme="dark"] .compliance-doc-cell {
+  background-color: #0f172a !important;
+  border: 1px solid #334155 !important;
+}
+
+[data-theme="dark"] .compliance-doc-title {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .compliance-attached-banner {
+  background-color: rgba(52, 211, 153, 0.12) !important;
+  border: 1px solid rgba(52, 211, 153, 0.3) !important;
+  color: #34d399 !important;
+}
+
+[data-theme="dark"] .attached-file-meta {
+  color: #34d399 !important;
 }
 
 /* Settings Panels & Notifications */
