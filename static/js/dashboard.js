@@ -853,13 +853,19 @@ function showTourBubble(step, n, total) {
 }
 function initTour() {
   const view = document.getElementById("view-dashboard");
-  if (view && !document.getElementById("replayTourBtn")) {
+  const existingBtn = document.getElementById("replayTourBtn");
+  if (existingBtn) {
+    existingBtn.addEventListener("click", startTour);
+  } else if (view) {
+    const bar = document.createElement("div");
+    bar.className = "dashboard-footer-bar";
     const btn = document.createElement("button");
     btn.id = "replayTourBtn";
     btn.type = "button";
-    btn.textContent = "Take a quick tour";
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg><span>Take a quick tour</span>`;
     btn.addEventListener("click", startTour);
-    view.prepend(btn);
+    bar.appendChild(btn);
+    view.appendChild(bar);
   }
   let seen = null;
   try { seen = localStorage.getItem(KUMON_TOUR_KEY); } catch (e) { seen = null; }
@@ -2646,7 +2652,7 @@ function selectChannel(elem, channelKey, notify = true) {
     avatar.textContent = '#';
   }
   if (name) name.textContent = 'Company Announcements';
-  if (status) status.textContent = '● Broadcast Channel • All Staff';
+  if (status) status.textContent = '';
   if (input) input.placeholder = 'Post an announcement to the team...';
   loadMessagesForConversation(channelKey);
   if (notify) showToast('Switched to # Company Announcements channel.');
@@ -2734,7 +2740,10 @@ function searchConversationMessages(event) {
 
 function clearConversationSearch() {
   const input = document.getElementById('conversationSearchInput');
-  if (input) input.value = '';
+  if (input) {
+    input.value = '';
+    input.focus();
+  }
   loadMessagesForConversation(activeConversationKey);
 }
 

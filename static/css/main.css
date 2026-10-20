@@ -2678,19 +2678,43 @@ html[data-theme="dark"] .theme-toggle-icon--sun {
   color: var(--text-muted);
 }
 
+.dashboard-footer-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 24px;
+  padding: 12px 0 8px;
+}
+
 #replayTourBtn {
-  background: #f1f5f9;
-  color: #0f172a;
-  border: none;
-  border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: #176da0;
+  border: 1px solid rgba(23, 109, 160, 0.25);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
   cursor: pointer;
-  margin-bottom: 16px;
+  transition: all 0.18s ease;
+  margin: 0;
 }
 
 #replayTourBtn:hover {
-  background: #e2e8f0;
+  background: rgba(23, 109, 160, 0.08);
+  border-color: #176da0;
+  color: #0d4a6f;
+  transform: translateY(-1px);
+}
+
+#replayTourBtn svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  flex-shrink: 0;
 }
 
 .toast-stack {
@@ -3682,6 +3706,10 @@ html[data-theme="dark"] .theme-toggle-icon--sun {
   font-size: 11px;
   color: #166534;
   font-weight: 600;
+}
+
+.chat-header-status:empty {
+  display: none !important;
 }
 
 .chat-header-actions {
@@ -5673,37 +5701,61 @@ body {
 }
 
 .conversation-search {
-  display: flex;
-  align-items: end;
-  gap: 9px;
-  padding: 12px 16px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 10px 16px !important;
   border-bottom: 1px solid rgba(255, 255, 255, .14);
   background: #183b59;
 }
 
 .conversation-search[hidden] {
-  display: none;
+  display: none !important;
 }
 
 .conversation-search label {
   color: #d7e5ed;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .conversation-search input {
-  min-width: 120px;
+  min-width: 140px;
   max-width: 360px;
+  height: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
   flex: 1;
-  padding: 9px 11px;
+  padding: 0 12px !important;
   border: 1px solid #a9c0ce;
-  border-radius: 8px;
+  border-radius: 8px !important;
   background: #fff;
   color: #203b50;
+  font-size: 13px;
+  box-sizing: border-box !important;
 }
 
-.conversation-search button {
-  min-height: 38px;
+/* Equal width, height, and shape for all header and search action buttons */
+.chat-header-actions .btn,
+.conversation-search .btn {
+  width: 96px !important;
+  min-width: 96px !important;
+  max-width: 96px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  padding: 0 8px !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
 }
 
 #tourBubble {
@@ -5720,16 +5772,6 @@ body {
   cursor: default;
 }
 
-#replayTourBtn {
-  margin: 0 0 18px;
-  border: 0;
-  background: transparent;
-  color: #176da0;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 750;
-  cursor: pointer;
-}
 
 @media (max-width: 900px) {
   .account-layout {
@@ -7405,6 +7447,19 @@ html[data-theme="dark"] {
   color: #f8fafc !important;
 }
 
+/* Dashboard Footer Tour Button */
+[data-theme="dark"] #replayTourBtn {
+  color: #38bdf8 !important;
+  border-color: rgba(56, 189, 248, 0.28) !important;
+  background: transparent !important;
+}
+
+[data-theme="dark"] #replayTourBtn:hover {
+  background: rgba(56, 189, 248, 0.12) !important;
+  border-color: #38bdf8 !important;
+  color: #7dd3fc !important;
+}
+
 /* Metric KPI Cards (4-Row Boxes) */
 [data-theme="dark"] .kpi-card {
   background: linear-gradient(135deg, #0e295e 0%, #164496 50%, #2062cc 100%) !important;
@@ -8560,6 +8615,36 @@ html[data-theme="dark"] {
   background-color: #0f172a !important;
   border: 1px solid #334155 !important;
   color: #f8fafc !important;
+}
+
+[data-theme="dark"] .chat-header-actions .btn,
+[data-theme="dark"] .conversation-search .btn.btn-outline-white-sm,
+[data-theme="dark"] .conversation-search .btn.btn-outline-gray {
+  background-color: rgba(56, 189, 248, 0.08) !important;
+  border: 1px solid rgba(56, 189, 248, 0.35) !important;
+  color: #38bdf8 !important;
+  box-shadow: none !important;
+}
+
+[data-theme="dark"] .chat-header-actions .btn:hover,
+[data-theme="dark"] .conversation-search .btn.btn-outline-white-sm:hover,
+[data-theme="dark"] .conversation-search .btn.btn-outline-gray:hover {
+  background-color: rgba(56, 189, 248, 0.16) !important;
+  border-color: #38bdf8 !important;
+  color: #7dd3fc !important;
+}
+
+[data-theme="dark"] .conversation-search .btn.btn-blue-sm {
+  background-color: #38bdf8 !important;
+  border: 1px solid #38bdf8 !important;
+  color: #0b111e !important;
+  box-shadow: 0 2px 6px rgba(56, 189, 248, 0.15) !important;
+}
+
+[data-theme="dark"] .conversation-search .btn.btn-blue-sm:hover {
+  background-color: #7dd3fc !important;
+  border-color: #7dd3fc !important;
+  color: #0b111e !important;
 }
 
 [data-theme="dark"] .chat-stream-container {

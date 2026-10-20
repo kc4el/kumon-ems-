@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="static/css/main.css?v=6.8" />
+  <link rel="stylesheet" href="static/css/main.css?v=7.0" />
   <script>
     function applyTheme(theme) {
       if (theme === 'dark') {
@@ -408,6 +408,15 @@
               </div>
             </div>
           </div>
+        </div>
+        <!-- Dashboard Footer Corner -->
+        <div class="dashboard-footer-bar">
+          <button id="replayTourBtn" type="button" onclick="startTour()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span>Take a quick tour</span>
+          </button>
         </div>
       </section>
 
@@ -2020,7 +2029,7 @@
                 <div class="avatar-circle-md avatar-slate" id="activeChatAvatar">#</div>
                 <div class="chat-header-meta">
                   <strong class="chat-header-name" id="activeChatName">Company Announcements</strong>
-                  <span class="chat-header-status" id="activeChatStatus">● Broadcast Channel • All Staff</span>
+                  <span class="chat-header-status" id="activeChatStatus"></span>
                 </div>
               </div>
 
@@ -2044,7 +2053,7 @@
               <label for="conversationSearchInput">Search this conversation</label>
               <input id="conversationSearchInput" type="search" placeholder="Search messages or sender" />
               <button type="submit" class="btn btn-blue-sm">Find</button>
-              <button type="button" class="btn btn-outline-gray" onclick="clearConversationSearch()">Clear</button>
+              <button type="button" class="btn btn-outline-white-sm" onclick="clearConversationSearch()">Clear</button>
             </form>
 
             <!-- Conversation Stream -->
@@ -3034,7 +3043,7 @@
   <!-- Toast Container -->
   <div id="toastContainer" class="toast-stack"></div>
 
-  <script src="static/js/dashboard.js?v=5.6"></script>
+  <script src="static/js/dashboard.js?v=5.8"></script>
   <script>
     (function () { if (!window.chatbase || window.chatbase("getState") !== "initialized") { window.chatbase = (...arguments) => { if (!window.chatbase.q) { window.chatbase.q = [] } window.chatbase.q.push(arguments) }; window.chatbase = new Proxy(window.chatbase, { get(target, prop) { if (prop === "q") { return target.q } return (...args) => target(prop, ...args) } }) } const onLoad = function () { const script = document.createElement("script"); script.src = "https://www.chatbase.co/embed.min.js"; script.id = "ZR84LaAfbmdAWKswjfurQ"; script.domain = "www.chatbase.co"; document.body.appendChild(script) }; if (document.readyState === "complete") { onLoad() } else { window.addEventListener("load", onLoad) } })(); 
   </script>
