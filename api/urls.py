@@ -66,6 +66,7 @@ from core.views_docs import (
     SalaryAdvanceListCreateView,
 )
 from core.views_import import import_urls
+from core.views_actions import action_urls
 
 urlpatterns = [
     path(
@@ -293,3 +294,4 @@ urlpatterns = [
 ]
 
 urlpatterns += import_urls
+urlpatterns += action_urls

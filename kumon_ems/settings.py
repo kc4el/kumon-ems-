@@ -28,11 +28,30 @@ load_dotenv(BASE_DIR / ".env")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-# Keep production secrets and deployment settings in environment variables.
-DEBUG = os.getenv("DEBUG", "False").strip().lower() in {"1", "true", "yes", "on"}
+import sys
+
+DEV_COMMANDS = {
+    "test",
+    "runserver",
+    "migrate",
+    "makemigrations",
+    "showmigrations",
+    "shell",
+    "check",
+    "setup_hr_account",
+    "setup_employee_accounts",
+    "seed_listed_employees",
+}
+is_dev_cmd = any(cmd in sys.argv for cmd in DEV_COMMANDS)
+DEBUG = os.getenv("DEBUG", "True" if is_dev_cmd else "False").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
 SECRET_KEY = os.getenv("SECRET_KEY", "")
 if not SECRET_KEY:
-    if DEBUG:
+    if DEBUG or is_dev_cmd:
         SECRET_KEY = "django-insecure-dev-only-key"
     else:
         raise ImproperlyConfigured("SECRET_KEY env var is required when DEBUG is off.")
@@ -62,9 +81,14 @@ INSTALLED_APPS = [
     "corsheaders",
     "core",
     "api",
-    "django_dbml",
-    "django_extensions",
 ]
+
+for _opt_app in ("django_dbml", "django_extensions"):
+    try:
+        __import__(_opt_app)
+        INSTALLED_APPS.append(_opt_app)
+    except ImportError:
+        pass
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

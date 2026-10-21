@@ -12,6 +12,12 @@ SITE_SETTING_DEFAULTS = {
     "leave_auto_allocate_days": "0",
     "shift_allow_double_booking": "false",
     "mobile_checkin_enabled": "true",
+    "late_grace_period_mins": "15",
+    "auto_clockout_hours": "12",
+    "break_duration_mins": "60",
+    "salary_advance_max_limit": "10000",
+    "leave_annual_quota": "15",
+    "leave_carry_forward_max": "5",
 }
 
 SITE_SETTING_SPECS = {
@@ -23,6 +29,12 @@ SITE_SETTING_SPECS = {
     "leave_auto_allocate_days": {"min": 0, "max": 365, "integer": True},
     "shift_allow_double_booking": {"bool": True},
     "mobile_checkin_enabled": {"bool": True},
+    "late_grace_period_mins": {"min": 0, "max": 120, "integer": True},
+    "auto_clockout_hours": {"min": 1, "max": 24, "integer": True},
+    "break_duration_mins": {"min": 0, "max": 180, "integer": True},
+    "salary_advance_max_limit": {"min": 100, "max": 500000, "integer": True},
+    "leave_annual_quota": {"min": 0, "max": 100, "integer": True},
+    "leave_carry_forward_max": {"min": 0, "max": 50, "integer": True},
 }
 
 # Derived for model-level clean() validation (numeric keys only).

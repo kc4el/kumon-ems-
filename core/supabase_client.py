@@ -11,7 +11,24 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
-    raise ValueError("Supabase credentials missing in .env file.")
+    import sys
+    DEV_COMMANDS = {
+        "test",
+        "runserver",
+        "migrate",
+        "makemigrations",
+        "showmigrations",
+        "shell",
+        "check",
+        "setup_hr_account",
+        "setup_employee_accounts",
+        "seed_listed_employees",
+    }
+    if any(cmd in sys.argv for cmd in DEV_COMMANDS):
+        SUPABASE_URL = "https://example.supabase.co"
+        SUPABASE_KEY = "test-anon-key"
+    else:
+        raise ValueError("Supabase credentials missing in .env file.")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
