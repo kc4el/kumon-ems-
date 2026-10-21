@@ -91,13 +91,12 @@ class AttendanceOpenPerDayTests(TestCase):
             )
 
     def test_per_day_open_constraint_definition(self):
-        constraints = Attendance._meta.constraints
-        match = [
-            c
-            for c in constraints
-            if getattr(c, "name", "") == "one_open_attendance_per_employee_per_day"
-        ]
-        self.assertEqual(len(match), 1)
-        self.assertEqual(tuple(match[0].fields), ("employee", "date"))
-        self.assertEqual(match[0].condition, Q(clock_out__isnull=True))
+        # The model enforces one attendance record per employee per day via
+        # unique_together (migration 0032 removed the old partial UniqueConstraint).
         self.assertIn(("employee", "date"), Attendance._meta.unique_together)
+        # No partial constraint should exist with the old name.
+        old_constraint_names = [
+            getattr(c, "name", "") for c in Attendance._meta.constraints
+        ]
+        self.assertNotIn("one_open_attendance_per_employee_per_day", old_constraint_names)
+

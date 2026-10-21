@@ -138,7 +138,7 @@ class LeaveDeficitTests(TestCase):
 
 class PaginationOrderingTests(TestCase):
     def test_paginated_views_use_stable_ordering(self):
-        from .views import (
+        from core.views import (
             EmployeeListCreateView,
             PayrollItemListCreateView,
             PayrollRunListCreateView,
@@ -440,8 +440,6 @@ class OvertimeNotificationTests(TestCase):
         )
 
     def _slip(self, status="Pending"):
-        from .models import OvertimeSlip
-
         return OvertimeSlip.objects.create(
             employee=self.employee,
             attendance=self.attendance,
@@ -451,8 +449,6 @@ class OvertimeNotificationTests(TestCase):
         )
 
     def test_overtime_approval_creates_payroll_notification(self):
-        from .models import Notification
-
         slip = self._slip()
         self.assertFalse(
             Notification.objects.filter(employee=self.employee, kind="payroll").exists()
@@ -466,8 +462,6 @@ class OvertimeNotificationTests(TestCase):
         self.assertIn("1.00h", note.text)
 
     def test_overtime_pending_create_sends_no_notification(self):
-        from .models import Notification
-
         self._slip()
         self.assertFalse(
             Notification.objects.filter(employee=self.employee, kind="payroll").exists()

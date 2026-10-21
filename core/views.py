@@ -269,6 +269,9 @@ def employee_portal_view(request):
         return redirect("/login/?next=/employee/")
     employee = Employee.objects.filter(user=request.user, is_active=True).first()
     is_admin_account = request.user.is_staff or request.user.is_superuser
+    # Pure staff/superuser with no employee record belong in the HR dashboard.
+    if is_admin_account and employee is None:
+        return redirect("/hr/")
     if not is_admin_account and employee is None:
         logout(request)
         return redirect("/login/?next=/employee/")
@@ -665,7 +668,11 @@ class EmployeeDetailView(generics.RetrieveUpdateDestroyAPIView):
                         supabase.auth.admin.delete_user(str(target_user.id))
                         deauthed = True
                     else:
-                        deauthed = True
+                        # The primary delete failed and no matching remote
+                        # account could be confirmed.  Report the remote
+                        # deactivation as unsuccessful so the purge/retry
+                        # workflow can act on it.
+                        deauthed = False
                 except Exception:
                     deauthed = False
                     logger.exception("resign: Supabase deauth failed for %s", instance.id)
@@ -1809,7 +1816,7 @@ class MessageListCreateView(generics.ListCreateAPIView):
             name = f"{emp.first_name} {emp.last_name}".strip()
         else:
             name = user.get_full_name() or user.username
-        key = self.request.data.get("conversation_key") or "announcements"
+        key = self.request.data.get("conversation_key") or "general"
         serializer.save(conversation_key=key, sender_name=name)
 
 

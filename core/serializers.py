@@ -108,7 +108,9 @@ class EmployeeSerializer(serializers.ModelSerializer):
             "is_active",
             "resigned_at",
         ]
-        read_only_fields = ["id"]
+        # Hiring dates are assigned by the server/model default.  Accepting a
+        # client-provided value here lets callers rewrite employment history.
+        read_only_fields = ["id", "date_hired"]
 
 
 class AttendanceSerializer(serializers.ModelSerializer):

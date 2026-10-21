@@ -45,7 +45,7 @@ def _supa_users(*ids):
     return [SimpleNamespace(user=SimpleNamespace(id=i)) for i in ids]
 
 
-@override_settings(ROOT_URLCONF="api.test_settings_import")
+@override_settings(ROOT_URLCONF="tests.test_settings_import")
 class EmployeeImportTests(TestCase):
     def setUp(self):
         self.client = APIClient()
