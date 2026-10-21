@@ -61,9 +61,13 @@ class Attendance(models.Model):
     clock_in = models.DateTimeField(null=True, blank=True)
     clock_out = models.DateTimeField(null=True, blank=True)
 
-    # ADDED: Enforce at the Database level that an employee can only have 1 record per day
     class Meta:
-        unique_together = ("employee", "date")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("employee", "date"),
+                name="unique_attendance_employee_date",
+            )
+        ]
 
 
 class OvertimeSlip(models.Model):
