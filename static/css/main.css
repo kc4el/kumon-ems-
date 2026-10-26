@@ -373,6 +373,7 @@ html[data-theme="dark"] .theme-toggle-icon--moon,
   cursor: pointer;
   color: #0f172a;
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .header-icon-btn:hover {
@@ -3669,6 +3670,39 @@ html[data-theme="dark"] .theme-toggle-icon--moon,
   border-radius: 10px;
 }
 
+/* Header Notification Bell Counter Badge (Positioned just above the circle) */
+.header-icon-btn .unread-count-pill,
+#notifUnreadPill {
+  position: absolute;
+  top: -6px;
+  right: -3px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  z-index: 5;
+  box-sizing: border-box;
+}
+
+[data-theme="dark"] .header-icon-btn .unread-count-pill,
+[data-theme="dark"] #notifUnreadPill {
+  background-color: #ef4444;
+  border-color: #1e293b;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
 /* Right Chat Area */
 .messages-chat-area {
   display: flex;
@@ -6944,6 +6978,7 @@ h4 {
   align-items: center !important;
   justify-content: center !important;
   flex-shrink: 0 !important;
+  position: relative !important;
 }
 
 .btn-page-num.active {
