@@ -3272,6 +3272,55 @@ async function settingsImportCommit() {
 }
 
 // ==========================================================================
+// Collapsible Card System (Settings & Account)
+// ==========================================================================
+function toggleCollapsibleCard(cardId, forceState) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  const isCurrentlyCollapsed = card.classList.contains('is-collapsed');
+  const shouldCollapse = typeof forceState === 'boolean' ? !forceState : !isCurrentlyCollapsed;
+  card.classList.toggle('is-collapsed', shouldCollapse);
+  const btn = card.querySelector('.btn-collapse-toggle');
+  if (btn) {
+    btn.setAttribute('aria-expanded', String(!shouldCollapse));
+    btn.title = shouldCollapse ? 'Expand section' : 'Collapse section';
+    btn.setAttribute('aria-label', shouldCollapse ? 'Expand section' : 'Collapse section');
+  }
+  const header = card.querySelector('.collapsible-header');
+  if (header) {
+    header.setAttribute('aria-expanded', String(!shouldCollapse));
+  }
+}
+
+function handleCollapsibleKey(e, cardId) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    toggleCollapsibleCard(cardId);
+  }
+}
+
+function toggleCompanyCards(expand) {
+  const cards = document.querySelectorAll('#settingsPaneCompany .collapsible-card');
+  cards.forEach((card) => {
+    card.classList.toggle('is-collapsed', !expand);
+    const btn = card.querySelector('.btn-collapse-toggle');
+    if (btn) {
+      btn.setAttribute('aria-expanded', String(expand));
+      btn.title = expand ? 'Collapse section' : 'Expand section';
+      btn.setAttribute('aria-label', expand ? 'Collapse section' : 'Expand section');
+    }
+    const header = card.querySelector('.collapsible-header');
+    if (header) {
+      header.setAttribute('aria-expanded', String(expand));
+    }
+  });
+}
+
+window.toggleCollapsibleCard = toggleCollapsibleCard;
+window.handleCollapsibleKey = handleCollapsibleKey;
+window.toggleCompanyCards = toggleCompanyCards;
+
+// ==========================================================================
 // Standalone Authentication Handlers & Navigation
 // ==========================================================================
 function switchAuthPage(mode = 'login') {

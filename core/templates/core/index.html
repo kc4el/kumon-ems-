@@ -2190,10 +2190,11 @@
           <button type="button" class="btn btn-outline-gray" onclick="switchView('settings')">Preferences &amp; company settings</button>
         </div>
         <div class="account-layout">
+          <!-- Left Column: Condensed Identity Card -->
           <article class="white-card account-identity-card">
             <div class="account-identity-top">
               <div class="account-avatar" id="accountAvatar">—</div>
-              <div>
+              <div class="account-identity-meta">
                 <span class="account-kicker" id="accountProfileKicker">ACCOUNT PROFILE</span>
                 <h2 id="accountDisplayName">Loading account…</h2>
                 <p id="accountRoleLine">Your role and department</p>
@@ -2206,85 +2207,125 @@
               <div id="accountManagedRow" hidden><dt>Managed centers</dt><dd id="accountManagedLine">—</dd></div>
             </dl>
             <div class="account-card-actions">
-              <button type="button" class="btn btn-outline-gray" onclick="signOut()">Sign out</button>
+              <button type="button" class="btn btn-outline-gray btn-sm" onclick="signOut()">Sign out</button>
             </div>
           </article>
-          <article class="white-card account-editor-card">
-            <div class="account-section-head">
-              <div><span class="account-kicker">PERSONAL DETAILS</span><h2>Profile information</h2></div>
-              <span class="account-edit-tag">HR controls your role</span>
-            </div>
-            <div class="inputs-2grid account-fields">
-              <div class="input-cell"><label for="accountFirstName">FIRST NAME</label><input id="accountFirstName" class="penpot-input" autocomplete="given-name" /></div>
-              <div class="input-cell"><label for="accountLastName">LAST NAME</label><input id="accountLastName" class="penpot-input" autocomplete="family-name" /></div>
-              <div class="input-cell"><label for="accountEmail">WORK EMAIL</label><input id="accountEmail" type="email" class="penpot-input" autocomplete="email" /></div>
-              <div class="input-cell"><label for="accountRole">ROLE</label><input id="accountRole" class="penpot-input" disabled /></div>
-            </div>
-            <div class="account-card-actions"><button type="button" class="btn btn-navy-cta" onclick="saveAccountProfile()">Save profile</button><span id="accountProfileStatus" class="account-inline-status" role="status"></span></div>
-          </article>
-          <article class="white-card account-editor-card">
-            <div class="account-section-head">
-              <div><span class="account-kicker">PASSWORD</span><h2>Change password</h2></div>
-              <span class="account-edit-tag">Minimum 8 characters</span>
-            </div>
-            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
-              <label for="setOldPassword">CURRENT PASSWORD</label>
-              <input id="setOldPassword" type="password" class="penpot-input" placeholder="Current password" autocomplete="current-password" />
-            </div>
-            <div class="inputs-2grid account-fields" style="margin-bottom:16px;">
-              <div class="input-cell">
-                <label for="setNewPassword">NEW PASSWORD</label>
-                <input id="setNewPassword" type="password" class="penpot-input" placeholder="New password" autocomplete="new-password" />
+
+          <!-- Right Column: Settings Stack with Equal 16px Spacing -->
+          <div class="account-cards-stack">
+            <!-- Card 1: Profile Details (Always visible) -->
+            <article class="white-card account-editor-card" id="accountProfileCard">
+              <div class="account-section-head">
+                <div><span class="account-kicker">PERSONAL DETAILS</span><h2>Profile information</h2></div>
+                <span class="account-edit-tag">HR controls your role</span>
               </div>
-              <div class="input-cell">
-                <label for="setNewPassword2">CONFIRM NEW PASSWORD</label>
-                <input id="setNewPassword2" type="password" class="penpot-input" placeholder="Repeat new password" autocomplete="new-password" />
-              </div>
-            </div>
-            <div class="account-card-actions">
-              <button type="button" class="btn btn-navy-cta" onclick="saveSettingsPassword()">Change password</button>
-            </div>
-          </article>
-          <article class="white-card account-security-card">
-            <div class="account-section-head">
-              <div><span class="account-kicker">SIGN-IN SECURITY</span><h2>Two-factor authentication</h2></div>
-              <span id="accountMfaBadge" class="account-security-badge">Checking…</span>
-            </div>
-            <p class="card-sub">Add a time-based code from an authenticator app whenever you sign in. Save recovery codes somewhere private.</p>
-            <div id="accountMfaEnabled" hidden>
-              <p class="account-security-copy">Your account asks for an authenticator code at each sign-in.</p>
               <div class="inputs-2grid account-fields">
-                <div class="input-cell"><label for="accountMfaDisablePassword">CURRENT PASSWORD</label><input id="accountMfaDisablePassword" class="penpot-input" type="password" autocomplete="current-password" /></div>
-                <div class="input-cell"><label for="accountMfaDisableCode">AUTHENTICATOR OR RECOVERY CODE</label><input id="accountMfaDisableCode" class="penpot-input" inputmode="text" autocomplete="one-time-code" /></div>
+                <div class="input-cell"><label for="accountFirstName">FIRST NAME</label><input id="accountFirstName" class="penpot-input" autocomplete="given-name" /></div>
+                <div class="input-cell"><label for="accountLastName">LAST NAME</label><input id="accountLastName" class="penpot-input" autocomplete="family-name" /></div>
+                <div class="input-cell"><label for="accountEmail">WORK EMAIL</label><input id="accountEmail" type="email" class="penpot-input" autocomplete="email" /></div>
+                <div class="input-cell"><label for="accountRole">ROLE</label><input id="accountRole" class="penpot-input" disabled /></div>
               </div>
               <div class="account-card-actions">
-                <button type="button" class="btn btn-outline-gray" onclick="disableAccountTwoFactor()">Turn off 2FA</button>
+                <button type="button" class="btn btn-navy-cta" onclick="saveAccountProfile()">Save profile</button>
+                <span id="accountProfileStatus" class="account-inline-status" role="status"></span>
               </div>
-            </div>
-            <div id="accountMfaDisabled">
-              <div class="inputs-2grid account-fields">
-                <div class="input-cell"><label for="accountMfaSetupPassword">CURRENT PASSWORD</label><input id="accountMfaSetupPassword" class="penpot-input" type="password" autocomplete="current-password" /></div>
+            </article>
+
+            <!-- Card 2: Change Password (Collapsible - Collapsed by default to make space) -->
+            <article class="white-card account-editor-card collapsible-card is-collapsed" id="accountPasswordCard">
+              <div class="collapsible-header" tabindex="0" role="button" aria-expanded="false" onclick="toggleCollapsibleCard('accountPasswordCard')" onkeydown="handleCollapsibleKey(event, 'accountPasswordCard')">
+                <div class="collapsible-title-wrap">
+                  <span class="account-kicker">PASSWORD</span>
+                  <div class="collapsible-title-row">
+                    <h2 class="collapsible-title">Change password</h2>
+                    <span class="account-edit-tag">Min 8 chars</span>
+                  </div>
+                </div>
+                <div class="collapsible-actions" onclick="event.stopPropagation()">
+                  <button type="button" class="btn-collapse-toggle" aria-expanded="false" title="Expand section" aria-label="Expand section" onclick="toggleCollapsibleCard('accountPasswordCard')">
+                    <svg class="chevron-collapse-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                </div>
               </div>
-              <div class="account-card-actions">
-                <button type="button" class="btn btn-navy-cta" onclick="startAccountTwoFactorSetup()">Set up authenticator</button>
+              <div class="collapsible-body">
+                <div class="input-cell" style="margin-bottom:12px;">
+                  <label for="setOldPassword">CURRENT PASSWORD</label>
+                  <input id="setOldPassword" type="password" class="penpot-input" placeholder="Current password" autocomplete="current-password" />
+                </div>
+                <div class="inputs-2grid account-fields" style="margin-bottom:14px;">
+                  <div class="input-cell">
+                    <label for="setNewPassword">NEW PASSWORD</label>
+                    <input id="setNewPassword" type="password" class="penpot-input" placeholder="New password" autocomplete="new-password" />
+                  </div>
+                  <div class="input-cell">
+                    <label for="setNewPassword2">CONFIRM NEW PASSWORD</label>
+                    <input id="setNewPassword2" type="password" class="penpot-input" placeholder="Repeat new password" autocomplete="new-password" />
+                  </div>
+                </div>
+                <div class="account-card-actions">
+                  <button type="button" class="btn btn-navy-cta" onclick="saveSettingsPassword()">Change password</button>
+                </div>
               </div>
-            </div>
-            <div id="accountMfaSetup" class="account-mfa-setup" hidden>
-              <div class="account-secret-label">Enter this key in your authenticator app</div>
-              <code id="accountMfaSecret" class="account-secret-key"></code>
-              <p class="card-sub">Use manual setup with the time-based (TOTP) option. Then enter the current six-digit code below.</p>
-              <div class="account-code-row"><label for="accountMfaConfirmCode">6-digit code</label><input id="accountMfaConfirmCode" class="penpot-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" /><button type="button" class="btn btn-navy-cta" onclick="confirmAccountTwoFactorSetup()">Verify &amp; enable</button></div>
-            </div>
-            <div id="accountRecoveryCodes" class="account-recovery-codes" hidden>
-              <strong>Save these one-time recovery codes now</strong>
-              <p>They are shown once. Each code works once if you lose your authenticator.</p>
-              <pre id="accountRecoveryCodeList"></pre>
-              <div class="account-card-actions">
-                <button type="button" class="btn btn-outline-gray" onclick="copyRecoveryCodes('accountRecoveryCodeList')">Copy codes</button>
+            </article>
+
+            <!-- Card 3: Two-Factor Authentication (Collapsible - Collapsed by default to make space) -->
+            <article class="white-card account-security-card collapsible-card is-collapsed" id="accountSecurityCard">
+              <div class="collapsible-header" tabindex="0" role="button" aria-expanded="false" onclick="toggleCollapsibleCard('accountSecurityCard')" onkeydown="handleCollapsibleKey(event, 'accountSecurityCard')">
+                <div class="collapsible-title-wrap">
+                  <span class="account-kicker">SIGN-IN SECURITY</span>
+                  <div class="collapsible-title-row">
+                    <h2 class="collapsible-title">Two-factor authentication</h2>
+                    <span id="accountMfaBadge" class="account-security-badge">Checking…</span>
+                  </div>
+                </div>
+                <div class="collapsible-actions" onclick="event.stopPropagation()">
+                  <button type="button" class="btn-collapse-toggle" aria-expanded="false" title="Expand section" aria-label="Expand section" onclick="toggleCollapsibleCard('accountSecurityCard')">
+                    <svg class="chevron-collapse-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                </div>
               </div>
-            </div>
-            <p id="accountMfaStatus" class="account-inline-status" role="status"></p>
-          </article>
+              <div class="collapsible-body">
+                <p class="card-sub" style="margin-bottom:12px;">Add a time-based code from an authenticator app whenever you sign in. Save recovery codes somewhere private.</p>
+                <div id="accountMfaEnabled" hidden>
+                  <p class="account-security-copy">Your account asks for an authenticator code at each sign-in.</p>
+                  <div class="inputs-2grid account-fields">
+                    <div class="input-cell"><label for="accountMfaDisablePassword">CURRENT PASSWORD</label><input id="accountMfaDisablePassword" class="penpot-input" type="password" autocomplete="current-password" /></div>
+                    <div class="input-cell"><label for="accountMfaDisableCode">AUTHENTICATOR OR RECOVERY CODE</label><input id="accountMfaDisableCode" class="penpot-input" inputmode="text" autocomplete="one-time-code" /></div>
+                  </div>
+                  <div class="account-card-actions">
+                    <button type="button" class="btn btn-outline-gray" onclick="disableAccountTwoFactor()">Turn off 2FA</button>
+                  </div>
+                </div>
+                <div id="accountMfaDisabled">
+                  <div class="inputs-2grid account-fields">
+                    <div class="input-cell"><label for="accountMfaSetupPassword">CURRENT PASSWORD</label><input id="accountMfaSetupPassword" class="penpot-input" type="password" autocomplete="current-password" /></div>
+                  </div>
+                  <div class="account-card-actions">
+                    <button type="button" class="btn btn-navy-cta" onclick="startAccountTwoFactorSetup()">Set up authenticator</button>
+                  </div>
+                </div>
+                <div id="accountMfaSetup" class="account-mfa-setup" hidden>
+                  <div class="account-secret-label">Enter this key in your authenticator app</div>
+                  <code id="accountMfaSecret" class="account-secret-key"></code>
+                  <p class="card-sub">Use manual setup with the time-based (TOTP) option. Then enter the current six-digit code below.</p>
+                  <div class="account-code-row"><label for="accountMfaConfirmCode">6-digit code</label><input id="accountMfaConfirmCode" class="penpot-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" /><button type="button" class="btn btn-navy-cta" onclick="confirmAccountTwoFactorSetup()">Verify &amp; enable</button></div>
+                </div>
+                <div id="accountRecoveryCodes" class="account-recovery-codes" hidden>
+                  <strong>Save these one-time recovery codes now</strong>
+                  <p>They are shown once. Each code works once if you lose your authenticator.</p>
+                  <pre id="accountRecoveryCodeList"></pre>
+                  <div class="account-card-actions">
+                    <button type="button" class="btn btn-outline-gray" onclick="copyRecoveryCodes('accountRecoveryCodeList')">Copy codes</button>
+                  </div>
+                </div>
+                <p id="accountMfaStatus" class="account-inline-status" role="status"></p>
+              </div>
+            </article>
+          </div>
         </div>
       </section>
 
@@ -2314,257 +2355,409 @@
 
         <!-- TAB: NOTIFICATIONS & DISPLAY -->
         <div id="settingsPaneNotif">
-          <div class="white-card notif-settings-card">
-            <div class="notif-card-header">
-              <div>
-                <h2 class="card-title">Notifications &amp; display</h2>
-                <p class="card-sub">Preferences for alert categories, table density, and accessibility.</p>
-              </div>
-              <button class="btn btn-navy-cta notif-save-btn" onclick="saveSettingsPrefs()">Save preferences</button>
-            </div>
-
-            <div class="notif-settings-split-grid">
-              <!-- Left Column: Notification Channels -->
-              <div class="notif-settings-col">
-                <span class="settings-group-label">MUTED NOTIFICATION CATEGORIES</span>
-                <p class="settings-group-desc">Select categories to silence from activity and alerts.</p>
-
-                <div class="notif-compact-list">
-                  <label class="notif-compact-item" for="setMuteLeave">
-                    <input type="checkbox" id="setMuteLeave" value="leave" />
-                    <div class="notif-compact-icon">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M16 2v4M8 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path>
-                      </svg>
-                    </div>
-                    <div class="notif-compact-meta">
-                      <strong>Leave</strong>
-                      <span>Time-off requests &amp; approvals</span>
-                    </div>
-                  </label>
-
-                  <label class="notif-compact-item" for="setMuteShift">
-                    <input type="checkbox" id="setMuteShift" value="shift" />
-                    <div class="notif-compact-icon">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                      </svg>
-                    </div>
-                    <div class="notif-compact-meta">
-                      <strong>Shift</strong>
-                      <span>Rosters &amp; schedule changes</span>
-                    </div>
-                  </label>
-
-                  <label class="notif-compact-item" for="setMutePayroll">
-                    <input type="checkbox" id="setMutePayroll" value="payroll" />
-                    <div class="notif-compact-icon">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                        <line x1="2" y1="10" x2="22" y2="10"></line>
-                      </svg>
-                    </div>
-                    <div class="notif-compact-meta">
-                      <strong>Payroll</strong>
-                      <span>Salary runs &amp; expense claims</span>
-                    </div>
-                  </label>
+          <div class="settings-notif-grid">
+            <!-- Box 1: Notifications & Display (Side-by-Side) -->
+            <div class="white-card notif-settings-card" id="notifSettingsCard">
+              <div class="notif-card-header">
+                <div>
+                  <h2 class="card-title">Notifications &amp; display</h2>
+                  <p class="card-sub">Alerts, table density, and accessibility.</p>
                 </div>
+                <button type="button" class="btn btn-navy-cta btn-sm notif-save-btn" onclick="saveSettingsPrefs()">Save preferences</button>
               </div>
 
-              <!-- Right Column: Display & Accessibility -->
-              <div class="notif-settings-col">
-                <span class="settings-group-label">DISPLAY &amp; ACCESSIBILITY</span>
-                <p class="settings-group-desc">Configure pagination, typography, and contrast.</p>
-
-                <!-- Inputs: Page Size & Font Scale -->
-                <div class="inputs-2grid" style="margin-bottom: 10px;">
-                  <div class="input-cell">
-                    <label for="setPageSize">PAGE SIZE</label>
-                    <select id="setPageSize" class="penpot-select-full">
-                      <option value="5">5 per page</option>
-                      <option value="10">10 per page</option>
-                      <option value="25">25 per page</option>
-                      <option value="50">50 per page</option>
-                      <option value="100">100 per page</option>
-                    </select>
+              <div class="notif-condensed-body">
+                <!-- Group 1: Display & Accessibility -->
+                <div class="notif-group-block">
+                  <span class="settings-group-label">DISPLAY &amp; ACCESSIBILITY</span>
+                  <div class="inputs-2grid notif-field-grid">
+                    <div class="input-cell">
+                      <label for="setPageSize">PAGE SIZE</label>
+                      <select id="setPageSize" class="penpot-select-full">
+                        <option value="5">5 per page</option>
+                        <option value="10">10 per page</option>
+                        <option value="25">25 per page</option>
+                        <option value="50">50 per page</option>
+                        <option value="100">100 per page</option>
+                      </select>
+                    </div>
+                    <div class="input-cell">
+                      <label for="setFontScale">FONT SCALE</label>
+                      <select id="setFontScale" class="penpot-select-full">
+                        <option value="87.5">Compact (87.5%)</option>
+                        <option value="100">Default (100%)</option>
+                        <option value="112.5">Large (112.5%)</option>
+                        <option value="125">Extra large (125%)</option>
+                      </select>
+                    </div>
                   </div>
-                  <div class="input-cell">
-                    <label for="setFontScale">FONT SCALE</label>
-                    <select id="setFontScale" class="penpot-select-full">
-                      <option value="87.5">Compact (87.5%)</option>
-                      <option value="100">Default (100%)</option>
-                      <option value="112.5">Large (112.5%)</option>
-                      <option value="125">Extra large (125%)</option>
-                    </select>
+
+                  <div class="a11y-compact-grid">
+                    <label class="notif-compact-item" for="setHighContrast">
+                      <input type="checkbox" id="setHighContrast" />
+                      <div class="notif-compact-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <path d="M12 2a10 10 0 0 0 0 20z"></path>
+                        </svg>
+                      </div>
+                      <div class="notif-compact-meta">
+                        <strong>High contrast</strong>
+                        <span>Sharpen text &amp; borders</span>
+                      </div>
+                    </label>
+
+                    <label class="notif-compact-item" for="setReduceMotion">
+                      <input type="checkbox" id="setReduceMotion" />
+                      <div class="notif-compact-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="6" y="4" width="4" height="16"></rect>
+                          <rect x="14" y="4" width="4" height="16"></rect>
+                        </svg>
+                      </div>
+                      <div class="notif-compact-meta">
+                        <strong>Reduce motion</strong>
+                        <span>Minimize animations</span>
+                      </div>
+                    </label>
                   </div>
                 </div>
 
-                <!-- Accessibility toggles side by side -->
-                <div class="a11y-compact-grid">
-                  <label class="notif-compact-item" for="setHighContrast">
-                    <input type="checkbox" id="setHighContrast" />
-                    <div class="notif-compact-icon">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M12 2a10 10 0 0 0 0 20z"></path>
-                      </svg>
-                    </div>
-                    <div class="notif-compact-meta">
-                      <strong>High contrast</strong>
-                      <span>Sharpen text &amp; borders</span>
-                    </div>
-                  </label>
+                <!-- Group 2: Muted Notification Categories -->
+                <div class="notif-group-block" style="margin-top: 14px;">
+                  <span class="settings-group-label">MUTED NOTIFICATION CATEGORIES</span>
+                  <p class="settings-group-desc">Select categories to silence from activity and alerts.</p>
 
-                  <label class="notif-compact-item" for="setReduceMotion">
-                    <input type="checkbox" id="setReduceMotion" />
-                    <div class="notif-compact-icon">
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="6" y="4" width="4" height="16"></rect>
-                        <rect x="14" y="4" width="4" height="16"></rect>
-                      </svg>
-                    </div>
-                    <div class="notif-compact-meta">
-                      <strong>Reduce motion</strong>
-                      <span>Minimize animations</span>
-                    </div>
-                  </label>
+                  <div class="notif-compact-list">
+                    <label class="notif-compact-item" for="setMuteLeave">
+                      <input type="checkbox" id="setMuteLeave" value="leave" />
+                      <div class="notif-compact-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M16 2v4M8 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path>
+                        </svg>
+                      </div>
+                      <div class="notif-compact-meta">
+                        <strong>Leave</strong>
+                        <span>Time-off requests &amp; approvals</span>
+                      </div>
+                    </label>
+
+                    <label class="notif-compact-item" for="setMuteShift">
+                      <input type="checkbox" id="setMuteShift" value="shift" />
+                      <div class="notif-compact-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                      </div>
+                      <div class="notif-compact-meta">
+                        <strong>Shift</strong>
+                        <span>Rosters &amp; schedule changes</span>
+                      </div>
+                    </label>
+
+                    <label class="notif-compact-item" for="setMutePayroll">
+                      <input type="checkbox" id="setMutePayroll" value="payroll" />
+                      <div class="notif-compact-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                          <line x1="2" y1="10" x2="22" y2="10"></line>
+                        </svg>
+                      </div>
+                      <div class="notif-compact-meta">
+                        <strong>Payroll</strong>
+                        <span>Salary runs &amp; expense claims</span>
+                      </div>
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Customize Dashboard Widgets Card -->
-          <div class="white-card notif-settings-card widget-settings-card" id="widgetSettingsCard" style="margin-top: 20px;">
-            <div class="notif-card-header">
-              <div>
-                <h2 class="card-title">Customize dashboard</h2>
-                <p class="card-sub">Choose which KPI cards are visible on your overview and arrange their order.</p>
+            <!-- Box 2: Customize Dashboard Widgets (Side-by-Side) -->
+            <div class="white-card notif-settings-card widget-settings-card" id="widgetSettingsCard">
+              <div class="notif-card-header">
+                <div>
+                  <h2 class="card-title">Customize dashboard</h2>
+                  <p class="card-sub">Choose KPI cards visible on overview and arrange order.</p>
+                </div>
+                <button type="button" class="btn btn-outline-gray btn-sm" id="btnResetWidgets" onclick="resetWidgetPrefs()">Reset</button>
               </div>
-              <button type="button" class="btn btn-outline-gray btn-sm" id="btnResetWidgets" onclick="resetWidgetPrefs()">Reset to default</button>
-            </div>
 
-            <div class="widget-settings-content">
-              <span class="settings-group-label" style="margin-bottom: 8px;">DASHBOARD KPI CARDS</span>
-              <div id="widgetSettingsList" class="widget-settings-list"></div>
+              <div class="widget-settings-content">
+                <span class="settings-group-label" style="margin-bottom: 8px;">DASHBOARD KPI CARDS</span>
+                <div id="widgetSettingsList" class="widget-settings-list"></div>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- TAB: COMPANY (staff-only) -->
         <div id="settingsPaneCompany" style="display:none;" data-staff-only hidden>
-          <div class="white-card">
-            <h2 class="card-title">Leave rules</h2>
-            <p class="card-sub">Staff only. Mirrors FrappeHR leave settings: backdated control and automatic grants on
-              hire (Vacation, this year).</p>
-            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
-              <label class="penpot-checkbox-label">
-                <input type="checkbox" id="setLeaveBackdated" />
-                <span>Restrict backdated leave applications</span>
-              </label>
-            </div>
-            <div class="input-cell" style="margin-bottom:12px;">
-              <label>AUTO-ALLOCATE DAYS ON HIRE (0 = OFF)</label>
-              <input id="setLeaveAutoDays" type="number" step="1" min="0" max="365" class="penpot-input"
-                placeholder="0" />
-            </div>
-          </div>
-          <div class="white-card">
-            <h2 class="card-title">Shift rules</h2>
-            <p class="card-sub">Staff only. Mirrors FrappeHR shift settings.</p>
-            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
-              <label class="penpot-checkbox-label">
-                <input type="checkbox" id="setShiftDouble" />
-                <span>Allow double-booking the same person on one date</span>
-              </label>
-            </div>
-          </div>
-          <div class="white-card">
-            <h2 class="card-title">Payroll rules</h2>
-            <p class="card-sub">Staff only. Overtime bounds applied to every slip.</p>
-            <div class="inputs-2grid" style="margin-bottom:12px; margin-top:16px;">
-              <div class="input-cell">
-                <label>OVERTIME MIN HOURS</label>
-                <input id="setOtMin" type="number" step="0.01" min="0" max="24" class="penpot-input"
-                  placeholder="0.01" />
+          <div class="company-settings-stack">
+            <!-- Toolbar for Company Settings -->
+            <div class="company-settings-toolbar">
+              <div class="company-settings-toolbar-info">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <span>Company-wide policies &amp; configuration</span>
               </div>
-              <div class="input-cell">
-                <label>OVERTIME MAX HOURS</label>
-                <input id="setOtMax" type="number" step="0.01" min="0" max="24" class="penpot-input"
-                  placeholder="5.00" />
+              <div class="company-toolbar-actions">
+                <button type="button" class="btn-toolbar-sm" onclick="toggleCompanyCards(true)">Expand all</button>
+                <button type="button" class="btn-toolbar-sm" onclick="toggleCompanyCards(false)">Collapse all</button>
               </div>
             </div>
-          </div>
-          <div class="white-card">
-            <h2 class="card-title">Mobile</h2>
-            <p class="card-sub">Staff only. Gates kiosk + self-service clock-in for the future mobile client.</p>
-            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
-              <label class="penpot-checkbox-label">
-                <input type="checkbox" id="setMobileCheckin" checked />
-                <span>Allow mobile check-in</span>
-              </label>
-            </div>
-          </div>
-          <div class="white-card">
-            <h2 class="card-title">System</h2>
-            <p class="card-sub">Staff only. Retention, upload cap. Throttle and CORS values are
-              read-only here.</p>
-            <div class="inputs-2grid" style="margin-bottom:12px; margin-top:16px;">
-              <div class="input-cell">
-                <label>PURGE RETENTION DAYS</label>
-                <input id="setPurgeDays" type="number" step="1" min="1" max="365" class="penpot-input"
-                  placeholder="30" />
-              </div>
-              <div class="input-cell">
-                <label>UPLOAD CAP (MB)</label>
-                <input id="setUploadCap" type="number" step="1" min="1" max="100" class="penpot-input"
-                  placeholder="10" />
-              </div>
-            </div>
-            <div class="input-cell" style="margin-bottom:12px;">
-              <label>THROTTLE / CORS (READ-ONLY)</label>
-              <div id="setReadOnlyNet" style="font-size:13px; color:#475569; margin-top:8px;">Contact your HR admin for
-                throttle/CORS values.</div>
-            </div>
-            <div class="input-cell" style="margin-bottom:20px;">
-              <label>LOGIN DOORS</label>
-              <p style="font-size:13px; color:#475569; margin:8px 0 0 0;">Not sure which login? Staff use HR login
-                (/hr/login/); everyone else uses Employee login (/login/).</p>
-            </div>
-            <div class="settings-card-actions">
-              <button class="btn btn-outline-gray" onclick="loadSettingsView()">Discard</button>
-              <button class="btn btn-navy-cta" onclick="saveSettingsSite()">Save company settings</button>
-            </div>
-          </div>
 
-          <div class="white-card">
-            <h2 class="card-title">Excel import</h2>
-            <p class="card-sub">Upload an .xlsx roster to preview rows first (dry-run), then confirm to import.</p>
-            <div class="input-cell" style="margin-bottom:12px; margin-top:16px;">
-              <label>ROSTER FILE (.XLSX)</label>
-              <input id="settingsImportFile" type="file" accept=".xlsx" class="penpot-input" />
+            <!-- 1. Leave Rules Card (Collapsible) -->
+            <div class="white-card company-rule-card collapsible-card is-collapsed" id="compCardLeave">
+              <div class="collapsible-header" tabindex="0" role="button" aria-expanded="false" onclick="toggleCollapsibleCard('compCardLeave')" onkeydown="handleCollapsibleKey(event, 'compCardLeave')">
+                <div class="collapsible-title-wrap">
+                  <div class="collapsible-title-row">
+                    <span class="collapsible-icon-badge">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                    </span>
+                    <h2 class="collapsible-title">Leave rules</h2>
+                  </div>
+                  <p class="collapsible-sub">Backdated applications and automatic hire-year vacation allocations.</p>
+                </div>
+                <div class="collapsible-actions" onclick="event.stopPropagation()">
+                  <button type="button" class="btn-collapse-toggle" aria-expanded="false" title="Expand section" aria-label="Expand section" onclick="toggleCollapsibleCard('compCardLeave')">
+                    <svg class="chevron-collapse-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <div class="input-cell" style="margin-bottom:12px;">
+                  <label class="penpot-checkbox-label">
+                    <input type="checkbox" id="setLeaveBackdated" />
+                    <span>Restrict backdated leave applications</span>
+                  </label>
+                </div>
+                <div class="input-cell">
+                  <label>AUTO-ALLOCATE DAYS ON HIRE (0 = OFF)</label>
+                  <input id="setLeaveAutoDays" type="number" step="1" min="0" max="365" class="penpot-input" placeholder="0" />
+                </div>
+              </div>
             </div>
-            <div class="settings-card-actions" style="margin-bottom:16px;">
-              <button class="btn btn-outline-gray" onclick="settingsImportDryRun()">Dry-run preview</button>
-              <button class="btn btn-navy-cta" onclick="settingsImportCommit()">Confirm import</button>
+
+            <!-- 2. Shift Rules Card (Collapsible) -->
+            <div class="white-card company-rule-card collapsible-card is-collapsed" id="compCardShift">
+              <div class="collapsible-header" tabindex="0" role="button" aria-expanded="false" onclick="toggleCollapsibleCard('compCardShift')" onkeydown="handleCollapsibleKey(event, 'compCardShift')">
+                <div class="collapsible-title-wrap">
+                  <div class="collapsible-title-row">
+                    <span class="collapsible-icon-badge">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                      </svg>
+                    </span>
+                    <h2 class="collapsible-title">Shift rules</h2>
+                  </div>
+                  <p class="collapsible-sub">Roster assignment limits and double-booking controls.</p>
+                </div>
+                <div class="collapsible-actions" onclick="event.stopPropagation()">
+                  <button type="button" class="btn-collapse-toggle" aria-expanded="false" title="Expand section" aria-label="Expand section" onclick="toggleCollapsibleCard('compCardShift')">
+                    <svg class="chevron-collapse-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <div class="input-cell">
+                  <label class="penpot-checkbox-label">
+                    <input type="checkbox" id="setShiftDouble" />
+                    <span>Allow double-booking the same person on one date</span>
+                  </label>
+                </div>
+              </div>
             </div>
-            <div style="overflow-x:auto;">
-              <table class="penpot-table">
-                <thead>
-                  <tr>
-                    <th>ROW</th>
-                    <th>NAME</th>
-                    <th>EMAIL</th>
-                    <th>STATUS</th>
-                  </tr>
-                </thead>
-                <tbody id="settingsImportResults">
-                  <tr>
-                    <td colspan="4">No preview yet — choose a file and run a dry-run.</td>
-                  </tr>
-                </tbody>
-              </table>
+
+            <!-- 3. Payroll Rules Card (Collapsible) -->
+            <div class="white-card company-rule-card collapsible-card is-collapsed" id="compCardPayroll">
+              <div class="collapsible-header" tabindex="0" role="button" aria-expanded="false" onclick="toggleCollapsibleCard('compCardPayroll')" onkeydown="handleCollapsibleKey(event, 'compCardPayroll')">
+                <div class="collapsible-title-wrap">
+                  <div class="collapsible-title-row">
+                    <span class="collapsible-icon-badge">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                        <line x1="2" y1="10" x2="22" y2="10"></line>
+                      </svg>
+                    </span>
+                    <h2 class="collapsible-title">Payroll rules</h2>
+                  </div>
+                  <p class="collapsible-sub">Overtime boundaries applied across pay slips.</p>
+                </div>
+                <div class="collapsible-actions" onclick="event.stopPropagation()">
+                  <button type="button" class="btn-collapse-toggle" aria-expanded="false" title="Expand section" aria-label="Expand section" onclick="toggleCollapsibleCard('compCardPayroll')">
+                    <svg class="chevron-collapse-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <div class="inputs-2grid">
+                  <div class="input-cell">
+                    <label>OVERTIME MIN HOURS</label>
+                    <input id="setOtMin" type="number" step="0.01" min="0" max="24" class="penpot-input" placeholder="0.01" />
+                  </div>
+                  <div class="input-cell">
+                    <label>OVERTIME MAX HOURS</label>
+                    <input id="setOtMax" type="number" step="0.01" min="0" max="24" class="penpot-input" placeholder="5.00" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Mobile Check-in Card (Collapsible) -->
+            <div class="white-card company-rule-card collapsible-card is-collapsed" id="compCardMobile">
+              <div class="collapsible-header" tabindex="0" role="button" aria-expanded="false" onclick="toggleCollapsibleCard('compCardMobile')" onkeydown="handleCollapsibleKey(event, 'compCardMobile')">
+                <div class="collapsible-title-wrap">
+                  <div class="collapsible-title-row">
+                    <span class="collapsible-icon-badge">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                        <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                      </svg>
+                    </span>
+                    <h2 class="collapsible-title">Mobile &amp; kiosk</h2>
+                  </div>
+                  <p class="collapsible-sub">Gates kiosk and self-service clock-in for mobile client.</p>
+                </div>
+                <div class="collapsible-actions" onclick="event.stopPropagation()">
+                  <button type="button" class="btn-collapse-toggle" aria-expanded="false" title="Expand section" aria-label="Expand section" onclick="toggleCollapsibleCard('compCardMobile')">
+                    <svg class="chevron-collapse-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <div class="input-cell">
+                  <label class="penpot-checkbox-label">
+                    <input type="checkbox" id="setMobileCheckin" checked />
+                    <span>Allow mobile check-in</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. System, Retention & Network Card (Collapsible - Open by default so save actions are visible) -->
+            <div class="white-card company-rule-card collapsible-card" id="compCardSystem">
+              <div class="collapsible-header" tabindex="0" role="button" aria-expanded="true" onclick="toggleCollapsibleCard('compCardSystem')" onkeydown="handleCollapsibleKey(event, 'compCardSystem')">
+                <div class="collapsible-title-wrap">
+                  <div class="collapsible-title-row">
+                    <span class="collapsible-icon-badge">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                        <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                        <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                      </svg>
+                    </span>
+                    <h2 class="collapsible-title">System &amp; retention</h2>
+                  </div>
+                  <p class="collapsible-sub">Audit retention schedules, upload limits, and network throttle.</p>
+                </div>
+                <div class="collapsible-actions" onclick="event.stopPropagation()">
+                  <button type="button" class="btn-collapse-toggle" aria-expanded="true" title="Collapse section" aria-label="Collapse section" onclick="toggleCollapsibleCard('compCardSystem')">
+                    <svg class="chevron-collapse-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <div class="inputs-2grid" style="margin-bottom:12px;">
+                  <div class="input-cell">
+                    <label>PURGE RETENTION DAYS</label>
+                    <input id="setPurgeDays" type="number" step="1" min="1" max="365" class="penpot-input" placeholder="30" />
+                  </div>
+                  <div class="input-cell">
+                    <label>UPLOAD CAP (MB)</label>
+                    <input id="setUploadCap" type="number" step="1" min="1" max="100" class="penpot-input" placeholder="10" />
+                  </div>
+                </div>
+                <div class="input-cell" style="margin-bottom:12px;">
+                  <label>THROTTLE / CORS (READ-ONLY)</label>
+                  <div id="setReadOnlyNet" style="font-size:13px; color:#475569; margin-top:6px;">Contact your HR admin for throttle/CORS values.</div>
+                </div>
+                <div class="input-cell" style="margin-bottom:16px;">
+                  <label>LOGIN DOORS</label>
+                  <p style="font-size:13px; color:#475569; margin:6px 0 0 0;">Staff use HR login (/hr/login/); everyone else uses Employee login (/login/).</p>
+                </div>
+                <div class="settings-card-actions">
+                  <button class="btn btn-outline-gray" onclick="loadSettingsView()">Discard</button>
+                  <button class="btn btn-navy-cta" onclick="saveSettingsSite()">Save company settings</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 6. Excel Roster Import Card (Collapsible) -->
+            <div class="white-card company-rule-card collapsible-card is-collapsed" id="compCardExcel">
+              <div class="collapsible-header" tabindex="0" role="button" aria-expanded="false" onclick="toggleCollapsibleCard('compCardExcel')" onkeydown="handleCollapsibleKey(event, 'compCardExcel')">
+                <div class="collapsible-title-wrap">
+                  <div class="collapsible-title-row">
+                    <span class="collapsible-icon-badge">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                      </svg>
+                    </span>
+                    <h2 class="collapsible-title">Excel roster import</h2>
+                  </div>
+                  <p class="collapsible-sub">Upload an .xlsx roster to preview rows first (dry-run), then confirm to import.</p>
+                </div>
+                <div class="collapsible-actions" onclick="event.stopPropagation()">
+                  <button type="button" class="btn-collapse-toggle" aria-expanded="false" title="Expand section" aria-label="Expand section" onclick="toggleCollapsibleCard('compCardExcel')">
+                    <svg class="chevron-collapse-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="collapsible-body">
+                <div class="input-cell" style="margin-bottom:12px;">
+                  <label>ROSTER FILE (.XLSX)</label>
+                  <input id="settingsImportFile" type="file" accept=".xlsx" class="penpot-input" />
+                </div>
+                <div class="settings-card-actions" style="margin-bottom:14px;">
+                  <button class="btn btn-outline-gray" onclick="settingsImportDryRun()">Dry-run preview</button>
+                  <button class="btn btn-navy-cta" onclick="settingsImportCommit()">Confirm import</button>
+                </div>
+                <div style="overflow-x:auto;">
+                  <table class="penpot-table">
+                    <thead>
+                      <tr>
+                        <th>ROW</th>
+                        <th>NAME</th>
+                        <th>EMAIL</th>
+                        <th>STATUS</th>
+                      </tr>
+                    </thead>
+                    <tbody id="settingsImportResults">
+                      <tr>
+                        <td colspan="4">No preview yet — choose a file and run a dry-run.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         </div>
