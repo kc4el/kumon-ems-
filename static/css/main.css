@@ -6132,7 +6132,7 @@ body {
   --text-muted: #536b7b;
   --brand-blue: #176b8e;
   --brand-blue-hover: #125a79;
-  --brand-navy-dark: #17394f;
+  --brand-navy-dark: #1a4e70;
   --brand-orange: #c94336;
   --metric-card-grad: linear-gradient(135deg, #3d74fe 0%, #588bfe 50%, #82aafd 100%);
   --font-family: Inter, "Aptos", "Segoe UI", sans-serif;
@@ -6302,6 +6302,7 @@ h4 {
   margin-bottom: 20px;
 }
 
+#view-dashboard .hero-text-side,
 .hero-text-side {
   position: relative;
   display: flex;
@@ -6311,8 +6312,9 @@ h4 {
   overflow: hidden;
   padding: clamp(24px, 3vw, 40px);
   border-radius: 14px;
-  background: var(--brand-navy-dark);
+  background: linear-gradient(135deg, #256892 0%, #1a4e70 100%) !important;
   color: #fff;
+  box-shadow: 0 4px 20px rgba(26, 78, 112, 0.2);
 }
 
 .hero-text-side::before {
@@ -7651,6 +7653,7 @@ html[data-theme="dark"] {
 }
 
 /* Dashboard Hero */
+[data-theme="dark"] #view-dashboard .hero-text-side,
 [data-theme="dark"] .hero-text-side {
   background: #0b111e !important;
   border: 1px solid #334155 !important;

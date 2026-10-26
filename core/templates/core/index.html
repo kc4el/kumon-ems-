@@ -11,7 +11,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=7.3" />
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=7.5" />
   <script>
     function applyTheme(theme) {
       if (theme === 'dark') {
@@ -86,7 +86,7 @@
       const relPrefix = window.location.protocol === 'file:' ? '../../../' : '/';
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = relPrefix + 'static/css/main.css?v=7.3';
+      link.href = relPrefix + 'static/css/main.css?v=7.5';
       document.head.appendChild(link);
     }
   </script>
@@ -2696,7 +2696,7 @@
                 </div>
                 <div class="input-cell" style="margin-bottom:16px;">
                   <label>LOGIN DOORS</label>
-                  <p style="font-size:13px; color:#475569; margin:6px 0 0 0;">Staff use HR login (/hr/login/); everyone else uses Employee login (/login/).</p>
+                  <p style="font-size:13px; color:#475569; margin:6px 0 0 0;">Not sure which login? Staff use HR login (/hr/login/); everyone else uses Employee login (/login/).</p>
                 </div>
                 <div class="settings-card-actions">
                   <button class="btn btn-outline-gray" onclick="loadSettingsView()">Discard</button>
