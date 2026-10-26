@@ -749,18 +749,25 @@ async function loadActivityFeed() {
   const list = document.getElementById("activityFeedList");
   if (!list) return;
   try {
-    const res = await fetch("/api/audit-logs/?page_size=5", { credentials: "same-origin", headers: { Accept: "application/json" } });
+    const res = await fetch("/api/audit-logs/?page_size=4", { credentials: "same-origin", headers: { Accept: "application/json" } });
     if (!res.ok) throw new Error("feed failed");
     const payload = await res.json();
     const rows = (payload.results || payload || []);
-    const maxItems = 5;
+    const maxItems = 4;
     const filteredRows = [];
     for (const r of rows) {
       if (filteredRows.length >= maxItems) break;
       filteredRows.push(r);
     }
     list.innerHTML = filteredRows.length
-      ? filteredRows.map((r) => `<li>${escapeHtml(formatAuditActionText(r.action))} <span>${escapeHtml(String(r.timestamp || "").slice(0, 16).replace("T", " "))}</span></li>`).join("")
+      ? filteredRows.map((r) => {
+          const actionText = formatAuditActionText(r.action);
+          const timeText = String(r.timestamp || "").slice(0, 16).replace("T", " ");
+          return `<li title="${escapeHtml(actionText)} • ${escapeHtml(timeText)}">
+            <span class="activity-feed-text">${escapeHtml(actionText)}</span>
+            <span class="activity-feed-time">${escapeHtml(timeText)}</span>
+          </li>`;
+        }).join("")
       : "<li>No activity yet today.</li>";
   } catch (e) { list.innerHTML = "<li>Activity unavailable.</li>"; }
 }
