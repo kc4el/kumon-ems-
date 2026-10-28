@@ -1,153 +1,821 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="3300" height="5070" viewBox="0 0 3300 5070">
-<defs><marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker><filter id="shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity=".10"/></filter></defs>
-<rect width="100%" height="100%" fill="#F7F8FA"/>
-<text x="70" y="58" font-family="Segoe UI,Arial,sans-serif" font-size="42" font-weight="700" fill="#102033">Kumon EMS — Entity Relationship Diagram</text>
-<text x="72" y="98" font-family="Segoe UI,Arial,sans-serif" font-size="18" fill="#475569">Table cards show descriptions and typed keys. Relationship IDs on the lines match the purpose and cardinality list below the diagram.</text>
-<rect x="70" y="116" width="66" height="30" rx="6" fill="#FFF1C2" stroke="#D29B18"/><text x="88" y="137" font-family="Segoe UI,Arial,sans-serif" font-size="17" font-weight="700" fill="#765300">PK</text>
-<rect x="150" y="116" width="66" height="30" rx="6" fill="#DDF4FF" stroke="#54A9D5"/><text x="168" y="137" font-family="Segoe UI,Arial,sans-serif" font-size="17" font-weight="700" fill="#075985">FK</text>
-<rect x="230" y="116" width="66" height="30" rx="6" fill="#F0E2FF" stroke="#A377C6"/><text x="248" y="137" font-family="Segoe UI,Arial,sans-serif" font-size="17" font-weight="700" fill="#6B21A8">UQ</text>
-<text x="312" y="137" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#475569">Primary key · Foreign key · Unique key. auto = integer identity; big_auto = bigint identity; uuid = UUID.</text>
-<text x="70" y="166" font-family="Segoe UI,Arial,sans-serif" font-size="15" fill="#64748B">Cardinality is listed per relationship: parents per child and children per parent. Repeated Employee / User cards are shared references, not extra tables.</text>
-<rect x="50" y="130" width="3200" height="660" rx="20" fill="#E6F4F1" stroke="#D4DCE5" stroke-width="2"/>
-<text x="82" y="176" font-family="Segoe UI,Arial,sans-serif" font-size="27" font-weight="700" fill="#0F766E">People, departments and login security</text>
-<text x="82" y="206" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#475569">Shared reference: employee and account cards repeat in the related domain views.</text>
-<rect x="50" y="790" width="3200" height="770" rx="20" fill="#F2ECF8" stroke="#D4DCE5" stroke-width="2"/>
-<text x="82" y="836" font-family="Segoe UI,Arial,sans-serif" font-size="27" font-weight="700" fill="#6D4AA1">Roles and permissions</text>
-<text x="82" y="866" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#475569">Junction tables connect users or groups to the permissions they receive.</text>
-<rect x="50" y="1580" width="3200" height="670" rx="20" fill="#EAF1FF" stroke="#D4DCE5" stroke-width="2"/>
-<text x="82" y="1626" font-family="Segoe UI,Arial,sans-serif" font-size="27" font-weight="700" fill="#2563EB">Attendance and scheduling</text>
-<text x="82" y="1656" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#475569">The employee card is a reference to the same core_employee table.</text>
-<rect x="50" y="2270" width="3200" height="2120" rx="20" fill="#FFF4E5" stroke="#D4DCE5" stroke-width="2"/>
-<text x="82" y="2316" font-family="Segoe UI,Arial,sans-serif" font-size="27" font-weight="700" fill="#B45309">Employee requests and records</text>
-<text x="82" y="2346" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#475569">One employee can have multiple requests and records; nullable links are marked in the keys.</text>
-<rect x="50" y="4410" width="3200" height="620" rx="20" fill="#EEF2F6" stroke="#D4DCE5" stroke-width="2"/>
-<text x="82" y="4456" font-family="Segoe UI,Arial,sans-serif" font-size="27" font-weight="700" fill="#475569">Payroll and standalone records</text>
-<text x="82" y="4486" font-family="Segoe UI,Arial,sans-serif" font-size="16" fill="#475569">ClaimStatus and Message have no foreign-key connection in the current model.</text>
-<path d="M 720 1192.55 L 768 1192.55 L 768 1330 L 1780 1330 L 1780 1439.96 L 1800 1439.96" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1229.0" y="1317.0" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1260.0" y="1335.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R01</text>
-<path d="M 2110.0 1020.0 L 2110.0 1350.0" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="2079.0" y="1172.0" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="2110.0" y="1190.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R02</text>
-<path d="M 615.2 997.0 L 980.4 1110.0" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="766.8" y="1040.5" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="797.8" y="1058.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R03</text>
-<path d="M 720.0 1181.9 L 950.0 1188.1" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="804.0" y="1172.0" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="835.0" y="1190.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R04</text>
-<path d="M 100 930 L 75 930 L 75 1375 L 950 1375" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="455.0" y="1362.0" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="486.0" y="1380.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R05</text>
-<path d="M 1980.3 1020.0 L 1409.6 1350.0" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1663.9" y="1172.0" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1694.9" y="1190.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R06</text>
-<path d="M 2650.0 937.7 L 2420.0 940.8" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="2504.0" y="926.2" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="2535.0" y="944.2" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R07</text>
-<path d="M 720.0 1748.3 L 950.0 1742.7" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="804.0" y="1732.5" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="835.0" y="1750.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R08</text>
-<path d="M 1570.0 1730.8 L 1800.0 1727.7" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1654.0" y="1716.2" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1685.0" y="1734.2" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R09</text>
-<path d="M 508.7 3620.0 L 1694.7 2467.0" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1070.7" y="3030.5" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1101.7" y="3048.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R10</text>
-<path d="M 1570 294.88 C 1660 252.88, 1710 245.47000000000003, 1800 287.47" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1654.0" y="244.2" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1685.0" y="262.2" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R11</text>
-<path d="M 1800 338 L 1570 350" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1654.0" y="365.0" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1685.0" y="383.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R12</text>
-<path d="M 720.0 295.4 L 950.0 304.1" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="804.0" y="286.8" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="835.0" y="304.8" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R13</text>
-<path d="M 1570.0 393.5 L 1856.0 465.0" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1682.0" y="416.2" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1713.0" y="434.2" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R14</text>
-<path d="M 528.6 3620.0 L 1681.5 2687.0" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1074.1" y="3140.5" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1105.1" y="3158.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R15</text>
-<path d="M 558.5 3620.0 L 1661.7 2907.0" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1079.1" y="3250.5" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1110.1" y="3268.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R16</text>
-<path d="M 612.2 3620.0 L 1602.0 3150.0" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1076.1" y="3372.0" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1107.1" y="3390.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R17</text>
-<path d="M 709.7 3620.0 L 1561.8 3347.0" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1104.7" y="3470.5" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1135.7" y="3488.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R18</text>
-<path d="M 720.0 3667.2 L 1450.0 3552.3" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1054.0" y="3596.8" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1085.0" y="3614.8" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R19</text>
-<path d="M 720.0 3717.7 L 1450.0 3721.8" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1054.0" y="3706.8" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1085.0" y="3724.8" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R20</text>
-<path d="M 720.0 1795.9 L 1800.0 1935.1" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1229.0" y="1852.5" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1260.0" y="1870.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R21</text>
-<path d="M 1525.6 1810.0 L 1844.4 1900.0" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1654.0" y="1842.0" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1685.0" y="1860.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R22</text>
-<path d="M 1475.1 4730.0 L 1800.0 4651.4" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1606.5" y="4677.7" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1637.5" y="4695.7" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R23</text>
-<path d="M 720.0 4584.3 L 1800.0 4578.2" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1229.0" y="4568.2" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1260.0" y="4586.2" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R24</text>
-<path d="M 720.0 3768.2 L 1450.0 3891.3" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1054.0" y="3816.8" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1085.0" y="3834.8" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R25</text>
-<path d="M 699.6 3812.0 L 1568.4 4100.0" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="1103.0" y="3943.0" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="1134.0" y="3961.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R26</text>
-<path d="M 410.0 1852.0 L 410.0 1900.0" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="379.0" y="1863.0" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="410.0" y="1881.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R27</text>
-<path d="M 720.0 1967.7 L 950.0 1970.8" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="804.0" y="1956.2" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="835.0" y="1974.2" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R28</text>
-<path d="M 720.0 1967.7 L 950.0 1970.8" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="804.0" y="1956.2" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="835.0" y="1974.2" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R29</text>
-<path d="M 410.0 347.0 L 410.0 465.0" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="379.0" y="393.0" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="410.0" y="411.0" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R30</text>
-<path d="M 720.0 528.5 L 950.0 528.5" fill="none" stroke="#526275" stroke-width="2.1" marker-end="url(#arrow)"/>
-<rect x="804.0" y="515.5" width="62" height="25" rx="11" fill="#FFFFFF" stroke="#CBD5E1"/>
-<text x="835.0" y="533.5" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="14" font-weight="700" fill="#334155">R31</text>
-<g filter="url(#shadow)"><rect x="100" y="220" width="620" height="127" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M112 220 H708 Q720 220 720 232 V263 H100 V232 Q100 220 112 220" fill="#0F766E"/></g><text x="116" y="248" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">auth_user</text><text x="116" y="283" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Django login accounts and their authentication state.</text><rect x="116" y="293" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="133.0" y="307" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="159" y="308" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: auto</text><rect x="116" y="315" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="134.0" y="329" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="161" y="330" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">username: char</text>
-<g filter="url(#shadow)"><rect x="950" y="220" width="620" height="192" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M962 220 H1558 Q1570 220 1570 232 V263 H950 V232 Q950 220 962 220" fill="#0F766E"/></g><text x="966" y="248" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_employee</text><text x="966" y="283" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Employment profile with optional department and login account</text><text x="966" y="301" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">links.</text><rect x="966" y="311" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="983.0" y="325" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1009" y="326" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="966" y="333" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="983.0" y="347" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1009" y="348" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">department_id: uuid (nullable)</text><rect x="966" y="355" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="983.0" y="369" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><rect x="1005" y="355" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="1023.0" y="369" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="1050" y="370" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">user_id: auto (nullable)</text><rect x="966" y="377" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="984.0" y="391" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="1011" y="392" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">email: email</text>
-<g filter="url(#shadow)"><rect x="1800" y="220" width="620" height="173" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M1812 220 H2408 Q2420 220 2420 232 V263 H1800 V232 Q1800 220 1812 220" fill="#0F766E"/></g><text x="1816" y="248" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_department</text><text x="1816" y="283" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Organizational units with an optional employee manager.</text><rect x="1816" y="293" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="1833.0" y="307" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1859" y="308" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="1816" y="315" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1833.0" y="329" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1859" y="330" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">manager_id: uuid (nullable)</text><rect x="1816" y="337" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="1834.0" y="351" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="1861" y="352" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">code: char</text><rect x="1816" y="359" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="1834.0" y="373" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="1861" y="374" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">name: char</text>
-<g filter="url(#shadow)"><rect x="100" y="465" width="620" height="127" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M112 465 H708 Q720 465 720 477 V508 H100 V477 Q100 465 112 465" fill="#0F766E"/></g><text x="116" y="493" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_authenticatordevice</text><text x="116" y="528" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Encrypted time-based authenticator configuration for a user.</text><rect x="116" y="538" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="133.0" y="552" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="159" y="553" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: auto</text><rect x="116" y="560" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="133.0" y="574" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><rect x="155" y="560" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="173.0" y="574" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="200" y="575" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">user_id: auto</text>
-<g filter="url(#shadow)"><rect x="950" y="465" width="620" height="127" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M962 465 H1558 Q1570 465 1570 477 V508 H950 V477 Q950 465 962 465" fill="#0F766E"/></g><text x="966" y="493" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_authenticatorrecoverycode</text><text x="966" y="528" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Hashed, single-use recovery codes for an authenticator.</text><rect x="966" y="538" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="983.0" y="552" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1009" y="553" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: auto</text><rect x="966" y="560" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="983.0" y="574" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1009" y="575" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">device_id: auto</text>
-<g filter="url(#shadow)"><rect x="1800" y="465" width="620" height="127" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M1812 465 H2408 Q2420 465 2420 477 V508 H1800 V477 Q1800 465 1812 465" fill="#0F766E"/></g><text x="1816" y="493" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_employeeauditlog</text><text x="1816" y="528" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Timestamped actions associated with an employee when known.</text><rect x="1816" y="538" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="1833.0" y="552" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1859" y="553" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="1816" y="560" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1833.0" y="574" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1859" y="575" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">employee_id: uuid (nullable)</text>
-<g filter="url(#shadow)"><rect x="100" y="870" width="620" height="127" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M112 870 H708 Q720 870 720 882 V913 H100 V882 Q100 870 112 870" fill="#6D4AA1"/></g><text x="116" y="898" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">auth_user</text><rect x="590" y="878" width="116" height="25" rx="8" fill="#FFFFFF" fill-opacity=".86"/><text x="648" y="895" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6D4AA1">SHARED REF</text><text x="116" y="933" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Django login accounts and their authentication state.</text><rect x="116" y="943" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="133.0" y="957" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="159" y="958" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: auto</text><rect x="116" y="965" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="134.0" y="979" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="161" y="980" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">username: char</text>
-<g filter="url(#shadow)"><rect x="100" y="1110" width="620" height="127" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M112 1110 H708 Q720 1110 720 1122 V1153 H100 V1122 Q100 1110 112 1110" fill="#6D4AA1"/></g><text x="116" y="1138" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">auth_group</text><text x="116" y="1173" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Named access groups that collect users and permissions.</text><rect x="116" y="1183" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="133.0" y="1197" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="159" y="1198" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: auto</text><rect x="116" y="1205" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="134.0" y="1219" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="161" y="1220" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">name: char</text>
-<g filter="url(#shadow)"><rect x="950" y="1110" width="620" height="173" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M962 1110 H1558 Q1570 1110 1570 1122 V1153 H950 V1122 Q950 1110 962 1110" fill="#6D4AA1"/></g><text x="966" y="1138" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">auth.user_groups</text><text x="966" y="1173" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Junction rows assigning Django users to groups.</text><rect x="966" y="1183" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="983.0" y="1197" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1009" y="1198" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: auto</text><rect x="966" y="1205" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="983.0" y="1219" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1009" y="1220" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">group_id: auto</text><rect x="966" y="1227" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="983.0" y="1241" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1009" y="1242" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">user_id: auto</text><rect x="966" y="1249" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="984.0" y="1263" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="1011" y="1264" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">(user_id: auto, group_id: auto)</text>
-<g filter="url(#shadow)"><rect x="1800" y="870" width="620" height="150" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M1812 870 H2408 Q2420 870 2420 882 V913 H1800 V882 Q1800 870 1812 870" fill="#6D4AA1"/></g><text x="1816" y="898" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">auth_permission</text><text x="1816" y="933" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Django permission definitions, scoped to a model type.</text><rect x="1816" y="943" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="1833.0" y="957" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1859" y="958" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: auto</text><rect x="1816" y="965" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1833.0" y="979" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1859" y="980" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">content_type_id: auto</text><rect x="1816" y="987" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="1834.0" y="1001" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="1861" y="1002" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">(content_type_id: auto, codename: char)</text>
-<g filter="url(#shadow)"><rect x="1800" y="1350" width="620" height="173" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M1812 1350 H2408 Q2420 1350 2420 1362 V1393 H1800 V1362 Q1800 1350 1812 1350" fill="#6D4AA1"/></g><text x="1816" y="1378" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">auth.group_permissions</text><text x="1816" y="1413" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Junction rows granting permissions to Django groups.</text><rect x="1816" y="1423" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="1833.0" y="1437" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1859" y="1438" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: auto</text><rect x="1816" y="1445" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1833.0" y="1459" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1859" y="1460" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">permission_id: auto</text><rect x="1816" y="1467" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1833.0" y="1481" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1859" y="1482" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">group_id: auto</text><rect x="1816" y="1489" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="1834.0" y="1503" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="1861" y="1504" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">(group_id: auto, permission_id: auto)</text>
-<g filter="url(#shadow)"><rect x="950" y="1350" width="620" height="173" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M962 1350 H1558 Q1570 1350 1570 1362 V1393 H950 V1362 Q950 1350 962 1350" fill="#6D4AA1"/></g><text x="966" y="1378" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">auth.user_user_permissions</text><text x="966" y="1413" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Junction rows granting permissions directly to users.</text><rect x="966" y="1423" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="983.0" y="1437" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1009" y="1438" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: auto</text><rect x="966" y="1445" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="983.0" y="1459" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1009" y="1460" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">permission_id: auto</text><rect x="966" y="1467" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="983.0" y="1481" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1009" y="1482" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">user_id: auto</text><rect x="966" y="1489" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="984.0" y="1503" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="1011" y="1504" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">(user_id: auto, permission_id: auto)</text>
-<g filter="url(#shadow)"><rect x="2650" y="870" width="620" height="127" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M2662 870 H3258 Q3270 870 3270 882 V913 H2650 V882 Q2650 870 2662 870" fill="#6D4AA1"/></g><text x="2666" y="898" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">django_content_type</text><text x="2666" y="933" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Django registry mapping app labels and model names.</text><rect x="2666" y="943" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="2683.0" y="957" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="2709" y="958" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: auto</text><rect x="2666" y="965" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="2684.0" y="979" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="2711" y="980" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">(app_label: char, model: char)</text>
-<g filter="url(#shadow)"><rect x="100" y="1660" width="620" height="192" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M112 1660 H708 Q720 1660 720 1672 V1703 H100 V1672 Q100 1660 112 1660" fill="#2563EB"/></g><text x="116" y="1688" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_employee</text><rect x="590" y="1668" width="116" height="25" rx="8" fill="#FFFFFF" fill-opacity=".86"/><text x="648" y="1685" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#2563EB">SHARED REF</text><text x="116" y="1723" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Employment profile with optional department and login account</text><text x="116" y="1741" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">links.</text><rect x="116" y="1751" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="133.0" y="1765" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="159" y="1766" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="116" y="1773" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="133.0" y="1787" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="159" y="1788" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">department_id: uuid (nullable)</text><rect x="116" y="1795" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="133.0" y="1809" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><rect x="155" y="1795" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="173.0" y="1809" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="200" y="1810" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">user_id: auto (nullable)</text><rect x="116" y="1817" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="134.0" y="1831" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="161" y="1832" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">email: email</text>
-<g filter="url(#shadow)"><rect x="950" y="1660" width="620" height="150" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M962 1660 H1558 Q1570 1660 1570 1672 V1703 H950 V1672 Q950 1660 962 1660" fill="#2563EB"/></g><text x="966" y="1688" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_attendance</text><text x="966" y="1723" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Daily clock-in and clock-out records for employees.</text><rect x="966" y="1733" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="983.0" y="1747" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1009" y="1748" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="966" y="1755" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="983.0" y="1769" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1009" y="1770" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">employee_id: uuid</text><rect x="966" y="1777" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="984.0" y="1791" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="1011" y="1792" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">(employee_id: uuid, date: date)</text>
-<g filter="url(#shadow)"><rect x="1800" y="1660" width="620" height="127" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M1812 1660 H2408 Q2420 1660 2420 1672 V1703 H1800 V1672 Q1800 1660 1812 1660" fill="#2563EB"/></g><text x="1816" y="1688" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_attendancecorrection</text><text x="1816" y="1723" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Requests to correct an existing attendance record.</text><rect x="1816" y="1733" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="1833.0" y="1747" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1859" y="1748" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="1816" y="1755" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1833.0" y="1769" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1859" y="1770" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">attendance_id: uuid</text>
-<g filter="url(#shadow)"><rect x="1800" y="1900" width="620" height="150" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M1812 1900 H2408 Q2420 1900 2420 1912 V1943 H1800 V1912 Q1800 1900 1812 1900" fill="#2563EB"/></g><text x="1816" y="1928" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_overtimeslip</text><text x="1816" y="1963" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Overtime calculation and approval tied to an attendance record.</text><rect x="1816" y="1973" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="1833.0" y="1987" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1859" y="1988" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="1816" y="1995" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1833.0" y="2009" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1859" y="2010" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">employee_id: uuid</text><rect x="1816" y="2017" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1833.0" y="2031" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><rect x="1855" y="2017" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="1873.0" y="2031" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="1900" y="2032" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">attendance_id: uuid</text>
-<g filter="url(#shadow)"><rect x="100" y="1900" width="620" height="127" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M112 1900 H708 Q720 1900 720 1912 V1943 H100 V1912 Q100 1900 112 1900" fill="#2563EB"/></g><text x="116" y="1928" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_shiftroster</text><text x="116" y="1963" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Planned work shift with an optional employee assignment.</text><rect x="116" y="1973" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="133.0" y="1987" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="159" y="1988" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="116" y="1995" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="133.0" y="2009" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="159" y="2010" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">employee_id: uuid (nullable)</text>
-<g filter="url(#shadow)"><rect x="950" y="1900" width="620" height="150" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M962 1900 H1558 Q1570 1900 1570 1912 V1943 H950 V1912 Q950 1900 962 1900" fill="#2563EB"/></g><text x="966" y="1928" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_shiftswap</text><text x="966" y="1963" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">A request to exchange two roster entries.</text><rect x="966" y="1973" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="983.0" y="1987" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1009" y="1988" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="966" y="1995" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="983.0" y="2009" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1009" y="2010" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">requester_roster_id: uuid</text><rect x="966" y="2017" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="983.0" y="2031" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1009" y="2032" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">target_roster_id: uuid</text>
-<g filter="url(#shadow)"><rect x="100" y="3620" width="620" height="192" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M112 3620 H708 Q720 3620 720 3632 V3663 H100 V3632 Q100 3620 112 3620" fill="#B45309"/></g><text x="116" y="3648" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_employee</text><rect x="590" y="3628" width="116" height="25" rx="8" fill="#FFFFFF" fill-opacity=".86"/><text x="648" y="3645" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#B45309">SHARED REF</text><text x="116" y="3683" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Employment profile with optional department and login account</text><text x="116" y="3701" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">links.</text><rect x="116" y="3711" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="133.0" y="3725" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="159" y="3726" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="116" y="3733" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="133.0" y="3747" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="159" y="3748" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">department_id: uuid (nullable)</text><rect x="116" y="3755" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="133.0" y="3769" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><rect x="155" y="3755" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="173.0" y="3769" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="200" y="3770" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">user_id: auto (nullable)</text><rect x="116" y="3777" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="134.0" y="3791" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="161" y="3792" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">email: email</text>
-<g filter="url(#shadow)"><rect x="1450" y="2340" width="620" height="127" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M1462 2340 H2058 Q2070 2340 2070 2352 V2383 H1450 V2352 Q1450 2340 1462 2340" fill="#B45309"/></g><text x="1466" y="2368" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_complaint</text><text x="1466" y="2403" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Employee complaints, categories, and resolution status.</text><rect x="1466" y="2413" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="1483.0" y="2427" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1509" y="2428" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="1466" y="2435" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1483.0" y="2449" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1509" y="2450" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">employee_id: uuid</text>
-<g filter="url(#shadow)"><rect x="1450" y="2560" width="620" height="127" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M1462 2560 H2058 Q2070 2560 2070 2572 V2603 H1450 V2572 Q1450 2560 1462 2560" fill="#B45309"/></g><text x="1466" y="2588" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_expenseclaim</text><text x="1466" y="2623" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Employee expense reimbursement submissions and decisions.</text><rect x="1466" y="2633" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="1483.0" y="2647" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1509" y="2648" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="1466" y="2655" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1483.0" y="2669" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1509" y="2670" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">employee_id: uuid</text>
-<g filter="url(#shadow)"><rect x="1450" y="2780" width="620" height="127" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M1462 2780 H2058 Q2070 2780 2070 2792 V2823 H1450 V2792 Q1450 2780 1462 2780" fill="#B45309"/></g><text x="1466" y="2808" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_grievance</text><text x="1466" y="2843" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Employee grievances and their investigation status.</text><rect x="1466" y="2853" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="1483.0" y="2867" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1509" y="2868" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="1466" y="2875" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1483.0" y="2889" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1509" y="2890" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">employee_id: uuid (nullable)</text>
-<g filter="url(#shadow)"><rect x="1450" y="3000" width="620" height="150" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M1462 3000 H2058 Q2070 3000 2070 3012 V3043 H1450 V3012 Q1450 3000 1462 3000" fill="#B45309"/></g><text x="1466" y="3028" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_leaveallocation</text><text x="1466" y="3063" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Yearly leave balances by employee and leave type.</text><rect x="1466" y="3073" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="1483.0" y="3087" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1509" y="3088" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="1466" y="3095" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1483.0" y="3109" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1509" y="3110" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">employee_id: uuid</text><rect x="1466" y="3117" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="1484.0" y="3131" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="1511" y="3132" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">(employee_id: uuid, leave_type: char, year: integer)</text>
-<g filter="url(#shadow)"><rect x="1450" y="3220" width="620" height="127" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M1462 3220 H2058 Q2070 3220 2070 3232 V3263 H1450 V3232 Q1450 3220 1462 3220" fill="#B45309"/></g><text x="1466" y="3248" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_leaverequest</text><text x="1466" y="3283" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Employee requests for time away from work.</text><rect x="1466" y="3293" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="1483.0" y="3307" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1509" y="3308" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="1466" y="3315" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1483.0" y="3329" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1509" y="3330" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">employee_id: uuid</text>
-<g filter="url(#shadow)"><rect x="1450" y="3440" width="620" height="127" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M1462 3440 H2058 Q2070 3440 2070 3452 V3483 H1450 V3452 Q1450 3440 1462 3440" fill="#B45309"/></g><text x="1466" y="3468" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_notification</text><text x="1466" y="3503" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Read state and notification text for an employee.</text><rect x="1466" y="3513" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="1483.0" y="3527" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1509" y="3528" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="1466" y="3535" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1483.0" y="3549" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1509" y="3550" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">employee_id: uuid</text>
-<g filter="url(#shadow)"><rect x="1450" y="3660" width="620" height="127" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M1462 3660 H2058 Q2070 3660 2070 3672 V3703 H1450 V3672 Q1450 3660 1462 3660" fill="#B45309"/></g><text x="1466" y="3688" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_onboardingdocument</text><text x="1466" y="3723" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Uploaded onboarding documents and their document types.</text><rect x="1466" y="3733" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="1483.0" y="3747" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1509" y="3748" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="1466" y="3755" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1483.0" y="3769" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1509" y="3770" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">employee_id: uuid</text>
-<g filter="url(#shadow)"><rect x="1450" y="3880" width="620" height="127" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M1462 3880 H2058 Q2070 3880 2070 3892 V3923 H1450 V3892 Q1450 3880 1462 3880" fill="#B45309"/></g><text x="1466" y="3908" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_performancereview</text><text x="1466" y="3943" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Dated employee review score and comments.</text><rect x="1466" y="3953" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="1483.0" y="3967" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1509" y="3968" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="1466" y="3975" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1483.0" y="3989" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1509" y="3990" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">employee_id: uuid</text>
-<g filter="url(#shadow)"><rect x="1450" y="4100" width="620" height="127" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M1462 4100 H2058 Q2070 4100 2070 4112 V4143 H1450 V4112 Q1450 4100 1462 4100" fill="#B45309"/></g><text x="1466" y="4128" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_salaryadvance</text><text x="1466" y="4163" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Employee advance requests, repayment terms, and decisions.</text><rect x="1466" y="4173" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="1483.0" y="4187" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1509" y="4188" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="1466" y="4195" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1483.0" y="4209" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1509" y="4210" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">employee_id: uuid</text>
-<g filter="url(#shadow)"><rect x="100" y="4490" width="620" height="192" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M112 4490 H708 Q720 4490 720 4502 V4533 H100 V4502 Q100 4490 112 4490" fill="#475569"/></g><text x="116" y="4518" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_employee</text><rect x="590" y="4498" width="116" height="25" rx="8" fill="#FFFFFF" fill-opacity=".86"/><text x="648" y="4515" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#475569">SHARED REF</text><text x="116" y="4553" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Employment profile with optional department and login account</text><text x="116" y="4571" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">links.</text><rect x="116" y="4581" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="133.0" y="4595" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="159" y="4596" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="116" y="4603" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="133.0" y="4617" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="159" y="4618" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">department_id: uuid (nullable)</text><rect x="116" y="4625" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="133.0" y="4639" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><rect x="155" y="4625" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="173.0" y="4639" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="200" y="4640" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">user_id: auto (nullable)</text><rect x="116" y="4647" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="134.0" y="4661" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="161" y="4662" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">email: email</text>
-<g filter="url(#shadow)"><rect x="950" y="4730" width="620" height="104" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M962 4730 H1558 Q1570 4730 1570 4742 V4773 H950 V4742 Q950 4730 962 4730" fill="#475569"/></g><text x="966" y="4758" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_payrollrun</text><text x="966" y="4793" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">A payroll period header and processing state.</text><rect x="966" y="4803" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="983.0" y="4817" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1009" y="4818" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text>
-<g filter="url(#shadow)"><rect x="1800" y="4490" width="620" height="173" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M1812 4490 H2408 Q2420 4490 2420 4502 V4533 H1800 V4502 Q1800 4490 1812 4490" fill="#475569"/></g><text x="1816" y="4518" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_payrollitem</text><text x="1816" y="4553" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">One employee payroll amount breakdown within a pay run.</text><rect x="1816" y="4563" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="1833.0" y="4577" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1859" y="4578" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text><rect x="1816" y="4585" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1833.0" y="4599" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1859" y="4600" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">payroll_run_id: uuid</text><rect x="1816" y="4607" width="34" height="19" rx="5" fill="#DDF4FF" stroke="#54A9D5" stroke-width=".8"/><text x="1833.0" y="4621" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#075985">FK</text><text x="1859" y="4622" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">employee_id: uuid</text><rect x="1816" y="4629" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="1834.0" y="4643" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="1861" y="4644" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">(payroll_run_id: uuid, employee_id: uuid)</text>
-<g filter="url(#shadow)"><rect x="100" y="4730" width="620" height="127" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M112 4730 H708 Q720 4730 720 4742 V4773 H100 V4742 Q100 4730 112 4730" fill="#475569"/></g><text x="116" y="4758" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_claimstatus</text><text x="116" y="4793" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Status snapshot keyed by an external claim identifier.</text><rect x="116" y="4803" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="133.0" y="4817" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="159" y="4818" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: big_auto</text><rect x="116" y="4825" width="36" height="19" rx="5" fill="#F0E2FF" stroke="#A377C6" stroke-width=".8"/><text x="134.0" y="4839" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#6B21A8">UQ</text><text x="161" y="4840" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">claim_id: char</text>
-<g filter="url(#shadow)"><rect x="1800" y="4730" width="620" height="123" rx="12" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.5"/><path d="M1812 4730 H2408 Q2420 4730 2420 4742 V4773 H1800 V4742 Q1800 4730 1812 4730" fill="#475569"/></g><text x="1816" y="4758" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">core_message</text><text x="1816" y="4793" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">Messages grouped by conversation key; no relational sender link</text><text x="1816" y="4811" font-family="Segoe UI,Arial,sans-serif" font-size="14" fill="#475569">is modeled.</text><rect x="1816" y="4821" width="34" height="19" rx="5" fill="#FFF1C2" stroke="#D29B18" stroke-width=".8"/><text x="1833.0" y="4835" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="11" font-weight="700" fill="#765300">PK</text><text x="1859" y="4836" font-family="Segoe UI,Arial,sans-serif" font-size="13" fill="#1E293B">id: uuid</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<g shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
+<text x="24.0" y="31.0" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="400" fill="#33383E" >30 tables • 31 relations • PK/FK tags identify keys • ? marks nullable fields • connector IDs match the relation list in erd.md</text>
+<g id="relations" fill="none" stroke="#616A73" stroke-width="2.0" stroke-linejoin="round" stroke-linecap="round">
+<path id="R01" d="M 410.0 70.0 L 385.0 70.0 L 385.0 245.0 L 370.0 245.0"/>
+<path id="R02" d="M 790.0 80.0 L 765.0 80.0 L 765.0 140.0 L 390.0 140.0 L 390.0 255.0 L 370.0 255.0"/>
+<path id="R03" d="M 370.0 120.0 L 395.0 120.0 L 395.0 250.0 L 410.0 250.0"/>
+<path id="R04" d="M 580.0 92.0 L 580.0 220.0"/>
+<path id="R05" d="M 370.0 90.0 L 395.0 90.0 L 395.0 125.0 L 1525.0 125.0 L 1525.0 80.0 L 1550.0 80.0"/>
+<path id="R06" d="M 1130.0 75.0 L 1155.0 75.0 L 1155.0 35.0 L 1525.0 35.0 L 1525.0 75.0 L 1550.0 75.0"/>
+<path id="R07" d="M 1170.0 80.0 L 1145.0 80.0 L 1145.0 90.0 L 1130.0 90.0"/>
+<path id="R08" d="M 790.0 615.0 L 750.0 615.0"/>
+<path id="R09" d="M 750.0 605.0 L 770.0 605.0 L 770.0 490.0 L 1145.0 490.0 L 1145.0 440.0 L 1170.0 440.0"/>
+<path id="R10" d="M 1130.0 635.0 L 1145.0 635.0 L 1145.0 620.0 L 1170.0 620.0"/>
+<path id="R11" d="M 885.0 564.0 L 885.0 500.0 L 910.0 500.0 L 910.0 476.0"/>
+<path id="R12" d="M 1010.0 476.0 L 1010.0 535.0 L 960.0 535.0 L 960.0 564.0"/>
+<path id="R13" d="M 370.0 145.0 L 765.0 145.0 L 765.0 590.0 L 790.0 590.0"/>
+<path id="R14" d="M 790.0 605.0 L 765.0 605.0 L 765.0 635.0 L 770.0 635.0 L 770.0 660.0 L 395.0 660.0 L 395.0 600.0 L 370.0 600.0"/>
+<path id="R15" d="M 790.0 640.0 L 765.0 640.0 L 765.0 650.0 L 390.0 650.0 L 390.0 790.0 L 370.0 790.0"/>
+<path id="R16" d="M 1130.0 620.0 L 1150.0 620.0 L 1150.0 500.0 L 1525.0 500.0 L 1525.0 445.0 L 1550.0 445.0"/>
+<path id="R17" d="M 790.0 630.0 L 775.0 630.0 L 775.0 775.0 L 750.0 775.0"/>
+<path id="R18" d="M 960.0 688.0 L 960.0 736.0"/>
+<path id="R19" d="M 1035.0 564.0 L 1035.0 495.0 L 1145.0 495.0 L 1145.0 325.0 L 960.0 325.0 L 960.0 304.0"/>
+<path id="R20" d="M 1130.0 595.0 L 1145.0 595.0 L 1145.0 495.0 L 1150.0 495.0 L 1150.0 260.0 L 1170.0 260.0"/>
+<path id="R21" d="M 1130.0 605.0 L 1155.0 605.0 L 1155.0 320.0 L 1530.0 320.0 L 1530.0 290.0 L 1550.0 290.0"/>
+<path id="R22" d="M 750.0 590.0 L 775.0 590.0 L 775.0 315.0 L 1525.0 315.0 L 1525.0 260.0 L 1550.0 260.0"/>
+<path id="R23" d="M 1130.0 940.0 L 1155.0 940.0 L 1155.0 790.0 L 1170.0 790.0"/>
+<path id="R24" d="M 1130.0 665.0 L 1145.0 665.0 L 1145.0 770.0 L 1170.0 770.0"/>
+<path id="R25" d="M 790.0 655.0 L 395.0 655.0 L 395.0 950.0 L 370.0 950.0"/>
+<path id="R26" d="M 790.0 665.0 L 765.0 665.0 L 765.0 960.0 L 750.0 960.0"/>
+<path id="R27" d="M 1130.0 650.0 L 1155.0 650.0 L 1155.0 680.0 L 1525.0 680.0 L 1525.0 630.0 L 1550.0 630.0"/>
+<path id="R28" d="M 1670.0 688.0 L 1670.0 736.0"/>
+<path id="R29" d="M 1770.0 688.0 L 1770.0 736.0"/>
+<path id="R30" d="M 200.0 182.0 L 200.0 205.0 L 15.0 205.0 L 15.0 365.0 L 200.0 365.0 L 200.0 392.0"/>
+<path id="R31" d="M 370.0 435.0 L 395.0 435.0 L 395.0 420.0 L 410.0 420.0"/>
+</g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 406.0 75.0 L 406.0 65.0"/><path d="M 400.0 75.0 L 400.0 65.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 381.0 245.0 L 373.0 240.0"/><path d="M 381.0 245.0 L 373.0 245.0"/><path d="M 381.0 245.0 L 373.0 250.0"/><circle cx="388.0" cy="245.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 786.0 85.0 L 786.0 75.0"/><path d="M 780.0 85.0 L 780.0 75.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 381.0 255.0 L 373.0 250.0"/><path d="M 381.0 255.0 L 373.0 255.0"/><path d="M 381.0 255.0 L 373.0 260.0"/><circle cx="388.0" cy="255.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 374.0 115.0 L 374.0 125.0"/><path d="M 380.0 115.0 L 380.0 125.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 399.0 250.0 L 407.0 255.0"/><path d="M 399.0 250.0 L 407.0 250.0"/><path d="M 399.0 250.0 L 407.0 245.0"/><circle cx="392.0" cy="250.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 585.0 96.0 L 575.0 96.0"/><path d="M 585.0 102.0 L 575.0 102.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 580.0 209.0 L 575.0 217.0"/><path d="M 580.0 209.0 L 580.0 217.0"/><path d="M 580.0 209.0 L 585.0 217.0"/><circle cx="580.0" cy="202.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 374.0 85.0 L 374.0 95.0"/><path d="M 380.0 85.0 L 380.0 95.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1539.0 80.0 L 1547.0 85.0"/><path d="M 1539.0 80.0 L 1547.0 80.0"/><path d="M 1539.0 80.0 L 1547.0 75.0"/><circle cx="1532.0" cy="80.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1134.0 70.0 L 1134.0 80.0"/><path d="M 1140.0 70.0 L 1140.0 80.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1539.0 75.0 L 1547.0 80.0"/><path d="M 1539.0 75.0 L 1547.0 75.0"/><path d="M 1539.0 75.0 L 1547.0 70.0"/><circle cx="1532.0" cy="75.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1166.0 85.0 L 1166.0 75.0"/><path d="M 1160.0 85.0 L 1160.0 75.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1141.0 90.0 L 1133.0 85.0"/><path d="M 1141.0 90.0 L 1133.0 90.0"/><path d="M 1141.0 90.0 L 1133.0 95.0"/><circle cx="1148.0" cy="90.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 786.0 620.0 L 786.0 610.0"/><path d="M 780.0 620.0 L 780.0 610.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 761.0 615.0 L 753.0 610.0"/><path d="M 761.0 615.0 L 753.0 615.0"/><path d="M 761.0 615.0 L 753.0 620.0"/><circle cx="768.0" cy="615.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 754.0 600.0 L 754.0 610.0"/><path d="M 760.0 600.0 L 760.0 610.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1159.0 440.0 L 1167.0 445.0"/><path d="M 1159.0 440.0 L 1167.0 440.0"/><path d="M 1159.0 440.0 L 1167.0 435.0"/><circle cx="1152.0" cy="440.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1134.0 630.0 L 1134.0 640.0"/><path d="M 1140.0 630.0 L 1140.0 640.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1159.0 620.0 L 1167.0 625.0"/><path d="M 1159.0 620.0 L 1167.0 620.0"/><path d="M 1159.0 620.0 L 1167.0 615.0"/><circle cx="1152.0" cy="620.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 880.0 560.0 L 890.0 560.0"/><circle cx="885.0" cy="550.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 910.0 487.0 L 915.0 479.0"/><path d="M 910.0 487.0 L 910.0 479.0"/><path d="M 910.0 487.0 L 905.0 479.0"/><circle cx="910.0" cy="494.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1015.0 480.0 L 1005.0 480.0"/><circle cx="1010.0" cy="490.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 960.0 553.0 L 955.0 561.0"/><path d="M 960.0 553.0 L 960.0 561.0"/><path d="M 960.0 553.0 L 965.0 561.0"/><circle cx="960.0" cy="546.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 374.0 140.0 L 374.0 150.0"/><circle cx="384.0" cy="145.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 786.0 595.0 L 786.0 585.0"/><circle cx="776.0" cy="590.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 786.0 610.0 L 786.0 600.0"/><circle cx="776.0" cy="605.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 381.0 600.0 L 373.0 595.0"/><path d="M 381.0 600.0 L 373.0 600.0"/><path d="M 381.0 600.0 L 373.0 605.0"/><circle cx="388.0" cy="600.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 786.0 645.0 L 786.0 635.0"/><path d="M 780.0 645.0 L 780.0 635.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 381.0 790.0 L 373.0 785.0"/><path d="M 381.0 790.0 L 373.0 790.0"/><path d="M 381.0 790.0 L 373.0 795.0"/><circle cx="388.0" cy="790.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1134.0 615.0 L 1134.0 625.0"/><circle cx="1144.0" cy="620.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1539.0 445.0 L 1547.0 450.0"/><path d="M 1539.0 445.0 L 1547.0 445.0"/><path d="M 1539.0 445.0 L 1547.0 440.0"/><circle cx="1532.0" cy="445.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 786.0 635.0 L 786.0 625.0"/><path d="M 780.0 635.0 L 780.0 625.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 761.0 775.0 L 753.0 770.0"/><path d="M 761.0 775.0 L 753.0 775.0"/><path d="M 761.0 775.0 L 753.0 780.0"/><circle cx="768.0" cy="775.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 965.0 692.0 L 955.0 692.0"/><path d="M 965.0 698.0 L 955.0 698.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 960.0 725.0 L 955.0 733.0"/><path d="M 960.0 725.0 L 960.0 733.0"/><path d="M 960.0 725.0 L 965.0 733.0"/><circle cx="960.0" cy="718.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1030.0 560.0 L 1040.0 560.0"/><path d="M 1030.0 554.0 L 1040.0 554.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 960.0 315.0 L 965.0 307.0"/><path d="M 960.0 315.0 L 960.0 307.0"/><path d="M 960.0 315.0 L 955.0 307.0"/><circle cx="960.0" cy="322.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1134.0 590.0 L 1134.0 600.0"/><path d="M 1140.0 590.0 L 1140.0 600.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1159.0 260.0 L 1167.0 265.0"/><path d="M 1159.0 260.0 L 1167.0 260.0"/><path d="M 1159.0 260.0 L 1167.0 255.0"/><circle cx="1152.0" cy="260.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1134.0 600.0 L 1134.0 610.0"/><path d="M 1140.0 600.0 L 1140.0 610.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1539.0 290.0 L 1547.0 295.0"/><path d="M 1539.0 290.0 L 1547.0 290.0"/><path d="M 1539.0 290.0 L 1547.0 285.0"/><circle cx="1532.0" cy="290.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 754.0 585.0 L 754.0 595.0"/><path d="M 760.0 585.0 L 760.0 595.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1546.0 265.0 L 1546.0 255.0"/><circle cx="1536.0" cy="260.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1134.0 935.0 L 1134.0 945.0"/><path d="M 1140.0 935.0 L 1140.0 945.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1159.0 790.0 L 1167.0 795.0"/><path d="M 1159.0 790.0 L 1167.0 790.0"/><path d="M 1159.0 790.0 L 1167.0 785.0"/><circle cx="1152.0" cy="790.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1134.0 660.0 L 1134.0 670.0"/><path d="M 1140.0 660.0 L 1140.0 670.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1159.0 770.0 L 1167.0 775.0"/><path d="M 1159.0 770.0 L 1167.0 770.0"/><path d="M 1159.0 770.0 L 1167.0 765.0"/><circle cx="1152.0" cy="770.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 786.0 660.0 L 786.0 650.0"/><path d="M 780.0 660.0 L 780.0 650.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 381.0 950.0 L 373.0 945.0"/><path d="M 381.0 950.0 L 373.0 950.0"/><path d="M 381.0 950.0 L 373.0 955.0"/><circle cx="388.0" cy="950.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 786.0 670.0 L 786.0 660.0"/><path d="M 780.0 670.0 L 780.0 660.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 761.0 960.0 L 753.0 955.0"/><path d="M 761.0 960.0 L 753.0 960.0"/><path d="M 761.0 960.0 L 753.0 965.0"/><circle cx="768.0" cy="960.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1134.0 645.0 L 1134.0 655.0"/><circle cx="1144.0" cy="650.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1539.0 630.0 L 1547.0 635.0"/><path d="M 1539.0 630.0 L 1547.0 630.0"/><path d="M 1539.0 630.0 L 1547.0 625.0"/><circle cx="1532.0" cy="630.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1675.0 692.0 L 1665.0 692.0"/><path d="M 1675.0 698.0 L 1665.0 698.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1670.0 725.0 L 1665.0 733.0"/><path d="M 1670.0 725.0 L 1670.0 733.0"/><path d="M 1670.0 725.0 L 1675.0 733.0"/><circle cx="1670.0" cy="718.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1775.0 692.0 L 1765.0 692.0"/><path d="M 1775.0 698.0 L 1765.0 698.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 1770.0 725.0 L 1765.0 733.0"/><path d="M 1770.0 725.0 L 1770.0 733.0"/><path d="M 1770.0 725.0 L 1775.0 733.0"/><circle cx="1770.0" cy="718.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 205.0 186.0 L 195.0 186.0"/><path d="M 205.0 192.0 L 195.0 192.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 195.0 388.0 L 205.0 388.0"/><circle cx="200.0" cy="378.0" r="3.6" fill="#FFFFFF"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 374.0 430.0 L 374.0 440.0"/><path d="M 380.0 430.0 L 380.0 440.0"/></g>
+<g fill="none" stroke="#323941" stroke-width="2.0" stroke-linecap="square" stroke-linejoin="round"><path d="M 399.0 420.0 L 407.0 425.0"/><path d="M 399.0 420.0 L 407.0 420.0"/><path d="M 399.0 420.0 L 407.0 415.0"/><circle cx="392.0" cy="420.0" r="3.6" fill="#FFFFFF"/></g>
+<rect x="562.5" y="133.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="577.5" y="143.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R02</text>
+<rect x="380.0" y="178.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="395.0" y="188.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R03</text>
+<rect x="945.0" y="118.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="960.0" y="128.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R05</text>
+<rect x="1325.0" y="28.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="1340.0" y="38.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R06</text>
+<rect x="755.0" y="608.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="770.0" y="618.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R08</text>
+<rect x="942.5" y="483.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="957.5" y="493.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R09</text>
+<rect x="870.0" y="525.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="885.0" y="535.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R11</text>
+<rect x="995.0" y="498.5" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="1010.0" y="508.9" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R12</text>
+<rect x="750.0" y="360.5" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="765.0" y="370.9" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R13</text>
+<rect x="567.5" y="653.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="582.5" y="663.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R14</text>
+<rect x="375.0" y="713.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="390.0" y="723.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R15</text>
+<rect x="1322.5" y="493.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="1337.5" y="503.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R16</text>
+<rect x="760.0" y="695.5" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="775.0" y="705.9" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R17</text>
+<rect x="945.0" y="705.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="960.0" y="715.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R18</text>
+<rect x="1037.5" y="318.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="1052.5" y="328.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R19</text>
+<rect x="1135.0" y="370.5" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="1150.0" y="380.9" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R20</text>
+<rect x="1327.5" y="313.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="1342.5" y="323.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R21</text>
+<rect x="1135.0" y="308.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="1150.0" y="318.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R22</text>
+<rect x="1140.0" y="858.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="1155.0" y="868.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R23</text>
+<rect x="1130.0" y="710.5" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="1145.0" y="720.9" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R24</text>
+<rect x="1325.0" y="673.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="1340.0" y="683.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R27</text>
+<rect x="1655.0" y="705.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="1670.0" y="715.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R28</text>
+<rect x="1755.0" y="705.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="1770.0" y="715.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R29</text>
+<rect x="92.5" y="358.0" width="30" height="14" rx="6" fill="#FFFFFF" stroke="#6B737B" stroke-width="0.8"/>
+<text x="107.5" y="368.4" font-family="Segoe UI,Arial,sans-serif" font-size="8.3" font-weight="700" fill="#20252A" text-anchor="middle" >R30</text>
+<rect x="30" y="48" width="340" height="134" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 35 48 H 365 Q 370 48 370 53 V 71 H 30 V 53 Q 30 48 35 48" fill="#FFFFFF"/>
+<text x="200.0" y="64.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >auth_user</text>
+<path d="M 31 71.5 H 369" stroke="#71777D" stroke-width="0.8"/>
+<text x="38.0" y="80.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="73.0" y="80.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="362.0" y="80.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<path d="M 38 82.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="90.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >password</text>
+<text x="362.0" y="90.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 38 92.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="100.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >last_login</text>
+<text x="362.0" y="100.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<path d="M 38 102.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="110.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >is_superuser</text>
+<text x="362.0" y="110.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >BOOLEAN</text>
+<path d="M 38 112.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="120.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >username</text>
+<text x="362.0" y="120.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 38 122.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="130.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >first_name</text>
+<text x="362.0" y="130.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 38 132.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="140.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >last_name</text>
+<text x="362.0" y="140.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 38 142.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="150.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >email</text>
+<text x="362.0" y="150.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 38 152.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="160.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >is_staff</text>
+<text x="362.0" y="160.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >BOOLEAN</text>
+<path d="M 38 162.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="170.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >is_active</text>
+<text x="362.0" y="170.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >BOOLEAN</text>
+<path d="M 38 172.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="180.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >date_joined</text>
+<text x="362.0" y="180.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<rect x="410" y="48" width="340" height="44" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 415 48 H 745 Q 750 48 750 53 V 71 H 410 V 53 Q 410 48 415 48" fill="#FFFFFF"/>
+<text x="580.0" y="64.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >auth_group</text>
+<path d="M 411 71.5 H 749" stroke="#71777D" stroke-width="0.8"/>
+<text x="418.0" y="80.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="453.0" y="80.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="742.0" y="80.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<path d="M 418 82.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="420.0" y="90.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >name</text>
+<text x="742.0" y="90.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<rect x="790" y="48" width="340" height="64" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 795 48 H 1125 Q 1130 48 1130 53 V 71 H 790 V 53 Q 790 48 795 48" fill="#FFFFFF"/>
+<text x="960.0" y="64.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >auth_permission</text>
+<path d="M 791 71.5 H 1129" stroke="#71777D" stroke-width="0.8"/>
+<text x="798.0" y="80.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="833.0" y="80.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="1122.0" y="80.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<path d="M 798 82.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="90.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >name</text>
+<text x="1122.0" y="90.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 798 92.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="798.0" y="100.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R07</text>
+<text x="851.0" y="100.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >content_type_id</text>
+<text x="1122.0" y="100.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<path d="M 798 102.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="110.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >codename</text>
+<text x="1122.0" y="110.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<rect x="1170" y="48" width="340" height="54" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 1175 48 H 1505 Q 1510 48 1510 53 V 71 H 1170 V 53 Q 1170 48 1175 48" fill="#FFFFFF"/>
+<text x="1340.0" y="64.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >django_content_type</text>
+<path d="M 1171 71.5 H 1509" stroke="#71777D" stroke-width="0.8"/>
+<text x="1178.0" y="80.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="1213.0" y="80.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="1502.0" y="80.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<path d="M 1178 82.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="90.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >app_label</text>
+<text x="1502.0" y="90.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 1178 92.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="100.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >model</text>
+<text x="1502.0" y="100.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<rect x="1550" y="48" width="340" height="54" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 1555 48 H 1885 Q 1890 48 1890 53 V 71 H 1550 V 53 Q 1550 48 1555 48" fill="#FFFFFF"/>
+<text x="1720.0" y="64.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >auth.user_user_permissions</text>
+<path d="M 1551 71.5 H 1889" stroke="#71777D" stroke-width="0.8"/>
+<text x="1558.0" y="80.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="1593.0" y="80.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="1882.0" y="80.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<path d="M 1558 82.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1558.0" y="90.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R06</text>
+<text x="1611.0" y="90.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >permission_id</text>
+<text x="1882.0" y="90.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<path d="M 1558 92.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1558.0" y="100.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R05</text>
+<text x="1611.0" y="100.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >user_id</text>
+<text x="1882.0" y="100.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<rect x="30" y="220" width="340" height="54" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 35 220 H 365 Q 370 220 370 225 V 243 H 30 V 225 Q 30 220 35 220" fill="#FFFFFF"/>
+<text x="200.0" y="236.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >auth.group_permissions</text>
+<path d="M 31 243.5 H 369" stroke="#71777D" stroke-width="0.8"/>
+<text x="38.0" y="252.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="73.0" y="252.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="362.0" y="252.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<path d="M 38 254.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="38.0" y="262.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R02</text>
+<text x="91.0" y="262.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >permission_id</text>
+<text x="362.0" y="262.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<path d="M 38 264.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="38.0" y="272.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R01</text>
+<text x="91.0" y="272.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >group_id</text>
+<text x="362.0" y="272.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<rect x="410" y="220" width="340" height="54" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 415 220 H 745 Q 750 220 750 225 V 243 H 410 V 225 Q 410 220 415 220" fill="#FFFFFF"/>
+<text x="580.0" y="236.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >auth.user_groups</text>
+<path d="M 411 243.5 H 749" stroke="#71777D" stroke-width="0.8"/>
+<text x="418.0" y="252.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="453.0" y="252.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="742.0" y="252.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<path d="M 418 254.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="418.0" y="262.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R04</text>
+<text x="471.0" y="262.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >group_id</text>
+<text x="742.0" y="262.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<path d="M 418 264.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="418.0" y="272.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R03</text>
+<text x="471.0" y="272.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >user_id</text>
+<text x="742.0" y="272.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<rect x="790" y="220" width="340" height="84" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 795 220 H 1125 Q 1130 220 1130 225 V 243 H 790 V 225 Q 790 220 795 220" fill="#FFFFFF"/>
+<text x="960.0" y="236.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_notification</text>
+<path d="M 791 243.5 H 1129" stroke="#71777D" stroke-width="0.8"/>
+<text x="798.0" y="252.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="833.0" y="252.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="1122.0" y="252.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 798 254.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="798.0" y="262.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R19</text>
+<text x="851.0" y="262.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >employee_id</text>
+<text x="1122.0" y="262.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 798 264.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="272.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >text</text>
+<text x="1122.0" y="272.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 798 274.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="282.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >kind</text>
+<text x="1122.0" y="282.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 798 284.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="292.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >is_read</text>
+<text x="1122.0" y="292.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >BOOLEAN</text>
+<path d="M 798 294.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="302.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >created_at</text>
+<text x="1122.0" y="302.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<rect x="1170" y="220" width="340" height="74" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 1175 220 H 1505 Q 1510 220 1510 225 V 243 H 1170 V 225 Q 1170 220 1175 220" fill="#FFFFFF"/>
+<text x="1340.0" y="236.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_onboardingdocument</text>
+<path d="M 1171 243.5 H 1509" stroke="#71777D" stroke-width="0.8"/>
+<text x="1178.0" y="252.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="1213.0" y="252.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="1502.0" y="252.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1178 254.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1178.0" y="262.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R20</text>
+<text x="1231.0" y="262.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >employee_id</text>
+<text x="1502.0" y="262.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1178 264.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="272.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >doc_type</text>
+<text x="1502.0" y="272.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >ENUM</text>
+<path d="M 1178 274.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="282.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >file</text>
+<text x="1502.0" y="282.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 1178 284.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="292.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >uploaded_at</text>
+<text x="1502.0" y="292.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<rect x="1550" y="220" width="340" height="104" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 1555 220 H 1885 Q 1890 220 1890 225 V 243 H 1550 V 225 Q 1550 220 1555 220" fill="#FFFFFF"/>
+<text x="1720.0" y="236.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_overtimeslip</text>
+<path d="M 1551 243.5 H 1889" stroke="#71777D" stroke-width="0.8"/>
+<text x="1558.0" y="252.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="1593.0" y="252.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="1882.0" y="252.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1558 254.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1558.0" y="262.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R21</text>
+<text x="1611.0" y="262.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >employee_id</text>
+<text x="1882.0" y="262.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1558 264.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1558.0" y="272.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R22</text>
+<text x="1611.0" y="272.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >attendance_id</text>
+<text x="1882.0" y="272.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1558 274.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="282.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >date</text>
+<text x="1882.0" y="282.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >DATE</text>
+<path d="M 1558 284.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="292.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >hours</text>
+<text x="1882.0" y="292.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >NUMERIC</text>
+<path d="M 1558 294.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="302.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >multiplier</text>
+<text x="1882.0" y="302.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >NUMERIC</text>
+<path d="M 1558 304.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="312.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >status</text>
+<text x="1882.0" y="312.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >ENUM</text>
+<path d="M 1558 314.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="322.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >created_at</text>
+<text x="1882.0" y="322.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<rect x="30" y="392" width="340" height="84" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 35 392 H 365 Q 370 392 370 397 V 415 H 30 V 397 Q 30 392 35 392" fill="#FFFFFF"/>
+<text x="200.0" y="408.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_authenticatordevice</text>
+<path d="M 31 415.5 H 369" stroke="#71777D" stroke-width="0.8"/>
+<text x="38.0" y="424.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="73.0" y="424.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="362.0" y="424.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<path d="M 38 426.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="38.0" y="434.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R30</text>
+<text x="91.0" y="434.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >user_id</text>
+<text x="362.0" y="434.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<path d="M 38 436.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="444.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >is_confirmed</text>
+<text x="362.0" y="444.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >BOOLEAN</text>
+<path d="M 38 446.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="454.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >enabled_at</text>
+<text x="362.0" y="454.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<path d="M 38 456.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="464.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >last_verified_counter</text>
+<text x="362.0" y="464.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >BIGINT</text>
+<path d="M 38 466.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="474.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >created_at</text>
+<text x="362.0" y="474.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<rect x="410" y="392" width="340" height="54" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 415 392 H 745 Q 750 392 750 397 V 415 H 410 V 397 Q 410 392 415 392" fill="#FFFFFF"/>
+<text x="580.0" y="408.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_authenticatorrecoverycode</text>
+<path d="M 411 415.5 H 749" stroke="#71777D" stroke-width="0.8"/>
+<text x="418.0" y="424.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="453.0" y="424.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="742.0" y="424.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<path d="M 418 426.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="418.0" y="434.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R31</text>
+<text x="471.0" y="434.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >device_id</text>
+<text x="742.0" y="434.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<path d="M 418 436.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="420.0" y="444.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >created_at</text>
+<text x="742.0" y="444.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<rect x="790" y="392" width="340" height="84" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 795 392 H 1125 Q 1130 392 1130 397 V 415 H 790 V 397 Q 790 392 795 392" fill="#FFFFFF"/>
+<text x="960.0" y="408.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_department</text>
+<path d="M 791 415.5 H 1129" stroke="#71777D" stroke-width="0.8"/>
+<text x="798.0" y="424.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="833.0" y="424.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="1122.0" y="424.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 798 426.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="434.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >name</text>
+<text x="1122.0" y="434.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 798 436.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="444.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >code</text>
+<text x="1122.0" y="444.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 798 446.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="798.0" y="454.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R11</text>
+<text x="851.0" y="454.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >manager_id</text>
+<text x="1122.0" y="454.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 798 456.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="464.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >created_at</text>
+<text x="1122.0" y="464.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<path d="M 798 466.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="474.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >updated_at</text>
+<text x="1122.0" y="474.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<rect x="1170" y="392" width="340" height="94" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 1175 392 H 1505 Q 1510 392 1510 397 V 415 H 1170 V 397 Q 1170 392 1175 392" fill="#FFFFFF"/>
+<text x="1340.0" y="408.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_attendancecorrection</text>
+<path d="M 1171 415.5 H 1509" stroke="#71777D" stroke-width="0.8"/>
+<text x="1178.0" y="424.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="1213.0" y="424.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="1502.0" y="424.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1178 426.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1178.0" y="434.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R09</text>
+<text x="1231.0" y="434.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >attendance_id</text>
+<text x="1502.0" y="434.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1178 436.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="444.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >proposed_clock_in</text>
+<text x="1502.0" y="444.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<path d="M 1178 446.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="454.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >proposed_clock_out</text>
+<text x="1502.0" y="454.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<path d="M 1178 456.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="464.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >reason</text>
+<text x="1502.0" y="464.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TEXT</text>
+<path d="M 1178 466.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="474.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >status</text>
+<text x="1502.0" y="474.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >ENUM</text>
+<path d="M 1178 476.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="484.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >created_at</text>
+<text x="1502.0" y="484.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<rect x="1550" y="392" width="340" height="104" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 1555 392 H 1885 Q 1890 392 1890 397 V 415 H 1550 V 397 Q 1550 392 1555 392" fill="#FFFFFF"/>
+<text x="1720.0" y="408.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_grievance</text>
+<path d="M 1551 415.5 H 1889" stroke="#71777D" stroke-width="0.8"/>
+<text x="1558.0" y="424.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="1593.0" y="424.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="1882.0" y="424.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1558 426.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1558.0" y="434.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R16</text>
+<text x="1611.0" y="434.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >employee_id</text>
+<text x="1882.0" y="434.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1558 436.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="444.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >category</text>
+<text x="1882.0" y="444.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 1558 446.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="454.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >title</text>
+<text x="1882.0" y="454.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 1558 456.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="464.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >details</text>
+<text x="1882.0" y="464.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TEXT</text>
+<path d="M 1558 466.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="474.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >status</text>
+<text x="1882.0" y="474.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >ENUM</text>
+<path d="M 1558 476.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="484.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >created_at</text>
+<text x="1882.0" y="484.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<path d="M 1558 486.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="494.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >updated_at</text>
+<text x="1882.0" y="494.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<rect x="30" y="564" width="340" height="64" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 35 564 H 365 Q 370 564 370 569 V 587 H 30 V 569 Q 30 564 35 564" fill="#FFFFFF"/>
+<text x="200.0" y="580.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_employeeauditlog</text>
+<path d="M 31 587.5 H 369" stroke="#71777D" stroke-width="0.8"/>
+<text x="38.0" y="596.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="73.0" y="596.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="362.0" y="596.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 38 598.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="38.0" y="606.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R14</text>
+<text x="91.0" y="606.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >employee_id</text>
+<text x="362.0" y="606.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 38 608.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="616.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >action</text>
+<text x="362.0" y="616.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 38 618.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="626.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >timestamp</text>
+<text x="362.0" y="626.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<rect x="410" y="564" width="340" height="74" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 415 564 H 745 Q 750 564 750 569 V 587 H 410 V 569 Q 410 564 415 564" fill="#FFFFFF"/>
+<text x="580.0" y="580.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_attendance</text>
+<path d="M 411 587.5 H 749" stroke="#71777D" stroke-width="0.8"/>
+<text x="418.0" y="596.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="453.0" y="596.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="742.0" y="596.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 418 598.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="418.0" y="606.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R08</text>
+<text x="471.0" y="606.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >employee_id</text>
+<text x="742.0" y="606.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 418 608.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="420.0" y="616.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >date</text>
+<text x="742.0" y="616.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >DATE</text>
+<path d="M 418 618.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="420.0" y="626.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >clock_in</text>
+<text x="742.0" y="626.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<path d="M 418 628.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="420.0" y="636.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >clock_out</text>
+<text x="742.0" y="636.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<rect x="790" y="564" width="340" height="124" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 795 564 H 1125 Q 1130 564 1130 569 V 587 H 790 V 569 Q 790 564 795 564" fill="#FFFFFF"/>
+<text x="960.0" y="580.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_employee</text>
+<path d="M 791 587.5 H 1129" stroke="#71777D" stroke-width="0.8"/>
+<text x="798.0" y="596.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="833.0" y="596.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="1122.0" y="596.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 798 598.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="606.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >first_name</text>
+<text x="1122.0" y="606.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 798 608.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="616.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >last_name</text>
+<text x="1122.0" y="616.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 798 618.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="626.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >email</text>
+<text x="1122.0" y="626.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 798 628.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="636.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >role</text>
+<text x="1122.0" y="636.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 798 638.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="798.0" y="646.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R12</text>
+<text x="851.0" y="646.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >department_id</text>
+<text x="1122.0" y="646.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 798 648.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="656.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >date_hired</text>
+<text x="1122.0" y="656.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >DATE</text>
+<path d="M 798 658.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="666.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >is_active</text>
+<text x="1122.0" y="666.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >BOOLEAN</text>
+<path d="M 798 668.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="676.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >resigned_at</text>
+<text x="1122.0" y="676.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >DATE</text>
+<path d="M 798 678.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="798.0" y="686.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R13</text>
+<text x="851.0" y="686.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >user_id</text>
+<text x="1122.0" y="686.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >SERIAL</text>
+<rect x="1170" y="564" width="340" height="104" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 1175 564 H 1505 Q 1510 564 1510 569 V 587 H 1170 V 569 Q 1170 564 1175 564" fill="#FFFFFF"/>
+<text x="1340.0" y="580.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_complaint</text>
+<path d="M 1171 587.5 H 1509" stroke="#71777D" stroke-width="0.8"/>
+<text x="1178.0" y="596.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="1213.0" y="596.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="1502.0" y="596.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1178 598.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1178.0" y="606.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R10</text>
+<text x="1231.0" y="606.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >employee_id</text>
+<text x="1502.0" y="606.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1178 608.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="616.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >subject</text>
+<text x="1502.0" y="616.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 1178 618.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="626.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >description</text>
+<text x="1502.0" y="626.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TEXT</text>
+<path d="M 1178 628.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="636.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >category</text>
+<text x="1502.0" y="636.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >ENUM</text>
+<path d="M 1178 638.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="646.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >status</text>
+<text x="1502.0" y="646.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >ENUM</text>
+<path d="M 1178 648.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="656.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >is_confidential</text>
+<text x="1502.0" y="656.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >BOOLEAN</text>
+<path d="M 1178 658.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="666.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >created_at</text>
+<text x="1502.0" y="666.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<rect x="1550" y="564" width="340" height="124" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 1555 564 H 1885 Q 1890 564 1890 569 V 587 H 1550 V 569 Q 1550 564 1555 564" fill="#FFFFFF"/>
+<text x="1720.0" y="580.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_shiftroster</text>
+<path d="M 1551 587.5 H 1889" stroke="#71777D" stroke-width="0.8"/>
+<text x="1558.0" y="596.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="1593.0" y="596.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="1882.0" y="596.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1558 598.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="606.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >name</text>
+<text x="1882.0" y="606.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 1558 608.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1558.0" y="616.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R27</text>
+<text x="1611.0" y="616.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >employee_id</text>
+<text x="1882.0" y="616.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1558 618.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="626.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >work_date</text>
+<text x="1882.0" y="626.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >DATE</text>
+<path d="M 1558 628.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="636.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >shift_type</text>
+<text x="1882.0" y="636.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 1558 638.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="646.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >start_time</text>
+<text x="1882.0" y="646.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIME</text>
+<path d="M 1558 648.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="656.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >end_time</text>
+<text x="1882.0" y="656.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIME</text>
+<path d="M 1558 658.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="666.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >break_mins</text>
+<text x="1882.0" y="666.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >INTEGER</text>
+<path d="M 1558 668.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="676.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >created_at</text>
+<text x="1882.0" y="676.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<path d="M 1558 678.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="686.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >updated_at</text>
+<text x="1882.0" y="686.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<rect x="30" y="736" width="340" height="104" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 35 736 H 365 Q 370 736 370 741 V 759 H 30 V 741 Q 30 736 35 736" fill="#FFFFFF"/>
+<text x="200.0" y="752.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_expenseclaim</text>
+<path d="M 31 759.5 H 369" stroke="#71777D" stroke-width="0.8"/>
+<text x="38.0" y="768.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="73.0" y="768.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="362.0" y="768.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 38 770.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="38.0" y="778.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R15</text>
+<text x="91.0" y="778.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >employee_id</text>
+<text x="362.0" y="778.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 38 780.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="788.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >title</text>
+<text x="362.0" y="788.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 38 790.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="798.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >amount</text>
+<text x="362.0" y="798.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >NUMERIC</text>
+<path d="M 38 800.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="808.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >category</text>
+<text x="362.0" y="808.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 38 810.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="818.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >status</text>
+<text x="362.0" y="818.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >ENUM</text>
+<path d="M 38 820.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="828.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >created_at</text>
+<text x="362.0" y="828.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<path d="M 38 830.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="838.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >updated_at</text>
+<text x="362.0" y="838.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<rect x="410" y="736" width="340" height="74" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 415 736 H 745 Q 750 736 750 741 V 759 H 410 V 741 Q 410 736 415 736" fill="#FFFFFF"/>
+<text x="580.0" y="752.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_leaveallocation</text>
+<path d="M 411 759.5 H 749" stroke="#71777D" stroke-width="0.8"/>
+<text x="418.0" y="768.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="453.0" y="768.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="742.0" y="768.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 418 770.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="418.0" y="778.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R17</text>
+<text x="471.0" y="778.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >employee_id</text>
+<text x="742.0" y="778.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 418 780.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="420.0" y="788.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >leave_type</text>
+<text x="742.0" y="788.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 418 790.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="420.0" y="798.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >year</text>
+<text x="742.0" y="798.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >INTEGER</text>
+<path d="M 418 800.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="420.0" y="808.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >days_total</text>
+<text x="742.0" y="808.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >NUMERIC</text>
+<rect x="790" y="736" width="340" height="104" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 795 736 H 1125 Q 1130 736 1130 741 V 759 H 790 V 741 Q 790 736 795 736" fill="#FFFFFF"/>
+<text x="960.0" y="752.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_leaverequest</text>
+<path d="M 791 759.5 H 1129" stroke="#71777D" stroke-width="0.8"/>
+<text x="798.0" y="768.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="833.0" y="768.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="1122.0" y="768.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 798 770.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="798.0" y="778.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R18</text>
+<text x="851.0" y="778.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >employee_id</text>
+<text x="1122.0" y="778.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 798 780.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="788.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >leave_type</text>
+<text x="1122.0" y="788.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 798 790.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="798.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >start_date</text>
+<text x="1122.0" y="798.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >DATE</text>
+<path d="M 798 800.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="808.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >end_date</text>
+<text x="1122.0" y="808.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >DATE</text>
+<path d="M 798 810.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="818.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >reason</text>
+<text x="1122.0" y="818.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TEXT</text>
+<path d="M 798 820.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="828.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >status</text>
+<text x="1122.0" y="828.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >ENUM</text>
+<path d="M 798 830.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="838.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >created_at</text>
+<text x="1122.0" y="838.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<rect x="1170" y="736" width="340" height="84" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 1175 736 H 1505 Q 1510 736 1510 741 V 759 H 1170 V 741 Q 1170 736 1175 736" fill="#FFFFFF"/>
+<text x="1340.0" y="752.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_payrollitem</text>
+<path d="M 1171 759.5 H 1509" stroke="#71777D" stroke-width="0.8"/>
+<text x="1178.0" y="768.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="1213.0" y="768.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="1502.0" y="768.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1178 770.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1178.0" y="778.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R23</text>
+<text x="1231.0" y="778.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >payroll_run_id</text>
+<text x="1502.0" y="778.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1178 780.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1178.0" y="788.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R24</text>
+<text x="1231.0" y="788.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >employee_id</text>
+<text x="1502.0" y="788.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1178 790.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="798.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >base_pay</text>
+<text x="1502.0" y="798.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >NUMERIC</text>
+<path d="M 1178 800.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="808.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >deductions</text>
+<text x="1502.0" y="808.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >NUMERIC</text>
+<path d="M 1178 810.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="818.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >net_pay</text>
+<text x="1502.0" y="818.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >NUMERIC</text>
+<rect x="1550" y="736" width="340" height="84" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 1555 736 H 1885 Q 1890 736 1890 741 V 759 H 1550 V 741 Q 1550 736 1555 736" fill="#FFFFFF"/>
+<text x="1720.0" y="752.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_shiftswap</text>
+<path d="M 1551 759.5 H 1889" stroke="#71777D" stroke-width="0.8"/>
+<text x="1558.0" y="768.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="1593.0" y="768.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="1882.0" y="768.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1558 770.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1558.0" y="778.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R28</text>
+<text x="1611.0" y="778.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >requester_roster_id</text>
+<text x="1882.0" y="778.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1558 780.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1558.0" y="788.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R29</text>
+<text x="1611.0" y="788.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >target_roster_id</text>
+<text x="1882.0" y="788.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1558 790.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="798.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >reason</text>
+<text x="1882.0" y="798.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TEXT</text>
+<path d="M 1558 800.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="808.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >status</text>
+<text x="1882.0" y="808.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >ENUM</text>
+<path d="M 1558 810.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="818.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >created_at</text>
+<text x="1882.0" y="818.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<rect x="30" y="908" width="340" height="74" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 35 908 H 365 Q 370 908 370 913 V 931 H 30 V 913 Q 30 908 35 908" fill="#FFFFFF"/>
+<text x="200.0" y="924.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_performancereview</text>
+<path d="M 31 931.5 H 369" stroke="#71777D" stroke-width="0.8"/>
+<text x="38.0" y="940.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="73.0" y="940.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="362.0" y="940.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 38 942.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="38.0" y="950.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R25</text>
+<text x="91.0" y="950.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >employee_id</text>
+<text x="362.0" y="950.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 38 952.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="960.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >review_date</text>
+<text x="362.0" y="960.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >DATE</text>
+<path d="M 38 962.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="970.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >score</text>
+<text x="362.0" y="970.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >INTEGER</text>
+<path d="M 38 972.4 H 362" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="40.0" y="980.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >comments</text>
+<text x="362.0" y="980.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TEXT</text>
+<rect x="410" y="908" width="340" height="94" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 415 908 H 745 Q 750 908 750 913 V 931 H 410 V 913 Q 410 908 415 908" fill="#FFFFFF"/>
+<text x="580.0" y="924.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_salaryadvance</text>
+<path d="M 411 931.5 H 749" stroke="#71777D" stroke-width="0.8"/>
+<text x="418.0" y="940.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="453.0" y="940.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="742.0" y="940.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 418 942.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="418.0" y="950.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.5" font-weight="700" fill="#111111" >FK R26</text>
+<text x="471.0" y="950.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >employee_id</text>
+<text x="742.0" y="950.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 418 952.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="420.0" y="960.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >amount</text>
+<text x="742.0" y="960.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >NUMERIC</text>
+<path d="M 418 962.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="420.0" y="970.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >repayment_terms</text>
+<text x="742.0" y="970.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 418 972.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="420.0" y="980.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >purpose</text>
+<text x="742.0" y="980.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TEXT</text>
+<path d="M 418 982.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="420.0" y="990.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >status</text>
+<text x="742.0" y="990.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >ENUM</text>
+<path d="M 418 992.4 H 742" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="420.0" y="1000.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >created_at</text>
+<text x="742.0" y="1000.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<rect x="790" y="908" width="340" height="64" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 795 908 H 1125 Q 1130 908 1130 913 V 931 H 790 V 913 Q 790 908 795 908" fill="#FFFFFF"/>
+<text x="960.0" y="924.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_payrollrun</text>
+<path d="M 791 931.5 H 1129" stroke="#71777D" stroke-width="0.8"/>
+<text x="798.0" y="940.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="833.0" y="940.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="1122.0" y="940.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 798 942.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="950.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >pay_period_start</text>
+<text x="1122.0" y="950.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >DATE</text>
+<path d="M 798 952.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="960.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >pay_period_end</text>
+<text x="1122.0" y="960.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >DATE</text>
+<path d="M 798 962.4 H 1122" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="800.0" y="970.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >is_processed</text>
+<text x="1122.0" y="970.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >BOOLEAN</text>
+<rect x="1170" y="908" width="340" height="84" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 1175 908 H 1505 Q 1510 908 1510 913 V 931 H 1170 V 913 Q 1170 908 1175 908" fill="#FFFFFF"/>
+<text x="1340.0" y="924.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_message</text>
+<path d="M 1171 931.5 H 1509" stroke="#71777D" stroke-width="0.8"/>
+<text x="1178.0" y="940.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="1213.0" y="940.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="1502.0" y="940.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >UUID</text>
+<path d="M 1178 942.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="950.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >conversation_key</text>
+<text x="1502.0" y="950.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 1178 952.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="960.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >sender_name</text>
+<text x="1502.0" y="960.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 1178 962.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="970.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >text</text>
+<text x="1502.0" y="970.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TEXT</text>
+<path d="M 1178 972.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="980.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >attachment</text>
+<text x="1502.0" y="980.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 1178 982.4 H 1502" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1180.0" y="990.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >created_at</text>
+<text x="1502.0" y="990.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+<rect x="1550" y="908" width="340" height="64" rx="5" fill="#FFFFFF" stroke="#20252A" stroke-width="1.5"/>
+<path d="M 1555 908 H 1885 Q 1890 908 1890 913 V 931 H 1550 V 913 Q 1550 908 1555 908" fill="#FFFFFF"/>
+<text x="1720.0" y="924.3" font-family="Segoe UI,Arial,sans-serif" font-size="10.5" font-weight="700" fill="#111111" text-anchor="middle" >core_claimstatus</text>
+<path d="M 1551 931.5 H 1889" stroke="#71777D" stroke-width="0.8"/>
+<text x="1558.0" y="940.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.0" font-weight="700" fill="#111111" >PK</text>
+<text x="1593.0" y="940.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >id</text>
+<text x="1882.0" y="940.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >BIGSERIAL</text>
+<path d="M 1558 942.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="950.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >claim_id</text>
+<text x="1882.0" y="950.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 1558 952.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="960.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >status</text>
+<text x="1882.0" y="960.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >VARCHAR</text>
+<path d="M 1558 962.4 H 1882" stroke="#D9DDE1" stroke-width="0.55"/>
+<text x="1560.0" y="970.0" font-family="Segoe UI,Arial,sans-serif" font-size="8.7" font-weight="400" fill="#111111" >updated_at</text>
+<text x="1882.0" y="970.0" font-family="Segoe UI,Arial,sans-serif" font-size="7.8" font-weight="400" fill="#555B61" text-anchor="end" >TIMESTAMP</text>
+</g>
 </svg>

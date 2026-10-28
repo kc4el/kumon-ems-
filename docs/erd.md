@@ -1,10 +1,12 @@
 # Kumon EMS ERD
 
+[Download the transparent 1920×1080 PNG](erd.png) · [Download the A4 landscape PDF](../output/pdf/kumon-ems-erd-a4.pdf)
+
 ![Rendered entity relationship diagram](erd.png)
 
-**Key colors:** PK = primary key (gold) · FK = foreign key (blue) · UQ = unique key (purple). `auto` is an integer identity, `big_auto` a bigint identity, and `uuid` a UUID. Cards show descriptions and typed keys. `SHARED REF` cards repeat the same entity to keep domain sections readable.
+White table cards with black text list every field and its PostgreSQL type. `PK` and `FK` tags mark key columns, `?` marks nullable fields, and each FK tag includes its connector ID. All 30 tables appear once. The canvas is transparent.
 
-Connector IDs in the diagram match this relationship guide. Cardinality is written as “parent rows per child; child rows per parent.”
+Relationship endpoints use full cardinality marks: an open circle means zero (optional), a bar means one, and a fork means many. Orthogonal connector paths route around table cards. Connector IDs match this guide and are checked against the foreign-key nullability and uniqueness in `schema.dbml`. Cardinality is written as “parent rows per child; child rows per parent.”
 
 | ID | Connection | Cardinality | Why they are linked / what the connection supports |
 |---|---|---|---|
@@ -41,3 +43,36 @@ Connector IDs in the diagram match this relationship guide. Cardinality is writt
 | R31 | core_authenticatordevice.id → core_authenticatorrecoverycode.device_id | 1 parent per child; 0..* children per parent | stores backup codes with their authenticator; each code is single use |
 
 Full column definitions and indexes are in [schema.dbml](schema.dbml).
+
+## What each table is for
+
+- `auth.group_permissions`: This table has group and permission assignments and is used for granting shared permissions to groups.
+- `auth.user_groups`: This table has user-to-group assignments and is used for giving users the permissions attached to their groups.
+- `auth.user_user_permissions`: This table has direct user-to-permission assignments and is used for granting account-specific permissions.
+- `auth_group`: This table has named access groups and is used for grouping users under shared permissions.
+- `auth_permission`: This table has permission names, actions, and model links and is used for Django authorization checks.
+- `auth_user`: This table has login credentials, profile fields, and account flags and is used for authentication and account access.
+- `core_attendance`: This table has an employee, work date, and clock-in and clock-out times and is used for daily attendance records.
+- `core_attendancecorrection`: This table has an attendance link, proposed times, reason, and status and is used for requesting punch corrections.
+- `core_authenticatordevice`: This table has a user link, encrypted authenticator secret, and verification state and is used for two-factor login.
+- `core_authenticatorrecoverycode`: This table has an authenticator-device link and hashed recovery codes and is used for single-use account recovery.
+- `core_claimstatus`: This table has a claim ID, current status, and update time and is used for tracking each claim's status.
+- `core_complaint`: This table has an employee, complaint details, category, and status and is used for recording and resolving complaints.
+- `core_department`: This table has a department name, code, and optional manager and is used for organizing staff and routing oversight.
+- `core_employee`: This table has staff profile, job, department, and optional login details and is used as the central employee record.
+- `core_employeeauditlog`: This table has an employee link, action, and timestamp and is used for recording employee-related activity.
+- `core_expenseclaim`: This table has an employee, expense details, amount, and status and is used for submitting and reviewing reimbursements.
+- `core_grievance`: This table has optional employee details, a case category, description, and status and is used for tracking grievances.
+- `core_leaveallocation`: This table has an employee, leave type, year, and available days and is used for tracking annual leave balances.
+- `core_leaverequest`: This table has an employee, leave dates, reason, and status and is used for requesting and approving leave.
+- `core_message`: This table has a conversation key, sender, message text, and optional attachment and is used for storing announcements and messages.
+- `core_notification`: This table has an employee, notification text, kind, and read state and is used for delivering in-app notifications.
+- `core_onboardingdocument`: This table has an employee, document type, file, and upload time and is used for storing onboarding paperwork.
+- `core_overtimeslip`: This table has an employee, attendance record, hours, multiplier, and status and is used for reviewing and paying overtime.
+- `core_payrollitem`: This table has a payroll run, employee, base pay, deductions, and net pay and is used for each employee's payroll line.
+- `core_payrollrun`: This table has a pay-period start, end, and processed flag and is used for grouping payroll items into a payroll batch.
+- `core_performancereview`: This table has an employee, review date, score, and comments and is used for maintaining performance review history.
+- `core_salaryadvance`: This table has an employee, amount, repayment terms, purpose, and status and is used for managing salary advance requests.
+- `core_shiftroster`: This table has shift dates, times, type, and an optional employee and is used for scheduling assigned or open shifts.
+- `core_shiftswap`: This table has requester and target shifts, a reason, and status and is used for managing shift exchange requests.
+- `django_content_type`: This table has application and model names and is used for identifying models referenced by Django permissions.
