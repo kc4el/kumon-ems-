@@ -1,6 +1,6 @@
-import json
 import logging
 import uuid
+from collections import Counter
 from datetime import timedelta
 
 from django.conf import settings
@@ -254,13 +254,21 @@ def hr_dashboard_view(request):
     return render(request, "core/index.html")
 
 
-def get_dm_key(email1, email2):
-    user_a = (email1 or "emp1").split("@")[0].lower()
-    user_b = (email2 or "emp2").split("@")[0].lower()
-    clean_a = "".join(c for c in user_a if c.isalnum() or c in "._-")[:35]
-    clean_b = "".join(c for c in user_b if c.isalnum() or c in "._-")[:35]
-    sorted_users = sorted([clean_a, clean_b])
-    return f"dm_{sorted_users[0]}_{sorted_users[1]}"[:95]
+def get_dm_key(employee_id1, employee_id2):
+    employee_ids = sorted((str(employee_id1), str(employee_id2)))
+    return f"dm_{employee_ids[0]}_{employee_ids[1]}"[:95]
+
+
+def _legacy_dm_component(email):
+    username = (email or "emp1").split("@")[0].lower()
+    return "".join(c for c in username if c.isalnum() or c in "._-")[:35]
+
+
+def _legacy_dm_key(email1, email2):
+    components = sorted(
+        (_legacy_dm_component(email1), _legacy_dm_component(email2))
+    )
+    return f"dm_{components[0]}_{components[1]}"[:95]
 
 
 @ensure_csrf_cookie
@@ -300,7 +308,7 @@ def employee_portal_view(request):
             "role": c.role or "Staff",
             "department_name": c.department.name if c.department else "Kumon Center",
             "initials": initials,
-            "dm_key": get_dm_key(my_email, c.email),
+            "dm_key": get_dm_key(employee.pk, c.pk),
         })
 
     return render(
@@ -310,7 +318,9 @@ def employee_portal_view(request):
             "show_employee_request_picker": is_admin_account and employee is None,
             "employee": employee,
             "colleagues": colleagues_list,
-            "colleagues_json": json.dumps(colleagues_list),
+            "hr_conversation_key": (
+                f"hr_{employee.pk}" if employee else "hr"
+            ),
         },
     )
 
@@ -933,6 +943,16 @@ class AttendanceCorrectionListCreateView(
     serializer_class = AttendanceCorrectionSerializer
     owner_lookup = "attendance__employee__user"
 
+    def perform_create(self, serializer):
+        if not is_staff_or_hr(self.request.user):
+            employee = _request_owner(self.request)
+            attendance = serializer.validated_data["attendance"]
+            if employee is None or attendance.employee_id != employee.pk:
+                raise PermissionDenied(
+                    "You can only request corrections for your own attendance."
+                )
+        serializer.save()
+
 
 class AttendanceCorrectionDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = AttendanceCorrection.objects.all()
@@ -942,6 +962,8 @@ class AttendanceCorrectionDetailView(generics.RetrieveUpdateDestroyAPIView):
     def patch(self, request, *args, **kwargs):
         if "status" not in request.data:
             return super().patch(request, *args, **kwargs)
+        if not is_staff_or_hr(request.user):
+            raise PermissionDenied("Only HR staff can decide attendance corrections.")
         correction = self.get_object()
         new_status = request.data.get("status")
         if new_status not in ("Approved", "Rejected"):
@@ -951,6 +973,8 @@ class AttendanceCorrectionDetailView(generics.RetrieveUpdateDestroyAPIView):
             )
         if new_status == correction.status:
             return Response(self.get_serializer(correction).data)
+        if correction.status != "Pending":
+            return Response(DECIDED_409_BODY, status=status.HTTP_409_CONFLICT)
         if new_status == "Rejected":
             # Status-only update: anything else in the payload is ignored.
             correction.status = "Rejected"
@@ -989,10 +1013,27 @@ class AttendanceCorrectionDetailView(generics.RetrieveUpdateDestroyAPIView):
             )
         return Response(self.get_serializer(correction).data)
 
+    def put(self, request, *args, **kwargs):
+        if "status" in request.data:
+            return self.patch(request, *args, **kwargs)
+        return super().put(request, *args, **kwargs)
+
 
 class AttendanceClockOutView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         emp_id = request.data.get("employee_id")
+        is_hr = is_staff_or_hr(request.user)
+        if not is_hr:
+            employee = _request_owner(request)
+            if employee is None or not employee.is_active:
+                raise PermissionDenied("No active employee profile is linked to this account.")
+            if emp_id and str(emp_id) != str(employee.pk):
+                raise PermissionDenied("You can only clock out your own attendance.")
+            if request.data.get("clock_out"):
+                raise PermissionDenied("Only HR staff can set a manual clock-out time.")
+            emp_id = employee.pk
         if not emp_id:
             return Response(
                 {"error": "employee_id is required."},
@@ -1011,6 +1052,11 @@ class AttendanceClockOutView(APIView):
                 clock_out_time = timezone.make_aware(clock_out_time)
         else:
             clock_out_time = timezone.now()
+        if is_hr and clock_out_time > timezone.now():
+            return Response(
+                {"error": "clock_out cannot be in the future."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         try:
             with transaction.atomic():
                 open_rows = (
@@ -1162,7 +1208,21 @@ class DecidedGuardMixin:
         return self.patch(request, *args, **kwargs)
 
 
-class LeaveRequestDetailView(DecidedGuardMixin, generics.RetrieveUpdateDestroyAPIView):
+class HRDecisionUpdateMixin:
+    """Keep self-service owners from changing approval state via detail APIs."""
+
+    def update(self, request, *args, **kwargs):
+        if (
+            ("status" in request.data or "decision" in request.data)
+            and not is_staff_or_hr(request.user)
+        ):
+            raise PermissionDenied("Only HR staff can change decision state.")
+        return super().update(request, *args, **kwargs)
+
+
+class LeaveRequestDetailView(
+    DecidedGuardMixin, HRDecisionUpdateMixin, generics.RetrieveUpdateDestroyAPIView
+):
     queryset = LeaveRequest.objects.all()
     serializer_class = LeaveRequestSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrStaff]
@@ -1225,8 +1285,17 @@ def leave_balance(employee_id, leave_type, year):
 
 
 class LeaveBalanceView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         emp = request.query_params.get("employee")
+        if not is_staff_or_hr(request.user):
+            employee = _request_owner(request)
+            if employee is None or not employee.is_active:
+                raise PermissionDenied("No active employee profile is linked to this account.")
+            if emp and str(emp) != str(employee.pk):
+                raise PermissionDenied("You can only view your own leave balance.")
+            emp = str(employee.pk)
         year = request.query_params.get("year")
         if not emp or not year:
             return Response(
@@ -1283,7 +1352,9 @@ class OvertimeSlipListCreateView(
             raise Conflict409("An overtime slip already exists for this attendance.")
 
 
-class OvertimeSlipDetailView(DecidedGuardMixin, generics.RetrieveUpdateDestroyAPIView):
+class OvertimeSlipDetailView(
+    DecidedGuardMixin, HRDecisionUpdateMixin, generics.RetrieveUpdateDestroyAPIView
+):
     queryset = OvertimeSlip.objects.all()
     serializer_class = OvertimeSlipSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrStaff]
@@ -1347,6 +1418,16 @@ class ShiftSwapListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
     serializer_class = ShiftSwapSerializer
     owner_lookup = "__swap_parties__"
 
+    def perform_create(self, serializer):
+        if not is_staff_or_hr(self.request.user):
+            employee = _request_owner(self.request)
+            requester_roster = serializer.validated_data["requester_roster"]
+            if employee is None or requester_roster.employee_id != employee.pk:
+                raise PermissionDenied(
+                    "You can only request a swap for your own shift."
+                )
+        serializer.save()
+
 
 class ShiftSwapDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = ShiftSwap.objects.all()
@@ -1372,32 +1453,50 @@ class ShiftSwapDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def patch(self, request, *args, **kwargs):
         swap = self.get_object()
+        if "status" in request.data:
+            new_status = request.data.get("status")
+            if new_status not in ("Approved", "Rejected"):
+                return Response(
+                    {"error": "status must be Approved or Rejected."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            target_user = getattr(
+                getattr(swap.target_roster, "employee", None), "user", None
+            )
+            if not is_staff_or_hr(request.user) and target_user != request.user:
+                raise PermissionDenied(
+                    "Only the target shift employee or HR staff can decide this swap."
+                )
+            if swap.status == new_status:
+                return Response(self.get_serializer(swap).data)
+            if swap.status != "Pending":
+                return Response(
+                    {"error": "This swap has already been decided."},
+                    status=status.HTTP_409_CONFLICT,
+                )
+            if new_status == "Approved":
+                self._approve_swap(swap)
+            else:
+                with transaction.atomic():
+                    swap.status = "Rejected"
+                    swap.save(update_fields=["status"])
+                    Notification.objects.create(
+                        employee=swap.requester_roster.employee,
+                        kind="shift",
+                        text=(
+                            "Swap rejected for "
+                            f"{swap.requester_roster.work_date} "
+                            f"({swap.requester_roster.shift_type} / "
+                            f"{swap.target_roster.shift_type})"
+                        ),
+                    )
+            return Response(
+                self.get_serializer(self.get_object()).data,
+                status=status.HTTP_200_OK,
+            )
         serializer = self.get_serializer(swap, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        new_status = serializer.validated_data.get("status", swap.status)
-        if swap.status != "Pending" and new_status != swap.status:
-            return Response(
-                {"error": "This swap has already been decided."},
-                status=status.HTTP_409_CONFLICT,
-            )
-        if new_status == "Approved" and swap.status == "Pending":
-            self._approve_swap(swap)
-        elif new_status == "Rejected" and swap.status == "Pending":
-            with transaction.atomic():
-                swap.status = "Rejected"
-                swap.save(update_fields=["status"])
-                Notification.objects.create(
-                    employee=swap.requester_roster.employee,
-                    kind="shift",
-                    text=(
-                        "Swap rejected for "
-                        f"{swap.requester_roster.work_date} "
-                        f"({swap.requester_roster.shift_type} / "
-                        f"{swap.target_roster.shift_type})"
-                    ),
-                )
-        else:
-            self.perform_update(serializer)
+        self.perform_update(serializer)
         return Response(
             self.get_serializer(self.get_object()).data,
             status=status.HTTP_200_OK,
@@ -1448,11 +1547,13 @@ class ShiftSwapDetailView(generics.RetrieveUpdateDestroyAPIView):
 class PayrollRunListCreateView(generics.ListCreateAPIView):
     queryset = PayrollRun.objects.all().order_by("-pay_period_start")
     serializer_class = PayrollRunSerializer
+    permission_classes = [IsStaffOrHR]
 
 
 class PayrollRunDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = PayrollRun.objects.all()
     serializer_class = PayrollRunSerializer
+    permission_classes = [IsStaffOrHR]
 
 
 class PayrollItemListCreateView(
@@ -1797,10 +1898,79 @@ class SessionLogoutView(APIView):
 
 class MessageListCreateView(generics.ListCreateAPIView):
     serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated]
+
+    def _employee(self):
+        return Employee.objects.filter(
+            user=self.request.user, is_active=True
+        ).first()
+
+    def _can_access_conversation(self, conversation_key):
+        if conversation_key in ("announcements", "general"):
+            return True
+        is_hr = is_staff_or_hr(self.request.user)
+        if conversation_key in ("hr", "grievance"):
+            return is_hr
+        if is_hr:
+            try:
+                employee_id = uuid.UUID(conversation_key)
+            except (ValueError, AttributeError, TypeError):
+                employee_id = None
+            if employee_id and Employee.objects.filter(
+                pk=employee_id, is_active=True
+            ).exists():
+                return True
+        if conversation_key.startswith("hr_"):
+            employee = self._employee()
+            employee_id = conversation_key[3:]
+            thread_owner = Employee.objects.filter(
+                pk=employee_id, is_active=True
+            ).first()
+            return thread_owner is not None and (
+                is_hr or (employee is not None and employee.pk == thread_owner.pk)
+            )
+        if conversation_key.startswith("dm_"):
+            employee = self._employee()
+            if employee is None:
+                return False
+            colleagues = list(
+                Employee.objects.filter(is_active=True).exclude(user=self.request.user)
+            )
+            if any(
+                get_dm_key(employee.pk, colleague.pk) == conversation_key
+                for colleague in colleagues
+            ):
+                return True
+            handle_counts = Counter(
+                _legacy_dm_component(email)
+                for email in Employee.objects.values_list("email", flat=True)
+            )
+            my_handle = _legacy_dm_component(employee.email)
+            for colleague in colleagues:
+                other_handle = _legacy_dm_component(colleague.email)
+                if _legacy_dm_key(employee.email, colleague.email) != conversation_key:
+                    continue
+                matching_pairs = (
+                    handle_counts[my_handle] * (handle_counts[my_handle] - 1) // 2
+                    if my_handle == other_handle
+                    else handle_counts[my_handle] * handle_counts[other_handle]
+                )
+                if matching_pairs == 1:
+                    return True
+            return False
+        return False
 
     def get_queryset(self):
         conversation_key = self.request.query_params.get("conversation", "announcements")
-        queryset = Message.objects.filter(conversation_key=conversation_key)
+        if not self._can_access_conversation(conversation_key):
+            raise PermissionDenied("You are not a participant in this conversation.")
+        if conversation_key == "hr" and is_staff_or_hr(self.request.user):
+            queryset = Message.objects.filter(
+                models.Q(conversation_key="hr")
+                | models.Q(conversation_key__startswith="hr_")
+            )
+        else:
+            queryset = Message.objects.filter(conversation_key=conversation_key)
         search = (self.request.query_params.get("search") or "").strip()
         if search:
             queryset = queryset.filter(
@@ -1817,6 +1987,12 @@ class MessageListCreateView(generics.ListCreateAPIView):
         else:
             name = user.get_full_name() or user.username
         key = self.request.data.get("conversation_key") or "general"
+        if not isinstance(key, str) or len(key) > 100:
+            raise DRFValidationError(
+                {"conversation_key": "Must be a string of at most 100 characters."}
+            )
+        if not self._can_access_conversation(key):
+            raise PermissionDenied("You are not a participant in this conversation.")
         serializer.save(conversation_key=key, sender_name=name)
 
 
@@ -1850,7 +2026,7 @@ class ColleagueDirectoryView(APIView):
                 "role": c.role or "Staff",
                 "department_name": c.department.name if c.department else "Kumon Center",
                 "initials": initials,
-                "dm_key": get_dm_key(my_email, c.email),
+                "dm_key": get_dm_key(emp.pk, c.pk) if emp else "",
             })
         return Response(data)
 
@@ -1858,6 +2034,7 @@ class ColleagueDirectoryView(APIView):
 class ClaimStatusListCreateView(generics.ListCreateAPIView):
     queryset = ClaimStatus.objects.all().order_by("claim_id")
     serializer_class = ClaimStatusSerializer
+    permission_classes = [IsStaffOrHR]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -1896,7 +2073,9 @@ class ExpenseClaimListCreateView(
         return queryset
 
 
-class ExpenseClaimDetailView(DecidedGuardMixin, generics.RetrieveUpdateDestroyAPIView):
+class ExpenseClaimDetailView(
+    DecidedGuardMixin, HRDecisionUpdateMixin, generics.RetrieveUpdateDestroyAPIView
+):
     queryset = ExpenseClaim.objects.all()
     serializer_class = ExpenseClaimSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrStaff]

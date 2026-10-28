@@ -1856,7 +1856,7 @@
                   <div class="chat-conv-preview">Center-wide staff channel</div>
                 </div>
               </div>
-              <div class="chat-conv-item" data-conv-key="hr" onclick="selectChatConversation('hr', 'HR Helpdesk', 'Private channel with HR Support', 'HR')">
+              <div class="chat-conv-item" data-conv-key="{{ hr_conversation_key|escape }}" onclick="selectChatConversation('{{ hr_conversation_key|escapejs }}', 'HR Helpdesk', 'Private channel with HR Support', 'HR')">
                 <div class="chat-avatar channel-avatar" style="background:#fef3c7; color:#92400e;">HR</div>
                 <div class="chat-conv-info">
                   <div class="chat-conv-name"><span>HR Helpdesk</span></div>
@@ -1867,7 +1867,7 @@
               <div class="chat-section-title" style="margin-top:10px;">Direct Messages</div>
               <div id="chatEmployeesList">
                 {% for col in colleagues %}
-                <div class="chat-conv-item" data-conv-key="{{ col.dm_key }}" onclick="openDirectMessage('{{ col.id }}', '{{ col.full_name|escapejs }}', '{{ col.role|escapejs }}{% if col.department_name %} • {{ col.department_name|escapejs }}{% endif %}', '{{ col.email|escapejs }}')">
+                <div class="chat-conv-item" data-conv-key="{{ col.dm_key }}" onclick="openDirectMessage('{{ col.id }}', '{{ col.full_name|escapejs }}', '{{ col.role|escapejs }}{% if col.department_name %} • {{ col.department_name|escapejs }}{% endif %}')">
                   <div class="chat-avatar">
                     {{ col.initials }}
                   </div>
@@ -2276,7 +2276,7 @@
     </div>
   </nav>
 
-  <script id="colleaguesData" type="application/json">{{ colleagues_json|default:"[]"|safe }}</script>
+  {{ colleagues|json_script:"colleaguesData" }}
   <script>
     let allEmployeesCache = [];
     try {
@@ -2287,6 +2287,7 @@
     let currentConvMeta = 'Center-wide broadcast';
     let currentConvAvatar = '#';
     let currentConvIsDirect = false;
+    let myEmployeeId = '{{ employee.id|default:""|escapejs }}';
     let myEmployeeEmail = '{{ employee.email|default:""|escapejs }}';
     let myEmployeeName = '{{ employee.first_name|default:""|escapejs }} {{ employee.last_name|default:""|escapejs }}'.trim();
 
@@ -2391,11 +2392,10 @@
         const fullName = emp.full_name || `${emp.first_name || ''} ${emp.last_name || ''}`.trim() || emp.email || 'Employee';
         const initials = emp.initials || `${(emp.first_name || 'E')[0]}${(emp.last_name || '')[0] || ''}`.toUpperCase();
         const roleDept = [emp.role, emp.department_name || emp.department?.name].filter(Boolean).join(' • ') || 'Staff';
-        const empEmail = emp.email || emp.id;
-        const dmKey = emp.dm_key || getDmKey(myEmployeeEmail, empEmail);
+        const dmKey = emp.dm_key || getDmKey(myEmployeeId, emp.id);
         const isActive = currentConvKey === dmKey;
 
-        return `<div class="chat-conv-item ${isActive ? 'active' : ''}" data-conv-key="${safe(dmKey)}" onclick="openDirectMessage('${safe(emp.id)}', '${safe(fullName)}', '${safe(roleDept)}', '${safe(empEmail)}')">
+        return `<div class="chat-conv-item ${isActive ? 'active' : ''}" data-conv-key="${safe(dmKey)}" onclick="openDirectMessage('${safe(emp.id)}', '${safe(fullName)}', '${safe(roleDept)}')">
           <div class="chat-avatar">
             ${initials}
           </div>
@@ -2413,15 +2413,13 @@
       renderChatEmployees(allEmployeesCache, query);
     }
 
-    function getDmKey(myEmail, otherEmail) {
-      const userA = (myEmail || 'emp1').split('@')[0].toLowerCase().replace(/[^a-z0-9._-]/g, '').slice(0, 35);
-      const userB = (otherEmail || 'emp2').split('@')[0].toLowerCase().replace(/[^a-z0-9._-]/g, '').slice(0, 35);
-      const sorted = [userA, userB].sort();
+    function getDmKey(myId, otherId) {
+      const sorted = [String(myId || ''), String(otherId || '')].sort();
       return `dm_${sorted[0]}_${sorted[1]}`.slice(0, 95);
     }
 
-    function openDirectMessage(otherId, otherName, roleDept, otherEmail) {
-      const dmKey = getDmKey(myEmployeeEmail, otherEmail);
+    function openDirectMessage(otherId, otherName, roleDept) {
+      const dmKey = getDmKey(myEmployeeId, otherId);
       const initials = otherName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() || 'DM';
       selectChatConversation(dmKey, otherName, `${roleDept} • Direct Message`, initials, true);
     }

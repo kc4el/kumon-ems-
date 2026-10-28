@@ -12,6 +12,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from rest_framework import generics, serializers, status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
@@ -19,11 +20,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import ClaimStatus, Employee, ExpenseClaim, SiteSetting
+from .exceptions import Conflict409
 from .permissions import (
     IsOwnerOrStaff,
+    IsStaffOrHR,
     OwnerQuerysetMixin,
     is_staff_or_hr,
-    owns_object,
 )
 
 ONBOARDING_MAX_BYTES = 10 * 1024 * 1024
@@ -189,8 +191,13 @@ class SalaryAdvanceDetailView(generics.RetrieveUpdateDestroyAPIView):
     def perform_update(self, serializer):
         decision = self.request.data.get("decision")
         if decision is not None:
+            if not is_staff_or_hr(self.request.user):
+                raise PermissionDenied("Only HR staff can decide salary advances.")
             if decision not in DECISION_CHOICES:
                 raise DRFValidationError({"decision": "Must be Approved or Rejected."})
+            instance = serializer.instance
+            if instance.status != "Pending" and instance.status != decision:
+                raise Conflict409("This request has already been decided.")
             serializer.save(status=decision)
         else:
             serializer.save()
@@ -199,9 +206,10 @@ class SalaryAdvanceDetailView(generics.RetrieveUpdateDestroyAPIView):
 class ClaimDecisionView(APIView):
     """POST /api/claims/<id>/decision/ {decision: Approved|Rejected}.
 
-    UUIDs resolve to ExpenseClaim rows (owner/staff guarded); any other id
-    (e.g. demo CLM-/ADV- codes) is recorded via ClaimStatus upsert.
+    UUIDs resolve to ExpenseClaim rows; any other id (e.g. demo CLM-/ADV-
+    codes) is recorded via ClaimStatus upsert. Decisions are HR-only.
     """
+    permission_classes = [IsStaffOrHR]
 
     def post(self, request, pk):
         decision = request.data.get("decision")
@@ -212,10 +220,6 @@ class ClaimDecisionView(APIView):
             )
         claim = ExpenseClaim.objects.filter(pk=pk).first() if _is_uuid(pk) else None
         if claim is not None:
-            if not is_staff_or_hr(request.user) and not owns_object(claim, request.user):
-                return Response(
-                    {"error": "Not found."}, status=status.HTTP_404_NOT_FOUND
-                )
             claim.status = decision
             claim.save(update_fields=["status"])
             ClaimStatus.objects.update_or_create(

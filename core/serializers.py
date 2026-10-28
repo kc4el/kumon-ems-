@@ -30,6 +30,7 @@ from .models import (
     SiteSetting,
     UserSetting,
 )
+from .permissions import is_staff_or_hr
 
 
 def _resolve_field(data, instance, name):
@@ -37,6 +38,13 @@ def _resolve_field(data, instance, name):
     if name in data:
         return data[name]
     return getattr(instance, name, None) if instance else None
+
+
+def _make_decision_fields_read_only_for_non_hr(serializer, *field_names):
+    request = serializer.context.get("request")
+    if request is not None and not is_staff_or_hr(request.user):
+        for field_name in field_names:
+            serializer.fields[field_name].read_only = True
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
@@ -164,6 +172,10 @@ class AttendanceCorrectionSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "created_at")
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _make_decision_fields_read_only_for_non_hr(self, "status")
+
     def validate(self, data):
         val = lambda name: _resolve_field(data, self.instance, name)
         proposed_in = val("proposed_clock_in")
@@ -210,6 +222,10 @@ class LeaveRequestSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at"]
         extra_kwargs = {"employee": {"required": False}}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _make_decision_fields_read_only_for_non_hr(self, "status")
 
     def get_employee_name(self, obj):
         return str(obj.employee)
@@ -281,6 +297,10 @@ class OvertimeSlipSerializer(serializers.ModelSerializer):
             "created_at",
         )
         read_only_fields = ("id", "created_at")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _make_decision_fields_read_only_for_non_hr(self, "status")
 
     def validate(self, data):
         data = super().validate(data)
@@ -371,7 +391,7 @@ class ShiftSwapSerializer(serializers.ModelSerializer):
             "status",
             "created_at",
         )
-        read_only_fields = ("id", "created_at")
+        read_only_fields = ("id", "created_at", "status")
 
     def validate(self, data):
         def val(name):
@@ -444,6 +464,10 @@ class ExpenseClaimSerializer(serializers.ModelSerializer):
             "created_at",
         )
         read_only_fields = ("id", "created_at")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _make_decision_fields_read_only_for_non_hr(self, "status")
 
 
 class EmployeeAuditLogSerializer(serializers.ModelSerializer):

@@ -721,7 +721,7 @@ class ApiTests(TestCase):
         response = self.client.post(
             "/api/messages/",
             {
-                "conversation_key": "x",
+                "conversation_key": "announcements",
                 "sender_name": "Evil",
                 "text": "hi",
             },
