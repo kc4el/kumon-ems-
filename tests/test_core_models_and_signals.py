@@ -388,6 +388,24 @@ class PageViewTests(TestCase):
         for label in ("Attendance", "Leave Requests", "Salary Advance", "Complaints"):
             self.assertContains(response, label)
 
+    def test_employee_portal_has_dark_mode_switch(self):
+        user = User.objects.create_user(username="theme-employee", password="pw")
+        Employee.objects.create(
+            first_name="Theme",
+            last_name="Employee",
+            email="theme-employee@example.com",
+            user=user,
+        )
+        self.client.force_login(user)
+        response = self.client.get("/employee/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="themeToggleBtn"')
+        self.assertContains(response, 'onclick="toggleTheme()"')
+        self.assertContains(response, 'theme-toggle-icon--sun')
+        self.assertContains(response, 'theme-toggle-icon--moon')
+        self.assertContains(response, 'data-theme')
+        self.assertContains(response, 'kumon_theme')
+
     def test_employee_email_login_reaches_employee_portal(self):
         user = User.objects.create_user(
             username="listed@example.com", email="listed@example.com", password="pw"

@@ -7,6 +7,74 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Employee Portal | Kumon EMS</title>
   <link rel="stylesheet" href="{% static 'css/main.css' %}?v=3.3" />
+  <script>
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        if (document.body) document.body.classList.add('dark-theme');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        if (document.body) document.body.classList.remove('dark-theme');
+      }
+      updateThemeToggleUI(theme);
+    }
+
+    function toggleTheme() {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      var next = isDark ? 'light' : 'dark';
+      try {
+        localStorage.setItem('kumon_theme', next);
+      } catch (e) {}
+      var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (document.startViewTransition && !prefersReducedMotion) {
+        document.startViewTransition(function() { applyTheme(next); });
+      } else {
+        applyTheme(next);
+      }
+    }
+
+    function updateThemeToggleUI(theme) {
+      var isDark = theme === 'dark';
+      var btns = document.querySelectorAll('.portal-theme-toggle, #themeToggleBtn');
+      var labels = document.querySelectorAll('.portal-theme-label, #themeToggleLabel');
+      var moons = document.querySelectorAll('.theme-toggle-icon--moon');
+      var suns = document.querySelectorAll('.theme-toggle-icon--sun');
+
+      moons.forEach(function(m) { m.style.display = ''; });
+      suns.forEach(function(s) { s.style.display = ''; });
+
+      labels.forEach(function(label) {
+        label.textContent = isDark ? 'Dark mode' : 'Light mode';
+      });
+
+      btns.forEach(function(btn) {
+        var title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+        btn.title = title;
+        btn.setAttribute('aria-label', title);
+      });
+    }
+
+    window.toggleTheme = toggleTheme;
+    window.applyTheme = applyTheme;
+    window.updateThemeToggleUI = updateThemeToggleUI;
+
+    // Immediate theme initialization to prevent flash
+    (function() {
+      try {
+        var saved = localStorage.getItem('kumon_theme');
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var initial = (saved === 'dark' || (!saved && prefersDark)) ? 'dark' : 'light';
+        if (initial === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      } catch (e) {}
+    })();
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      updateThemeToggleUI(isDark ? 'dark' : 'light');
+    });
+  </script>
   <style>
     :root {
       /* Brand palette directly aligned with main.css */
@@ -1078,6 +1146,442 @@
         text-align: center;
       }
     }
+
+    /* ==========================================================================
+       Dark Theme Variables & Component Adaptations
+       ========================================================================== */
+    html[data-theme="dark"],
+    [data-theme="dark"] {
+      --employee-navy: #f8fafc;
+      --employee-navy-dark: #38bdf8;
+      --employee-blue: #38bdf8;
+      --employee-blue-hover: #7dd3fc;
+      --employee-blue-active: #0284c7;
+      --employee-canvas: #0f172a;
+      --employee-line: #334155;
+      --employee-muted: #94a3b8;
+      --employee-card-bg: #1e293b;
+      --employee-accent: #fbbf24;
+      color-scheme: dark;
+    }
+
+    [data-theme="dark"] body.portal-header {
+      background: var(--employee-canvas);
+      color: #cbd5e1;
+    }
+
+    [data-theme="dark"] .employee-card {
+      background: var(--employee-card-bg);
+      border-color: var(--employee-line);
+      box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.35);
+    }
+
+    [data-theme="dark"] .attendance-hero {
+      background: linear-gradient(135deg, #182338 0%, #1e293b 80%);
+      border-color: #334155;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    [data-theme="dark"] .attendance-hero-note {
+      color: #cbd5e1;
+    }
+
+    [data-theme="dark"] .btn-navy-cta {
+      background: #0284c7;
+      border-color: #0284c7;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+    }
+
+    [data-theme="dark"] .btn-navy-cta:hover {
+      background: #0369a1;
+      border-color: #0369a1;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.45);
+    }
+
+    [data-theme="dark"] .btn-outline-gray {
+      background: rgba(56, 189, 248, 0.08);
+      color: #38bdf8;
+      border-color: #38bdf8;
+    }
+
+    [data-theme="dark"] .btn-outline-gray:hover {
+      background: #38bdf8;
+      color: #0f172a;
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
+    }
+
+    [data-theme="dark"] .employee-session-badge {
+      background: rgba(34, 197, 94, 0.16);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    [data-theme="dark"] .employee-form {
+      background: #151e2e;
+      border-color: #334155;
+    }
+
+    [data-theme="dark"] .employee-form label {
+      color: #cbd5e1;
+    }
+
+    [data-theme="dark"] .employee-form input,
+    [data-theme="dark"] .employee-form textarea {
+      background-color: #0b111e !important;
+      border-color: #334155 !important;
+      color: #f8fafc !important;
+    }
+
+    [data-theme="dark"] .employee-form select {
+      appearance: none !important;
+      -webkit-appearance: none !important;
+      -moz-appearance: none !important;
+      background-color: #0b111e !important;
+      border-color: #334155 !important;
+      color: #f8fafc !important;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+      background-repeat: no-repeat !important;
+      background-position: calc(100% - 14px) center !important;
+      background-size: 16px 16px !important;
+      padding: 9px 40px 9px 14px !important;
+    }
+
+    [data-theme="dark"] .employee-form select option {
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+
+    [data-theme="dark"] .employee-form input:focus,
+    [data-theme="dark"] .employee-form textarea:focus {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2) !important;
+    }
+
+    [data-theme="dark"] .employee-form select:focus {
+      background-color: #131c2e !important;
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2) !important;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+      background-repeat: no-repeat !important;
+      background-position: calc(100% - 14px) center !important;
+      background-size: 16px 16px !important;
+    }
+
+    [data-theme="dark"] .employee-table-wrap {
+      background: #1e293b;
+      border-color: #334155;
+    }
+
+    [data-theme="dark"] .employee-table th {
+      background: #141e30;
+      color: #94a3b8;
+      border-bottom-color: #334155;
+    }
+
+    [data-theme="dark"] .employee-table td {
+      border-bottom-color: #334155;
+      color: #cbd5e1;
+    }
+
+    [data-theme="dark"] .employee-table tr:hover td {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    [data-theme="dark"] .employee-status {
+      color: #4ade80;
+    }
+
+    [data-theme="dark"] .profile-hero {
+      background: #151e2e;
+      border-color: #334155;
+    }
+
+    [data-theme="dark"] .leave-stat-pill {
+      background: #151e2e;
+      border-color: #334155;
+    }
+
+    [data-theme="dark"] .leave-stat-pill strong {
+      color: #f8fafc;
+    }
+
+    [data-theme="dark"] .doc-list-item {
+      background: #151e2e;
+      border-color: #334155;
+      color: #cbd5e1;
+    }
+
+    [data-theme="dark"] .doc-icon {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+    }
+
+    [data-theme="dark"] .chat-platform {
+      background: #1e293b;
+      border-color: #334155;
+      box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.4);
+    }
+
+    [data-theme="dark"] .chat-sidebar {
+      background: #131c2e;
+      border-right-color: #334155;
+    }
+
+    [data-theme="dark"] .chat-sidebar-header {
+      background: #182338;
+      border-bottom-color: #334155;
+    }
+
+    [data-theme="dark"] .chat-search-input {
+      background: #0f172a;
+      border-color: #334155;
+      color: #f8fafc;
+    }
+
+    [data-theme="dark"] .chat-search-input:focus {
+      background: #0f172a;
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+    }
+
+    [data-theme="dark"] .chat-conv-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    [data-theme="dark"] .chat-conv-item.active {
+      background: #243047;
+    }
+
+    [data-theme="dark"] .chat-conv-preview {
+      color: #94a3b8;
+    }
+
+    [data-theme="dark"] .chat-main {
+      background: #1e293b;
+    }
+
+    [data-theme="dark"] .chat-header {
+      background: #182338;
+      border-bottom-color: #334155;
+    }
+
+    [data-theme="dark"] .chat-back-btn {
+      color: #cbd5e1;
+    }
+
+    [data-theme="dark"] .chat-back-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    [data-theme="dark"] .chat-messages {
+      background: #0f172a;
+    }
+
+    [data-theme="dark"] .chat-empty-state {
+      color: #64748b;
+    }
+
+    [data-theme="dark"] .chat-empty-icon {
+      stroke: #475569;
+    }
+
+    [data-theme="dark"] .message-row.incoming .message-bubble {
+      background: #243047;
+      color: #f1f5f9;
+    }
+
+    [data-theme="dark"] .chat-composer {
+      background: #182338;
+      border-top-color: #334155;
+    }
+
+    [data-theme="dark"] .chat-composer-input {
+      background: #0f172a;
+      border-color: #334155;
+      color: #f8fafc;
+    }
+
+    [data-theme="dark"] .chat-composer-input:focus {
+      background: #0f172a;
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+    }
+
+    [data-theme="dark"] .msg-avatar {
+      background: #334155;
+      color: #cbd5e1;
+    }
+
+    [data-theme="dark"] .portal-secret {
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
+    }
+
+    [data-theme="dark"] .portal-recovery {
+      background: #272010;
+      border-color: #854d0e;
+    }
+
+    [data-theme="dark"] .portal-recovery strong {
+      color: #fef08a;
+    }
+
+    [data-theme="dark"] .portal-recovery p {
+      color: #fde047;
+    }
+
+    [data-theme="dark"] .portal-recovery pre {
+      color: #fef9c3;
+    }
+
+    [data-theme="dark"] .portal-bottom-nav {
+      background: rgba(15, 23, 42, 0.94);
+      border-top-color: #334155;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    [data-theme="dark"] .portal-tab {
+      color: #94a3b8;
+    }
+
+    [data-theme="dark"] .portal-tab:hover {
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+    }
+
+    [data-theme="dark"] .portal-tab.active {
+      color: #ffffff;
+      background: #0284c7;
+      box-shadow: 0 2px 10px rgba(2, 132, 199, 0.4);
+    }
+
+    [data-theme="dark"] .chat-avatar.channel-avatar[style*="#fef3c7"] {
+      background: rgba(245, 158, 11, 0.18) !important;
+      color: #fbbf24 !important;
+    }
+
+    [data-theme="dark"] .btn-outline-gray[style*="#b91c1c"] {
+      color: #f87171 !important;
+      border-color: #991b1b !important;
+      background: rgba(239, 68, 68, 0.08) !important;
+    }
+
+    [data-theme="dark"] .btn-outline-gray[style*="#b91c1c"]:hover {
+      background: #dc2626 !important;
+      color: #ffffff !important;
+      border-color: #dc2626 !important;
+    }
+
+    /* ==========================================================================
+       Portal Theme Toggle Switch Button (Light / Dark Mode Switcher)
+       ========================================================================== */
+    .portal-theme-toggle {
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 0 14px;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 1.5px solid var(--employee-line, #cbd7e6);
+      color: var(--employee-navy, #0f172a);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+      user-select: none;
+      box-sizing: border-box;
+      white-space: nowrap;
+    }
+
+    .portal-theme-toggle:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+
+    .portal-theme-icon-box {
+      position: relative;
+      width: 18px;
+      height: 18px;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #f59e0b;
+      transition: transform 0.34s cubic-bezier(.2, .75, .25, 1);
+    }
+
+    .portal-theme-toggle:hover .portal-theme-icon-box {
+      transform: rotate(15deg);
+    }
+
+    .portal-theme-icon-box .theme-toggle-icon {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      transform-origin: center;
+      transition: opacity 0.3s ease-in-out, transform 0.38s cubic-bezier(.2, .75, .25, 1);
+      will-change: opacity, transform;
+    }
+
+    .portal-theme-icon-box .theme-toggle-icon--sun {
+      opacity: 1;
+      transform: rotate(0deg) scale(1);
+    }
+
+    .portal-theme-icon-box .theme-toggle-icon--moon {
+      opacity: 0;
+      transform: rotate(-65deg) scale(.55);
+    }
+
+    html[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--sun,
+    [data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--sun {
+      opacity: 0;
+      transform: rotate(65deg) scale(.55);
+    }
+
+    html[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--moon,
+    [data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--moon {
+      opacity: 1;
+      transform: rotate(0deg) scale(1);
+    }
+
+    [data-theme="dark"] .portal-theme-toggle {
+      background: rgba(30, 41, 59, 0.7);
+      border-color: #334155;
+      color: #e2e8f0;
+    }
+
+    [data-theme="dark"] .portal-theme-toggle:hover {
+      background: rgba(51, 65, 85, 0.85);
+      border-color: #475569;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    [data-theme="dark"] .portal-theme-icon-box {
+      color: #38bdf8;
+    }
+
+    .portal-theme-label {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    @media (max-width: 640px) {
+      .portal-theme-label {
+        display: none;
+      }
+      .portal-theme-toggle {
+        padding: 0 10px;
+      }
+    }
   </style>
 </head>
 
@@ -1094,7 +1598,25 @@
         <div class="employee-subtitle">Manage your attendance, requests, and communications with HR.</div>
       </div>
       <div class="employee-session">
-        <span class="employee-session-badge">SESSION ACTIVE</span>
+        <button type="button" class="portal-theme-toggle" id="themeToggleBtn" title="Switch to dark mode" aria-label="Switch to dark mode" onclick="toggleTheme()">
+          <span class="portal-theme-icon-box">
+            <svg id="themeIconSun" class="theme-toggle-icon theme-toggle-icon--sun" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg id="themeIconMoon" class="theme-toggle-icon theme-toggle-icon--moon" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </span>
+          <span class="portal-theme-label" id="themeToggleLabel">Light mode</span>
+        </button>
         <button type="button" class="btn btn-outline-gray" onclick="employeeLogout()">Sign out</button>
       </div>
     </header>
@@ -1614,6 +2136,31 @@
             </div>
           </div>
           <form class="employee-form" onsubmit="submitPrefs(event)">
+            <div style="grid-column: 1 / -1; display:flex; justify-content:space-between; align-items:center; padding: 12px 16px; background: rgba(0,0,0,0.02); border: 1px solid var(--employee-line); border-radius: 8px; margin-bottom: 6px;">
+              <div>
+                <div style="font-weight:700; color:var(--employee-navy); font-size:14px;">Theme Mode</div>
+                <div style="color:var(--employee-muted); font-size:12px; margin-top:2px;">Switch between light and dark visual appearance.</div>
+              </div>
+              <button type="button" class="portal-theme-toggle" id="themeToggleBtnSettings" title="Switch to dark mode" aria-label="Switch to dark mode" onclick="toggleTheme()">
+                <span class="portal-theme-icon-box">
+                  <svg class="theme-toggle-icon theme-toggle-icon--sun" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                  </svg>
+                  <svg class="theme-toggle-icon theme-toggle-icon--moon" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                  </svg>
+                </span>
+                <span class="portal-theme-label" id="themeToggleLabelSettings">Light mode</span>
+              </button>
+            </div>
             <label for="empPageSize">Page Size</label>
             <select id="empPageSize">
               <option value="5">5 per page</option>

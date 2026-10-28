@@ -8923,3 +8923,258 @@ html[data-theme="dark"] {
   border-color: #334155 !important;
 }
 
+/* ==========================================================================
+   Portal & Auth Theme Toggle Switch Button
+   ========================================================================== */
+.portal-theme-toggle {
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  color: #0f172a;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  user-select: none;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.portal-theme-toggle:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.portal-theme-icon-box {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #f59e0b;
+  transition: transform 0.34s cubic-bezier(.2, .75, .25, 1);
+}
+
+.portal-theme-toggle:hover .portal-theme-icon-box {
+  transform: rotate(15deg);
+}
+
+.portal-theme-icon-box .theme-toggle-icon {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  transform-origin: center;
+  transition: opacity 0.3s ease-in-out, transform 0.38s cubic-bezier(.2, .75, .25, 1);
+  will-change: opacity, transform;
+}
+
+.portal-theme-icon-box .theme-toggle-icon--sun {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+.portal-theme-icon-box .theme-toggle-icon--moon {
+  opacity: 0;
+  transform: rotate(-65deg) scale(.55);
+}
+
+html[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--sun,
+[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--sun {
+  opacity: 0;
+  transform: rotate(65deg) scale(.55);
+}
+
+html[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--moon,
+[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--moon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+[data-theme="dark"] .portal-theme-toggle {
+  background: rgba(30, 41, 59, 0.7);
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .portal-theme-toggle:hover {
+  background: rgba(51, 65, 85, 0.85);
+  border-color: #475569;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .portal-theme-icon-box {
+  color: #38bdf8;
+}
+
+.portal-theme-label {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .portal-theme-label {
+    display: none;
+  }
+  .portal-theme-toggle {
+    padding: 0 10px;
+  }
+}
+
+/* ==========================================================================
+   Authentication Pages Dark Mode (.penpot-auth-card, login & signup)
+   ========================================================================== */
+[data-theme="dark"] .auth-page-body {
+  background-color: #0b111e !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .auth-top-navbar {
+  border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+}
+
+[data-theme="dark"] .auth-top-navbar .brand-logo-img {
+  filter: brightness(0) invert(1);
+  opacity: 0.95;
+}
+
+[data-theme="dark"] .penpot-auth-card {
+  background-color: #1e293b !important;
+  border: 1px solid #334155 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-theme="dark"] .penpot-auth-title {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .penpot-auth-sub {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .penpot-auth-badge.badge-portal {
+  background-color: rgba(244, 63, 94, 0.15) !important;
+  border-color: rgba(244, 63, 94, 0.35) !important;
+  color: #fb7185 !important;
+}
+
+[data-theme="dark"] .penpot-auth-badge.badge-onboarding {
+  background-color: rgba(56, 189, 248, 0.15) !important;
+  border-color: rgba(56, 189, 248, 0.35) !important;
+  color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .penpot-form-label {
+  color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .penpot-field-hint {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .penpot-input {
+  background-color: #0f172a !important;
+  border: 1px solid #334155 !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .penpot-input:focus {
+  background-color: #0f172a !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2) !important;
+}
+
+[data-theme="dark"] .penpot-input::placeholder {
+  color: #64748b !important;
+}
+
+[data-theme="dark"] .penpot-input-action {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .penpot-input-action:hover {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .penpot-checkbox-label {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .penpot-link-coral {
+  color: #fb7185 !important;
+}
+
+[data-theme="dark"] .penpot-link-coral:hover {
+  color: #fda4af !important;
+}
+
+[data-theme="dark"] .penpot-btn-primary-navy {
+  background-color: #0284c7 !important;
+  border-color: #0284c7 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 10px rgba(2, 132, 199, 0.35) !important;
+}
+
+[data-theme="dark"] .penpot-btn-primary-navy:hover {
+  background-color: #0369a1 !important;
+  border-color: #0369a1 !important;
+}
+
+[data-theme="dark"] .penpot-btn-primary-coral {
+  background-color: #e11d48 !important;
+  border-color: #e11d48 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .penpot-btn-primary-coral:hover {
+  background-color: #be123c !important;
+}
+
+[data-theme="dark"] .penpot-switcher-row {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .penpot-switch-link.coral {
+  color: #fb7185 !important;
+}
+
+[data-theme="dark"] .penpot-switch-link.navy {
+  color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .auth-mfa-challenge {
+  border-top: 1px solid #334155 !important;
+}
+
+[data-theme="dark"] .auth-mfa-challenge h2 {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .auth-mfa-challenge p {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .auth-mfa-cancel {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .auth-mfa-cancel:hover {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .account-kicker {
+  color: #38bdf8 !important;
+}
+
