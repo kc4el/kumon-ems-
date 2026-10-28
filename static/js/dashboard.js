@@ -749,18 +749,25 @@ async function loadActivityFeed() {
   const list = document.getElementById("activityFeedList");
   if (!list) return;
   try {
-    const res = await fetch("/api/audit-logs/?page_size=5", { credentials: "same-origin", headers: { Accept: "application/json" } });
+    const res = await fetch("/api/audit-logs/?page_size=4", { credentials: "same-origin", headers: { Accept: "application/json" } });
     if (!res.ok) throw new Error("feed failed");
     const payload = await res.json();
     const rows = (payload.results || payload || []);
-    const maxItems = 5;
+    const maxItems = 4;
     const filteredRows = [];
     for (const r of rows) {
       if (filteredRows.length >= maxItems) break;
       filteredRows.push(r);
     }
     list.innerHTML = filteredRows.length
-      ? filteredRows.map((r) => `<li>${escapeHtml(formatAuditActionText(r.action))} <span>${escapeHtml(String(r.timestamp || "").slice(0, 16).replace("T", " "))}</span></li>`).join("")
+      ? filteredRows.map((r) => {
+          const actionText = formatAuditActionText(r.action);
+          const timeText = String(r.timestamp || "").slice(0, 16).replace("T", " ");
+          return `<li title="${escapeHtml(actionText)} • ${escapeHtml(timeText)}">
+            <span class="activity-feed-text">${escapeHtml(actionText)}</span>
+            <span class="activity-feed-time">${escapeHtml(timeText)}</span>
+          </li>`;
+        }).join("")
       : "<li>No activity yet today.</li>";
   } catch (e) { list.innerHTML = "<li>Activity unavailable.</li>"; }
 }
@@ -3270,6 +3277,55 @@ async function settingsImportCommit() {
     } catch (error) { showToast(error.message || 'Roster import failed.', 'error'); }
   });
 }
+
+// ==========================================================================
+// Collapsible Card System (Settings & Account)
+// ==========================================================================
+function toggleCollapsibleCard(cardId, forceState) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  const isCurrentlyCollapsed = card.classList.contains('is-collapsed');
+  const shouldCollapse = typeof forceState === 'boolean' ? !forceState : !isCurrentlyCollapsed;
+  card.classList.toggle('is-collapsed', shouldCollapse);
+  const btn = card.querySelector('.btn-collapse-toggle');
+  if (btn) {
+    btn.setAttribute('aria-expanded', String(!shouldCollapse));
+    btn.title = shouldCollapse ? 'Expand section' : 'Collapse section';
+    btn.setAttribute('aria-label', shouldCollapse ? 'Expand section' : 'Collapse section');
+  }
+  const header = card.querySelector('.collapsible-header');
+  if (header) {
+    header.setAttribute('aria-expanded', String(!shouldCollapse));
+  }
+}
+
+function handleCollapsibleKey(e, cardId) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    toggleCollapsibleCard(cardId);
+  }
+}
+
+function toggleCompanyCards(expand) {
+  const cards = document.querySelectorAll('#settingsPaneCompany .collapsible-card');
+  cards.forEach((card) => {
+    card.classList.toggle('is-collapsed', !expand);
+    const btn = card.querySelector('.btn-collapse-toggle');
+    if (btn) {
+      btn.setAttribute('aria-expanded', String(expand));
+      btn.title = expand ? 'Collapse section' : 'Expand section';
+      btn.setAttribute('aria-label', expand ? 'Collapse section' : 'Expand section');
+    }
+    const header = card.querySelector('.collapsible-header');
+    if (header) {
+      header.setAttribute('aria-expanded', String(expand));
+    }
+  });
+}
+
+window.toggleCollapsibleCard = toggleCollapsibleCard;
+window.handleCollapsibleKey = handleCollapsibleKey;
+window.toggleCompanyCards = toggleCompanyCards;
 
 // ==========================================================================
 // Standalone Authentication Handlers & Navigation
