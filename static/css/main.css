@@ -225,27 +225,61 @@ body {
   border-top: 1px solid rgba(255, 255, 255, 0.18);
   flex-shrink: 0;
   width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-qr-btn {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.sidebar-qr-btn:hover {
+  background: rgba(255, 255, 255, 0.26);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.sidebar-qr-icon {
+  flex-shrink: 0;
 }
 
 .sidebar-theme-toggle {
-  width: 100%;
+  width: 42px;
   height: 42px;
-  display: flex;
+  flex-shrink: 0;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 12px;
+  justify-content: center;
+  padding: 0;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.12);
   border: 1.5px solid rgba(255, 255, 255, 0.25);
   color: #ffffff;
   cursor: pointer;
   font-family: inherit;
-  font-size: 14px;
-  font-weight: 600;
   transition: background-color 0.28s ease, border-color 0.28s ease, color 0.28s ease, transform 0.3s ease;
   user-select: none;
   box-sizing: border-box;
-  text-align: left;
 }
 
 .sidebar-theme-toggle:hover {
@@ -304,12 +338,74 @@ html[data-theme="dark"] .theme-toggle-icon--moon,
 }
 
 .sidebar-theme-label {
-  flex: 1;
-  font-size: 13.5px;
-  font-weight: 600;
+  display: none;
+}
+
+/* Full-Screen Attendance QR Code Overlay */
+.qr-fullscreen-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2147483647;
+  background-color: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  box-sizing: border-box;
+  animation: viewFadeIn 0.2s ease-out;
+}
+
+.qr-fullscreen-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  text-align: center;
+}
+
+.qr-placeholder-square {
+  width: min(360px, 68vmin);
+  height: min(360px, 68vmin);
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  flex-shrink: 0;
+}
+
+.qr-fullscreen-text {
+  margin: 0;
+  font-size: clamp(20px, 2.5vw, 28px);
+  font-weight: 700;
   color: #ffffff;
-  line-height: 1.2;
-  white-space: nowrap;
+  letter-spacing: -0.3px;
+}
+
+.qr-fullscreen-exit-btn {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.qr-fullscreen-exit-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.45);
 }
 
 /* --------------------------------------------------------------------------
@@ -7589,6 +7685,26 @@ html[data-theme="dark"] {
 /* Sidebar Bottom Actions in Dark Mode */
 [data-theme="dark"] .sidebar-bottom-actions {
   border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .sidebar-qr-btn {
+  background: rgba(56, 189, 248, 0.12) !important;
+  border: 1.5px solid rgba(56, 189, 248, 0.3) !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .sidebar-qr-btn:hover {
+  background: rgba(56, 189, 248, 0.22) !important;
+  border-color: #38bdf8 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .sidebar-qr-btn .sidebar-qr-icon {
+  color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .qr-fullscreen-overlay {
+  background-color: #0b111e !important;
 }
 
 [data-theme="dark"] .sidebar-theme-toggle {

@@ -11,7 +11,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=7.5" />
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=7.6" />
   <script>
     function applyTheme(theme) {
       if (theme === 'dark') {
@@ -64,6 +64,25 @@
     window.applyTheme = applyTheme;
     window.updateThemeToggleUI = updateThemeToggleUI;
 
+    function openAttendanceQrScreen() {
+      var overlay = document.getElementById('attendanceQrOverlay');
+      if (overlay) {
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeAttendanceQrScreen() {
+      var overlay = document.getElementById('attendanceQrOverlay');
+      if (overlay) {
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    }
+
+    window.openAttendanceQrScreen = openAttendanceQrScreen;
+    window.closeAttendanceQrScreen = closeAttendanceQrScreen;
+
     // Immediate theme initialization to prevent flash
     (function() {
       try {
@@ -86,7 +105,7 @@
       const relPrefix = window.location.protocol === 'file:' ? '../../../' : '/';
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = relPrefix + 'static/css/main.css?v=7.5';
+      link.href = relPrefix + 'static/css/main.css?v=7.6';
       document.head.appendChild(link);
     }
   </script>
@@ -183,6 +202,18 @@
 
       <!-- Bottom of Sidebar: Light/Dark Theme Switcher -->
       <div class="sidebar-bottom-actions">
+        <button type="button" class="sidebar-qr-btn" id="generateQrBtn" title="Generate QR for attendance" aria-label="Generate QR for attendance" onclick="openAttendanceQrScreen()">
+          <svg class="sidebar-qr-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+            <rect x="14" y="14" width="3" height="3"></rect>
+            <line x1="21" y1="14" x2="21" y2="14.01"></line>
+            <line x1="14" y1="21" x2="21" y2="21"></line>
+            <line x1="21" y1="18" x2="21" y2="21"></line>
+          </svg>
+          <span>Generate QR</span>
+        </button>
         <button type="button" class="sidebar-theme-toggle" id="themeToggleBtn" title="Switch to dark mode" aria-label="Switch to dark mode" onclick="toggleTheme()">
           <span class="sidebar-theme-icon-box">
             <svg id="themeIconSun" class="theme-toggle-icon theme-toggle-icon--sun" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -3134,6 +3165,21 @@
   </div>
 
   <!-- Toast Container -->
+  <!-- Full-Screen Attendance QR Code Overlay -->
+  <div id="attendanceQrOverlay" class="qr-fullscreen-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="attendanceQrInstruction">
+    <button type="button" class="qr-fullscreen-exit-btn" onclick="closeAttendanceQrScreen()" aria-label="Exit QR screen">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+      <span>Exit</span>
+    </button>
+    <div class="qr-fullscreen-center">
+      <div id="attendanceQrSquare" class="qr-placeholder-square" aria-label="Attendance QR code placeholder"></div>
+      <p id="attendanceQrInstruction" class="qr-fullscreen-text">Scan the QR code for time in/out</p>
+    </div>
+  </div>
+
   <div id="toastContainer" class="toast-stack"></div>
 
   <script src="{% static 'js/dashboard.js' %}?v=6.0"></script>
