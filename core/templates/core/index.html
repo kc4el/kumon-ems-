@@ -11,7 +11,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=7.7" />
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=7.8" />
   <script>
     function applyTheme(theme) {
       if (theme === 'dark') {
@@ -105,7 +105,7 @@
       const relPrefix = window.location.protocol === 'file:' ? '../../../' : '/';
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = relPrefix + 'static/css/main.css?v=7.7';
+      link.href = relPrefix + 'static/css/main.css?v=7.8';
       document.head.appendChild(link);
     }
   </script>
@@ -1721,7 +1721,7 @@
                 </svg>
               </div>
               <div class="kpi-value" id="claimsPendingCount">0</div>
-              <div class="kpi-subtext">↗ $4,820.50 Total</div>
+              <div class="kpi-subtext">↗ ₱4,820.50 Total</div>
             </div>
             <div class="kpi-card">
               <div class="kpi-head">
@@ -1732,7 +1732,7 @@
                 </svg>
               </div>
               <div class="kpi-value" id="claimsApprovedCount">0</div>
-              <div class="kpi-subtext">↗ $18,450 Settled</div>
+              <div class="kpi-subtext">↗ ₱18,450 Settled</div>
             </div>
             <div class="kpi-card">
               <div class="kpi-head">
@@ -1821,7 +1821,7 @@
                 </svg>
               </div>
               <div class="kpi-value" id="claimsHistorySettledCount">0</div>
-              <div class="kpi-subtext" id="claimsHistorySettledAmount">$0.00 total</div>
+              <div class="kpi-subtext" id="claimsHistorySettledAmount">₱0.00 total</div>
             </div>
             <div class="kpi-card">
               <div class="kpi-head">
@@ -1919,7 +1919,7 @@
                 </svg>
               </div>
               <div class="kpi-value" id="advancesPendingCount">0</div>
-              <div class="kpi-subtext">↗ $6,500 Requested</div>
+              <div class="kpi-subtext">↗ ₱6,500 Requested</div>
             </div>
             <div class="kpi-card">
               <div class="kpi-head">
@@ -1930,7 +1930,7 @@
                 </svg>
               </div>
               <div class="kpi-value">12</div>
-              <div class="kpi-subtext">↗ $19,200 Total</div>
+              <div class="kpi-subtext">↗ ₱19,200 Total</div>
             </div>
             <div class="kpi-card">
               <div class="kpi-head">
@@ -2469,7 +2469,6 @@
                       </div>
                       <div class="notif-compact-meta">
                         <strong>Leave</strong>
-                        <span>Time-off requests &amp; approvals</span>
                       </div>
                     </label>
 
@@ -2483,7 +2482,6 @@
                       </div>
                       <div class="notif-compact-meta">
                         <strong>Shift</strong>
-                        <span>Rosters &amp; schedule changes</span>
                       </div>
                     </label>
 
@@ -2497,7 +2495,6 @@
                       </div>
                       <div class="notif-compact-meta">
                         <strong>Payroll</strong>
-                        <span>Salary runs &amp; expense claims</span>
                       </div>
                     </label>
                   </div>
@@ -2916,7 +2913,7 @@
         </div>
         <div class="inputs-2grid" style="margin-bottom:12px;">
           <div class="input-cell">
-            <label>REQUESTED AMOUNT ($)</label>
+            <label>REQUESTED AMOUNT (₱)</label>
             <input type="number" id="advanceAmount" min="100" max="5000" placeholder="e.g. 1500" required />
           </div>
           <div class="input-cell">
@@ -3182,7 +3179,7 @@
 
   <div id="toastContainer" class="toast-stack"></div>
 
-  <script src="{% static 'js/dashboard.js' %}?v=6.2"></script>
+  <script src="{% static 'js/dashboard.js' %}?v=6.3"></script>
   <script>
     if (typeof switchView === 'undefined') {
       const relPrefix = window.location.protocol === 'file:' ? '../../../' : '/';

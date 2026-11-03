@@ -7470,6 +7470,16 @@ tbody tr:hover {
   white-space: normal;
 }
 
+.notif-compact-list .notif-compact-item {
+  padding: 8px 12px;
+  min-height: 42px;
+  gap: 10px;
+}
+
+.notif-compact-list .notif-compact-meta strong {
+  font-size: 15px;
+}
+
 .a11y-compact-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

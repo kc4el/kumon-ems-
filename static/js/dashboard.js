@@ -2000,7 +2000,7 @@ async function loadClaimsSummary() {
     const speedSubtext = document.getElementById('claimsHistorySpeedSubtext');
     const settledCount = settledClaims.length;
     if (settledTarget) settledTarget.textContent = settledCount;
-    if (settledAmountTarget) settledAmountTarget.textContent = `$${settledAmount.toFixed(2)} total`;
+    if (settledAmountTarget) settledAmountTarget.textContent = `₱${settledAmount.toFixed(2)} total`;
     if (approvedTarget) approvedTarget.textContent = approvedClaims.length;
     if (rejectedTarget) rejectedTarget.textContent = rejectedClaims.length;
     if (approvedRateTarget) approvedRateTarget.textContent = `${settledCount ? ((approvedClaims.length / settledCount) * 100).toFixed(1) : '0'}% of settled`;
@@ -2263,7 +2263,7 @@ function buildClaimRow(c, which, names) {
       `<td><span class="claims-cat-pill">${escapeHtml(String(c.category || 'General Expense'))}</span></td>` +
       `<td>${escapeHtml(fmtClaimDate(c.created_at))}</td>` +
       `<td>${escapeHtml(String(c.title || ''))}</td>` +
-      `<td><span class="claims-amount-txt">$${escapeHtml(Number(c.amount || 0).toFixed(2))}</span></td>` +
+      `<td><span class="claims-amount-txt">₱${escapeHtml(Number(c.amount || 0).toFixed(2))}</span></td>` +
       `<td>${pill}</td><td>—</td>`;
   } else {
     tr.innerHTML =
@@ -2273,7 +2273,7 @@ function buildClaimRow(c, which, names) {
       `<td><span class="claims-cat-pill">${escapeHtml(String(c.category || 'General Expense'))}</span></td>` +
       `<td>${escapeHtml(fmtClaimDate(c.created_at))}</td>` +
       `<td><div class="claims-details-cell"><div class="claims-details-text">${escapeHtml(String(c.title || ''))}</div></div></td>` +
-      `<td><span class="claims-amount-txt">$${escapeHtml(Number(c.amount || 0).toFixed(2))}</span></td>` +
+      `<td><span class="claims-amount-txt">₱${escapeHtml(Number(c.amount || 0).toFixed(2))}</span></td>` +
       `<td>${pill}</td><td>${actions}</td>`;
   }
   return tr;
@@ -2337,7 +2337,7 @@ function buildAdvanceRow(a, names) {
     `<td><div class="claims-applicant-cell"><div class="claims-avatar">${escapeHtml(claimInitials(who))}</div>` +
     `<div class="claims-applicant-info"><strong>${escapeHtml(who)} &nbsp;<span style="color:#64748b; font-weight:500;">[${escapeHtml(id.slice(0, 12))}]</span></strong>` +
     `<span>Advance request</span></div></div></td>` +
-    `<td><span class="claims-amount-txt">$${escapeHtml(Number(a.amount || 0).toFixed(2))}</span></td>` +
+    `<td><span class="claims-amount-txt">₱${escapeHtml(Number(a.amount || 0).toFixed(2))}</span></td>` +
     `<td><span class="claims-cat-pill">${escapeHtml(String(a.repayment_terms || 'Next Payroll'))}</span></td>` +
     `<td>${escapeHtml(String(a.purpose || ''))}</td>` +
     `<td>—</td>` +
@@ -4229,7 +4229,7 @@ async function loadPayrollView() {
           `<td>${escapeHtml(String(run.pay_period_start || ''))} – ${escapeHtml(String(run.pay_period_end || ''))}</td>` +
           `<td>${run.is_processed ? 'Yes' : 'No'}</td>` +
           `<td>${lines.length}</td>` +
-          `<td>${escapeHtml(total.toFixed(2))}</td>`;
+          `<td>₱${escapeHtml(total.toFixed(2))}</td>`;
         body.appendChild(tr);
       });
     }

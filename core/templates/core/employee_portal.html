@@ -1992,7 +1992,7 @@
             <option value="">Choose an employee</option>
           </select>
           {% endif %}
-          <label for="advanceAmount">Amount</label>
+          <label for="advanceAmount">Amount (₱)</label>
           <input id="advanceAmount" type="number" min="0.01" step="0.01" required />
           <label for="advanceTerms">Repayment terms</label>
           <select id="advanceTerms">
@@ -2568,7 +2568,7 @@
       }));
       const [leaves, advances, complaints] = lists;
       document.getElementById('leaveRows').innerHTML = leaves.map((item) => `<tr><td>${safe(item.leave_type)}</td><td>${safe(item.start_date)} to ${safe(item.end_date)}</td><td>${safe(item.status)}</td></tr>`).join('') || '<tr><td colspan="3">No leave requests.</td></tr>';
-      document.getElementById('advanceRows').innerHTML = advances.map((item) => `<tr><td>${safe(item.amount)}</td><td>${safe(item.purpose)}</td><td>${safe(item.status)}</td></tr>`).join('') || '<tr><td colspan="3">No advance requests.</td></tr>';
+      document.getElementById('advanceRows').innerHTML = advances.map((item) => `<tr><td>₱${safe(Number(item.amount || 0).toFixed(2))}</td><td>${safe(item.purpose)}</td><td>${safe(item.status)}</td></tr>`).join('') || '<tr><td colspan="3">No advance requests.</td></tr>';
       document.getElementById('complaintRows').innerHTML = complaints.map((item) => `<tr><td>${safe(item.subject)}</td><td>${safe(item.category)}</td><td>${safe(item.status)}</td><td>${safe(String(item.created_at || '').slice(0, 10))}</td></tr>`).join('') || '<tr><td colspan="4">No complaints filed.</td></tr>';
     }
 
@@ -2643,7 +2643,7 @@
         ).join('') || '<tr><td colspan="3">No leave requests.</td></tr>';
 
         document.getElementById('advanceRows').innerHTML = rows(await payload(advances)).map((item) =>
-          `<tr><td>${safe(item.amount)}</td><td>${safe(item.purpose)}</td><td>${safe(item.status)}</td></tr>`
+          `<tr><td>₱${safe(Number(item.amount || 0).toFixed(2))}</td><td>${safe(item.purpose)}</td><td>${safe(item.status)}</td></tr>`
         ).join('') || '<tr><td colspan="3">No advance requests.</td></tr>';
 
         document.getElementById('complaintRows').innerHTML = rows(await payload(complaints)).map((item) =>
