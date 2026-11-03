@@ -11,7 +11,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=7.6" />
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=7.7" />
   <script>
     function applyTheme(theme) {
       if (theme === 'dark') {
@@ -105,7 +105,7 @@
       const relPrefix = window.location.protocol === 'file:' ? '../../../' : '/';
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = relPrefix + 'static/css/main.css?v=7.6';
+      link.href = relPrefix + 'static/css/main.css?v=7.7';
       document.head.appendChild(link);
     }
   </script>
@@ -2214,7 +2214,7 @@
       <section class="view-panel" id="view-profile">
         <div class="account-page-head">
           <div>
-            <span class="account-kicker">Your account</span>
+
             <h1 class="penpot-page-heading">My account</h1>
             <p class="penpot-page-sub">Manage your work profile and sign-in security.</p>
           </div>
@@ -2366,7 +2366,7 @@
       <section class="view-panel" id="view-settings">
         <div class="page-title-block">
           <h1 class="penpot-page-heading">Settings</h1>
-          <p class="penpot-page-sub">Notification &amp; display preferences and company-wide configuration. To update your profile or sign-in credentials, visit <a href="#" onclick="switchView('profile')" style="color:#0284c7; font-weight:600; text-decoration:underline;">My account</a>.</p>
+
           <p id="settingsLoadError" class="card-sub" style="display:none; color:#991b1b;">Settings could not be loaded.
             Check your connection and retry.</p>
         </div>
@@ -3182,7 +3182,7 @@
 
   <div id="toastContainer" class="toast-stack"></div>
 
-  <script src="{% static 'js/dashboard.js' %}?v=6.0"></script>
+  <script src="{% static 'js/dashboard.js' %}?v=6.2"></script>
   <script>
     if (typeof switchView === 'undefined') {
       const relPrefix = window.location.protocol === 'file:' ? '../../../' : '/';

@@ -7361,6 +7361,11 @@ tbody tr:hover {
   align-items: start;
 }
 
+.main-content-area:has(#view-settings.active) #breadcrumbTrail,
+.main-content-area:has(#view-profile.active) #breadcrumbTrail {
+  visibility: hidden;
+}
+
 .notif-settings-col {
   display: flex;
   flex-direction: column;

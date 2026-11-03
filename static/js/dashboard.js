@@ -412,8 +412,8 @@ const viewBreadcrumbs = {
   'claims': { root: 'Claims', active: 'Pending Claims' },
   'messages': { active: 'Messages & Channels' },
   'logs': { active: 'Audit & Activity Logs' },
-  'settings': { active: 'Settings' },
-  'profile': { active: 'My Profile' },
+  'settings': { active: '' },
+  'profile': { active: '' },
   'my-details': { active: 'My Details' },
   'reports': { active: 'Reports & Analytics' }
 };
