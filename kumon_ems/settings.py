@@ -223,8 +223,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-PASSWORD_HASHERS = [
-    "django.contrib.auth.hashers.Argon2PasswordHasher",
+try:
+    import argon2  # noqa: F401
+    _has_argon2 = True
+except ImportError:
+    _has_argon2 = False
+
+PASSWORD_HASHERS = (
+    ["django.contrib.auth.hashers.Argon2PasswordHasher"] if _has_argon2 else []
+) + [
     "django.contrib.auth.hashers.PBKDF2PasswordHasher",
     "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
     "django.contrib.auth.hashers.ScryptPasswordHasher",

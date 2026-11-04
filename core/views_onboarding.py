@@ -4,7 +4,11 @@ import secrets
 from datetime import timedelta
 from urllib.parse import urlencode
 
-import requests
+try:
+    import requests
+except ImportError:
+    requests = None
+
 from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.hashers import check_password, make_password
@@ -19,9 +23,16 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
-from google.auth.exceptions import GoogleAuthError
-from google.auth.transport.requests import Request as GoogleRequest
-from google.oauth2 import id_token
+
+try:
+    from google.auth.exceptions import GoogleAuthError
+    from google.auth.transport.requests import Request as GoogleRequest
+    from google.oauth2 import id_token
+except ImportError:
+    class GoogleAuthError(Exception):
+        pass
+    GoogleRequest = None
+    id_token = None
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -234,7 +245,12 @@ class EmployeeCredentialLoginView(APIView):
 
 
 def _google_configuration():
-    return bool(settings.GOOGLE_OAUTH_CLIENT_ID and settings.GOOGLE_OAUTH_CLIENT_SECRET)
+    return bool(
+        requests
+        and id_token
+        and settings.GOOGLE_OAUTH_CLIENT_ID
+        and settings.GOOGLE_OAUTH_CLIENT_SECRET
+    )
 
 
 def _onboarding_employee(request):
