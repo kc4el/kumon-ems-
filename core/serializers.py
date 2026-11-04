@@ -106,6 +106,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
         model = Employee
         fields = [
             "id",
+            "employee_id",
             "first_name",
             "last_name",
             "email",
@@ -118,7 +119,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
         ]
         # Hiring dates are assigned by the server/model default.  Accepting a
         # client-provided value here lets callers rewrite employment history.
-        read_only_fields = ["id", "date_hired"]
+        read_only_fields = ["id", "employee_id", "date_hired"]
 
 
 class AttendanceSerializer(serializers.ModelSerializer):

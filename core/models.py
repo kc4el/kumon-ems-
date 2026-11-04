@@ -30,7 +30,12 @@ class Department(models.Model):
 
 
 class Employee(models.Model):
+    class OnboardingStatus(models.TextChoices):
+        ACTIVE = "ACTIVE", "Active"
+        PENDING_ONBOARDING = "PENDING_ONBOARDING", "Pending onboarding"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    employee_id = models.CharField(max_length=16, unique=True, null=True, blank=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
@@ -41,6 +46,12 @@ class Employee(models.Model):
     )
     date_hired = models.DateField(default=timezone.localdate)
     is_active = models.BooleanField(default=True)
+    status = models.CharField(
+        max_length=24,
+        choices=OnboardingStatus.choices,
+        default=OnboardingStatus.ACTIVE,
+    )
+    force_password_change = models.BooleanField(default=False)
     resigned_at = models.DateField(null=True, blank=True)
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -52,6 +63,38 @@ class Employee(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+
+class AccountCredential(models.Model):
+    employee = models.OneToOneField(
+        Employee, on_delete=models.CASCADE, related_name="account_credential"
+    )
+    password_hash = models.CharField(max_length=256)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    consumed_at = models.DateTimeField(null=True, blank=True)
+
+
+class OAuthLink(models.Model):
+    class Provider(models.TextChoices):
+        GOOGLE = "google", "Google"
+
+    employee = models.OneToOneField(
+        Employee, on_delete=models.CASCADE, related_name="oauth_link"
+    )
+    provider = models.CharField(max_length=20, choices=Provider.choices)
+    subject = models.CharField(max_length=255)
+    email = models.EmailField()
+    email_verified = models.BooleanField(default=False)
+    linked_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("provider", "subject"),
+                name="unique_oauth_provider_subject",
+            )
+        ]
 
 
 class Attendance(models.Model):

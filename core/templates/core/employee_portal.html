@@ -2084,6 +2084,12 @@
           </div>
           <p id="accountActionStatus" class="employee-status" role="status"></p>
 
+          <div class="employee-form" style="border-bottom:1px solid #e2e8f0; padding-bottom:20px; margin-bottom:20px;">
+            <h3 style="grid-column:1/-1; font-size:15px; font-weight:700; margin:0 0 6px; color:var(--employee-navy);">Google account</h3>
+            <p id="portalGoogleAccountStatus" class="employee-status" role="status" style="grid-column:1/-1;">Loading linked account…</p>
+            <a id="portalGoogleLinkButton" class="btn btn-outline-gray" href="/api/auth/google/link/">Link Google account</a>
+          </div>
+
           <form class="employee-form" onsubmit="submitPassword(event)" style="border-bottom:1px solid #e2e8f0; padding-bottom:20px; margin-bottom:20px;">
             <h3 style="grid-column:1/-1; font-size:15px; font-weight:700; margin:0 0 6px; color:var(--employee-navy);">Change Password</h3>
             <label for="oldPassword">Current Password</label>
@@ -2651,6 +2657,15 @@
         ).join('') || '<tr><td colspan="4">No complaints filed.</td></tr>';
 
         const accountData = await payload(account);
+        const googleAccount = accountData.google_account || {};
+        const googleStatus = document.getElementById('portalGoogleAccountStatus');
+        const googleLinkButton = document.getElementById('portalGoogleLinkButton');
+        if (googleStatus) {
+          googleStatus.textContent = googleAccount.linked
+            ? `Linked to ${googleAccount.email}.`
+            : 'No Google account is linked. You can connect one now or continue using your password.';
+        }
+        if (googleLinkButton) googleLinkButton.hidden = !!googleAccount.linked;
         const profile = accountData.profile || {};
         if (!portalAccountLoaded) {
           const fn = document.getElementById('portalFirstName');

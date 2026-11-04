@@ -4,10 +4,13 @@ Covers D33 (OnboardingDocument multipart + validators), D34 (pagers honor
 ?page=N) and D36 (grievance/advance/claim-decision/roster endpoints).
 """
 
+from io import BytesIO
+from unittest.mock import patch
+
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
-from rest_framework.test import APIClient
+from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
 
 from core.models import (
     ClaimStatus,
@@ -16,7 +19,11 @@ from core.models import (
     ExpenseClaim,
     ShiftRoster,
 )
-from core.views_docs import OnboardingDocument, SalaryAdvance
+from core.views_docs import (
+    OnboardingDocument,
+    OnboardingDocumentDownloadView,
+    SalaryAdvance,
+)
 
 PDF = b"%PDF-1.4 fake pdf content"
 
@@ -52,6 +59,104 @@ class FrontendFixTests(TestCase):
         self.assertEqual(
             OnboardingDocument.objects.filter(employee=self.employee).count(), 1
         )
+
+    def test_onboarding_documents_can_be_replaced_and_deleted(self):
+        create_response = self.client.post(
+            "/api/onboarding-docs/",
+            {
+                "employee": str(self.employee.id),
+                "doc_type": "NBI",
+                "file": pdf_file("old-nbi.pdf"),
+            },
+            format="multipart",
+        )
+        self.assertEqual(create_response.status_code, 201, create_response.content)
+        document = OnboardingDocument.objects.get(pk=create_response.json()["id"])
+        old_file_name = document.file.name
+        self.addCleanup(document.file.delete, save=False)
+
+        with self.captureOnCommitCallbacks(execute=True):
+            replace_response = self.client.patch(
+                f"/api/onboarding-docs/{document.pk}/",
+                {"doc_type": "PSA", "file": pdf_file("replacement.pdf")},
+                format="multipart",
+            )
+        self.assertEqual(replace_response.status_code, 200, replace_response.content)
+        document.refresh_from_db()
+        self.assertEqual(document.doc_type, "PSA")
+        self.assertTrue(
+            document.file.name.rsplit("/", 1)[-1].startswith("replacement")
+        )
+        self.assertFalse(document.file.storage.exists(old_file_name))
+
+        with self.captureOnCommitCallbacks(execute=True):
+            delete_response = self.client.delete(f"/api/onboarding-docs/{document.pk}/")
+        self.assertEqual(delete_response.status_code, 204)
+        self.assertFalse(OnboardingDocument.objects.filter(pk=document.pk).exists())
+        self.assertFalse(document.file.storage.exists(document.file.name))
+
+    def test_employee_document_access_is_limited_to_own_read_only_documents(self):
+        employee_user = User.objects.create_user(
+            username="document-owner", password="document-test-password"
+        )
+        owner = Employee.objects.create(
+            first_name="Document",
+            last_name="Owner",
+            email="document.owner@example.com",
+            user=employee_user,
+        )
+        own_document = OnboardingDocument.objects.create(
+            employee=owner,
+            doc_type="PSA",
+            file=pdf_file("owner-psa.pdf"),
+        )
+        self.addCleanup(own_document.file.delete, save=False)
+        other_document = OnboardingDocument.objects.create(
+            employee=self.employee,
+            doc_type="NBI",
+            file=pdf_file("private-nbi.pdf"),
+        )
+        self.addCleanup(other_document.file.delete, save=False)
+        self.client.force_authenticate(user=employee_user)
+
+        own_list = self.client.get(f"/api/onboarding-docs/?employee={owner.pk}")
+        self.assertEqual(own_list.status_code, 200)
+        self.assertEqual(own_list.json()["count"], 1)
+        self.assertEqual(
+            own_list.json()["results"][0]["file"],
+            f"/api/onboarding-docs/{own_document.pk}/download/",
+        )
+        request = APIRequestFactory().get(
+            f"/api/onboarding-docs/{own_document.pk}/download/"
+        )
+        force_authenticate(request, user=employee_user)
+        with patch.object(
+            own_document.file.storage, "open", return_value=BytesIO(b"private")
+        ):
+            download_response = OnboardingDocumentDownloadView.as_view()(
+                request, pk=own_document.pk
+            )
+        self.assertEqual(download_response.status_code, 200)
+        self.assertIn("attachment", download_response["Content-Disposition"])
+        other_list = self.client.get(f"/api/onboarding-docs/?employee={self.employee.pk}")
+        self.assertEqual(other_list.status_code, 200)
+        self.assertEqual(other_list.json()["count"], 0)
+        self.assertEqual(
+            self.client.get(
+                f"/api/onboarding-docs/{other_document.pk}/download/"
+            ).status_code,
+            403,
+        )
+        write_response = self.client.post(
+            "/api/onboarding-docs/",
+            {
+                "employee": str(owner.pk),
+                "doc_type": "NBI",
+                "file": pdf_file(),
+            },
+            format="multipart",
+        )
+        self.assertEqual(write_response.status_code, 403)
 
     def test_onboarding_doc_rejects_bad_mime(self):
         bad = SimpleUploadedFile(
@@ -335,16 +440,59 @@ class FrontendFixTests(TestCase):
         self.assertNotIn("Loading page", js)
 
     # -- frontend wiring present -------------------------------------------
-    def test_dashboard_template_wiring_docs(self):
+    def test_hr_onboarding_form_supports_optional_document_uploads(self):
         from django.conf import settings
 
-        response = self.client.get("/")
-        self.assertEqual(response.status_code, 200)
-        html = response.content.decode()
-        self.assertIn('type="file"', html)
+        html = (settings.BASE_DIR / "core" / "templates" / "core" / "hr_onboarding.html").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('name="first_name"', html)
+        self.assertIn('name="last_name"', html)
+        self.assertIn('name="email"', html)
+        self.assertIn('name="department"', html)
+        self.assertIn('name="role"', html)
+        self.assertIn('name="date_hired"', html)
+        self.assertIn('id="submitNewHire"', html)
+        self.assertIn("Optional onboarding documents", html)
         self.assertIn('data-doc-type="NBI"', html)
         self.assertIn('data-doc-type="BIR2316"', html)
         self.assertIn('data-doc-type="PSA"', html)
         self.assertIn('data-doc-type="contract"', html)
-        js = (settings.BASE_DIR / "static" / "js" / "dashboard.js").read_text(encoding="utf-8")
-        self.assertIn("/api/onboarding-docs/", js)
+        self.assertIn('data-doc-type="government_records"', html)
+        self.assertIn("validateDocument", html)
+        self.assertIn("uploadDocuments", html)
+        self.assertIn("FormData", html)
+        self.assertIn("/api/onboarding-docs/", html)
+        self.assertIn("maximum 10 MB per document", html)
+
+    def test_employee_roster_exposes_document_management(self):
+        from django.conf import settings
+
+        html = (settings.BASE_DIR / "core" / "templates" / "core" / "index.html").read_text(
+            encoding="utf-8"
+        )
+        js = (settings.BASE_DIR / "static" / "js" / "dashboard.js").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('id="employeeDocumentsModal"', html)
+        self.assertNotIn("Add a document", html)
+        self.assertNotIn('id="employeeDocumentType"', html)
+        self.assertIn('id="employeeDocumentFile"', html)
+        self.assertIn("View documents", js)
+        self.assertIn("openEmployeeDocumentsFromButton", js)
+        for document_type, label in (
+            ("NBI", "NBI Clearance"),
+            ("BIR2316", "BIR Form 2316"),
+            ("PSA", "PSA Birth Certificate"),
+            ("contract", "Signed Employment Contract"),
+            ("government_records", "Government Records"),
+        ):
+            self.assertIn(f"{document_type}: '{label}'", js)
+        self.assertIn("pendingDocumentType = type", js)
+        self.assertIn("fileInput.click()", js)
+        self.assertIn("payload.append('doc_type', docType)", js)
+        self.assertIn("Not uploaded", js)
+        self.assertIn("Edit / replace", js)
+        self.assertIn("Delete", js)
+        self.assertIn("method: 'PATCH'", js)
+        self.assertIn("method: 'DELETE'", js)

@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Onboard New Employee | Kumon EMS</title>
+  <style>
+    :root { color-scheme: light; font: 16px/1.5 system-ui, sans-serif; color: #17243b; background: #f4f6fa; }
+    body { margin: 0; }
+    main { max-width: 760px; margin: 48px auto; padding: 32px; background: #fff; border-radius: 12px; box-shadow: 0 12px 40px #17243b12; }
+    h1 { margin: 12px 0 4px; } p { color: #526179; }
+    .back { color: #17345b; } .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin: 24px 0; }
+    label { display: block; margin-bottom: 6px; font-weight: 650; } input, select { box-sizing: border-box; width: 100%; padding: 11px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font: inherit; }
+    button { padding: 11px 16px; border: 0; border-radius: 6px; background: #17345b; color: #fff; font: inherit; font-weight: 650; cursor: pointer; }
+    button:disabled { opacity: .6; cursor: wait; } #message { min-height: 1.5em; color: #a32626; }
+    dialog { width: min(520px, calc(100% - 40px)); border: 0; border-radius: 12px; padding: 28px; color: #17243b; box-shadow: 0 20px 70px #0005; }
+    dialog::backdrop { background: #10182799; } dialog h2 { margin-top: 0; }
+    .credential-value { padding: 10px 12px; border: 1px solid #d5deea; border-radius: 6px; background: #f7f9fc; overflow-wrap: anywhere; }
+    .credential-actions { display: flex; gap: 10px; margin-top: 20px; } .secondary { background: #e8edf4; color: #17243b; }
+    @media (max-width: 600px) { main { margin: 16px; padding: 22px; } .form-grid { grid-template-columns: 1fr; } }
+    @media print { body * { visibility: hidden; } dialog[open], dialog[open] * { visibility: visible; } dialog[open] { position: absolute; inset: 0; width: auto; box-shadow: none; } .credential-actions { display: none; } }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="/hr/">← HR dashboard</a>
+    <h1>Add / Onboard New Employee</h1>
+    <p>Create a new hire record and generate their unique employee ID and temporary password. Credentials are shown once after successful creation. Email is stored for contact and is not used for initial sign-in.</p>
+    <form id="newHireForm">
+      <div class="form-grid">
+        <div>
+          <label for="firstName">First name</label>
+          <input id="firstName" name="first_name" autocomplete="given-name" maxlength="100" required>
+        </div>
+        <div>
+          <label for="lastName">Last name</label>
+          <input id="lastName" name="last_name" autocomplete="family-name" maxlength="100" required>
+        </div>
+        <div>
+          <label for="email">Personal / corporate email</label>
+          <input id="email" name="email" type="email" autocomplete="email" maxlength="254" required>
+        </div>
+        <div>
+          <label for="department">Department</label>
+          <select id="department" name="department" required>
+            <option value="">Select a department</option>
+            {% for department in departments %}
+              <option value="{{ department.pk }}">{{ department.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="role">Role</label>
+          <input id="role" name="role" maxlength="100" required>
+        </div>
+        <div>
+          <label for="startDate">Start date</label>
+          <input id="startDate" name="date_hired" type="date" value="{{ today|date:'Y-m-d' }}" required>
+        </div>
+      </div>
+      <fieldset style="border:1px solid #d5deea;border-radius:8px;padding:16px;margin:0 0 20px;">
+        <legend style="padding:0 6px;font-weight:650;">Optional onboarding documents</legend>
+        <div class="form-grid" style="margin:8px 0 0;">
+          <div><label for="docNbi">NBI Clearance</label><input id="docNbi" type="file" data-doc-type="NBI" accept=".pdf,.jpg,.jpeg,.png"></div>
+          <div><label for="docBir">BIR Form 2316</label><input id="docBir" type="file" data-doc-type="BIR2316" accept=".pdf,.jpg,.jpeg,.png"></div>
+          <div><label for="docPsa">PSA Birth Certificate</label><input id="docPsa" type="file" data-doc-type="PSA" accept=".pdf,.jpg,.jpeg,.png"></div>
+          <div><label for="docContract">Signed Employment Contract</label><input id="docContract" type="file" data-doc-type="contract" accept=".pdf,.jpg,.jpeg,.png"></div>
+          <div><label for="docGovernment">Government Records</label><input id="docGovernment" type="file" data-doc-type="government_records" accept=".pdf,.jpg,.jpeg,.png"></div>
+        </div>
+        <small>PDF, JPG, or PNG; maximum 10 MB per document.</small>
+      </fieldset>
+      <button id="submitNewHire" type="submit">Generate Emp ID &amp; Temporary Password</button>
+      <p id="message" role="alert"></p>
+    </form>
+  </main>
+
+  <dialog id="credentialHandover" aria-labelledby="handoverTitle">
+    <h2 id="handoverTitle">One-time credential handover</h2>
+    <p id="handoverEmployeeName"></p>
+    <p><strong>Employee ID</strong></p>
+    <div class="credential-value" id="handoverEmployeeId"></div>
+    <p><strong>Temporary password</strong></p>
+    <div class="credential-value" id="handoverTemporaryPassword"></div>
+    <p>Copy or print these credentials. For security, the temporary password will not be shown again. Hand these directly to the new employee for their first sign-in.</p>
+    <div class="credential-actions">
+      <button id="copyCredentials" type="button">Copy Credentials</button>
+      <button id="printCredentials" class="secondary" type="button">Print</button>
+      <button id="closeHandover" class="secondary" type="button">Done</button>
+    </div>
+  </dialog>
+
+  <script>
+    const csrf = document.cookie.split('; ').find((part) => part.startsWith('csrftoken='))?.split('=')[1] || '';
+    const form = document.getElementById('newHireForm');
+    const message = document.getElementById('message');
+    const handover = document.getElementById('credentialHandover');
+    let displayedCredentials = null;
+
+    function clearHandover() {
+      displayedCredentials = null;
+      document.getElementById('handoverEmployeeName').textContent = '';
+      document.getElementById('handoverEmployeeId').textContent = '';
+      document.getElementById('handoverTemporaryPassword').textContent = '';
+      if (handover.open) handover.close();
+    }
+
+    function validateDocument(file) {
+      if (file.size > 10 * 1024 * 1024) return `${file.name} exceeds the 10 MB limit.`;
+      const extension = file.name.split('.').pop().toLowerCase();
+      const allowed = {
+        'application/pdf': ['pdf'],
+        'image/jpeg': ['jpg', 'jpeg'],
+        'image/png': ['png'],
+      };
+      return allowed[file.type]?.includes(extension)
+        ? ''
+        : `${file.name} must be a PDF, JPG, or PNG.`;
+    }
+
+    async function uploadDocuments(employeeId, attachments) {
+      const failed = [];
+      let uploaded = 0;
+      for (const { docType, file } of attachments) {
+        const documentData = new FormData();
+        documentData.append('employee', employeeId);
+        documentData.append('doc_type', docType);
+        documentData.append('file', file);
+        try {
+          const response = await fetch('/api/onboarding-docs/', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'X-CSRFToken': csrf },
+            body: documentData,
+          });
+          if (!response.ok) {
+            const result = await response.json().catch(() => ({}));
+            const detail = result.error || result.file?.[0] || 'upload failed';
+            throw new Error(typeof detail === 'string' ? detail : 'upload failed');
+          }
+          uploaded += 1;
+        } catch (error) {
+          failed.push(`${docType}: ${error.message || 'upload failed'}`);
+        }
+      }
+      return { uploaded, failed };
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const submit = document.getElementById('submitNewHire');
+      message.textContent = '';
+      const attachments = [...form.querySelectorAll('input[type="file"][data-doc-type]')]
+        .filter((input) => input.files?.[0])
+        .map((input) => ({ docType: input.dataset.docType, file: input.files[0] }));
+      const invalid = attachments.map(({ file }) => validateDocument(file)).find(Boolean);
+      if (invalid) {
+        message.textContent = invalid;
+        return;
+      }
+      submit.disabled = true;
+      const data = {
+        first_name: form.elements.first_name.value.trim(),
+        last_name: form.elements.last_name.value.trim(),
+        email: form.elements.email.value.trim(),
+        department: form.elements.department.value,
+        role: form.elements.role.value.trim(),
+        date_hired: form.elements.date_hired.value,
+      };
+      try {
+        const response = await fetch('/api/hr/employees/onboard/', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+          body: JSON.stringify(data),
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const error = result.error;
+          throw new Error(typeof error === 'string' ? error : 'Unable to onboard employee. Check the form and try again.');
+        }
+        displayedCredentials = result;
+        document.getElementById('handoverEmployeeName').textContent = result.employee_name;
+        document.getElementById('handoverEmployeeId').textContent = result.employee_id;
+        document.getElementById('handoverTemporaryPassword').textContent = result.temporary_password;
+        handover.showModal();
+        form.reset();
+        document.getElementById('startDate').value = '{{ today|date:"Y-m-d" }}';
+        const documents = await uploadDocuments(result.employee_record_id, attachments);
+        message.textContent = documents.failed.length
+          ? `Employee created and credentials are ready. Some documents could not be uploaded: ${documents.failed.join('; ')}`
+          : documents.uploaded
+            ? `Employee created and ${documents.uploaded} onboarding document${documents.uploaded === 1 ? '' : 's'} uploaded.`
+            : 'Employee created. Credentials are ready for handover.';
+      } catch (error) {
+        message.textContent = error.message || 'Employee could not be created.';
+      } finally {
+        submit.disabled = false;
+      }
+    });
+
+    document.getElementById('copyCredentials').addEventListener('click', async () => {
+      if (!displayedCredentials) return;
+      try {
+        await navigator.clipboard.writeText(
+          `Employee: ${displayedCredentials.employee_name}\nEmployee ID: ${displayedCredentials.employee_id}\nTemporary password: ${displayedCredentials.temporary_password}`
+        );
+        message.textContent = 'Credentials copied. Share them directly with the new employee.';
+      } catch (error) {
+        message.textContent = 'Clipboard access failed. Select and copy the displayed credentials manually.';
+      }
+    });
+    document.getElementById('printCredentials').addEventListener('click', () => window.print());
+    document.getElementById('closeHandover').addEventListener('click', clearHandover);
+    handover.addEventListener('cancel', clearHandover);
+    handover.addEventListener('click', (event) => {
+      if (event.target === handover) clearHandover();
+    });
+  </script>
+</body>
+</html>

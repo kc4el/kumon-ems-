@@ -77,6 +77,14 @@ initTheme();
 
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
+  if (document.body.classList.contains('auth-page-body')) {
+    initRememberedLogin();
+    return;
+  }
+  document.getElementById('employeeDocumentFile')?.addEventListener(
+    'change',
+    uploadEmployeeDocument
+  );
   initBrandLogo();
   initRememberedLogin();
   initNavigation();
@@ -106,7 +114,6 @@ document.addEventListener('DOMContentLoaded', () => {
   refreshNotifBell();
   initTour();
   populatePromotionTransferDropdowns();
-  populateOnboardingOptions();
   startDashboardLiveRefresh();
 });
 
@@ -918,6 +925,269 @@ function toggleAccordion(summaryElement) {
   }
 }
 
+let activeDocumentEmployeeId = null;
+let pendingDocumentType = null;
+const EMPLOYEE_DOCUMENT_TYPES = {
+  NBI: 'NBI Clearance',
+  BIR2316: 'BIR Form 2316',
+  PSA: 'PSA Birth Certificate',
+  contract: 'Signed Employment Contract',
+  government_records: 'Government Records',
+};
+
+function openEmployeeDocumentsFromButton(button) {
+  openEmployeeDocuments(
+    button.dataset.documentEmployeeId,
+    button.dataset.documentEmployeeName
+  );
+}
+
+async function openEmployeeDocuments(employeeId, employeeName) {
+  activeDocumentEmployeeId = employeeId;
+  document.getElementById('employeeDocumentsSubtitle').textContent = employeeName;
+  document.getElementById('employeeDocumentsModal').classList.add('active');
+  document.getElementById('employeeDocumentsModal').setAttribute('aria-hidden', 'false');
+  document.getElementById('employeeDocumentFile').value = '';
+  pendingDocumentType = null;
+  await loadEmployeeDocuments();
+}
+
+function closeEmployeeDocuments() {
+  activeDocumentEmployeeId = null;
+  pendingDocumentType = null;
+  const modal = document.getElementById('employeeDocumentsModal');
+  modal.classList.remove('active');
+  modal.setAttribute('aria-hidden', 'true');
+}
+
+function setEmployeeDocumentsMessage(message, isError = false) {
+  const element = document.getElementById('employeeDocumentsMessage');
+  element.textContent = message;
+  element.style.color = isError ? '#b91c1c' : '';
+}
+
+function validateEmployeeDocumentFile(file) {
+  if (!file) return '';
+  if (file.size > 10 * 1024 * 1024) return 'Files must be 10 MB or smaller.';
+  const extension = file.name.split('.').pop().toLowerCase();
+  const allowed = {
+    'application/pdf': ['pdf'],
+    'image/jpeg': ['jpg', 'jpeg'],
+    'image/png': ['png'],
+  };
+  return allowed[file.type]?.includes(extension)
+    ? ''
+    : 'Choose a PDF, JPG, or PNG file.';
+}
+
+async function loadEmployeeDocuments() {
+  if (!activeDocumentEmployeeId) return;
+  const employeeId = activeDocumentEmployeeId;
+  const list = document.getElementById('employeeDocumentsList');
+  list.replaceChildren();
+  setEmployeeDocumentsMessage('Loading documents…');
+  try {
+    const docs = await fetchAllApiRows(
+      `/api/onboarding-docs/?employee=${encodeURIComponent(employeeId)}&page_size=100`
+    );
+    if (activeDocumentEmployeeId !== employeeId) return;
+    setEmployeeDocumentsMessage(
+      docs.length ? `${docs.length} document${docs.length === 1 ? '' : 's'} uploaded` : 'No documents uploaded yet.'
+    );
+    Object.entries(EMPLOYEE_DOCUMENT_TYPES).forEach(([type, label]) => {
+      const category = document.createElement('section');
+      category.className = 'employee-document-category';
+      const heading = document.createElement('h4');
+      heading.textContent = label;
+      category.appendChild(heading);
+
+      const categoryDocs = docs.filter((doc) => doc.doc_type === type);
+      if (categoryDocs.length) {
+        categoryDocs.forEach((doc) => category.appendChild(createEmployeeDocumentItem(doc)));
+      } else {
+        const empty = document.createElement('p');
+        empty.className = 'employee-document-empty';
+        empty.textContent = 'Not uploaded';
+        category.appendChild(empty);
+      }
+
+      const addButton = document.createElement('button');
+      addButton.type = 'button';
+      addButton.className = 'btn btn-outline-gray';
+      addButton.textContent = categoryDocs.length ? 'Add another' : 'Upload document';
+      addButton.addEventListener('click', () => {
+        pendingDocumentType = type;
+        const fileInput = document.getElementById('employeeDocumentFile');
+        fileInput.value = '';
+        fileInput.click();
+      });
+      category.appendChild(addButton);
+      list.appendChild(category);
+    });
+  } catch (error) {
+    if (error.message === 'auth') return;
+    setEmployeeDocumentsMessage('Documents could not be loaded. Please try again.', true);
+  }
+}
+
+function createEmployeeDocumentItem(doc) {
+  const item = document.createElement('section');
+  item.className = 'employee-document-item';
+
+  const head = document.createElement('div');
+  head.className = 'employee-document-item-head';
+  const title = document.createElement('strong');
+  title.textContent = EMPLOYEE_DOCUMENT_TYPES[doc.doc_type] || doc.doc_type;
+  const fileLink = document.createElement('a');
+  fileLink.className = 'employee-document-link';
+  fileLink.textContent = 'Download file';
+  try {
+    const fileUrl = new URL(doc.file, window.location.origin);
+    if (fileUrl.protocol === 'https:' || fileUrl.origin === window.location.origin) {
+      fileLink.href = fileUrl.href;
+      fileLink.target = '_blank';
+      fileLink.rel = 'noopener noreferrer';
+    } else {
+      fileLink.textContent = 'File unavailable';
+    }
+  } catch (error) {
+    fileLink.textContent = 'File unavailable';
+  }
+  head.append(title, fileLink);
+
+  const editor = document.createElement('form');
+  editor.className = 'employee-document-editor';
+  editor.hidden = true;
+  const fields = document.createElement('div');
+  fields.className = 'inputs-2grid';
+
+  const typeCell = document.createElement('div');
+  typeCell.className = 'input-cell';
+  const typeLabel = document.createElement('label');
+  typeLabel.textContent = 'DOCUMENT TYPE';
+  const typeSelect = document.createElement('select');
+  typeSelect.name = 'doc_type';
+  typeSelect.className = 'penpot-select-full';
+  Object.entries(EMPLOYEE_DOCUMENT_TYPES).forEach(([value, label]) => {
+    const option = new Option(label, value, false, value === doc.doc_type);
+    typeSelect.appendChild(option);
+  });
+  typeCell.append(typeLabel, typeSelect);
+
+  const fileCell = document.createElement('div');
+  fileCell.className = 'input-cell';
+  const fileLabel = document.createElement('label');
+  fileLabel.textContent = 'REPLACE FILE (OPTIONAL)';
+  const fileInput = document.createElement('input');
+  fileInput.name = 'file';
+  fileInput.type = 'file';
+  fileInput.accept = '.pdf,.jpg,.jpeg,.png';
+  fileCell.append(fileLabel, fileInput);
+  fields.append(typeCell, fileCell);
+
+  const editActions = document.createElement('div');
+  editActions.className = 'modal-foot';
+  const saveButton = document.createElement('button');
+  saveButton.type = 'submit';
+  saveButton.className = 'btn btn-navy-cta';
+  saveButton.textContent = 'Save changes';
+  editActions.appendChild(saveButton);
+  editor.append(fields, editActions);
+  editor.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const file = fileInput.files?.[0];
+    const invalid = validateEmployeeDocumentFile(file);
+    if (invalid) {
+      setEmployeeDocumentsMessage(invalid, true);
+      return;
+    }
+    if (!file && typeSelect.value === doc.doc_type) {
+      setEmployeeDocumentsMessage('Choose a new document type or replacement file.', true);
+      return;
+    }
+    const payload = new FormData();
+    payload.append('doc_type', typeSelect.value);
+    if (file) payload.append('file', file);
+    saveButton.disabled = true;
+    try {
+      const response = await apiFetch(`/api/onboarding-docs/${encodeURIComponent(doc.id)}/`, {
+        method: 'PATCH',
+        body: payload,
+      });
+      if (!response.ok) throw new Error('Document could not be updated.');
+      setEmployeeDocumentsMessage('Document updated.');
+      await loadEmployeeDocuments();
+    } catch (error) {
+      if (error.message !== 'auth') setEmployeeDocumentsMessage(error.message, true);
+    } finally {
+      saveButton.disabled = false;
+    }
+  });
+
+  const actions = document.createElement('div');
+  actions.className = 'employee-document-actions';
+  const editButton = document.createElement('button');
+  editButton.type = 'button';
+  editButton.className = 'btn btn-outline-gray';
+  editButton.textContent = 'Edit / replace';
+  editButton.addEventListener('click', () => { editor.hidden = !editor.hidden; });
+  const deleteButton = document.createElement('button');
+  deleteButton.type = 'button';
+  deleteButton.className = 'btn btn-outline-gray employee-document-danger';
+  deleteButton.textContent = 'Delete';
+  deleteButton.addEventListener('click', async () => {
+    if (!window.confirm('Delete this employee document? This cannot be undone.')) return;
+    deleteButton.disabled = true;
+    try {
+      const response = await apiFetch(`/api/onboarding-docs/${encodeURIComponent(doc.id)}/`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Document could not be deleted.');
+      setEmployeeDocumentsMessage('Document deleted.');
+      await loadEmployeeDocuments();
+    } catch (error) {
+      if (error.message !== 'auth') setEmployeeDocumentsMessage(error.message, true);
+    } finally {
+      deleteButton.disabled = false;
+    }
+  });
+  actions.append(editButton, deleteButton);
+  item.append(head, actions, editor);
+  return item;
+}
+
+async function uploadEmployeeDocument(event) {
+  const file = event.currentTarget.files?.[0];
+  const docType = pendingDocumentType;
+  pendingDocumentType = null;
+  if (!activeDocumentEmployeeId || !docType || !file) return;
+  const invalid = validateEmployeeDocumentFile(file);
+  if (invalid) {
+    setEmployeeDocumentsMessage(invalid, true);
+    return;
+  }
+  const payload = new FormData();
+  payload.append('employee', activeDocumentEmployeeId);
+  payload.append('doc_type', docType);
+  payload.append('file', file);
+  const fileInput = event.currentTarget;
+  fileInput.disabled = true;
+  try {
+    const response = await apiFetch('/api/onboarding-docs/', {
+      method: 'POST',
+      body: payload,
+    });
+    if (!response.ok) throw new Error('Document could not be uploaded.');
+    setEmployeeDocumentsMessage('Document uploaded.');
+    await loadEmployeeDocuments();
+  } catch (error) {
+    if (error.message !== 'auth') setEmployeeDocumentsMessage(error.message, true);
+  } finally {
+    fileInput.disabled = false;
+    fileInput.value = '';
+  }
+}
+
 
 // Filter Employee Directory
 function filterDirectory() {
@@ -1048,40 +1318,6 @@ async function populatePromotionTransferDropdowns() {
     }
   } catch (err) {
     console.error('Could not load promote/transfer dropdown data', err);
-  }
-}
-
-async function populateOnboardingOptions() {
-  const departmentSelect = document.getElementById('onboardDepartment');
-  const roleOptions = document.getElementById('onboardRoleOptions');
-  const startDate = document.getElementById('onboardStartDate');
-  const today = new Date();
-  if (startDate && !startDate.value) {
-    startDate.value = [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
-  }
-  try {
-    const [departments, employees] = await Promise.all([
-      fetchAllApiRows('/api/departments/?page_size=100'),
-      fetchAllApiRows('/api/employees/?page_size=100'),
-    ]);
-    if (departmentSelect) {
-      departmentSelect.replaceChildren(new Option('Select Department...', ''));
-      departments.forEach((department) => {
-        departmentSelect.appendChild(new Option(department.name, department.id));
-      });
-      departmentSelect.disabled = !departments.length;
-    }
-    if (roleOptions) {
-      roleOptions.replaceChildren(...[...new Set(employees.map((employee) => employee.role).filter(Boolean))]
-        .sort((a, b) => a.localeCompare(b))
-        .map((role) => new Option(role, role)));
-    }
-  } catch (_) {
-    if (departmentSelect) {
-      departmentSelect.replaceChildren(new Option('Departments unavailable', ''));
-      departmentSelect.disabled = true;
-    }
-    showToast('Onboarding options could not be loaded.', 'error');
   }
 }
 
@@ -1340,33 +1576,6 @@ async function handleOffboardingSubmit(e) {
   }
 }
 
-// Onboarding modal open / close handlers
-function openOnboardingModal() {
-  const modal = document.getElementById('onboardingModal');
-  if (modal) {
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-  }
-}
-
-function closeOnboardingModal() {
-  const modal = document.getElementById('onboardingModal');
-  if (modal) {
-    modal.style.display = 'none';
-    document.body.style.overflow = '';
-  }
-}
-
-// Global escape key listener for modals
-document.addEventListener('keydown', function (e) {
-  if (e.key === 'Escape') {
-    closeOnboardingModal();
-  }
-});
-
-// Onboarding compliance docs: label shows the picked file name; the files
-// are POSTed as multipart to /api/onboarding-docs/ once the employee row
-// exists (see handleOnboarding).
 // Onboarding file guards (D33): mirror the backend 10MB + PDF/JPG/PNG rules
 // so oversized or mistyped files are rejected before upload. Exit-doc and
 // chat pickers reuse these same two constants, single source.
@@ -1388,125 +1597,6 @@ function validateOnboardingFile(file) {
     return `Unsupported file type (${file.type || 'unknown'}). Allowed: PDF, JPG, PNG.`;
   }
   return null;
-}
-
-function handleDocFileSelected(input) {
-  const file = input.files && input.files[0];
-  const kind = input.dataset.docType;
-  const label = input.closest('label')?.querySelector(`[data-doc-label="${kind}"]`);
-  if (file) {
-    const err = validateOnboardingFile(file);
-    if (err) {
-      input.value = '';
-      if (label) label.textContent = 'Upload File';
-      showToast(`${kind}: ${err}`, 'error');
-      return;
-    }
-  }
-  if (label) label.textContent = file ? file.name : 'Upload File';
-  if (file) showToast(`${file.name} attached for ${kind}.`);
-}
-
-async function uploadOnboardingDocs(form, employeeId) {
-  const inputs = form.querySelectorAll('input[type="file"][data-doc-type]');
-  let saved = 0;
-  for (const input of inputs) {
-    const file = input.files && input.files[0];
-    if (!file) continue;
-    const docType = input.dataset.docType;
-    const invalid = validateOnboardingFile(file);
-    if (invalid) {
-      showToast(`${docType}: ${invalid}`, 'error');
-      continue;
-    }
-    const docData = new FormData();
-    docData.append('employee', employeeId);
-    docData.append('doc_type', docType);
-    docData.append('file', file);
-    try {
-      const res = await apiFetch('/api/onboarding-docs/', {
-        method: 'POST',
-        body: docData,
-      });
-      if (!res.ok) throw new Error('upload failed');
-      saved += 1;
-    } catch (error) {
-      showToast(`${docType} upload failed — employee created, retry from directory.`, 'error');
-    }
-  }
-  return saved;
-}
-
-// Onboarding form submit handler: POST the wizard fields to the live API,
-// then upload any attached compliance docs against the new employee row.
-async function handleOnboarding(e) {
-  e.preventDefault();
-  const form = e.target;
-  const fullName = (form.querySelector('input[type="text"]')?.value || '').trim();
-  const email = (form.querySelector('input[type="email"]')?.value || '').trim();
-  const password = document.getElementById('onboardPassword')?.value || '';
-  const parts = fullName.split(/\s+/).filter(Boolean);
-  if (parts.length < 2) {
-    showToast('Enter the employee\'s first and last name.', 'error');
-    return;
-  }
-  const lastName = parts.pop();
-  const payload = {
-    first_name: parts.join(' '),
-    last_name: lastName,
-    email,
-    password,
-  };
-  const departmentId = form.querySelector('#onboardDepartment')?.value || '';
-  const roleVal = (form.querySelector('#onboardRole')?.value || '').trim();
-  if (!departmentId) {
-    showToast('Select a department from the database.', 'error');
-    return;
-  }
-  payload.department = departmentId;
-  payload.date_hired = document.getElementById('onboardStartDate')?.value;
-  if (roleVal) payload.role = roleVal;
-  apiFetch('/api/employees/', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  })
-    .then(async (res) => {
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const err =
-          typeof data.error === 'string'
-            ? data.error
-            : data.error && typeof data.error === 'object'
-              ? Object.entries(data.error).flatMap(([field, messages]) =>
-                (Array.isArray(messages) ? messages : [messages]).map((message) => `${field}: ${message}`)
-              ).join(' ')
-              : 'Unable to create employee. Check the form and try again.';
-        showToast(err);
-        return null;
-      }
-      return data;
-    })
-    .then((data) => {
-      if (!data) return;
-      const finish = (docCount) => {
-        const suffix = docCount ? ` (${docCount} compliance doc${docCount > 1 ? 's' : ''} saved)` : '';
-        showToast(`Employee ${fullName || email} created. Login: ${email} | Initial password: ${password}${suffix}`);
-        closeOnboardingModal();
-        form.reset();
-        form.querySelectorAll('[data-doc-label]').forEach((el) => { el.textContent = 'Upload File'; });
-        loadEmployeeDirectory();
-        loadEmployeeInbox();
-      };
-      if (data.id) {
-        uploadOnboardingDocs(form, data.id).then(finish);
-      } else {
-        // Anonymous signup returns 202 with no row id: docs stay attached
-        // to the form until the directory record exists.
-        showToast('Signup received — compliance docs upload after HR confirms the profile.');
-        finish(0);
-      }
-    })
-    .catch(() => showToast('Unable to create employee upstream. Try again later.', 'error'));
 }
 
 async function loadGrievanceView() {
@@ -3330,29 +3420,6 @@ window.toggleCompanyCards = toggleCompanyCards;
 // ==========================================================================
 // Standalone Authentication Handlers & Navigation
 // ==========================================================================
-function switchAuthPage(mode = 'login') {
-  const loginCard = document.getElementById('authScreenLogin');
-  const signupCard = document.getElementById('authScreenSignup');
-
-  if (loginCard && signupCard) {
-    if (mode === 'signup') {
-      loginCard.style.display = 'none';
-      signupCard.style.display = 'block';
-      if (window.history && window.history.replaceState) {
-        window.history.replaceState(null, '', '#signup');
-      }
-      document.title = 'Employee Registration • Kumon EMS';
-    } else {
-      signupCard.style.display = 'none';
-      loginCard.style.display = 'block';
-      if (window.history && window.history.replaceState) {
-        window.history.replaceState(null, '', '#login');
-      }
-      document.title = 'Employee Login • Kumon EMS';
-    }
-  }
-}
-
 function togglePasswordVisibility(inputId, btn) {
   const input = document.getElementById(inputId);
   if (!input) return;
@@ -3411,6 +3478,35 @@ function handleAuthLogin(e) {
     .catch(() => showToast('Sign-in service unreachable. Try again later.', 'error'));
 }
 
+async function handleOnboardingLogin(event) {
+  event.preventDefault();
+  const form = document.getElementById('onboardingLoginForm');
+  const submitButton = form?.querySelector('button[type="submit"]');
+  if (submitButton) submitButton.disabled = true;
+  const csrf = document.cookie.split('; ').find((cookie) => cookie.startsWith('csrftoken='))?.split('=')[1];
+  try {
+    const response = await fetch('/api/auth/employee-login/', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', ...(csrf ? { 'X-CSRFToken': csrf } : {}) },
+      body: JSON.stringify({
+        employee_id: document.getElementById('onboardingEmployeeId')?.value.trim() || '',
+        temporary_password: document.getElementById('onboardingTemporaryPassword')?.value || '',
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      showToast(typeof data.error === 'string' ? data.error : 'Employee ID or temporary password is invalid.', 'error');
+      return;
+    }
+    window.kumonLoadingNavigate(data.next_url, '/employee/');
+  } catch (_) {
+    showToast('Sign-in service unreachable. Try again later.', 'error');
+  } finally {
+    if (submitButton) submitButton.disabled = false;
+  }
+}
+
 function initRememberedLogin() {
   const input = document.getElementById('loginEmployeeId');
   const checkbox = document.getElementById('rememberMeCheckbox');
@@ -3449,39 +3545,6 @@ async function cancelEmployeeTwoFactor() {
   const form = document.getElementById('employeeLoginForm'); if (form) form.hidden = false;
 }
 
-async function handleAuthSignup(e) {
-  if (e) e.preventDefault();
-  const firstName = document.getElementById('signupFirstName')?.value.trim() || '';
-  const lastName = document.getElementById('signupLastName')?.value.trim() || '';
-  const email = document.getElementById('signupEmail')?.value.trim() || '';
-  const password = document.getElementById('signupPasswordInput')?.value || '';
-  // Raw fetch on purpose: signup is anonymous and apiFetch would bounce its
-  // 403/401 straight back to /login/.
-  const csrf = document.cookie.split('; ').find((c) => c.startsWith('csrftoken='))?.split('=')[1];
-  try {
-    const res = await fetch('/api/employees/', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json', ...(csrf ? { 'X-CSRFToken': csrf } : {}) },
-      body: JSON.stringify({ first_name: firstName, last_name: lastName, email, password }),
-    });
-    if (!res.ok) {
-      let detail = 'Registration failed. Check your details and try again.';
-      try {
-        const data = await res.json();
-        detail = data.error || detail;
-        if (Array.isArray(detail)) detail = detail.join(' ');
-        else if (typeof detail === 'object') detail = JSON.stringify(detail);
-      } catch (_) { /* keep default */ }
-      showToast(detail, 'error');
-      return;
-    }
-    showToast('If an account can be created, check your email for a confirmation link.', 'success');
-  } catch (err) {
-    showToast('Sign-up service unreachable. Try again later.', 'error');
-  }
-}
-
 function navigateToLogin(mode = 'login') {
   const currentPath = window.location.pathname.toLowerCase();
   const isFileProtocol = window.location.protocol === 'file:';
@@ -3492,9 +3555,9 @@ function navigateToLogin(mode = 'login') {
   }
 
   if (isFileProtocol || currentPath.endsWith('.html')) {
-    window.location.href = `login.html#${mode}`;
+    window.location.href = `login.html${mode === 'onboarding' ? '#first-time' : ''}`;
   } else {
-    window.location.href = `/login/#${mode}`;
+    window.location.href = mode === 'onboarding' ? '/login/#first-time' : '/login/';
   }
 }
 
@@ -3932,7 +3995,7 @@ function loadEmployeeDirectory() {
           `<div class="acc-summary" onclick="toggleAccordion(this)">` +
           `<div class="acc-left">` +
           `<strong class="acc-name">${escapeHtml(fullName)}</strong>` +
-          `<span class="acc-role">${escapeHtml(role)} &bull; ${escapeHtml(department)}</span>` +
+          `<span class="acc-role">${escapeHtml(emp.employee_id ? `Employee ID: ${emp.employee_id} · ` : '')}${escapeHtml(role)} &bull; ${escapeHtml(department)}</span>` +
           `</div>` +
           `<div class="acc-right">` +
           `<span class="penpot-badge ${badgeClass}">` +
@@ -3940,9 +4003,11 @@ function loadEmployeeDirectory() {
           `</div></div>` +
           `<div class="acc-expanded-body" hidden>` +
           `<div class="acc-col"><span class="col-head">CONTACT</span>` +
+          `<div class="perf-text">Employee ID: ${escapeHtml(emp.employee_id || 'Not assigned')}</div>` +
           `<div class="perf-text">${escapeHtml(emp.email || '')}</div>` +
           `<div class="acc-btn-row">` +
           `<button class="btn btn-black-sm" onclick="focusRosterProfile(this)">Open profile details</button>` +
+          `<button class="btn btn-purple-outline-sm" type="button" data-document-employee-id="${escapeHtml(String(emp.id))}" data-document-employee-name="${escapeHtml(fullName)}" onclick="openEmployeeDocumentsFromButton(this)">View documents</button>` +
           `<button class="btn btn-purple-outline-sm" data-name="${escapeHtml(fullName)}" onclick="messageInApp(this.dataset.name)">Message in app</button>` +
           `</div></div></div>`;
         list.appendChild(card);
@@ -4302,4 +4367,3 @@ async function auditPagerGoto(page) {
     showToast('Audit page could not be loaded.', 'error');
   }
 }
-

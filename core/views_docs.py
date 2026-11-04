@@ -10,7 +10,10 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
-from django.db import models
+from django.db import models, transaction
+from django.http import FileResponse
+from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from rest_framework import generics, serializers, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.exceptions import ValidationError as DRFValidationError
@@ -22,6 +25,7 @@ from rest_framework.views import APIView
 from .models import ClaimStatus, Employee, ExpenseClaim, SiteSetting
 from .exceptions import Conflict409
 from .permissions import (
+    IsAuthenticatedReadOrStaffHRWrite,
     IsOwnerOrStaff,
     IsStaffOrHR,
     OwnerQuerysetMixin,
@@ -40,7 +44,7 @@ DOC_TYPE_CHOICES = (
     ("BIR2316", "BIR Form 2316"),
     ("PSA", "PSA Birth Certificate"),
     ("contract", "Signed Employment Contract"),
-    ("government_records", "SSS / PhilHealth / Pag-IBIG Records"),
+    ("government_records", "Government Records"),
 )
 
 DECISION_CHOICES = ("Approved", "Rejected")
@@ -130,10 +134,19 @@ class SalaryAdvance(models.Model):
 
 
 class OnboardingDocumentSerializer(serializers.ModelSerializer):
+    file = serializers.FileField(validators=[validate_onboarding_file])
+
     class Meta:
         model = OnboardingDocument
         fields = ("id", "employee", "doc_type", "file", "uploaded_at")
         read_only_fields = ("id", "uploaded_at")
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["file"] = reverse(
+            "onboarding-doc-download", kwargs={"pk": instance.pk}
+        )
+        return data
 
 
 class SalaryAdvanceSerializer(serializers.ModelSerializer):
@@ -156,6 +169,56 @@ class OnboardingDocumentListCreateView(OwnerQuerysetMixin, generics.ListCreateAP
     queryset = OnboardingDocument.objects.all().order_by("-uploaded_at")
     serializer_class = OnboardingDocumentSerializer
     parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [IsAuthenticatedReadOrStaffHRWrite]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        employee_id = self.request.query_params.get("employee")
+        if employee_id:
+            employee_id = serializers.UUIDField().run_validation(employee_id)
+            queryset = queryset.filter(employee_id=employee_id)
+        return queryset
+
+
+class OnboardingDocumentDetailView(
+    OwnerQuerysetMixin, generics.RetrieveUpdateDestroyAPIView
+):
+    queryset = OnboardingDocument.objects.all()
+    serializer_class = OnboardingDocumentSerializer
+    parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [IsAuthenticatedReadOrStaffHRWrite]
+
+    def perform_update(self, serializer):
+        old_file = serializer.instance.file
+        old_name = old_file.name
+        storage = old_file.storage
+        document = serializer.save()
+        if old_name and old_name != document.file.name:
+            transaction.on_commit(lambda: storage.delete(old_name))
+
+    def perform_destroy(self, instance):
+        file_name = instance.file.name
+        storage = instance.file.storage
+        instance.delete()
+        if file_name:
+            transaction.on_commit(lambda: storage.delete(file_name))
+
+
+class OnboardingDocumentDownloadView(APIView):
+    permission_classes = [IsAuthenticated, IsOwnerOrStaff]
+
+    def get(self, request, pk):
+        document = get_object_or_404(OnboardingDocument, pk=pk)
+        self.check_object_permissions(request, document)
+        filename = document.file.name.rsplit("/", 1)[-1]
+        response = FileResponse(
+            document.file.open("rb"),
+            as_attachment=True,
+            filename=filename,
+        )
+        response["Cache-Control"] = "private, no-store"
+        response["X-Content-Type-Options"] = "nosniff"
+        return response
 
 
 class SalaryAdvanceListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):

@@ -501,6 +501,9 @@
           <h1 class="penpot-page-heading">Employee Management</h1>
           <p class="penpot-page-sub">Onboard new hires, manage internal promotions & department transfers, and process
             employee offboarding.</p>
+          {% if show_onboarding_link %}
+          <a class="penpot-btn-primary-navy" href="/hr/onboarding/" style="display:inline-block;width:auto;text-decoration:none;margin-top:12px;">Add / Onboard New Employee</a>
+          {% endif %}
         </div>
 
         <!-- Subnav Pill Tabs -->
@@ -883,13 +886,13 @@
 
         <!-- Dedicated Onboard Action Row below the white box -->
         <div class="onboard-bottom-row">
-          <button type="button" class="btn-onboard-dedicated" onclick="openOnboardingModal()">
+          <a class="btn-onboard-dedicated" href="/hr/onboarding/">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
             <span>Onboard New Employee</span>
-          </button>
+          </a>
         </div>
       </section>
 
@@ -2911,207 +2914,18 @@
     </div>
   </div>
 
-  <!-- ======================================================================
-       NEW EMPLOYEE ONBOARDING WIZARD MODAL POP-UP
-       ====================================================================== -->
-  <div id="onboardingModal" class="modal-backdrop" style="display:none;"
-    onclick="if(event.target===this) closeOnboardingModal()">
-    <div class="modal-dialog-wizard" role="dialog" aria-modal="true" aria-labelledby="onboardingModalTitle">
-      <div class="modal-wizard-header">
-        <h2 id="onboardingModalTitle" class="modal-wizard-title">NEW EMPLOYEE ONBOARDING WIZARD</h2>
-        <p class="modal-wizard-sub">Complete the following sections to generate a new employee profile.</p>
-        <button type="button" class="modal-close-btn" onclick="closeOnboardingModal()" aria-label="Close dialog">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
+  <div class="modal-backdrop" id="employeeDocumentsModal" aria-hidden="true">
+    <div class="modal-card employee-documents-card" role="dialog" aria-modal="true" aria-labelledby="employeeDocumentsTitle">
+      <div class="modal-head">
+        <div>
+          <h3 id="employeeDocumentsTitle">Employee documents</h3>
+          <p id="employeeDocumentsSubtitle" class="card-sub"></p>
+        </div>
+        <button type="button" class="modal-close" aria-label="Close documents" onclick="closeEmployeeDocuments()">&times;</button>
       </div>
-
-      <form onsubmit="handleOnboarding(event)" class="onboard-modal-form">
-        <!-- STEP 1: EMPLOYEE INFORMATION -->
-        <div>
-          <h3 class="wizard-section-head">STEP 1: EMPLOYEE INFORMATION</h3>
-          <div class="inputs-3grid">
-            <div class="input-cell">
-              <label>Full Legal Name <span class="req-star">*</span></label>
-              <input type="text" placeholder="First and last name" required />
-            </div>
-            <div class="input-cell">
-              <label>Corporate Email Address <span class="req-star">*</span></label>
-              <input type="email" placeholder="name@company.com" required />
-            </div>
-            <div class="input-cell">
-              <label>Department <span class="req-star">*</span></label>
-              <select id="onboardDepartment" class="penpot-select-full" required>
-                <option value="">Loading departments...</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="inputs-3grid">
-            <div class="input-cell">
-              <label>Job Role <span class="req-star">*</span></label>
-              <input id="onboardRole" class="penpot-select-full" list="onboardRoleOptions" maxlength="100" required />
-              <datalist id="onboardRoleOptions"></datalist>
-            </div>
-            <div class="input-cell">
-              <label>Start Date <span class="req-star">*</span></label>
-              <input id="onboardStartDate" type="date" required />
-            </div>
-            <div class="input-cell">
-              <label>Initial Login Password <span class="req-star">*</span></label>
-              <input id="onboardPassword" type="password" minlength="8" placeholder="At least 8 characters" required />
-            </div>
-          </div>
-        </div>
-
-        <!-- STEP 2: IT INVENTORY & ASSET ALLOCATION (Multi-Select) -->
-        <div>
-          <h3 class="wizard-section-head">STEP 2: IT INVENTORY & ASSET ALLOCATION (Multi-Select)</h3>
-          <div class="it-inventory-3grid">
-            <!-- Col 1: Hardware -->
-            <div class="it-category-col">
-              <label class="it-category-header">
-                <input type="checkbox" checked />
-                <span>HARDWARE</span>
-              </label>
-              <label class="it-asset-item">
-                <input type="checkbox" checked />
-                <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                  <line x1="2" y1="20" x2="22" y2="20"></line>
-                </svg>
-                <span>16" Apple MacBook Pro</span>
-              </label>
-              <label class="it-asset-item">
-                <input type="checkbox" />
-                <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M3 8h18M5 8v10M19 8v10M2 18h20"></path>
-                </svg>
-                <span>Ergonomic Standing Desk</span>
-              </label>
-            </div>
-
-            <!-- Col 2: Displays & Cloud -->
-            <div class="it-category-col">
-              <label class="it-category-header" style="visibility:hidden; height:18px;">
-                <span>OTHER</span>
-              </label>
-              <label class="it-asset-item">
-                <input type="checkbox" />
-                <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <rect x="2" y="3" width="20" height="14" rx="2"></rect>
-                  <line x1="8" y1="21" x2="16" y2="21"></line>
-                  <line x1="12" y1="17" x2="12" y2="21"></line>
-                </svg>
-                <span>27" 4K Monitor</span>
-              </label>
-              <label class="it-asset-item">
-                <input type="checkbox" checked />
-                <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
-                </svg>
-                <span>Slack & Google Workspace (SaaS)</span>
-              </label>
-            </div>
-
-            <!-- Col 3: Software Licenses -->
-            <div class="it-category-col">
-              <label class="it-category-header">
-                <input type="checkbox" />
-                <span>SOFTWARE LICENSES</span>
-              </label>
-              <label class="it-asset-item">
-                <input type="checkbox" checked />
-                <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-                <span>Slack & Google Workspace</span>
-              </label>
-              <label class="it-asset-item">
-                <input type="checkbox" checked />
-                <svg class="icon-svg-asset" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polygon
-                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
-                  </polygon>
-                </svg>
-                <span>Figma Enterprise</span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- STEP 3: COMPLIANCE & STATUTORY DOCUMENTATION -->
-        <div>
-          <h3 class="wizard-section-head">STEP 3: COMPLIANCE & STATUTORY DOCUMENTATION</h3>
-          <div class="compliance-2col-grid">
-            <div class="compliance-doc-cell">
-              <span class="compliance-doc-title">NBI Clearance</span>
-              <label class="btn-upload-clean">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <polyline points="18 15 12 9 6 15"></polyline>
-                </svg>
-                <span data-doc-label="NBI">Upload File</span>
-                <input type="file" data-doc-type="NBI" accept=".pdf,.jpg,.jpeg,.png" hidden
-                  onchange="handleDocFileSelected(this)" />
-              </label>
-            </div>
-            <div class="compliance-doc-cell">
-              <span class="compliance-doc-title">BIR Form 2316 (Tax Record)</span>
-              <label class="btn-upload-clean">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <polyline points="18 15 12 9 6 15"></polyline>
-                </svg>
-                <span data-doc-label="BIR2316">Upload File</span>
-                <input type="file" data-doc-type="BIR2316" accept=".pdf,.jpg,.jpeg,.png" hidden
-                  onchange="handleDocFileSelected(this)" />
-              </label>
-            </div>
-
-            <div class="compliance-doc-cell">
-              <span class="compliance-doc-title">PSA Birth Certificate</span>
-              <label class="btn-upload-clean">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <polyline points="18 15 12 9 6 15"></polyline>
-                </svg>
-                <span data-doc-label="PSA">Upload File</span>
-                <input type="file" data-doc-type="PSA" accept=".pdf,.jpg,.jpeg,.png" hidden
-                  onchange="handleDocFileSelected(this)" />
-              </label>
-            </div>
-            <div class="compliance-doc-cell">
-              <span class="compliance-doc-title">Signed Employment Contract</span>
-              <label class="btn-upload-clean">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <polyline points="18 15 12 9 6 15"></polyline>
-                </svg>
-                <span data-doc-label="contract">Upload File</span>
-                <input type="file" data-doc-type="contract" accept=".pdf,.jpg,.jpeg,.png" hidden
-                  onchange="handleDocFileSelected(this)" />
-              </label>
-            </div>
-
-            <div class="compliance-doc-cell">
-              <span class="compliance-doc-title">SSS / PhilHealth / Pag-IBIG Records</span>
-              <label class="btn-upload-clean">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <polyline points="18 15 12 9 6 15"></polyline>
-                </svg>
-                <span data-doc-label="government_records">Upload File</span>
-                <input type="file" data-doc-type="government_records" accept=".pdf,.jpg,.jpeg,.png" hidden onchange="handleDocFileSelected(this)" />
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- FOOTER ACTIONS -->
-        <div class="wizard-footer-actions">
-          <button type="button" class="btn btn-outline-gray" onclick="closeOnboardingModal()">Cancel</button>
-          <button type="submit" class="btn-create-profile">Create Profile & Issue Credentials</button>
-        </div>
-      </form>
+      <p id="employeeDocumentsMessage" role="status" aria-live="polite"></p>
+      <div id="employeeDocumentsList" class="employee-documents-list"></div>
+      <input id="employeeDocumentFile" type="file" accept=".pdf,.jpg,.jpeg,.png" hidden>
     </div>
   </div>
 
@@ -3136,11 +2950,11 @@
   <!-- Toast Container -->
   <div id="toastContainer" class="toast-stack"></div>
 
-  <script src="{% static 'js/dashboard.js' %}?v=6.0"></script>
+  <script src="{% static 'js/dashboard.js' %}?v=6.2"></script>
   <script>
     if (typeof switchView === 'undefined') {
       const relPrefix = window.location.protocol === 'file:' ? '../../../' : '/';
-      document.write('<script src="' + relPrefix + 'static/js/dashboard.js?v=6.0"><\/script>');
+      document.write('<script src="' + relPrefix + 'static/js/dashboard.js?v=6.2"><\/script>');
     }
   </script>
   <script>

@@ -255,12 +255,15 @@ class PageViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Kumon EMS")
         self.assertContains(response, "view-dashboard")
+        self.assertContains(response, "/static/js/dashboard.js?v=6.2")
 
     def test_login_view_renders_successfully(self):
         response = self.client.get("/login/")
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Sign In to Portal")
-        self.assertContains(response, "Complete Registration")
+        self.assertContains(response, "First-time employee? New staff login")
+        self.assertNotContains(response, "Create account / Sign up")
+        self.assertContains(response, "/static/js/dashboard.js?v=6.2")
 
     def test_hr_login_and_dashboard_are_separate(self):
         response = self.client.get("/hr/login/")

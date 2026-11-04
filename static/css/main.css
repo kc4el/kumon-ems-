@@ -2463,6 +2463,74 @@ html[data-theme="dark"] .theme-toggle-icon--moon,
   gap: 10px;
 }
 
+.employee-documents-card {
+  width: 760px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.employee-documents-list {
+  display: grid;
+  gap: 12px;
+}
+
+.employee-document-category {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+}
+
+.employee-document-category h4 {
+  margin: 0;
+}
+
+.employee-document-empty {
+  margin: 0;
+}
+
+.employee-document-item {
+  padding: 14px;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+}
+
+.employee-document-item-head,
+.employee-document-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.employee-document-editor,
+.employee-document-upload-form {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--card-border);
+}
+
+.employee-document-editor[hidden] {
+  display: none;
+}
+
+.employee-document-editor .modal-foot {
+  margin-top: 12px;
+}
+
+.employee-document-link {
+  overflow-wrap: anywhere;
+}
+
+.employee-document-danger {
+  color: #b91c1c;
+}
+
+[data-theme="dark"] .employee-document-item {
+  background-color: #182334;
+}
+
 /* Onboarding tour bubble: modal-card look, docked bottom-right */
 #tourBubble {
   position: fixed;
@@ -4183,6 +4251,38 @@ html[data-theme="dark"] .theme-toggle-icon--moon,
 
 .penpot-link-coral:hover {
   text-decoration: underline;
+}
+
+.auth-first-time {
+  margin-top: 24px;
+  padding: 18px 0 0;
+  border-top: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.auth-first-time summary {
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-first-time > p {
+  color: #64748b;
+  font-size: 13px;
+  margin: 12px 0 18px;
+}
+
+.auth-first-time .penpot-form-group {
+  margin-bottom: 14px;
+}
+
+.auth-first-time button[type="submit"] {
+  margin-top: 4px;
+}
+
+.auth-hr-link {
+  margin-top: 22px;
 }
 
 .penpot-btn-primary-navy {
@@ -9403,7 +9503,7 @@ html[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--moon,
 }
 
 /* ==========================================================================
-   Authentication Pages Dark Mode (.penpot-auth-card, login & signup)
+   Authentication Pages Dark Mode (.penpot-auth-card)
    ========================================================================== */
 [data-theme="dark"] .auth-page-body {
   background-color: #0b111e !important;
@@ -9489,6 +9589,18 @@ html[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--moon,
   color: #fda4af !important;
 }
 
+[data-theme="dark"] .auth-first-time {
+  border-color: #334155;
+}
+
+[data-theme="dark"] .auth-first-time summary {
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .auth-first-time > p {
+  color: #94a3b8;
+}
+
 [data-theme="dark"] .penpot-btn-primary-navy {
   background-color: #0284c7 !important;
   border-color: #0284c7 !important;
@@ -9546,4 +9658,3 @@ html[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--moon,
 [data-theme="dark"] .account-kicker {
   color: #38bdf8 !important;
 }
-

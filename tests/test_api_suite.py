@@ -1118,17 +1118,12 @@ class LeaveValidatorTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
 
-class AnonymousSignupTests(TestCase):
-    def test_password_signup_sends_supabase_confirmation_and_disables_local_login(self):
-        from types import SimpleNamespace
+class EmployeeProvisioningAccessTests(TestCase):
+    def test_anonymous_employee_creation_is_forbidden(self):
         from unittest.mock import patch as mock_patch
 
-        user_id = "55555555-5555-4555-8555-555555555555"
         client = APIClient()
         with mock_patch("core.views.supabase") as supabase:
-            supabase.auth.sign_up.return_value = SimpleNamespace(
-                user=SimpleNamespace(id=user_id)
-            )
             response = client.post(
                 "/api/employees/",
                 {
@@ -1141,14 +1136,10 @@ class AnonymousSignupTests(TestCase):
                 HTTP_HOST="testserver",
             )
 
-        self.assertEqual(response.status_code, 202)
-        supabase.auth.sign_up.assert_called_once()
-        signup_options = supabase.auth.sign_up.call_args.args[0]
-        self.assertEqual(
-            signup_options["options"]["email_redirect_to"],
-            "http://testserver/auth/confirm/",
-        )
-        self.assertFalse(User.objects.get(email="signup@example.com").is_active)
+        self.assertEqual(response.status_code, 403)
+        supabase.auth.admin.create_user.assert_not_called()
+        self.assertFalse(Employee.objects.filter(email="signup@example.com").exists())
+        self.assertFalse(User.objects.filter(email="signup@example.com").exists())
 
     def test_confirmed_supabase_email_activates_matching_local_account(self):
         from types import SimpleNamespace
@@ -1216,8 +1207,7 @@ class AnonymousSignupTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertFalse(User.objects.get(email="signup@example.com").is_active)
 
-    def test_password_signup_links_an_existing_unclaimed_employee(self):
-        from types import SimpleNamespace
+    def test_anonymous_cannot_claim_an_existing_employee(self):
         from unittest.mock import patch as mock_patch
 
         employee = Employee.objects.create(
@@ -1225,9 +1215,6 @@ class AnonymousSignupTests(TestCase):
         )
         client = APIClient()
         with mock_patch("core.views.supabase") as supabase:
-            supabase.auth.sign_up.return_value = SimpleNamespace(
-                user=SimpleNamespace(id="77777777-7777-4777-8777-777777777777")
-            )
             response = client.post(
                 "/api/employees/",
                 {
@@ -1240,14 +1227,13 @@ class AnonymousSignupTests(TestCase):
                 HTTP_HOST="testserver",
             )
 
-        self.assertEqual(response.status_code, 202)
+        self.assertEqual(response.status_code, 403)
+        supabase.auth.admin.create_user.assert_not_called()
         self.assertEqual(Employee.objects.filter(email="signup@example.com").count(), 1)
         employee.refresh_from_db()
-        self.assertEqual(employee.user.email, "signup@example.com")
-        self.assertFalse(employee.user.is_active)
+        self.assertIsNone(employee.user)
 
-    def test_anon_known_and_unknown_email_get_identical_response(self):
-        from types import SimpleNamespace
+    def test_anonymous_cannot_create_known_or_unknown_employee(self):
         from unittest.mock import patch as mock_patch
 
         Employee.objects.create(
@@ -1255,9 +1241,6 @@ class AnonymousSignupTests(TestCase):
         )
         anon = APIClient()
         with mock_patch("core.views.supabase") as supabase:
-            supabase.auth.admin.create_user.return_value = SimpleNamespace(
-                user=SimpleNamespace(id="55555555-5555-4555-8555-555555555555")
-            )
             new_resp = anon.post(
                 "/api/employees/",
                 {
@@ -1276,35 +1259,10 @@ class AnonymousSignupTests(TestCase):
                 },
                 format="json",
             )
-        self.assertEqual(new_resp.status_code, 202)
-        self.assertEqual(known_resp.status_code, 202)
-        self.assertEqual(new_resp.json(), known_resp.json())
-        self.assertTrue(Employee.objects.filter(email="brandnew@example.com").exists())
-
-    def test_anon_role_is_stripped_and_active_forced(self):
-        from types import SimpleNamespace
-        from unittest.mock import patch as mock_patch
-
-        anon = APIClient()
-        with mock_patch("core.views.supabase") as supabase:
-            supabase.auth.admin.create_user.return_value = SimpleNamespace(
-                user=SimpleNamespace(id="66666666-6666-4666-8666-666666666666")
-            )
-            response = anon.post(
-                "/api/employees/",
-                {
-                    "first_name": "Sneaky",
-                    "last_name": "Admin",
-                    "email": "sneaky@example.com",
-                    "role": "Admin",
-                    "is_active": False,
-                },
-                format="json",
-            )
-        self.assertEqual(response.status_code, 202)
-        emp = Employee.objects.get(email="sneaky@example.com")
-        self.assertNotEqual(emp.role, "Admin")
-        self.assertTrue(emp.is_active)
+        self.assertEqual(new_resp.status_code, 403)
+        self.assertEqual(known_resp.status_code, 403)
+        supabase.auth.admin.create_user.assert_not_called()
+        self.assertFalse(Employee.objects.filter(email="brandnew@example.com").exists())
 
     def test_authed_duplicate_still_409(self):
         staff = User.objects.create_user(
@@ -1459,6 +1417,41 @@ class SessionAuthTests(TestCase):
         response = anon.post(
             "/api/session-login/",
             {"username": "sess", "password": "wrong"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_session_login_accepts_active_employee_id(self):
+        user = User.objects.create_user(username="employee-login", password="right")
+        Employee.objects.create(
+            first_name="Emp",
+            last_name="Id",
+            email="emp-id@example.com",
+            employee_id="EMP-2026-1234",
+            user=user,
+        )
+        response = APIClient().post(
+            "/api/session-login/",
+            {"username": "EMP-2026-1234", "password": "right"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200, response.json())
+        self.assertEqual(response.json()["next_url"], "/employee/")
+
+    def test_session_login_does_not_accept_pending_employee_id(self):
+        user = User.objects.create_user(username="pending-employee", password="right")
+        Employee.objects.create(
+            first_name="Pending",
+            last_name="Employee",
+            email="pending@example.com",
+            employee_id="EMP-2026-1235",
+            status=Employee.OnboardingStatus.PENDING_ONBOARDING,
+            force_password_change=True,
+            user=user,
+        )
+        response = APIClient().post(
+            "/api/session-login/",
+            {"username": "EMP-2026-1235", "password": "right"},
             format="json",
         )
         self.assertEqual(response.status_code, 401)

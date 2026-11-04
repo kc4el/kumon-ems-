@@ -24,14 +24,19 @@ This is the Django equivalent of Supabase RLS: the browser only calls same-origi
 | Employee directory | `GET /api/employees/`, `GET /api/departments/` | Renders live expandable employee cards and supports search/filtering. |
 | Attendance overview | `GET /api/attendance/` | Renders the latest attendance records on the dashboard. |
 | Leave register | `GET /api/leaves/` | Renders current leave applications with employee context. |
-| Employee onboarding | `POST /api/employees/` | Creates an employee profile from the onboarding form. |
+| New hire onboarding | `POST /api/hr/employees/onboard/` | HR-only creation of a new employee, unique `EMP-YYYY-XXXX` ID, and one-time Argon2id-hashed temporary password. Credentials are returned once with `Cache-Control: no-store`; existing employees cannot be selected for regeneration. |
+| First-time account activation | `POST /api/auth/employee-login` | The single-use HR credential activates the account, becomes its initial password, and opens the employee portal. |
+| Employee documents | `GET/POST /api/onboarding-docs/`, `GET/PATCH/DELETE /api/onboarding-docs/<uuid>/`, `GET /api/onboarding-docs/<uuid>/download/` | HR can view, add, replace, reclassify, and delete employee files from the roster profile. Employees can view and download only their own files; download links are authenticated rather than direct media URLs. |
 | Leave application | `POST /api/leaves/` | Submits a pending leave request from the modal form. |
 
 ### Auth contract
 
 - Browser dashboard (`static/js/dashboard.js`, via `apiFetch`) uses **session auth + CSRF**: sign in with `POST /api/session-login/`; accounts with 2FA complete `POST /api/session-verify-2fa/` before receiving a session. Sign out with `POST /api/session-logout/`.
+- The login page has three HR-managed paths: Employee ID/linked-email plus password for returning staff; a collapsible first-time form for HR-issued Employee ID and temporary password; and a separate HR login. Google sign-in is disabled. The legacy `POST /api/employees/` endpoint remains HR-only; anonymous self-registration is disabled.
 - Scripts/operator use uses tokens: `POST /api/auth-token/` (`{"username", "password"}`; add `code` for accounts with 2FA → `{"token"}`), then `Authorization: Token <token>`.
 - Authenticator setup is available from **My account** (`/api/settings/2fa/setup/`, `/confirm/`, `/disable/`). Recovery codes are shown once, stored as hashes, and consumed individually. Configure a stable `MFA_ENCRYPTION_KEY` for deployments; otherwise the key derives from Django's `SECRET_KEY`, so rotating that key makes saved authenticators unreadable.
+- HR can open **Employee Management → Onboard New Employee** to create a new-hire record and issue credentials as one operation. The temporary password appears only in the one-time handover modal, expires in 24 hours, and becomes the employee's initial password at first sign-in. Existing employee records cannot be selected for credential regeneration. Employees can change their password later in account settings. Linking a Google account is optional in employee account settings; OAuth uses authorization-code exchange, verified Google ID tokens, session-bound state, and nonce validation.
+- To enable optional Google account linking, configure a Google OAuth Web application and register `/api/auth/google/callback/`. Set `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, and `GOOGLE_OAUTH_REDIRECT_URI` in the server environment. Optionally set `GOOGLE_OAUTH_ALLOWED_DOMAIN` to require a verified corporate email domain; production callback URLs must use HTTPS.
 - Logged-out rule: everything returns `403` except the public `GET /api/dashboard-summary/` aggregate.
 
 ### Error envelope
@@ -79,24 +84,14 @@ SUPABASE_DB_URL=postgresql://postgres.<project-ref>:<password>@<pooler-host>:543
 # Generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 # Keep this value stable across deployments and Django SECRET_KEY rotations.
 MFA_ENCRYPTION_KEY=replace-with-a-generated-fernet-key
+GOOGLE_OAUTH_CLIENT_ID=replace-with-google-oauth-client-id
+GOOGLE_OAUTH_CLIENT_SECRET=replace-with-google-oauth-client-secret
+GOOGLE_OAUTH_REDIRECT_URI=https://ems.example.com/api/auth/google/callback/
+# Optional; leave empty to allow any Google email verified by Google.
+GOOGLE_OAUTH_ALLOWED_DOMAIN=example.com
 ```
 
 `SUPABASE_DB_URL` makes Django use Supabase Postgres as its primary database. Keep the database password private and URL-encode reserved characters. Existing `DB_HOST`/`DB_NAME`/`DB_USER`/`DB_PASSWORD` settings remain supported; without either configuration, local development uses SQLite.
-
-### Supabase sign-up email confirmation
-
-Anonymous sign-up sends the password and email to Supabase Auth. The local Django
-account stays inactive until the user follows the Supabase confirmation link and
-returns to `/auth/confirm/`.
-
-In Supabase, enable email confirmations under **Authentication > Providers > Email**.
-Under **Authentication > URL Configuration**, allow the callback URL for each
-environment (for local development, `http://127.0.0.1:8000/auth/confirm/`) and
-set the appropriate Site URL. Configure custom SMTP under **Authentication >
-SMTP Settings** for reliable delivery to addresses outside the Supabase team;
-the built-in mail service is limited and rate-limited. Keep the default
-confirmation email template using `{{ .ConfirmationURL }}` so Supabase can
-verify the address and redirect back to the application.
 
 ## Project structure
 

@@ -10,7 +10,6 @@ from django.contrib.sessions.models import Session
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, models, transaction
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -41,6 +40,7 @@ from .models import (
     LeaveRequest,
     Message,
     Notification,
+    OAuthLink,
     OvertimeSlip,
     PayrollItem,
     PayrollRun,
@@ -94,13 +94,6 @@ from .mfa import (
 from .throttles import MfaSessionThrottle, SessionLoginThrottle
 
 logger = logging.getLogger(__name__)
-
-# Anonymous signup response: identical whether the email was new or already
-# registered, so the endpoint cannot be used as an account-existence oracle.
-SIGNUP_NEUTRAL_MESSAGE = (
-    "Request received. If this email is new, an employee record will be created."
-)
-
 
 def _request_owner(request):
     """The Employee row behind the request user, or None."""
@@ -180,7 +173,7 @@ def _is_hr_user(user):
 
 
 def _authenticate_login(request, identifier, password):
-    """Authenticate by a unique Django username or account email."""
+    """Authenticate by a unique username, active employee ID, or email."""
     identifier = str(identifier or "").strip()
     user = User.objects.filter(username=identifier, is_active=True).first()
     if user is None:
@@ -195,6 +188,19 @@ def _authenticate_login(request, identifier, password):
         )
         if len(email_matches) == 1:
             user = email_matches[0]
+    if user is None:
+        employee_matches = list(
+            Employee.objects.filter(
+                employee_id__iexact=identifier,
+                is_active=True,
+                status=Employee.OnboardingStatus.ACTIVE,
+                force_password_change=False,
+                user__is_active=True,
+            )
+            .select_related("user")[:2]
+        )
+        if len(employee_matches) == 1:
+            user = employee_matches[0].user
     if user is None:
         return None
     return authenticate(request, username=user.username, password=password)
@@ -251,7 +257,7 @@ def hr_dashboard_view(request):
         # sending it to employee login makes the HR link appear broken.
         logout(request)
         return redirect("/hr/login/?next=/hr/")
-    return render(request, "core/index.html")
+    return render(request, "core/index.html", {"show_onboarding_link": True})
 
 
 def get_dm_key(employee_id1, employee_id2):
@@ -479,14 +485,12 @@ class EmployeeListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
             qs = qs.filter(is_active=(active == "true"))
         return qs
 
-    def get_permissions(self):
-        # Self-service signup posts here logged-out; everything else stays
-        # behind the default IsAuthenticated permission.
-        if self.request.method == "POST":
-            return [AllowAny()]
-        return super().get_permissions()
-
     def post(self, request, *args, **kwargs):
+        if not is_staff_or_hr(request.user):
+            return Response(
+                {"error": "Only HR staff can create employee records."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         payload = request.data.copy()
         email = str(payload.get("email", "")).strip()
         if not email:
@@ -494,18 +498,6 @@ class EmployeeListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
                 {"error": "An employee email address is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        anonymous = not request.user.is_authenticated
-        if not anonymous and not is_staff_or_hr(request.user):
-            return Response(
-                {"error": "Only HR staff can create employee records."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-        if anonymous:
-            # Anonymous signup cannot set privileged fields: strip role-like
-            # input and force the active default.
-            payload.pop("role", None)
-            payload.pop("date_hired", None)
-            payload["is_active"] = True
         password = str(payload.get("password", "") or "")
         if password:
             from django.contrib.auth.password_validation import validate_password
@@ -518,83 +510,39 @@ class EmployeeListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
         existing_employee = Employee.objects.filter(email__iexact=email).first()
-        can_claim_employee = bool(
-            anonymous
-            and password
-            and existing_employee is not None
-            and existing_employee.is_active
-            and existing_employee.user_id is None
-            and not User.objects.filter(email__iexact=email).exists()
-        )
-        serializer = self.get_serializer(
-            existing_employee if can_claim_employee else None,
-            data=payload,
-        )
+        serializer = self.get_serializer(data=payload)
         try:
             serializer.is_valid(raise_exception=True)
         except DRFValidationError as exc:
             return Response({"error": exc.detail}, status=status.HTTP_400_BAD_REQUEST)
         if existing_employee is not None:
-            if anonymous and not can_claim_employee:
-                return Response(
-                    {"message": SIGNUP_NEUTRAL_MESSAGE},
-                    status=status.HTTP_202_ACCEPTED,
-                )
-            if not anonymous:
-                return Response(
-                    {"error": "An employee with this email already exists."},
-                    status=status.HTTP_409_CONFLICT,
-                )
+            return Response(
+                {"error": "An employee with this email already exists."},
+                status=status.HTTP_409_CONFLICT,
+            )
         created_user_id = None
         try:
             with transaction.atomic():
                 record_id = str(uuid.uuid4())
-                if anonymous and password:
-                    auth_response = supabase.auth.sign_up(
-                        {
-                            "email": email,
-                            "password": password,
-                            "options": {
-                                "email_redirect_to": request.build_absolute_uri(
-                                    reverse("email-confirmation-page")
-                                ),
-                                "data": {
-                                    "first_name": payload.get("first_name", ""),
-                                    "last_name": payload.get("last_name", ""),
-                                },
-                            },
-                        }
-                    )
-                else:
-                    auth_response = supabase.auth.admin.create_user(
-                        {
-                            "id": record_id,
-                            "email": email,
-                            "email_confirm": True,
-                            **({"password": password} if password else {}),
-                            "user_metadata": {
-                                "first_name": payload.get("first_name", ""),
-                                "last_name": payload.get("last_name", ""),
-                            },
-                        }
-                    )
+                auth_response = supabase.auth.admin.create_user(
+                    {
+                        "id": record_id,
+                        "email": email,
+                        "email_confirm": True,
+                        **({"password": password} if password else {}),
+                        "user_metadata": {
+                            "first_name": payload.get("first_name", ""),
+                            "last_name": payload.get("last_name", ""),
+                        },
+                    }
+                )
                 if not getattr(auth_response, "user", None):
                     return Response(
-                        {"message": SIGNUP_NEUTRAL_MESSAGE},
-                        status=status.HTTP_202_ACCEPTED,
-                    )
-                identities = getattr(auth_response.user, "identities", None)
-                if anonymous and password and identities is not None and not identities:
-                    return Response(
-                        {"message": SIGNUP_NEUTRAL_MESSAGE},
-                        status=status.HTTP_202_ACCEPTED,
+                        {"error": "Unable to create employee upstream. Try again later."},
+                        status=status.HTTP_502_BAD_GATEWAY,
                     )
                 created_user_id = str(auth_response.user.id)
-                employee = (
-                    existing_employee
-                    if existing_employee is not None
-                    else serializer.save(id=created_user_id)
-                )
+                employee = serializer.save(id=created_user_id)
                 if password:
                     django_user = User.objects.create_user(
                         username=email,
@@ -602,23 +550,12 @@ class EmployeeListCreateView(OwnerQuerysetMixin, generics.ListCreateAPIView):
                         password=password,
                         first_name=payload.get("first_name", ""),
                         last_name=payload.get("last_name", ""),
-                        is_active=not anonymous,
                     )
                     employee.user = django_user
                     employee.save(update_fields=["user"])
-            if anonymous:
-                return Response(
-                    {"message": SIGNUP_NEUTRAL_MESSAGE},
-                    status=status.HTTP_202_ACCEPTED,
-                )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except IntegrityError:
             logger.warning(f"Duplicate employee race for {email}")
-            if anonymous:
-                return Response(
-                    {"message": SIGNUP_NEUTRAL_MESSAGE},
-                    status=status.HTTP_202_ACCEPTED,
-                )
             return Response(
                 {"error": "An employee with this email already exists."},
                 status=status.HTTP_409_CONFLICT,
@@ -2202,6 +2139,15 @@ class MySettingsView(APIView):
         s = _get_user_setting(request.user)
         data = UserSettingSerializer(s).data
         data["profile"] = self._profile_payload(request.user)
+        google_link = OAuthLink.objects.filter(
+            employee__user=request.user,
+            provider=OAuthLink.Provider.GOOGLE,
+            email_verified=True,
+        ).first()
+        data["google_account"] = {
+            "linked": google_link is not None,
+            "email": google_link.email if google_link else "",
+        }
         data["two_factor_enabled"] = AuthenticatorDevice.objects.filter(
             user=request.user, is_confirmed=True
         ).exists()

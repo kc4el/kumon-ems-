@@ -97,6 +97,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "core.middleware.OnboardingAccessMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -134,6 +135,14 @@ USE_SQLITE = os.getenv("USE_SQLITE", "true").strip().lower() in {
     "on",
 }
 
+
+def _database_connection_max_age(host):
+    configured_age = os.getenv("DB_CONN_MAX_AGE")
+    if configured_age is not None:
+        return int(configured_age)
+    return 0 if host.endswith(".pooler.supabase.com") else 60
+
+
 if DATABASE_URL:
     parsed_database_url = urlsplit(DATABASE_URL)
     if parsed_database_url.scheme not in {"postgres", "postgresql"}:
@@ -166,7 +175,7 @@ if DATABASE_URL:
             "PASSWORD": database_password,
             "HOST": database_host,
             "PORT": database_port,
-            "CONN_MAX_AGE": int(os.getenv("DB_CONN_MAX_AGE", "60")),
+            "CONN_MAX_AGE": _database_connection_max_age(database_host),
             "CONN_HEALTH_CHECKS": True,
             "OPTIONS": database_options,
         }
@@ -188,7 +197,7 @@ else:
             "PASSWORD": os.getenv("DB_PASSWORD", ""),
             "HOST": database_host,
             "PORT": os.getenv("DB_PORT", "5432"),
-            "CONN_MAX_AGE": int(os.getenv("DB_CONN_MAX_AGE", "60")),
+            "CONN_MAX_AGE": _database_connection_max_age(database_host),
             "CONN_HEALTH_CHECKS": True,
             "OPTIONS": {
                 "sslmode": "require"
@@ -213,6 +222,20 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.ScryptPasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+    "django.contrib.auth.hashers.BCryptPasswordHasher",
+]
+
+GOOGLE_OAUTH_CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID", "")
+GOOGLE_OAUTH_CLIENT_SECRET = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET", "")
+GOOGLE_OAUTH_REDIRECT_URI = os.getenv("GOOGLE_OAUTH_REDIRECT_URI", "")
+GOOGLE_OAUTH_ALLOWED_DOMAIN = os.getenv("GOOGLE_OAUTH_ALLOWED_DOMAIN", "").strip().lower()
 
 
 # Internationalization
@@ -274,6 +297,8 @@ REST_FRAMEWORK = {
         "user": "1000/day",
         "login": "10/minute",
         "mfa": "5/minute",
+        "onboarding_login": "5/minute",
+        "onboarding_generate": "5/hour",
     },
     "EXCEPTION_HANDLER": "core.exception_handler.api_errors",
 }

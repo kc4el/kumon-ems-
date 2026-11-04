@@ -12,6 +12,7 @@ from core.views import (
     hr_login_view,
     login_view,
 )
+from core.views_onboarding import hr_onboarding_view, onboarding_login_view, onboarding_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -24,7 +25,10 @@ urlpatterns = [
     ),
     path("hr/login/", hr_login_view, name="hr-login"),
     path("hr/", hr_dashboard_view, name="hr-dashboard"),
+    path("hr/onboarding/", hr_onboarding_view, name="hr-onboarding"),
     path("employee/", employee_portal_view, name="employee-portal"),
+    path("onboarding/login/", onboarding_login_view, name="onboarding-login"),
+    path("onboarding/", onboarding_view, name="onboarding"),
     path("signup/", RedirectView.as_view(url="/login/", permanent=False)),
     path("auth/", RedirectView.as_view(url="/login/", permanent=False)),
     path("core/", include("core.urls")),

@@ -61,9 +61,17 @@ from core.views import (
 )
 from core.views_docs import (
     ClaimDecisionView,
+    OnboardingDocumentDetailView,
+    OnboardingDocumentDownloadView,
     OnboardingDocumentListCreateView,
     SalaryAdvanceDetailView,
     SalaryAdvanceListCreateView,
+)
+from core.views_onboarding import (
+    EmployeeCredentialLoginView,
+    GoogleOAuthCallbackView,
+    GoogleOAuthStartView,
+    OnboardEmployeeView,
 )
 from core.views_import import import_urls
 from core.views_actions import action_urls
@@ -225,6 +233,33 @@ urlpatterns = [
     path("logs/", EmployeeAuditLogListView.as_view(), name="logs-alias"),
     path("auth-token/", MfaAwareAuthTokenView.as_view(), name="api-token"),
     path("session-login/", SessionLoginView.as_view(), name="session-login"),
+    path(
+        "auth/employee-login/",
+        EmployeeCredentialLoginView.as_view(),
+        name="employee-credential-login",
+    ),
+    path(
+        "auth/employee-login",
+        EmployeeCredentialLoginView.as_view(),
+        name="employee-credential-login-no-slash",
+    ),
+    path("hr/employees/onboard/", OnboardEmployeeView.as_view(), name="hr-employee-onboard"),
+    path(
+        "auth/google/link/",
+        GoogleOAuthStartView.as_view(),
+        name="google-oauth-link",
+    ),
+    path("auth/google/link", GoogleOAuthStartView.as_view(), name="google-oauth-link-no-slash"),
+    path(
+        "auth/google/callback/",
+        GoogleOAuthCallbackView.as_view(),
+        name="google-oauth-callback",
+    ),
+    path(
+        "auth/google/callback",
+        GoogleOAuthCallbackView.as_view(),
+        name="google-oauth-callback-no-slash",
+    ),
     path("hr-session-login/", HrSessionLoginView.as_view(), name="hr-session-login"),
     path("session-verify-2fa/", SessionTwoFactorView.as_view(), name="session-verify-2fa"),
     path("session-cancel-2fa/", SessionCancelTwoFactorView.as_view(), name="session-cancel-2fa"),
@@ -275,6 +310,16 @@ urlpatterns = [
         "onboarding-docs/",
         OnboardingDocumentListCreateView.as_view(),
         name="onboarding-doc-list-create",
+    ),
+    path(
+        "onboarding-docs/<uuid:pk>/",
+        OnboardingDocumentDetailView.as_view(),
+        name="onboarding-doc-detail",
+    ),
+    path(
+        "onboarding-docs/<uuid:pk>/download/",
+        OnboardingDocumentDownloadView.as_view(),
+        name="onboarding-doc-download",
     ),
     path(
         "advances/",

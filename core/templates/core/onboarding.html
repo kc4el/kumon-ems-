@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Employee Portal | Kumon EMS</title>
+  <style>
+    body { font: 16px/1.5 system-ui, sans-serif; background: #f4f6fa; color: #17243b; }
+    main { max-width: 560px; margin: 10vh auto; padding: 32px; background: #fff; border-radius: 12px; }
+    a.button { display: inline-block; padding: 12px 18px; background: #17345b; color: white; border-radius: 6px; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Your employee portal is ready</h1>
+    <p>Google account linking is optional. You can connect an account later from your profile settings.</p>
+    <a class="button" href="/employee/">Go to employee portal</a>
+    <button id="sign-out" type="button">Sign out</button>
+    <p id="sign-out-error" role="alert"></p>
+  </main>
+  <script>
+    document.getElementById('sign-out').addEventListener('click', async () => {
+      const csrf = document.cookie.split('; ').find((part) => part.startsWith('csrftoken='))?.split('=')[1] || '';
+      try {
+        const response = await fetch('/api/session-logout/', {
+          method: 'POST', credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+          body: '{}'
+        });
+        if (!response.ok) throw new Error('Sign-out failed. Please retry.');
+        window.location.assign('/login/');
+      } catch (error) {
+        document.getElementById('sign-out-error').textContent = 'Sign-out failed. Please retry.';
+      }
+    });
+  </script>
+</body>
+</html>
