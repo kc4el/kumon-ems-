@@ -537,6 +537,21 @@ html[data-theme="dark"] .theme-toggle-icon--moon,
   margin-bottom: 24px;
 }
 
+.employee-manage-subnav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.employee-manage-subnav-row .employee-onboarding-link {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: max-content;
+  max-width: 100%;
+  text-decoration: none;
+}
+
 .pill-tabs-container {
   display: inline-flex;
   background-color: #ffffff;
@@ -5110,6 +5125,20 @@ html[data-theme="dark"] .theme-toggle-icon--moon,
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+  }
+
+  .employee-manage-subnav-row {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
+  .employee-manage-subnav-row .pill-tabs-container {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .employee-onboarding-link {
+    margin-left: auto;
   }
 
   .penpot-subnav-row::-webkit-scrollbar {

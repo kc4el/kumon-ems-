@@ -532,13 +532,10 @@
           <h1 class="penpot-page-heading">Employee Management</h1>
           <p class="penpot-page-sub">Onboard new hires, manage internal promotions & department transfers, and process
             employee offboarding.</p>
-          {% if show_onboarding_link %}
-          <a class="penpot-btn-primary-navy" href="/hr/onboarding/" style="display:inline-block;width:auto;text-decoration:none;margin-top:12px;">Add / Onboard New Employee</a>
-          {% endif %}
         </div>
 
         <!-- Subnav Pill Tabs -->
-        <div class="penpot-subnav-row">
+        <div class="penpot-subnav-row employee-manage-subnav-row">
           <div class="pill-tabs-container">
             <button class="tab-pill" onclick="switchView('employee-directory')">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -565,6 +562,9 @@
               <span>Grievance Tracker</span>
             </button>
           </div>
+          {% if show_onboarding_link %}
+          <a class="penpot-btn-primary-navy employee-onboarding-link" href="/hr/onboarding/">Add / Onboard New Employee</a>
+          {% endif %}
         </div>
 
         <!-- Promote / Transfer Switchable Card -->
@@ -915,16 +915,6 @@
           </div>
         </div>
 
-        <!-- Dedicated Onboard Action Row below the white box -->
-        <div class="onboard-bottom-row">
-          <a class="btn-onboard-dedicated" href="/hr/onboarding/">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <span>Onboard New Employee</span>
-          </a>
-        </div>
       </section>
 
       <!-- ======================================================================

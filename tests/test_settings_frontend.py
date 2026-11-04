@@ -141,6 +141,8 @@ class Round7UxCopyTests(SimpleTestCase):
         self.assertNotIn("onboardingModal", dashboard)
         self.assertIn('href="/hr/onboarding/"', dashboard)
         self.assertIn("Add / Onboard New Employee", dashboard)
+        self.assertEqual(dashboard.count("Add / Onboard New Employee"), 1)
+        self.assertIn('class="penpot-subnav-row employee-manage-subnav-row"', dashboard)
 
     def test_hr_handover_is_created_only_from_the_new_hire_form(self):
         template = (REPO / "core" / "templates" / "core" / "hr_onboarding.html").read_text(
