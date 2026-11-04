@@ -52,6 +52,11 @@
         btn.title = title;
         btn.setAttribute('aria-label', title);
       });
+
+      var themeSwitch = document.getElementById('settingsThemeSwitch');
+      var themeText = document.getElementById('settingsThemeText');
+      if (themeSwitch) themeSwitch.checked = isDark;
+      if (themeText) themeText.textContent = isDark ? 'Dark Mode' : 'Light Mode';
     }
 
     window.toggleTheme = toggleTheme;
@@ -77,7 +82,7 @@
   </script>
   <style>
     :root {
-      /* Brand palette directly aligned with main.css */
+      /* Kumon EMS Brand Palette (Light Mode) */
       --employee-navy: #0f172a;
       --employee-navy-dark: var(--sidebar-active-pill, #136d94);
       --employee-blue: var(--sidebar-bg, #1989b9);
@@ -87,7 +92,76 @@
       --employee-line: var(--card-border, #e6ecf5);
       --employee-muted: var(--text-muted, #64748b);
       --employee-card-bg: var(--card-bg, #ffffff);
+      --employee-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
       --employee-accent: var(--brand-orange, #f59e0b);
+
+      /* Input controls */
+      --employee-input-bg: #ffffff;
+      --employee-input-border: #cbd5e1;
+      --employee-input-color: #0f172a;
+      --employee-input-placeholder: #94a3b8;
+      --employee-input-focus-border: #0284c7;
+      --employee-input-focus-ring: rgba(2, 132, 199, 0.15);
+      --employee-select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='m3 6 5 5 5-5'/%3E%3C/svg%3E");
+
+      /* Action buttons */
+      --employee-primary-btn-bg: #0284c7;
+      --employee-primary-btn-hover: #0369a1;
+      --employee-primary-btn-text: #ffffff;
+      --employee-primary-btn-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+
+      /* Navigation Bars */
+      --employee-top-nav-bg: rgba(255, 255, 255, 0.95);
+      --employee-bottom-nav-bg: rgba(255, 255, 255, 0.96);
+
+      /* Secondary / outline buttons */
+      --employee-secondary-btn-bg: #ffffff;
+      --employee-secondary-btn-border: #cbd5e1;
+      --employee-secondary-btn-color: #334155;
+      --employee-secondary-btn-hover-bg: #f8fafc;
+    }
+
+    html[data-theme="dark"],
+    [data-theme="dark"] {
+      /* Kumon EMS Brand Palette (Original Dark Mode) */
+      --employee-navy: #f8fafc;
+      --employee-navy-dark: #38bdf8;
+      --employee-blue: #38bdf8;
+      --employee-blue-hover: #7dd3fc;
+      --employee-blue-active: #0284c7;
+      --employee-canvas: #0f172a;
+      --employee-line: #334155;
+      --employee-muted: #94a3b8;
+      --employee-card-bg: #1e293b;
+      --employee-card-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.35);
+      --employee-accent: #fbbf24;
+
+      /* Navigation Bars */
+      --employee-top-nav-bg: rgba(15, 23, 42, 0.95);
+      --employee-bottom-nav-bg: rgba(15, 23, 42, 0.96);
+
+      /* Input controls */
+      --employee-input-bg: #0b111e;
+      --employee-input-border: #334155;
+      --employee-input-color: #f8fafc;
+      --employee-input-placeholder: #64748b;
+      --employee-input-focus-border: #38bdf8;
+      --employee-input-focus-ring: rgba(56, 189, 248, 0.2);
+      --employee-select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='m3 6 5 5 5-5'/%3E%3C/svg%3E");
+
+      /* Action buttons (Kumon EMS dark mode #0284c7) */
+      --employee-primary-btn-bg: #0284c7;
+      --employee-primary-btn-hover: #0369a1;
+      --employee-primary-btn-text: #ffffff;
+      --employee-primary-btn-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+
+      /* Secondary / outline buttons */
+      --employee-secondary-btn-bg: #1e293b;
+      --employee-secondary-btn-border: #334155;
+      --employee-secondary-btn-color: #cbd5e1;
+      --employee-secondary-btn-hover-bg: #273549;
+
+      color-scheme: dark;
     }
 
     html {
@@ -98,7 +172,7 @@
     body.portal-header {
       min-height: 100vh;
       background: var(--employee-canvas);
-      color: #334155;
+      color: var(--employee-navy);
       font-family: var(--font-family, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
       margin: 0;
       padding: 0;
@@ -107,7 +181,14 @@
     .employee-shell {
       max-width: 1040px;
       margin: 0 auto;
-      padding: 24px 20px calc(88px + env(safe-area-inset-bottom, 16px));
+      padding: 16px 16px calc(96px + env(safe-area-inset-bottom, 20px));
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    /* Completely eliminate header & text bloat on mobile / portal */
+    .employee-top {
+      display: none !important;
     }
 
     .employee-top {
@@ -161,6 +242,679 @@
       letter-spacing: .02em;
     }
 
+    /* Sticky Top App Bar: Compact height (h-14 / 56px) */
+    .portal-top-nav {
+      position: sticky;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: var(--employee-top-nav-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--employee-line);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      padding: 0 16px;
+      box-sizing: border-box;
+      width: 100%;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .portal-top-nav-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 1040px;
+    }
+
+    .portal-top-nav-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    /* Left avatar button: Only the avatar circle icon is the interactive button */
+    .portal-top-nav .portal-avatar-btn {
+      display: inline-flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 36px !important;
+      min-width: 36px !important;
+      height: 36px !important;
+      min-height: 36px !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: none !important;
+      background: transparent !important;
+      border-radius: 50% !important;
+      cursor: pointer;
+      box-shadow: none !important;
+      outline: none;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    .portal-avatar-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1989b9 0%, #0284c7 100%);
+      color: #ffffff;
+      font-weight: 750;
+      font-size: 14.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.28);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    /* Hover effect ONLY on the avatar icon, NOT on the greeting text */
+    .portal-avatar-btn:hover .portal-avatar-circle {
+      transform: scale(1.08);
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.3), 0 2px 8px rgba(2, 132, 199, 0.4);
+    }
+
+    .portal-avatar-btn.active .portal-avatar-circle {
+      box-shadow: 0 0 0 3px #0284c7, 0 3px 10px rgba(2, 132, 199, 0.45);
+    }
+
+    /* Greeting text stays beside the icon and NEVER disappears on smaller screens */
+    .portal-greeting-text {
+      font-size: 14.5px;
+      font-weight: 500;
+      color: var(--employee-navy, #0f172a);
+      white-space: nowrap !important;
+      display: inline-flex !important;
+      align-items: center;
+      line-height: 1;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .portal-greeting-text strong {
+      font-weight: 750;
+      color: var(--employee-navy, #0f172a);
+      margin-left: 3px;
+    }
+
+    /* Right side: Mode switch and settings only, clean balanced spacing */
+    .portal-top-nav-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .portal-top-nav .portal-icon-btn {
+      width: 38px !important;
+      min-width: 38px !important;
+      height: 38px !important;
+      min-height: 38px !important;
+      padding: 0 !important;
+      display: inline-flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 8px !important;
+      background: var(--employee-card-bg) !important;
+      border: 1.5px solid var(--employee-line) !important;
+      color: var(--employee-navy) !important;
+      cursor: pointer;
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+      text-decoration: none;
+      box-sizing: border-box;
+      box-shadow: none;
+      user-select: none;
+      outline: none;
+    }
+
+    .portal-top-nav .portal-icon-btn svg {
+      width: 19px;
+      height: 19px;
+      stroke: currentColor;
+      flex-shrink: 0;
+      transition: stroke 0.15s ease;
+    }
+
+    .portal-top-nav .portal-icon-btn:hover {
+      background: var(--employee-secondary-btn-hover-bg) !important;
+      border-color: var(--employee-blue) !important;
+      color: var(--employee-blue) !important;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+
+    .portal-top-nav .portal-icon-btn.active {
+      background: var(--employee-primary-btn-bg) !important;
+      border-color: var(--employee-primary-btn-bg) !important;
+      color: #ffffff !important;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.28);
+    }
+
+    .portal-top-nav .portal-icon-btn.active svg {
+      stroke: #ffffff;
+    }
+
+    /* Portal Theme Toggle Button */
+    .portal-theme-toggle {
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      border-radius: 8px;
+      background: var(--employee-card-bg);
+      border: 1.5px solid var(--employee-line);
+      color: var(--employee-navy);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 600;
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+      user-select: none;
+      box-sizing: border-box;
+      white-space: nowrap;
+      outline: none;
+    }
+
+    .portal-theme-toggle:hover {
+      background: var(--employee-secondary-btn-hover-bg);
+      border-color: var(--employee-blue);
+      color: var(--employee-blue);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+
+    .portal-theme-icon-box {
+      position: relative;
+      width: 18px;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #f59e0b;
+      transition: transform 0.3s cubic-bezier(.2, .75, .25, 1);
+    }
+
+    .portal-theme-toggle:hover .portal-theme-icon-box {
+      transform: rotate(15deg);
+    }
+
+    .portal-theme-icon-box .theme-toggle-icon {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      transform-origin: center;
+      transition: opacity 0.25s ease-in-out, transform 0.3s cubic-bezier(.2, .75, .25, 1);
+      stroke: currentColor;
+    }
+
+    .portal-theme-icon-box .theme-toggle-icon--sun {
+      display: block !important;
+      opacity: 1 !important;
+      transform: rotate(0deg) scale(1) !important;
+    }
+
+    .portal-theme-icon-box .theme-toggle-icon--moon {
+      display: none !important;
+      opacity: 0 !important;
+      transform: rotate(-65deg) scale(.55) !important;
+    }
+
+    html[data-theme="dark"] .portal-theme-icon-box,
+    [data-theme="dark"] .portal-theme-icon-box {
+      color: #38bdf8 !important;
+    }
+
+    html[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--sun,
+    [data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--sun {
+      display: none !important;
+      opacity: 0 !important;
+      transform: rotate(65deg) scale(.55) !important;
+    }
+
+    html[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--moon,
+    [data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--moon {
+      display: block !important;
+      opacity: 1 !important;
+      transform: rotate(0deg) scale(1) !important;
+    }
+
+    .portal-theme-label {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    @media (max-width: 640px) {
+      .portal-theme-label {
+        display: none;
+      }
+      .portal-theme-toggle {
+        padding: 0 10px;
+      }
+    }
+
+    /* Unified Clock-In Hero Card & Attendance Styles */
+    .attendance-panel-clean {
+      padding: 0 !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    .clockin-hero-card {
+      background: var(--employee-card-bg);
+      border: 1.5px solid var(--employee-line);
+      border-radius: 18px;
+      padding: 22px 20px;
+      box-shadow: var(--employee-card-shadow);
+      margin-bottom: 20px;
+      box-sizing: border-box;
+      width: 100%;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .clockin-hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .clockin-time-block {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .clockin-time-label {
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--employee-blue, #1989b9);
+    }
+
+    .clockin-time-display {
+      font-size: 36px;
+      line-height: 1.1;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--employee-navy, #0f172a);
+      font-variant-numeric: tabular-nums;
+      margin-top: 4px;
+    }
+
+    .clockin-date-display {
+      font-size: 13.5px;
+      color: var(--employee-muted, #64748b);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* Shift State Pill */
+    .shift-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .shift-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .shift-pill--ready {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+
+    .shift-pill--ready .shift-dot {
+      background: #3b82f6;
+    }
+
+    .shift-pill--in {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+    }
+
+    .shift-pill--in .shift-dot {
+      background: #10b981;
+      animation: pulseShiftDot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    .shift-pill--complete {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+
+    .shift-pill--complete .shift-dot {
+      background: #94a3b8;
+    }
+
+    @keyframes pulseShiftDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .clockin-hero-note {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--employee-line, #f1f5f9);
+      color: #475569;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    /* Action Row (Side-by-side, min h-12 / 48px touch target) */
+    .clockin-actions-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      width: 100%;
+    }
+
+    .btn-clockin-primary,
+    .btn-clockin-secondary {
+      flex: 1;
+      min-height: 48px;
+      border-radius: 12px;
+      font-size: 14.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      box-sizing: border-box;
+      transition: all 0.15s ease;
+      user-select: none;
+      text-decoration: none;
+    }
+
+    .btn-clockin-primary {
+      background: #0284c7;
+      color: #ffffff;
+      border: 1px solid #0284c7;
+      box-shadow: 0 3px 12px rgba(2, 132, 199, 0.25);
+    }
+
+    .btn-clockin-primary:hover {
+      background: #0369a1;
+      border-color: #0369a1;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+    }
+
+    .btn-clockin-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-clockin-secondary {
+      background: var(--employee-secondary-btn-bg);
+      color: var(--employee-secondary-btn-color);
+      border: 1.5px solid var(--employee-secondary-btn-border);
+    }
+
+    .btn-clockin-secondary:hover {
+      background: var(--employee-secondary-btn-hover-bg);
+      border-color: var(--employee-blue);
+      color: var(--employee-blue);
+      transform: translateY(-1px);
+    }
+
+    .btn-clockin-secondary:active {
+      transform: translateY(0);
+    }
+
+    /* Status Alert Banner */
+    .employee-status-banner {
+      margin-top: 14px;
+      border-radius: 11px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 550;
+      line-height: 1.45;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .employee-status-banner.is-error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+    }
+
+    .employee-status-banner.is-success {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+    }
+
+    .employee-status-banner .banner-icon {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Attendance Records Section */
+    .attendance-records-section {
+      margin-top: 24px;
+    }
+
+    .attendance-records-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 0 2px;
+    }
+
+    .attendance-records-title-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .attendance-records-title {
+      font-size: 16px;
+      font-weight: 750;
+      color: var(--employee-navy, #0f172a);
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+
+    .attendance-count-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--employee-blue, #1989b9);
+      background: rgba(25, 137, 185, 0.1);
+      padding: 2.5px 7px;
+      border-radius: 6px;
+    }
+
+    .attendance-subtitle {
+      font-size: 12.5px;
+      color: var(--employee-muted, #64748b);
+    }
+
+    .attendance-records-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .attendance-card-item {
+      background: var(--employee-card-bg, #ffffff);
+      border: 1px solid var(--employee-line, #e2e8f0);
+      border-radius: 14px;
+      padding: 13px 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.03);
+      transition: all 0.15s ease;
+    }
+
+    .attendance-card-item.is-active-shift {
+      border-color: #0284c7;
+      box-shadow: 0 0 0 1px #0284c7, 0 3px 10px rgba(2, 132, 199, 0.12);
+    }
+
+    .attendance-card-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .attendance-card-date-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .attendance-card-day {
+      font-size: 14px;
+      font-weight: 750;
+      color: var(--employee-navy, #0f172a);
+      line-height: 1.2;
+    }
+
+    .attendance-card-date {
+      font-size: 12px;
+      color: var(--employee-muted, #64748b);
+      margin-top: 2px;
+    }
+
+    .attendance-card-chips {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .attendance-time-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 8px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 650;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .attendance-time-chip.chip-in {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #d1fae5;
+    }
+
+    .attendance-time-chip.chip-out {
+      background: #f8fafc;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+
+    .attendance-time-chip .chip-label {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      opacity: 0.75;
+    }
+
+    .attendance-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 8px;
+      border-top: 1px solid var(--employee-line, #f1f5f9);
+    }
+
+    .attendance-duration-label {
+      font-size: 11.5px;
+      color: var(--employee-muted, #64748b);
+    }
+
+    .attendance-duration-badge {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--employee-navy, #0f172a);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .attendance-duration-badge.badge-active {
+      color: #0284c7;
+      font-weight: 750;
+    }
+
+    .attendance-empty-card {
+      background: var(--employee-card-bg, #ffffff);
+      border: 1.5px dashed var(--employee-line, #e2e8f0);
+      border-radius: 14px;
+      padding: 30px 16px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .attendance-empty-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #f0f9ff;
+      color: #0284c7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 4px;
+    }
+
+    .attendance-empty-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--employee-navy, #0f172a);
+    }
+
+    .attendance-empty-text {
+      font-size: 12.5px;
+      color: var(--employee-muted, #64748b);
+      max-width: 250px;
+      line-height: 1.4;
+    }
+
+    .attendance-loading-placeholder {
+      padding: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--employee-muted, #64748b);
+    }
+
     /* Fixed Bottom Navigation Bar */
     .portal-bottom-nav {
       position: fixed;
@@ -168,21 +922,22 @@
       left: 0;
       right: 0;
       height: 68px;
-      background: rgba(255, 255, 255, 0.96);
+      background: var(--employee-bottom-nav-bg);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border-top: 1px solid var(--employee-line);
-      box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
       display: flex;
       justify-content: center;
       align-items: center;
       z-index: 1000;
       padding: 0 8px env(safe-area-inset-bottom, 0px);
+      transition: background-color 0.2s ease, border-color 0.2s ease;
     }
 
     .portal-bottom-nav-inner {
       display: grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       width: 100%;
       max-width: 1040px;
       gap: 4px;
@@ -194,7 +949,7 @@
       display: none;
     }
 
-    .portal-tab {
+    .portal-bottom-nav .portal-tab {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -218,7 +973,7 @@
       box-sizing: border-box;
     }
 
-    .portal-tab span {
+    .portal-bottom-nav .portal-tab span {
       display: block;
       max-width: 100%;
       overflow: hidden;
@@ -227,7 +982,7 @@
       text-align: center;
     }
 
-    .portal-tab svg {
+    .portal-bottom-nav .portal-tab svg {
       width: 20px;
       height: 20px;
       stroke: currentColor;
@@ -235,19 +990,19 @@
       flex-shrink: 0;
     }
 
-    .portal-tab:hover {
-      color: var(--sidebar-bg, #1989b9);
-      background: rgba(25, 137, 185, 0.08);
+    .portal-bottom-nav .portal-tab:hover {
+      color: var(--employee-blue);
+      background: rgba(2, 132, 199, 0.08);
     }
 
-    .portal-tab.active {
+    .portal-bottom-nav .portal-tab.active {
       color: #ffffff;
-      background: var(--sidebar-bg, #1989b9);
+      background: var(--employee-primary-btn-bg);
       font-weight: 700;
-      box-shadow: 0 2px 8px rgba(25, 137, 185, 0.28);
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
     }
 
-    .portal-tab.active svg {
+    .portal-bottom-nav .portal-tab.active svg {
       stroke: #ffffff;
     }
 
@@ -445,10 +1200,10 @@
       height: 42px;
       min-height: 42px;
       padding: 9px 14px;
-      border: 1px solid var(--card-border, #cbd7e6);
+      border: 1.5px solid var(--employee-input-border);
       border-radius: 8px;
-      color: var(--text-body, #334155);
-      background: #ffffff;
+      color: var(--employee-input-color);
+      background-color: var(--employee-input-bg);
       font: inherit;
       font-size: 14px;
       box-sizing: border-box;
@@ -460,25 +1215,22 @@
       appearance: none;
       -webkit-appearance: none;
       -moz-appearance: none;
-      background-color: #ffffff;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: calc(100% - 14px) center;
-      background-size: 16px 16px;
-      padding: 9px 40px 9px 14px;
+      background-image: var(--employee-select-chevron);
+      background-repeat: no-repeat !important;
+      background-position: right 14px center !important;
+      background-size: 14px 14px !important;
+      padding: 0 38px 0 14px;
+      height: 42px;
+      line-height: 40px;
       cursor: pointer;
-      line-height: 1.4;
-    }
-
-    .employee-form select:focus {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231989b9' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      vertical-align: middle;
     }
 
     .employee-form input:focus,
     .employee-form select:focus,
     .employee-form textarea:focus {
-      border-color: var(--sidebar-bg, #1989b9);
-      box-shadow: 0 0 0 3px rgba(25, 137, 185, 0.18);
+      border-color: var(--employee-input-focus-border);
+      box-shadow: 0 0 0 3px var(--employee-input-focus-ring);
     }
 
     .employee-form textarea {
@@ -498,9 +1250,10 @@
     /* Data Tables */
     .employee-table-wrap {
       overflow-x: auto;
-      border: 1px solid #e2e8f0;
+      border: 1px solid var(--employee-line);
       border-radius: 10px;
-      background: #fff;
+      background: var(--employee-card-bg);
+      box-shadow: var(--employee-card-shadow);
     }
 
     .employee-table {
@@ -513,24 +1266,33 @@
     .employee-table th,
     .employee-table td {
       padding: 12px 14px;
-      border-bottom: 1px solid #edf2f7;
+      border-bottom: 1px solid var(--employee-line);
       text-align: left;
     }
 
     .employee-table th {
-      background: #f8fafc;
-      color: #64748b;
+      background: var(--employee-card-bg);
       font-size: 11px;
-      font-weight: 750;
+      font-weight: 700;
       letter-spacing: .05em;
       text-transform: uppercase;
+      color: var(--employee-muted);
+    }
+
+    .employee-table td {
+      color: var(--employee-navy);
+    }
+
+    .employee-table tr:hover td {
+      background: rgba(2, 132, 199, 0.04);
     }
 
     .employee-table tr:last-child td {
-      border-bottom: 0;
+      border-bottom: none;
     }
 
     .employee-status {
+      display: inline-block;
       min-height: 22px;
       color: #166534;
       font-size: 13px;
@@ -544,10 +1306,11 @@
       align-items: center;
       gap: 20px;
       padding: 20px;
-      background: #f8fbfd;
-      border: 1px solid #dce8ee;
-      border-radius: 12px;
+      background: var(--employee-card-bg);
+      border: 1px solid var(--employee-line);
+      border-radius: 14px;
       margin-bottom: 20px;
+      box-shadow: var(--employee-card-shadow);
     }
 
     .profile-avatar-circle {
@@ -600,13 +1363,14 @@
     }
 
     .leave-stat-pill {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
+      background: var(--employee-card-bg);
+      border: 1px solid var(--employee-line);
+      border-radius: 12px;
       padding: 14px;
       display: flex;
       flex-direction: column;
       gap: 4px;
+      box-shadow: var(--employee-card-shadow);
     }
 
     .leave-stat-pill strong {
@@ -619,10 +1383,11 @@
       justify-content: space-between;
       align-items: center;
       padding: 12px 14px;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
+      border: 1px solid var(--employee-line);
+      border-radius: 10px;
       margin-bottom: 8px;
-      background: #fff;
+      background: var(--employee-card-bg);
+      box-shadow: var(--employee-card-shadow);
     }
 
     .doc-info {
@@ -645,24 +1410,457 @@
     }
 
     /* ==========================================================================
-       Standard Messaging Platform Layout (Channels & Colleague DMs)
+       Segmented Control, Mobile Form Cards, and Request Card Styles
+       ========================================================================== */
+    .mobile-segment-control {
+      display: flex;
+      background: rgba(15, 23, 42, 0.05);
+      padding: 4px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      gap: 4px;
+    }
+
+    .segment-btn {
+      flex: 1;
+      padding: 8px 12px;
+      font-size: 13.5px;
+      font-weight: 650;
+      border-radius: 9px;
+      border: none;
+      background: transparent;
+      color: var(--employee-muted, #64748b);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+
+    .segment-btn:hover {
+      color: var(--employee-navy, #0f172a);
+    }
+
+    .segment-btn.active {
+      background: #ffffff;
+      color: var(--employee-navy, #0f172a);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+      font-weight: 750;
+    }
+
+    .segment-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(25, 137, 185, 0.12);
+      color: var(--sidebar-bg, #1989b9);
+    }
+
+    .segment-btn.active .segment-badge {
+      background: rgba(25, 137, 185, 0.18);
+    }
+
+    .segment-pane {
+      display: none;
+    }
+
+    .segment-pane.active {
+      display: block;
+      animation: fadeInPane 0.2s ease;
+    }
+
+    @keyframes fadeInPane {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .btn-subtab-link {
+      font-size: 12.5px;
+      font-weight: 750;
+      color: #0284c7;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: background 0.15s ease;
+    }
+
+    .btn-subtab-link:hover {
+      background: rgba(2, 132, 199, 0.08);
+    }
+
+    /* Form Cards & Input Components */
+    .portal-card {
+      background: var(--employee-card-bg, #ffffff);
+      border: 1px solid var(--employee-line, #e2e8f0);
+      border-radius: 18px;
+      padding: 22px 20px;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+      margin-bottom: 20px;
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    .portal-card-header {
+      margin-bottom: 18px;
+    }
+
+    .portal-card-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--employee-navy, #0f172a);
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+
+    .portal-card-subtitle {
+      font-size: 13px;
+      color: var(--employee-muted, #64748b);
+      margin-top: 4px;
+      line-height: 1.45;
+    }
+
+    .portal-form-group {
+      margin-bottom: 14px;
+    }
+
+    .portal-label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--employee-navy, #0f172a);
+      margin-bottom: 6px;
+      letter-spacing: 0.01em;
+    }
+
+    .portal-input,
+    .portal-select,
+    .portal-textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1.5px solid var(--employee-input-border);
+      border-radius: 11px;
+      background-color: var(--employee-input-bg);
+      color: var(--employee-input-color);
+      font-family: inherit;
+      font-size: 14px;
+      padding: 10px 14px;
+      transition: all 0.15s ease;
+      outline: none;
+    }
+
+    .portal-input:focus,
+    .portal-select:focus,
+    .portal-textarea:focus {
+      border-color: var(--employee-input-focus-border);
+      box-shadow: 0 0 0 3px var(--employee-input-focus-ring);
+    }
+
+    .portal-select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-image: var(--employee-select-chevron);
+      background-repeat: no-repeat !important;
+      background-position: right 14px center !important;
+      background-size: 14px 14px !important;
+      padding-right: 38px;
+      cursor: pointer;
+    }
+
+    .portal-form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 500px) {
+      .portal-form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .currency-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .currency-symbol {
+      position: absolute;
+      left: 14px;
+      font-size: 15px;
+      font-weight: 750;
+      color: var(--employee-blue, #1989b9);
+      pointer-events: none;
+    }
+
+    .currency-input-wrap input {
+      padding-left: 32px !important;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .btn-primary-cta {
+      width: 100%;
+      min-height: 48px;
+      border-radius: 12px;
+      font-size: 14.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      box-sizing: border-box;
+      background: #0284c7;
+      color: #ffffff;
+      border: 1px solid #0284c7;
+      box-shadow: 0 3px 12px rgba(2, 132, 199, 0.25);
+      transition: all 0.15s ease;
+      margin-top: 18px;
+    }
+
+    .btn-primary-cta:hover {
+      background: #0369a1;
+      border-color: #0369a1;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+    }
+
+    /* Privacy Banner */
+    .privacy-notice-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(2, 132, 199, 0.08);
+      border: 1px solid rgba(2, 132, 199, 0.2);
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+    }
+
+    .privacy-icon {
+      color: #0284c7;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .privacy-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .privacy-title {
+      font-size: 13px;
+      font-weight: 750;
+      color: var(--employee-navy, #0f172a);
+    }
+
+    .privacy-desc {
+      font-size: 11.5px;
+      color: var(--employee-muted, #64748b);
+      margin-top: 2px;
+      line-height: 1.35;
+    }
+
+    /* Request Cards List */
+    .request-card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .request-card-item {
+      background: var(--employee-card-bg, #ffffff);
+      border: 1px solid var(--employee-line, #e2e8f0);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.03);
+      transition: all 0.15s ease;
+    }
+
+    .request-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .request-type-badge {
+      font-size: 12.5px;
+      font-weight: 750;
+      color: #0284c7;
+      background: rgba(2, 132, 199, 0.1);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .request-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+
+    .request-status-pill.status-pending {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+
+    .request-status-pill.status-approved {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+    }
+
+    .request-status-pill.status-rejected {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .request-date-range {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--employee-navy, #0f172a);
+    }
+
+    .request-card-reason {
+      font-size: 12.5px;
+      color: var(--employee-muted, #64748b);
+      background: rgba(15, 23, 42, 0.03);
+      padding: 8px 10px;
+      border-radius: 8px;
+      line-height: 1.4;
+    }
+
+    .advance-amount-display {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--employee-navy, #0f172a);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .advance-terms-chip {
+      font-size: 12px;
+      color: var(--employee-muted, #64748b);
+    }
+
+    .advance-terms-chip strong {
+      color: var(--employee-navy, #0f172a);
+    }
+
+    .complaint-subject-title {
+      font-size: 14.5px;
+      font-weight: 750;
+      color: var(--employee-navy, #0f172a);
+    }
+
+    .complaint-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .complaint-category-chip {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #6366f1;
+      background: rgba(99, 102, 241, 0.1);
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+
+    .complaint-date-label {
+      font-size: 12px;
+      color: var(--employee-muted, #64748b);
+    }
+
+    .request-empty-card {
+      background: var(--employee-card-bg, #ffffff);
+      border: 1.5px dashed var(--employee-line, #e2e8f0);
+      border-radius: 14px;
+      padding: 30px 16px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .request-empty-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #f0f9ff;
+      color: #0284c7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 4px;
+    }
+
+    .request-empty-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--employee-navy, #0f172a);
+    }
+
+    .request-empty-text {
+      font-size: 12.5px;
+      color: var(--employee-muted, #64748b);
+      max-width: 250px;
+      line-height: 1.4;
+    }
+
+    /* ==========================================================================
+       Slack / Discord Mobile Messenger Platform
        ========================================================================== */
     .chat-platform {
       display: grid;
-      grid-template-columns: 290px 1fr;
-      height: 600px;
-      background: #ffffff;
+      grid-template-columns: 310px 1fr;
+      height: calc(100vh - 160px);
+      min-height: 520px;
+      max-height: 720px;
+      background: var(--employee-card-bg);
       border: 1px solid var(--employee-line);
-      border-radius: 14px;
+      border-radius: 18px;
       overflow: hidden;
-      box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05);
+      box-shadow: var(--employee-card-shadow);
       position: relative;
-      margin-bottom: 20px;
     }
 
     .chat-sidebar {
-      background: #f8fafc;
-      border-right: 1px solid #e2e8f0;
+      background: var(--employee-card-bg);
+      border-right: 1px solid var(--employee-line);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -670,18 +1868,33 @@
 
     .chat-sidebar-header {
       padding: 14px 14px 12px;
-      border-bottom: 1px solid #edf2f7;
-      background: #ffffff;
+      border-bottom: 1px solid var(--employee-line);
+      background: var(--employee-card-bg);
     }
 
-    .chat-sidebar-title {
-      font-size: 15px;
+    .chat-platform-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .chat-workspace-name {
+      font-size: 14.5px;
       font-weight: 800;
       color: var(--employee-navy);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+
+    .chat-workspace-pill {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(2, 132, 199, 0.1);
+      color: var(--employee-blue);
     }
 
     .chat-search-wrap {
@@ -690,47 +1903,50 @@
 
     .chat-search-input {
       width: 100%;
-      min-height: 36px;
-      padding: 7px 12px 7px 32px;
+      height: 38px;
+      border-radius: 10px;
+      border: 1.5px solid var(--employee-input-border);
+      background: var(--employee-input-bg);
+      color: var(--employee-input-color);
       font-size: 13px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      background: #f8fafc;
+      padding: 0 12px 0 34px;
       box-sizing: border-box;
       outline: none;
       transition: all 0.15s ease;
     }
 
     .chat-search-input:focus {
-      background: #ffffff;
-      border-color: var(--sidebar-bg, #1989b9);
-      box-shadow: 0 0 0 3px rgba(25, 137, 185, 0.16);
+      background: var(--employee-input-bg);
+      border-color: var(--employee-input-focus-border);
+      box-shadow: 0 0 0 3px var(--employee-input-focus-ring);
     }
 
     .chat-search-icon {
       position: absolute;
-      left: 10px;
+      left: 11px;
       top: 50%;
       transform: translateY(-50%);
-      width: 14px;
-      height: 14px;
-      stroke: #94a3b8;
+      width: 16px;
+      height: 16px;
+      color: var(--employee-muted);
       pointer-events: none;
+      display: block;
+      flex-shrink: 0;
     }
 
     .chat-conv-list {
       flex: 1;
       overflow-y: auto;
-      padding: 8px 6px;
+      padding: 10px 8px;
     }
 
-    .chat-section-title {
-      font-size: 11px;
-      font-weight: 750;
-      color: #94a3b8;
-      letter-spacing: .08em;
+    .chat-section-label {
+      font-size: 10.5px;
+      font-weight: 800;
       text-transform: uppercase;
-      padding: 10px 10px 4px;
+      letter-spacing: 0.06em;
+      color: var(--employee-muted);
+      padding: 10px 8px 4px;
     }
 
     .chat-conv-item {
@@ -738,153 +1954,213 @@
       align-items: center;
       gap: 10px;
       padding: 8px 10px;
-      border-radius: 9px;
+      border-radius: 10px;
       cursor: pointer;
-      transition: background 0.15s ease;
+      transition: background-color 0.15s ease;
       position: relative;
       user-select: none;
+      margin-bottom: 2px;
+      min-height: 54px;
+      box-sizing: border-box;
     }
 
     .chat-conv-item:hover {
-      background: #f1f5f9;
+      background: rgba(2, 132, 199, 0.08);
     }
 
     .chat-conv-item.active {
-      background: #e2e8f0;
+      background: var(--employee-line);
     }
 
-    .chat-conv-item.active .chat-conv-name {
-      font-weight: 750;
-      color: var(--employee-navy);
+    .chat-avatar-wrap {
+      position: relative;
+      flex-shrink: 0;
     }
 
     .chat-avatar {
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--sidebar-active-pill, #136d94), var(--sidebar-bg, #1989b9));
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
       color: #ffffff;
+      font-weight: 750;
+      font-size: 13px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
-      font-weight: 750;
-      flex-shrink: 0;
-      position: relative;
+      box-shadow: 0 1px 4px rgba(2, 132, 199, 0.25);
     }
 
     .chat-avatar.channel-avatar {
-      border-radius: 9px;
-      background: #e0f2fe;
-      color: #0369a1;
+      background: var(--employee-line);
+      color: var(--employee-navy);
       font-size: 15px;
+      font-weight: 800;
+      box-shadow: none;
+    }
+
+    .chat-avatar--hr {
+      background: #fef3c7;
+      color: #b45309;
+    }
+
+    .chat-presence-dot {
+      display: none !important;
     }
 
     .chat-conv-info {
       flex: 1;
       min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
 
-    .chat-conv-name {
-      font-size: 13px;
-      font-weight: 650;
-      color: var(--employee-navy);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .chat-conv-header-line {
       display: flex;
       justify-content: space-between;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .chat-conv-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--employee-navy);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .chat-conv-badge {
+      display: inline-flex;
       align-items: center;
+      justify-content: center;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 5px;
+      border-radius: 8px;
+      background: var(--employee-primary-btn-bg);
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 750;
+    }
+
+    .chat-conv-badge--hr {
+      background: #f59e0b;
+      color: #ffffff;
+    }
+
+    .chat-conv-time {
+      font-size: 11px;
+      color: var(--employee-muted);
     }
 
     .chat-conv-preview {
       font-size: 12px;
-      color: #64748b;
-      white-space: nowrap;
+      color: var(--employee-muted);
       overflow: hidden;
       text-overflow: ellipsis;
-      margin-top: 2px;
+      white-space: nowrap;
     }
 
-    /* Right Main Chat Area */
+    .chat-empty-contacts {
+      padding: 16px;
+      font-size: 12.5px;
+      color: var(--employee-muted);
+      text-align: center;
+    }
+
+    /* Main Chat Area */
     .chat-main {
       display: flex;
       flex-direction: column;
-      height: 100%;
-      background: #ffffff;
-      position: relative;
+      background: var(--employee-canvas);
+      overflow: hidden;
     }
 
     .chat-header {
-      padding: 12px 18px;
-      border-bottom: 1px solid #e2e8f0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #ffffff;
-      min-height: 60px;
-      box-sizing: border-box;
-    }
-
-    .chat-header-user {
       display: flex;
       align-items: center;
       gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--employee-line);
+      background: var(--employee-card-bg);
+      min-height: 58px;
+      box-sizing: border-box;
     }
 
     .chat-back-btn {
       display: none;
-      background: none;
-      border: 0;
-      padding: 6px;
-      margin-right: -4px;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--employee-line);
+      background: var(--employee-card-bg);
+      color: var(--employee-navy);
       cursor: pointer;
-      color: #475569;
-      border-radius: 6px;
+      padding: 0;
     }
 
     .chat-back-btn:hover {
-      background: #f1f5f9;
+      background: var(--employee-secondary-btn-hover-bg);
+      color: var(--employee-blue);
+      border-color: var(--employee-blue);
+    }
+
+    .chat-header-details {
+      flex: 1;
+      min-width: 0;
     }
 
     .chat-header-name {
-      font-size: 15px;
+      font-size: 14.5px;
       font-weight: 800;
       color: var(--employee-navy);
-      line-height: 1.2;
+      margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .chat-header-meta {
       font-size: 12px;
       color: var(--employee-muted);
-      margin-top: 2px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      margin-top: 1px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .chat-messages {
       flex: 1;
       overflow-y: auto;
-      padding: 18px 20px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      background: #fcfdfd;
+      gap: 12px;
+      background: var(--employee-canvas);
     }
 
     .chat-empty-state {
-      margin: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
       text-align: center;
-      color: #94a3b8;
-      padding: 40px 20px;
+      color: var(--employee-muted);
+      padding: 24px;
     }
 
     .chat-empty-icon {
       width: 44px;
       height: 44px;
-      margin-bottom: 8px;
-      stroke: #cbd5e1;
+      margin-bottom: 12px;
+      opacity: 0.5;
+      color: var(--employee-muted);
     }
 
     .message-row {
@@ -903,67 +2179,70 @@
     }
 
     .msg-avatar {
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
-      background: #cbd5e1;
-      color: #1e293b;
+      background: var(--employee-line);
+      color: var(--employee-navy);
       font-size: 11px;
-      font-weight: 750;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      margin-top: 2px;
+    }
+
+    .message-bubble-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .message-sender {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--employee-muted);
     }
 
     .message-bubble {
       padding: 10px 14px;
-      border-radius: 12px;
-      font-size: 14px;
+      border-radius: 14px;
+      font-size: 13.5px;
       line-height: 1.45;
-      position: relative;
       word-break: break-word;
     }
 
-    .message-row.incoming .message-bubble {
-      background: #f1f5f9;
-      color: #1e293b;
-      border-bottom-left-radius: 3px;
-    }
-
     .message-row.outgoing .message-bubble {
-      background: var(--sidebar-bg, #1989b9);
+      background: var(--employee-primary-btn-bg);
       color: #ffffff;
-      border-bottom-right-radius: 3px;
+      border-bottom-right-radius: 4px;
     }
 
-    .msg-sender-name {
-      font-size: 11px;
-      font-weight: 750;
-      margin-bottom: 3px;
-      color: var(--employee-blue);
+    .message-row.incoming .message-bubble {
+      background: var(--employee-card-bg);
+      color: var(--employee-navy);
+      border: 1px solid var(--employee-line);
+      border-bottom-left-radius: 4px;
     }
 
-    .message-row.outgoing .msg-sender-name {
-      display: none;
+    .message-time {
+      font-size: 10.5px;
+      color: var(--employee-muted);
+      margin-top: 2px;
+      align-self: flex-start;
     }
 
-    .msg-time {
-      font-size: 10px;
-      margin-top: 4px;
-      opacity: 0.75;
-      display: block;
-      text-align: right;
+    .message-row.outgoing .message-time {
+      align-self: flex-end;
     }
 
     .chat-composer {
-      padding: 12px 16px;
-      border-top: 1px solid #e2e8f0;
-      background: #ffffff;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      padding: 10px 14px;
+      border-top: 1px solid var(--employee-line);
+      background: var(--employee-card-bg);
     }
 
     .chat-composer-input {
@@ -971,12 +2250,12 @@
       min-height: 42px;
       max-height: 100px;
       padding: 10px 14px;
-      border: 1px solid #cbd5e1;
-      border-radius: 9px;
-      font: inherit;
-      font-size: 14px;
-      color: #1e293b;
-      background: #f8fafc;
+      border-radius: 12px;
+      border: 1.5px solid var(--employee-input-border);
+      background: var(--employee-input-bg);
+      color: var(--employee-input-color);
+      font-size: 13.5px;
+      font-family: inherit;
       outline: none;
       resize: none;
       box-sizing: border-box;
@@ -984,40 +2263,37 @@
     }
 
     .chat-composer-input:focus {
-      background: #ffffff;
-      border-color: var(--sidebar-bg, #1989b9);
-      box-shadow: 0 0 0 3px rgba(25, 137, 185, 0.16);
+      background: var(--employee-input-bg);
+      border-color: var(--employee-input-focus-border);
+      box-shadow: 0 0 0 3px var(--employee-input-focus-ring);
     }
 
     .chat-send-btn {
       width: 42px;
       height: 42px;
-      border-radius: 9px;
-      background: var(--sidebar-bg, #1989b9);
-      color: #ffffff;
-      border: 0;
+      border-radius: 12px;
+      background: var(--employee-primary-btn-bg);
+      border: 1px solid var(--employee-primary-btn-bg);
+      color: var(--employee-primary-btn-text);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       flex-shrink: 0;
-      transition: background 0.15s ease, transform 0.1s ease;
+      transition: all 0.15s ease;
     }
 
     .chat-send-btn:hover {
-      background: #147098;
-    }
-
-    .chat-send-btn:active {
-      transform: scale(0.96);
-      background: #105979;
+      background: var(--employee-primary-btn-hover);
+      transform: scale(1.05);
     }
 
     @media (max-width: 760px) {
       .chat-platform {
-        height: calc(100vh - 210px);
-        min-height: 440px;
+        height: calc(100vh - 190px);
+        min-height: 480px;
         grid-template-columns: 1fr;
+        border-radius: 16px;
       }
 
       .chat-sidebar {
@@ -1040,7 +2316,6 @@
         display: inline-flex;
       }
     }
-
     /* MFA Card components */
     .portal-secret {
       display: block;
@@ -1116,11 +2391,11 @@
 
       .portal-bottom-nav-inner {
         display: grid;
-        grid-template-columns: repeat(7, minmax(0, 1fr));
+        grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 4px;
       }
 
-      .portal-tab {
+      .portal-bottom-nav .portal-tab {
         min-width: 0;
         width: 100%;
         height: 44px;
@@ -1130,12 +2405,12 @@
         justify-content: center;
       }
 
-      /* Hide text labels on small mobile dimensions, keep only icons */
-      .portal-tab span {
+      /* Hide text labels on small mobile dimensions for bottom tabs, keep only icons */
+      .portal-bottom-nav .portal-tab span {
         display: none !important;
       }
 
-      .portal-tab svg {
+      .portal-bottom-nav .portal-tab svg {
         width: 22px;
         height: 22px;
         margin: 0;
@@ -1148,518 +2423,576 @@
     }
 
     /* ==========================================================================
-       Dark Theme Variables & Component Adaptations
+       Dark Theme Component Variations & True Exceptions
        ========================================================================== */
-    html[data-theme="dark"],
-    [data-theme="dark"] {
-      --employee-navy: #f8fafc;
-      --employee-navy-dark: #38bdf8;
-      --employee-blue: #38bdf8;
-      --employee-blue-hover: #7dd3fc;
-      --employee-blue-active: #0284c7;
-      --employee-canvas: #0f172a;
-      --employee-line: #334155;
-      --employee-muted: #94a3b8;
-      --employee-card-bg: #1e293b;
-      --employee-accent: #fbbf24;
-      color-scheme: dark;
+    [data-theme="dark"] option {
+      background-color: #0b111e;
+      color: #f8fafc;
     }
 
-    [data-theme="dark"] body.portal-header {
-      background: var(--employee-canvas);
-      color: #cbd5e1;
+
+
+    [data-theme="dark"] .mobile-segment-control {
+      background: #1e293b;
+      border: 1px solid #334155;
     }
 
-    [data-theme="dark"] .employee-card {
-      background: var(--employee-card-bg);
-      border-color: var(--employee-line);
-      box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.35);
+    [data-theme="dark"] .segment-btn:hover {
+      color: #f8fafc;
     }
 
-    [data-theme="dark"] .attendance-hero {
-      background: linear-gradient(135deg, #182338 0%, #1e293b 80%);
-      border-color: #334155;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-    }
-
-    [data-theme="dark"] .attendance-hero-note {
-      color: #cbd5e1;
-    }
-
-    [data-theme="dark"] .btn-navy-cta {
+    [data-theme="dark"] .segment-btn.active {
       background: #0284c7;
-      border-color: #0284c7;
       color: #ffffff;
-      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
     }
 
-    [data-theme="dark"] .btn-navy-cta:hover {
-      background: #0369a1;
-      border-color: #0369a1;
-      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.45);
-    }
-
-    [data-theme="dark"] .btn-outline-gray {
-      background: rgba(56, 189, 248, 0.08);
+    [data-theme="dark"] .currency-symbol {
       color: #38bdf8;
+    }
+
+    [data-theme="dark"] .attendance-card-item.is-active-shift {
       border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
     }
 
-    [data-theme="dark"] .btn-outline-gray:hover {
-      background: #38bdf8;
-      color: #0f172a;
-      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
+    [data-theme="dark"] .attendance-time-chip.chip-in {
+      background: rgba(34, 197, 94, 0.1);
+      border-color: rgba(34, 197, 94, 0.25);
+    }
+    [data-theme="dark"] .attendance-time-chip.chip-in .chip-label {
+      color: #4ade80;
+    }
+    [data-theme="dark"] .attendance-time-chip.chip-in .chip-val {
+      color: #f8fafc;
     }
 
-    [data-theme="dark"] .employee-session-badge {
-      background: rgba(34, 197, 94, 0.16);
+    [data-theme="dark"] .attendance-time-chip.chip-out {
+      background: rgba(148, 163, 184, 0.08);
+      border-color: rgba(148, 163, 184, 0.2);
+    }
+    [data-theme="dark"] .attendance-time-chip.chip-out .chip-label {
+      color: #94a3b8;
+    }
+    [data-theme="dark"] .attendance-time-chip.chip-out .chip-val {
+      color: #f8fafc;
+    }
+
+    [data-theme="dark"] .shift-pill--ready {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+    [data-theme="dark"] .shift-pill--in {
+      background: rgba(34, 197, 94, 0.15);
       color: #4ade80;
       border: 1px solid rgba(34, 197, 94, 0.3);
     }
-
-    [data-theme="dark"] .employee-form {
-      background: #151e2e;
-      border-color: #334155;
-    }
-
-    [data-theme="dark"] .employee-form label {
-      color: #cbd5e1;
-    }
-
-    [data-theme="dark"] .employee-form input,
-    [data-theme="dark"] .employee-form textarea {
-      background-color: #0b111e !important;
-      border-color: #334155 !important;
-      color: #f8fafc !important;
-    }
-
-    [data-theme="dark"] .employee-form select {
-      appearance: none !important;
-      -webkit-appearance: none !important;
-      -moz-appearance: none !important;
-      background-color: #0b111e !important;
-      border-color: #334155 !important;
-      color: #f8fafc !important;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
-      background-repeat: no-repeat !important;
-      background-position: calc(100% - 14px) center !important;
-      background-size: 16px 16px !important;
-      padding: 9px 40px 9px 14px !important;
-    }
-
-    [data-theme="dark"] .employee-form select option {
-      background-color: #0f172a;
-      color: #f8fafc;
-    }
-
-    [data-theme="dark"] .employee-form input:focus,
-    [data-theme="dark"] .employee-form textarea:focus {
-      border-color: #38bdf8 !important;
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2) !important;
-    }
-
-    [data-theme="dark"] .employee-form select:focus {
-      background-color: #131c2e !important;
-      border-color: #38bdf8 !important;
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2) !important;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
-      background-repeat: no-repeat !important;
-      background-position: calc(100% - 14px) center !important;
-      background-size: 16px 16px !important;
-    }
-
-    [data-theme="dark"] .employee-table-wrap {
-      background: #1e293b;
-      border-color: #334155;
-    }
-
-    [data-theme="dark"] .employee-table th {
-      background: #141e30;
+    [data-theme="dark"] .shift-pill--complete {
+      background: rgba(148, 163, 184, 0.15);
       color: #94a3b8;
-      border-bottom-color: #334155;
+      border: 1px solid rgba(148, 163, 184, 0.3);
     }
 
-    [data-theme="dark"] .employee-table td {
-      border-bottom-color: #334155;
-      color: #cbd5e1;
+    [data-theme="dark"] .request-status-pill.status-pending {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    [data-theme="dark"] .request-status-pill.status-approved {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    [data-theme="dark"] .request-status-pill.status-rejected {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
-    [data-theme="dark"] .employee-table tr:hover td {
-      background: rgba(255, 255, 255, 0.03);
+    [data-theme="dark"] .privacy-notice-badge {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
     }
-
-    [data-theme="dark"] .employee-status {
-      color: #4ade80;
-    }
-
-    [data-theme="dark"] .profile-hero {
-      background: #151e2e;
-      border-color: #334155;
-    }
-
-    [data-theme="dark"] .leave-stat-pill {
-      background: #151e2e;
-      border-color: #334155;
-    }
-
-    [data-theme="dark"] .leave-stat-pill strong {
-      color: #f8fafc;
-    }
-
-    [data-theme="dark"] .doc-list-item {
-      background: #151e2e;
-      border-color: #334155;
-      color: #cbd5e1;
-    }
-
-    [data-theme="dark"] .doc-icon {
-      background: rgba(56, 189, 248, 0.15);
-      color: #38bdf8;
-    }
-
-    [data-theme="dark"] .chat-platform {
-      background: #1e293b;
-      border-color: #334155;
-      box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.4);
-    }
-
-    [data-theme="dark"] .chat-sidebar {
-      background: #131c2e;
-      border-right-color: #334155;
-    }
-
-    [data-theme="dark"] .chat-sidebar-header {
-      background: #182338;
-      border-bottom-color: #334155;
-    }
-
-    [data-theme="dark"] .chat-search-input {
-      background: #0f172a;
-      border-color: #334155;
-      color: #f8fafc;
-    }
-
-    [data-theme="dark"] .chat-search-input:focus {
-      background: #0f172a;
-      border-color: #38bdf8;
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
-    }
-
-    [data-theme="dark"] .chat-conv-item:hover {
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    [data-theme="dark"] .chat-conv-item.active {
-      background: #243047;
-    }
-
-    [data-theme="dark"] .chat-conv-preview {
-      color: #94a3b8;
-    }
-
-    [data-theme="dark"] .chat-main {
-      background: #1e293b;
-    }
-
-    [data-theme="dark"] .chat-header {
-      background: #182338;
-      border-bottom-color: #334155;
-    }
-
-    [data-theme="dark"] .chat-back-btn {
-      color: #cbd5e1;
-    }
-
-    [data-theme="dark"] .chat-back-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    [data-theme="dark"] .chat-messages {
-      background: #0f172a;
-    }
-
-    [data-theme="dark"] .chat-empty-state {
-      color: #64748b;
-    }
-
-    [data-theme="dark"] .chat-empty-icon {
-      stroke: #475569;
+    [data-theme="dark"] .privacy-icon {
+      color: #34d399;
     }
 
     [data-theme="dark"] .message-row.incoming .message-bubble {
-      background: #243047;
-      color: #f1f5f9;
-    }
-
-    [data-theme="dark"] .chat-composer {
-      background: #182338;
-      border-top-color: #334155;
-    }
-
-    [data-theme="dark"] .chat-composer-input {
-      background: #0f172a;
-      border-color: #334155;
+      background: #1e293b;
       color: #f8fafc;
+      border: 1px solid #334155;
     }
-
-    [data-theme="dark"] .chat-composer-input:focus {
-      background: #0f172a;
-      border-color: #38bdf8;
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
-    }
-
-    [data-theme="dark"] .msg-avatar {
-      background: #334155;
-      color: #cbd5e1;
-    }
-
-    [data-theme="dark"] .portal-secret {
-      background: rgba(56, 189, 248, 0.12);
-      color: #38bdf8;
-    }
-
-    [data-theme="dark"] .portal-recovery {
-      background: #272010;
-      border-color: #854d0e;
-    }
-
-    [data-theme="dark"] .portal-recovery strong {
-      color: #fef08a;
-    }
-
-    [data-theme="dark"] .portal-recovery p {
-      color: #fde047;
-    }
-
-    [data-theme="dark"] .portal-recovery pre {
-      color: #fef9c3;
-    }
-
-    [data-theme="dark"] .portal-bottom-nav {
-      background: rgba(15, 23, 42, 0.94);
-      border-top-color: #334155;
-      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
-    }
-
-    [data-theme="dark"] .portal-tab {
-      color: #94a3b8;
-    }
-
-    [data-theme="dark"] .portal-tab:hover {
-      color: #38bdf8;
-      background: rgba(56, 189, 248, 0.12);
-    }
-
-    [data-theme="dark"] .portal-tab.active {
-      color: #ffffff;
-      background: #0284c7;
-      box-shadow: 0 2px 10px rgba(2, 132, 199, 0.4);
-    }
-
-    [data-theme="dark"] .chat-avatar.channel-avatar[style*="#fef3c7"] {
-      background: rgba(245, 158, 11, 0.18) !important;
+    [data-theme="dark"] .chat-avatar--hr {
+      background: rgba(245, 158, 11, 0.15) !important;
       color: #fbbf24 !important;
+      border: 1px solid rgba(245, 158, 11, 0.3) !important;
+    }
+    [data-theme="dark"] .chat-presence-dot {
+      border-color: #1e293b;
+    }
+    [data-theme="dark"] .advance-terms-chip,
+    [data-theme="dark"] .complaint-category-chip {
+      background: rgba(255, 255, 255, 0.06);
     }
 
-    [data-theme="dark"] .btn-outline-gray[style*="#b91c1c"] {
-      color: #f87171 !important;
-      border-color: #991b1b !important;
-      background: rgba(239, 68, 68, 0.08) !important;
-    }
-
-    [data-theme="dark"] .btn-outline-gray[style*="#b91c1c"]:hover {
-      background: #dc2626 !important;
-      color: #ffffff !important;
-      border-color: #dc2626 !important;
-    }
-
-    /* ==========================================================================
-       Portal Theme Toggle Switch Button (Light / Dark Mode Switcher)
-       ========================================================================== */
-    .portal-theme-toggle {
-      height: 38px;
-      display: inline-flex;
+    /* ========================================================
+       Account & Settings Sub-view Layout & Header
+       ======================================================== */
+    .portal-top-nav-main-row {
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 9px;
-      padding: 0 14px;
-      border-radius: 8px;
-      background: #ffffff;
-      border: 1.5px solid var(--employee-line, #cbd7e6);
-      color: var(--employee-navy, #0f172a);
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 13.5px;
-      font-weight: 600;
-      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
-      user-select: none;
-      box-sizing: border-box;
-      white-space: nowrap;
+      width: 100%;
     }
 
-    .portal-theme-toggle:hover {
-      background: #f8fafc;
-      border-color: #94a3b8;
-      transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    .portal-top-nav-subview-row {
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
     }
 
-    .portal-theme-icon-box {
-      position: relative;
-      width: 18px;
-      height: 18px;
-      background: transparent;
+    body.in-settings-subview .portal-top-nav-main-row {
+      display: none !important;
+    }
+
+    body.in-settings-subview .portal-top-nav-subview-row {
+      display: flex !important;
+    }
+
+    body.in-settings-subview .portal-bottom-nav {
+      display: none !important;
+    }
+
+    body.in-settings-subview .employee-shell {
+      padding-bottom: 32px !important; /* pb-8 clean scroll padding */
+    }
+
+    .portal-top-nav-subview-left {
       display: flex;
       align-items: center;
+      gap: 12px;
+    }
+
+    .btn-subview-back {
+      display: inline-flex;
+      align-items: center;
       justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      border: 1.5px solid var(--employee-line);
+      background: var(--employee-card-bg);
+      color: var(--employee-navy);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      padding: 0;
+      outline: none;
       flex-shrink: 0;
-      color: #f59e0b;
-      transition: transform 0.34s cubic-bezier(.2, .75, .25, 1);
     }
 
-    .portal-theme-toggle:hover .portal-theme-icon-box {
-      transform: rotate(15deg);
+    .btn-subview-back:hover {
+      background: var(--employee-secondary-btn-hover-bg);
+      border-color: var(--employee-blue);
+      color: var(--employee-blue);
     }
 
-    .portal-theme-icon-box .theme-toggle-icon {
-      position: absolute;
-      inset: 0;
-      margin: auto;
-      transform-origin: center;
-      transition: opacity 0.3s ease-in-out, transform 0.38s cubic-bezier(.2, .75, .25, 1);
-      will-change: opacity, transform;
+    .btn-subview-back:active {
+      transform: scale(0.95);
     }
 
-    .portal-theme-icon-box .theme-toggle-icon--sun {
-      opacity: 1;
-      transform: rotate(0deg) scale(1);
-    }
-
-    .portal-theme-icon-box .theme-toggle-icon--moon {
-      opacity: 0;
-      transform: rotate(-65deg) scale(.55);
-    }
-
-    html[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--sun,
-    [data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--sun {
-      opacity: 0;
-      transform: rotate(65deg) scale(.55);
-    }
-
-    html[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--moon,
-    [data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--moon {
-      opacity: 1;
-      transform: rotate(0deg) scale(1);
-    }
-
-    [data-theme="dark"] .portal-theme-toggle {
-      background: rgba(30, 41, 59, 0.7);
-      border-color: #334155;
-      color: #e2e8f0;
-    }
-
-    [data-theme="dark"] .portal-theme-toggle:hover {
-      background: rgba(51, 65, 85, 0.85);
-      border-color: #475569;
-      color: #ffffff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
-
-    [data-theme="dark"] .portal-theme-icon-box {
-      color: #38bdf8;
-    }
-
-    .portal-theme-label {
-      font-size: 13px;
-      font-weight: 600;
+    .portal-subview-title {
+      font-size: 17.5px;
+      font-weight: 750;
+      color: var(--employee-navy, #0f172a);
+      letter-spacing: -0.01em;
+      margin: 0;
       line-height: 1;
     }
 
-    @media (max-width: 640px) {
-      .portal-theme-label {
-        display: none;
-      }
-      .portal-theme-toggle {
-        padding: 0 10px;
-      }
+
+
+    /* Settings Screen Stack Layout */
+    .settings-subview-container {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      width: 100%;
+    }
+
+    /* Password Input Wrapper with Show/Hide Eye */
+    .password-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .password-input-wrap .portal-input {
+      padding-right: 44px;
+    }
+
+    .btn-pwd-eye {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      padding: 6px;
+      color: var(--employee-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: color 0.15s ease, background-color 0.15s ease;
+      line-height: 1;
+      outline: none;
+    }
+
+    .btn-pwd-eye:hover {
+      color: var(--employee-navy);
+      background-color: var(--employee-secondary-btn-hover-bg);
+    }
+
+    .btn-pwd-eye .eye-hide {
+      display: none;
+    }
+
+    .btn-pwd-eye.is-showing-text .eye-show {
+      display: none;
+    }
+
+    .btn-pwd-eye.is-showing-text .eye-hide {
+      display: inline-block;
+    }
+
+    /* Modern iOS/Android Toggle Switch */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 28px;
+      flex-shrink: 0;
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #cbd5e1;
+      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 28px;
+    }
+
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #ffffff;
+      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background-color: #0284c7;
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before {
+      transform: translateX(20px);
+    }
+
+    .toggle-switch input:focus-visible + .toggle-slider {
+      outline: 2px solid #0284c7;
+      outline-offset: 2px;
+    }
+
+    [data-theme="dark"] .toggle-slider {
+      background-color: #334155;
+    }
+
+    [data-theme="dark"] .toggle-switch input:checked + .toggle-slider {
+      background-color: #38bdf8;
+    }
+
+    [data-theme="dark"] .toggle-slider:before {
+      background-color: #f8fafc;
+    }
+
+    /* iOS/Android Style Grouped List */
+    .settings-grouped-list {
+      display: flex;
+      flex-direction: column;
+      border: 1.5px solid var(--employee-line);
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--employee-card-bg);
+      box-shadow: var(--employee-card-shadow);
+      margin-bottom: 16px;
+    }
+
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--employee-line);
+      gap: 16px;
+    }
+
+    .settings-row:last-child {
+      border-bottom: none;
+    }
+
+    .settings-row-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .settings-row-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--employee-navy);
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    .settings-row-desc {
+      font-size: 12px;
+      color: var(--employee-muted);
+      line-height: 1.35;
+    }
+
+
+
+    .settings-row-action {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .settings-select-compact {
+      width: auto !important;
+      min-width: 125px;
+      padding: 7px 32px 7px 12px !important;
+      font-size: 13px !important;
+      border-radius: 9px !important;
+    }
+
+    /* Destructive Sign Out Button */
+    .btn-danger-destructive {
+      width: 100%;
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 1.5px solid #fca5a5;
+      background: #fef2f2;
+      color: #dc2626;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 14.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      user-select: none;
+      outline: none;
+    }
+
+    .btn-danger-destructive:hover {
+      background: #fee2e2;
+      border-color: #ef4444;
+      color: #b91c1c;
+      box-shadow: 0 2px 10px rgba(239, 68, 68, 0.16);
+    }
+
+    .btn-danger-destructive:active {
+      transform: scale(0.99);
+      background: #fecaca;
+    }
+
+    [data-theme="dark"] .btn-danger-destructive {
+      background: rgba(239, 68, 68, 0.08);
+      border-color: rgba(239, 68, 68, 0.35);
+      color: #f87171;
+    }
+
+    [data-theme="dark"] .btn-danger-destructive:hover {
+      background: rgba(239, 68, 68, 0.16);
+      border-color: #ef4444;
+      color: #fca5a5;
+      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.28);
+    }
+
+    [data-theme="dark"] .btn-danger-destructive:active {
+      background: rgba(239, 68, 68, 0.25);
     }
   </style>
 </head>
 
 <body class="portal-header">
+  <!-- Top App Bar: Compact height (h-14 / 56px) -->
+  <nav class="portal-top-nav" aria-label="Employee portal top navigation">
+    <div class="portal-top-nav-inner">
+      <!-- Main Dashboard Top Bar Row -->
+      <div class="portal-top-nav-main-row" id="topNavMainRow">
+        <div class="portal-top-nav-left">
+          <button type="button" class="portal-tab portal-avatar-btn" data-panel="profilePanel" aria-label="Profile" title="Profile">
+            <div class="portal-avatar-circle" id="portalTopAvatar">
+              {% if employee %}{{ employee.first_name|slice:":1"|upper }}{% else %}A{% endif %}
+            </div>
+          </button>
+          <span class="portal-greeting-text" onclick="switchPortalTab('profilePanel')" title="Profile">Hi, <strong id="portalGreetingName">{% if employee %}{{ employee.first_name }}{% else %}Alex{% endif %}</strong></span>
+        </div>
+
+        <div class="portal-top-nav-right">
+          <button type="button" class="portal-theme-toggle" id="themeToggleBtn" title="Switch to dark mode" aria-label="Switch to dark mode" onclick="toggleTheme()">
+            <span class="portal-theme-icon-box">
+              <svg id="themeIconSun" class="theme-toggle-icon theme-toggle-icon--sun" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+              <svg id="themeIconMoon" class="theme-toggle-icon theme-toggle-icon--moon" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+            </span>
+          </button>
+          <button type="button" class="portal-tab portal-icon-btn" data-panel="settingsPanel" aria-label="Settings" title="Settings">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Dedicated Settings Sub-view Top Bar Row -->
+      <div class="portal-top-nav-subview-row" id="topNavSettingsRow">
+        <div class="portal-top-nav-subview-left">
+          <button type="button" class="btn-subview-back" onclick="closeSettingsSubView()" aria-label="Return to previous screen" title="Back">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+          </button>
+          <span class="portal-subview-title">Account &amp; Settings</span>
+        </div>
+        <div class="portal-top-nav-subview-right">
+          <button type="button" class="portal-theme-toggle" id="themeToggleBtnSub" title="Switch to dark mode" aria-label="Switch to dark mode" onclick="toggleTheme()">
+            <span class="portal-theme-icon-box">
+              <svg class="theme-toggle-icon theme-toggle-icon--sun" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+              <svg class="theme-toggle-icon theme-toggle-icon--moon" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
   <main class="employee-shell">
-    <header class="employee-top">
+    <!-- Preserved for JS fallback & subpageLabel handling, hidden by CSS -->
+    <header class="employee-top" aria-hidden="true">
       <div>
         <div class="employee-kicker">
-          <span style="color:var(--employee-navy); font-weight:750;">Employee Portal</span>
-          <span style="color:#94a3b8; margin: 0 5px;">/</span>
-          <span id="portalSubpageLabel" style="color:var(--employee-blue); font-weight:700;">Attendance</span>
+          <span>Employee Portal</span>
+          <span id="portalSubpageLabel">Attendance</span>
         </div>
         <div class="employee-heading" id="portalGreeting">Your employee portal</div>
-        <div class="employee-subtitle">Manage your attendance, requests, and communications with HR.</div>
-      </div>
-      <div class="employee-session">
-        <button type="button" class="portal-theme-toggle" id="themeToggleBtn" title="Switch to dark mode" aria-label="Switch to dark mode" onclick="toggleTheme()">
-          <span class="portal-theme-icon-box">
-            <svg id="themeIconSun" class="theme-toggle-icon theme-toggle-icon--sun" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
-            <svg id="themeIconMoon" class="theme-toggle-icon theme-toggle-icon--moon" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-            </svg>
-          </span>
-          <span class="portal-theme-label" id="themeToggleLabel">Light mode</span>
-        </button>
-        <button type="button" class="btn btn-outline-gray" onclick="employeeLogout()">Sign out</button>
       </div>
     </header>
 
     <section class="employee-grid">
       <!-- 1. ATTENDANCE PANEL (Default Landing Tab) -->
-      <article class="employee-card portal-panel active" id="attendancePanel">
-        <div class="attendance-hero">
-          <div>
-            <div class="attendance-hero-label">Today at your center</div>
-            <div class="attendance-clock" id="portalClock">--:--</div>
-            <div class="attendance-day" id="portalToday">Loading date…</div>
+      <article class="portal-panel active attendance-panel-clean" id="attendancePanel">
+        <!-- Unified "Clock-In" Hero Card -->
+        <div class="clockin-hero-card">
+          <div class="clockin-hero-top">
+            <div class="clockin-time-block">
+              <span class="clockin-time-label">Center Live Time</span>
+              <div class="clockin-time-display" id="portalClock">--:--</div>
+              <div class="clockin-date-display" id="portalToday">Loading date…</div>
+            </div>
+            <div class="clockin-status-block">
+              <div class="shift-pill shift-pill--ready" id="attendanceShiftBadge">
+                <span class="shift-dot"></span>
+                <span id="attendanceShiftText">Shift Ready</span>
+              </div>
+            </div>
           </div>
-          <div class="attendance-hero-note" id="attendanceHeroNote">Your time log is ready. Clock in when your shift begins.</div>
-        </div>
-        <div class="employee-card-head">
-          <div>
-            <div class="employee-card-label">Daily time log</div>
-            <h2>Attendance logging</h2>
-            <p>Record today's clock-in and clock-out timestamps directly.</p>
+
+          <div class="clockin-hero-note" id="attendanceHeroNote">
+            Your time log is ready. Clock in when your shift begins.
           </div>
+
+          <!-- Action Row (Side-by-side min h-12 / 48px touch targets) -->
+          <div class="clockin-actions-row">
+            <button type="button" class="btn-clockin-primary" onclick="attendanceAction('clock_in')">
+              <span>Clock In</span>
+            </button>
+            <button type="button" class="btn-clockin-secondary" onclick="attendanceAction('clock_out')">
+              <span>Clock Out</span>
+            </button>
+          </div>
+
+          <!-- Alert Slot (Inline banner for throttling or error messages) -->
+          <div id="attendanceStatus" class="employee-status-banner" role="status" style="display: none;"></div>
         </div>
-        <div class="employee-actions">
-          <button type="button" class="btn btn-navy-cta" onclick="attendanceAction('clock_in')">Clock in</button>
-          <button type="button" class="btn btn-outline-gray" onclick="attendanceAction('clock_out')">Clock out</button>
-        </div>
-        <p id="attendanceStatus" class="employee-status" role="status"></p>
-        <div class="employee-table-wrap">
-          <table class="employee-table">
-            <thead>
-              <tr>
-                <th>DATE</th>
-                <th>IN</th>
-                <th>OUT</th>
-              </tr>
-            </thead>
-            <tbody id="attendanceRows">
-              <tr>
-                <td colspan="3">Loading...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+
+        <!-- Attendance Records Section -->
+        <section class="attendance-records-section">
+          <div class="attendance-records-header">
+            <div class="attendance-records-title-group">
+              <h3 class="attendance-records-title">Recent Logs</h3>
+              <span class="attendance-count-badge" id="attendanceCountBadge">History</span>
+            </div>
+            <span class="attendance-subtitle">Your center attendance history</span>
+          </div>
+
+          <!-- Mobile-Optimized Card List View (replaces clipped table) -->
+          <div id="attendanceRows" class="attendance-records-list">
+            <div class="attendance-loading-placeholder">Loading attendance records…</div>
+          </div>
+        </section>
       </article>
 
       <!-- 2. PROFILE PANEL -->
@@ -1829,17 +3162,17 @@
         </div>
       </article>
 
-      <!-- 3. MESSAGES PANEL (Standard Messaging Platform) -->
+      <!-- 3. MESSAGES PANEL (Slack / Discord Style Mobile Messenger) -->
       <article class="portal-panel" id="messagesPanel">
         <div class="chat-platform" id="chatPlatform">
-          <!-- Sidebar: Conversations & Channels -->
+          <!-- Sidebar: Channels & Direct Messages -->
           <aside class="chat-sidebar">
             <div class="chat-sidebar-header">
-              <div class="chat-sidebar-title">
-                <span>Conversations</span>
+              <div class="chat-platform-brand">
+                <span class="chat-workspace-name">Center Workspace</span>
               </div>
               <div class="chat-search-wrap">
-                <svg class="chat-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg class="chat-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="11" cy="11" r="8"></circle>
                   <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
@@ -1848,64 +3181,77 @@
             </div>
 
             <div class="chat-conv-list" id="chatConvList">
-              <div class="chat-section-title">Channels</div>
+              <!-- CHANNELS Section -->
+              <div class="chat-section-label">Channels</div>
               <div class="chat-conv-item active" data-conv-key="announcements" onclick="selectChatConversation('announcements', 'Announcements', 'Center-wide broadcast', '#')">
-                <div class="chat-avatar channel-avatar">#</div>
-                <div class="chat-conv-info">
-                  <div class="chat-conv-name"><span># Announcements</span></div>
-                  <div class="chat-conv-preview">Center-wide staff channel</div>
+                <div class="chat-avatar-wrap">
+                  <div class="chat-avatar channel-avatar">#</div>
                 </div>
-              </div>
-              <div class="chat-conv-item" data-conv-key="{{ hr_conversation_key|escape }}" onclick="selectChatConversation('{{ hr_conversation_key|escapejs }}', 'HR Helpdesk', 'Private channel with HR Support', 'HR')">
-                <div class="chat-avatar channel-avatar" style="background:#fef3c7; color:#92400e;">HR</div>
                 <div class="chat-conv-info">
-                  <div class="chat-conv-name"><span>HR Helpdesk</span></div>
-                  <div class="chat-conv-preview">Direct channel with HR Staff</div>
+                  <div class="chat-conv-header-line">
+                    <span class="chat-conv-title"># announcements</span>
+                  </div>
+                  <div class="chat-conv-preview">Center-wide staff announcements & updates</div>
                 </div>
               </div>
 
-              <div class="chat-section-title" style="margin-top:10px;">Direct Messages</div>
-              <div id="chatEmployeesList">
+              <div class="chat-conv-item" data-conv-key="{{ hr_conversation_key|escape }}" onclick="selectChatConversation('{{ hr_conversation_key|escapejs }}', 'HR Helpdesk', 'Private channel with HR Support', 'HR')">
+                <div class="chat-avatar-wrap">
+                  <div class="chat-avatar channel-avatar chat-avatar--hr">HR</div>
+                </div>
+                <div class="chat-conv-info">
+                  <div class="chat-conv-header-line">
+                    <span class="chat-conv-title">HR Helpdesk</span>
+                  </div>
+                  <div class="chat-conv-preview">Confidential support with HR Staff</div>
+                </div>
+              </div>
+
+              <!-- DIRECT MESSAGES Section -->
+              <div class="chat-section-label" style="margin-top: 14px;">Direct Messages</div>
+              <div id="chatEmployeesList" class="chat-employees-list">
                 {% for col in colleagues %}
                 <div class="chat-conv-item" data-conv-key="{{ col.dm_key }}" onclick="openDirectMessage('{{ col.id }}', '{{ col.full_name|escapejs }}', '{{ col.role|escapejs }}{% if col.department_name %} • {{ col.department_name|escapejs }}{% endif %}')">
-                  <div class="chat-avatar">
-                    {{ col.initials }}
+                  <div class="chat-avatar-wrap">
+                    <div class="chat-avatar">
+                      {{ col.initials }}
+                    </div>
                   </div>
                   <div class="chat-conv-info">
-                    <div class="chat-conv-name">
-                      <span>{{ col.full_name }}</span>
+                    <div class="chat-conv-header-line">
+                      <span class="chat-conv-title">{{ col.full_name }}</span>
                     </div>
                     <div class="chat-conv-preview">{{ col.role }}{% if col.department_name %} • {{ col.department_name }}{% endif %}</div>
                   </div>
                 </div>
                 {% empty %}
-                <div style="padding:12px 10px; color:#94a3b8; font-size:12px;">No colleagues found.</div>
+                <div class="chat-empty-contacts">No colleagues found.</div>
                 {% endfor %}
               </div>
             </div>
           </aside>
 
-          <!-- Main Chat Area -->
+          <!-- Main Chat Window -->
           <section class="chat-main">
             <header class="chat-header">
-              <div class="chat-header-user">
-                <button type="button" class="chat-back-btn" onclick="closeMobileChat()" aria-label="Back to conversations">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                  </svg>
-                </button>
+              <button type="button" class="chat-back-btn" onclick="closeMobileChat()" aria-label="Back to conversations">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="19" y1="12" x2="5" y2="12"></line>
+                  <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+              </button>
+              <div class="chat-avatar-wrap" style="width:36px; height:36px;">
                 <div class="chat-avatar" id="activeChatAvatar">#</div>
-                <div>
-                  <div class="chat-header-name" id="activeChatName">Announcements</div>
-                  <div class="chat-header-meta" id="activeChatMeta">Center-wide staff channel</div>
-                </div>
+              </div>
+              <div class="chat-header-details">
+                <div class="chat-header-name" id="activeChatName">Announcements</div>
+                <div class="chat-header-meta" id="activeChatMeta">Center-wide staff channel</div>
               </div>
             </header>
 
             <div class="chat-messages" id="chatMessagesStream">
               <div class="chat-empty-state">
-                <svg class="chat-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg class="chat-empty-icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
                 <p>Loading conversation messages…</p>
@@ -1913,7 +3259,7 @@
             </div>
 
             <form class="chat-composer" onsubmit="sendChatMessage(event)">
-              <textarea id="chatComposerInput" class="chat-composer-input" placeholder="Type a message… (Press Enter to send)" rows="1" onkeydown="handleChatKeyDown(event)"></textarea>
+              <textarea id="chatComposerInput" class="chat-composer-input" placeholder="Message announcements… (Press Enter to send)" rows="1" onkeydown="handleChatKeyDown(event)"></textarea>
               <button type="submit" class="chat-send-btn" aria-label="Send message" title="Send message">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -1926,293 +3272,497 @@
       </article>
 
       <!-- 4. LEAVE REQUESTS PANEL -->
-      <article class="employee-card portal-panel" id="leavePanel">
-        <div class="employee-card-head">
-          <div>
-            <div class="employee-card-label">Time away</div>
-            <h2>Leave Requests</h2>
-            <p>Submit leave and track Pending, Approved, or Rejected applications.</p>
+      <article class="portal-panel" id="leavePanel">
+        <!-- Top Segmented Control -->
+        <div class="mobile-segment-control" data-for="leave">
+          <button type="button" class="segment-btn active" data-target="apply" onclick="setSegmentTab('leave', 'apply')">Apply Leave</button>
+          <button type="button" class="segment-btn" data-target="history" onclick="setSegmentTab('leave', 'history')">My Requests <span class="segment-badge" id="leaveCountBadge">0</span></button>
+        </div>
+
+        <!-- Segment 1: Apply Leave Form -->
+        <div id="leaveFormSection" class="segment-pane active" data-group="leave" data-pane="apply">
+          <div class="portal-card">
+            <div class="portal-card-header">
+              <h2 class="portal-card-title">Apply for Leave</h2>
+              <div class="portal-card-subtitle">Submit a scheduled time-off request to center management.</div>
+            </div>
+            <div id="leaveActionStatus" class="employee-status-banner" role="status" style="display: none;"></div>
+            <form class="portal-form" onsubmit="submitLeave(event)">
+              {% if show_employee_request_picker %}
+              <div class="portal-form-group">
+                <label for="leaveEmployee" class="portal-label">Employee</label>
+                <select id="leaveEmployee" class="portal-select" required>
+                  <option value="">Choose an employee</option>
+                </select>
+              </div>
+              {% endif %}
+              <div class="portal-form-group">
+                <label for="leaveType" class="portal-label">Leave Type</label>
+                <select id="leaveType" class="portal-select">
+                  <option>Vacation</option>
+                  <option>Sick</option>
+                  <option>Personal</option>
+                  <option>Parental</option>
+                </select>
+              </div>
+              <div class="portal-form-row">
+                <div class="portal-form-group">
+                  <label for="leaveStart" class="portal-label">Start Date</label>
+                  <input id="leaveStart" type="date" class="portal-input" required />
+                </div>
+                <div class="portal-form-group">
+                  <label for="leaveEnd" class="portal-label">End Date</label>
+                  <input id="leaveEnd" type="date" class="portal-input" required />
+                </div>
+              </div>
+              <div class="portal-form-group">
+                <label for="leaveReason" class="portal-label">Reason</label>
+                <textarea id="leaveReason" class="portal-textarea" rows="3" placeholder="Provide reason or context for this leave request..." required></textarea>
+              </div>
+              <button class="btn-primary-cta" type="submit">
+                <span>Submit Leave Request</span>
+              </button>
+            </form>
           </div>
         </div>
-        <p id="leaveActionStatus" class="employee-status" role="status"></p>
-        <form class="employee-form" onsubmit="submitLeave(event)">
-          {% if show_employee_request_picker %}
-          <label for="leaveEmployee">Employee</label>
-          <select id="leaveEmployee" required>
-            <option value="">Choose an employee</option>
-          </select>
-          {% endif %}
-          <label for="leaveType">Leave type</label>
-          <select id="leaveType">
-            <option>Vacation</option>
-            <option>Sick</option>
-            <option>Personal</option>
-            <option>Parental</option>
-          </select>
-          <label for="leaveStart">Start date</label>
-          <input id="leaveStart" type="date" required />
-          <label for="leaveEnd">End date</label>
-          <input id="leaveEnd" type="date" required />
-          <label for="leaveReason">Reason</label>
-          <textarea id="leaveReason" required></textarea>
-          <button class="btn btn-navy-cta" type="submit">Submit leave request</button>
-        </form>
-        <div class="employee-table-wrap">
-          <table class="employee-table">
-            <thead>
-              <tr>
-                <th>TYPE</th>
-                <th>DATES</th>
-                <th>STATUS</th>
-              </tr>
-            </thead>
-            <tbody id="leaveRows">
-              <tr>
-                <td colspan="3">Loading...</td>
-              </tr>
-            </tbody>
-          </table>
+
+        <!-- Segment 2: My Requests List -->
+        <div id="leaveHistorySection" class="segment-pane" data-group="leave" data-pane="history">
+          <div class="attendance-records-header">
+            <div class="attendance-records-title-group">
+              <h3 class="attendance-records-title">Leave Requests</h3>
+              <span class="attendance-count-badge">Submissions</span>
+            </div>
+            <button type="button" class="btn-subtab-link" onclick="setSegmentTab('leave', 'apply')">+ Apply New</button>
+          </div>
+          <div id="leaveRows" class="request-card-list">
+            <div class="attendance-loading-placeholder">Loading leave requests…</div>
+          </div>
         </div>
       </article>
 
       <!-- 5. SALARY ADVANCE PANEL -->
-      <article class="employee-card portal-panel" id="advancePanel">
-        <div class="employee-card-head">
-          <div>
-            <div class="employee-card-label">Payroll support</div>
-            <h2>Salary Advance</h2>
-            <p>Request an advance linked to center payroll advance records.</p>
+      <article class="portal-panel" id="advancePanel">
+        <!-- Top Segmented Control -->
+        <div class="mobile-segment-control" data-for="advance">
+          <button type="button" class="segment-btn active" data-target="apply" onclick="setSegmentTab('advance', 'apply')">Request Advance</button>
+          <button type="button" class="segment-btn" data-target="history" onclick="setSegmentTab('advance', 'history')">My Advances <span class="segment-badge" id="advanceCountBadge">0</span></button>
+        </div>
+
+        <!-- Segment 1: Request Advance Form -->
+        <div id="advanceFormSection" class="segment-pane active" data-group="advance" data-pane="apply">
+          <div class="portal-card">
+            <div class="portal-card-header">
+              <h2 class="portal-card-title">Salary Advance</h2>
+              <div class="portal-card-subtitle">Request emergency advance funds linked to center payroll records.</div>
+            </div>
+            <div id="advanceActionStatus" class="employee-status-banner" role="status" style="display: none;"></div>
+            <form class="portal-form" onsubmit="submitAdvance(event)">
+              {% if show_employee_request_picker %}
+              <div class="portal-form-group">
+                <label for="advanceEmployee" class="portal-label">Employee</label>
+                <select id="advanceEmployee" class="portal-select" required>
+                  <option value="">Choose an employee</option>
+                </select>
+              </div>
+              {% endif %}
+              <div class="portal-form-group">
+                <label for="advanceAmount" class="portal-label">Amount</label>
+                <div class="currency-input-wrap">
+                  <span class="currency-symbol">₱</span>
+                  <input id="advanceAmount" class="portal-input" type="number" min="0.01" step="0.01" placeholder="0.00" required />
+                </div>
+              </div>
+              <div class="portal-form-group">
+                <label for="advanceTerms" class="portal-label">Repayment Terms</label>
+                <select id="advanceTerms" class="portal-select">
+                  <option>Next Payroll</option>
+                  <option>2 Pay Cycles</option>
+                  <option>3 Pay Cycles</option>
+                </select>
+              </div>
+              <div class="portal-form-group">
+                <label for="advancePurpose" class="portal-label">Reason</label>
+                <textarea id="advancePurpose" class="portal-textarea" rows="3" placeholder="Explain the purpose of this advance request..." required></textarea>
+              </div>
+              <button class="btn-primary-cta" type="submit">
+                <span>Submit Advance Request</span>
+              </button>
+            </form>
           </div>
         </div>
-        <p id="advanceActionStatus" class="employee-status" role="status"></p>
-        <form class="employee-form" onsubmit="submitAdvance(event)">
-          {% if show_employee_request_picker %}
-          <label for="advanceEmployee">Employee</label>
-          <select id="advanceEmployee" required>
-            <option value="">Choose an employee</option>
-          </select>
-          {% endif %}
-          <label for="advanceAmount">Amount</label>
-          <input id="advanceAmount" type="number" min="0.01" step="0.01" required />
-          <label for="advanceTerms">Repayment terms</label>
-          <select id="advanceTerms">
-            <option>Next Payroll</option>
-            <option>2 Pay Cycles</option>
-            <option>3 Pay Cycles</option>
-          </select>
-          <label for="advancePurpose">Reason</label>
-          <textarea id="advancePurpose" required></textarea>
-          <button class="btn btn-navy-cta" type="submit">Submit advance request</button>
-        </form>
-        <div class="employee-table-wrap">
-          <table class="employee-table">
-            <thead>
-              <tr>
-                <th>AMOUNT</th>
-                <th>REASON</th>
-                <th>STATUS</th>
-              </tr>
-            </thead>
-            <tbody id="advanceRows">
-              <tr>
-                <td colspan="3">Loading...</td>
-              </tr>
-            </tbody>
-          </table>
+
+        <!-- Segment 2: My Advances List -->
+        <div id="advanceHistorySection" class="segment-pane" data-group="advance" data-pane="history">
+          <div class="attendance-records-header">
+            <div class="attendance-records-title-group">
+              <h3 class="attendance-records-title">Salary Advance</h3>
+              <span class="attendance-count-badge">Records</span>
+            </div>
+            <button type="button" class="btn-subtab-link" onclick="setSegmentTab('advance', 'apply')">+ New Advance</button>
+          </div>
+          <div id="advanceRows" class="request-card-list">
+            <div class="attendance-loading-placeholder">Loading advance requests…</div>
+          </div>
         </div>
       </article>
 
       <!-- 6. COMPLAINTS PANEL -->
-      <article class="employee-card portal-panel" id="complaintPanel">
-        <div class="employee-card-head">
-          <div>
-            <div class="employee-card-label">Private HR channel</div>
-            <h2>Complaints</h2>
-            <p>Send a confidential workplace concern or grievance to HR Management.</p>
+      <article class="portal-panel" id="complaintPanel">
+        <!-- Privacy Notice Banner -->
+        <div class="privacy-notice-badge">
+          <div class="privacy-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </div>
+          <div class="privacy-content">
+            <span class="privacy-title">End-to-End Confidential with HR</span>
+            <span class="privacy-desc">Direct encrypted dispatch to HR Management. Not visible to center staff or colleagues.</span>
           </div>
         </div>
-        <p id="complaintActionStatus" class="employee-status" role="status"></p>
-        <form class="employee-form" onsubmit="submitComplaint(event)">
-          {% if show_employee_request_picker %}
-          <label for="complaintEmployee">Employee</label>
-          <select id="complaintEmployee" required>
-            <option value="">Choose an employee</option>
-          </select>
-          {% endif %}
-          <label for="complaintCategory">Category</label>
-          <select id="complaintCategory">
-            <option value="general">General</option>
-            <option value="workplace">Workplace conduct</option>
-            <option value="payroll">Payroll issue</option>
-            <option value="harassment">Harassment</option>
-          </select>
-          <label for="complaintSubject">Subject</label>
-          <input id="complaintSubject" required />
-          <label for="complaintDescription">Details</label>
-          <textarea id="complaintDescription" required></textarea>
-          <button class="btn btn-navy-cta" type="submit">File complaint</button>
-        </form>
-        <div class="employee-table-wrap">
-          <table class="employee-table">
-            <thead>
-              <tr>
-                <th>SUBJECT</th>
-                <th>CATEGORY</th>
-                <th>STATUS</th>
-                <th>FILED</th>
-              </tr>
-            </thead>
-            <tbody id="complaintRows">
-              <tr>
-                <td colspan="4">Loading...</td>
-              </tr>
-            </tbody>
-          </table>
+
+        <!-- Top Segmented Control -->
+        <div class="mobile-segment-control" data-for="complaint">
+          <button type="button" class="segment-btn active" data-target="apply" onclick="setSegmentTab('complaint', 'apply')">File Complaint</button>
+          <button type="button" class="segment-btn" data-target="history" onclick="setSegmentTab('complaint', 'history')">Past Reports <span class="segment-badge" id="complaintCountBadge">0</span></button>
+        </div>
+
+        <!-- Segment 1: File Complaint Form -->
+        <div id="complaintFormSection" class="segment-pane active" data-group="complaint" data-pane="apply">
+          <div class="portal-card">
+            <div class="portal-card-header">
+              <h2 class="portal-card-title">Complaints</h2>
+              <div class="portal-card-subtitle">File a confidential workplace concern or grievance directly with HR.</div>
+            </div>
+            <div id="complaintActionStatus" class="employee-status-banner" role="status" style="display: none;"></div>
+            <form class="portal-form" onsubmit="submitComplaint(event)">
+              {% if show_employee_request_picker %}
+              <div class="portal-form-group">
+                <label for="complaintEmployee" class="portal-label">Employee</label>
+                <select id="complaintEmployee" class="portal-select" required>
+                  <option value="">Choose an employee</option>
+                </select>
+              </div>
+              {% endif %}
+              <div class="portal-form-group">
+                <label for="complaintCategory" class="portal-label">Category</label>
+                <select id="complaintCategory" class="portal-select">
+                  <option value="general">General</option>
+                  <option value="workplace">Workplace conduct</option>
+                  <option value="payroll">Payroll issue</option>
+                  <option value="harassment">Harassment</option>
+                </select>
+              </div>
+              <div class="portal-form-group">
+                <label for="complaintSubject" class="portal-label">Subject</label>
+                <input id="complaintSubject" class="portal-input" placeholder="Brief summary of concern" required />
+              </div>
+              <div class="portal-form-group">
+                <label for="complaintDescription" class="portal-label">Details</label>
+                <textarea id="complaintDescription" class="portal-textarea" rows="4" placeholder="Describe the incident, dates, parties involved, or details..." required></textarea>
+              </div>
+              <button class="btn-primary-cta" type="submit">
+                <span>File Complaint</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Segment 2: Past Reports List -->
+        <div id="complaintHistorySection" class="segment-pane" data-group="complaint" data-pane="history">
+          <div class="attendance-records-header">
+            <div class="attendance-records-title-group">
+              <h3 class="attendance-records-title">Past Reports</h3>
+              <span class="attendance-count-badge">Confidential</span>
+            </div>
+            <button type="button" class="btn-subtab-link" onclick="setSegmentTab('complaint', 'apply')">+ New Report</button>
+          </div>
+          <div id="complaintRows" class="request-card-list">
+            <div class="attendance-loading-placeholder">Loading past reports…</div>
+          </div>
         </div>
       </article>
 
-      <!-- 7. SETTINGS PANEL -->
+      <!-- 7. SETTINGS PANEL (Dedicated Full-Page Sub-view) -->
       <article class="portal-panel" id="settingsPanel">
-        <!-- Section: Account Security -->
-        <div class="employee-card">
-          <div class="employee-card-head">
-            <div>
-              <div class="employee-card-label">Sign-in Protection</div>
-              <h2>Account Security</h2>
-              <p>Keep your sign-in credentials and two-factor authentication protected.</p>
-            </div>
-          </div>
-          <p id="accountActionStatus" class="employee-status" role="status"></p>
+        <div class="settings-subview-container">
+          <!-- Status Alert Banner -->
+          <div id="accountActionStatus" class="employee-status-banner" role="status" style="display: none;"></div>
 
-          <div class="employee-form" style="border-bottom:1px solid #e2e8f0; padding-bottom:20px; margin-bottom:20px;">
-            <h3 style="grid-column:1/-1; font-size:15px; font-weight:700; margin:0 0 6px; color:var(--employee-navy);">Google account</h3>
-            <p id="portalGoogleAccountStatus" class="employee-status" role="status" style="grid-column:1/-1;">Loading linked account…</p>
-            <a id="portalGoogleLinkButton" class="btn btn-outline-gray" href="/api/auth/google/link/">Link Google account</a>
-          </div>
-
-          <form class="employee-form" onsubmit="submitPassword(event)" style="border-bottom:1px solid #e2e8f0; padding-bottom:20px; margin-bottom:20px;">
-            <h3 style="grid-column:1/-1; font-size:15px; font-weight:700; margin:0 0 6px; color:var(--employee-navy);">Change Password</h3>
-            <label for="oldPassword">Current Password</label>
-            <input id="oldPassword" type="password" required />
-            <label for="newPassword">New Password</label>
-            <input id="newPassword" type="password" required />
-            <label for="newPassword2">Confirm New Password</label>
-            <input id="newPassword2" type="password" required />
-            <button class="btn btn-navy-cta" type="submit">Update Password</button>
-          </form>
-
-          <div class="employee-form employee-mfa-card" style="margin-bottom:0;">
-            <h3 style="grid-column:1/-1; font-size:15px; font-weight:700; margin:0 0 6px; color:var(--employee-navy);">Two-factor authentication</h3>
-            <p id="portalMfaStatus" class="employee-status" role="status" style="grid-column:1/-1;">Loading security status…</p>
-            <div id="portalMfaDisabled" style="grid-column:1/-1;">
-              <label for="portalMfaSetupPassword">Current password</label>
-              <input id="portalMfaSetupPassword" type="password" autocomplete="current-password" style="margin-bottom:10px;" />
-              <button type="button" class="btn btn-navy-cta" onclick="startPortalTwoFactorSetup()">Set up authenticator</button>
-            </div>
-            <div id="portalMfaSetup" hidden style="grid-column:1/-1;">
-              <label>Manual setup key</label>
-              <code id="portalMfaSecret" class="portal-secret"></code>
-              <label for="portalMfaConfirmCode">Six-digit authenticator code</label>
-              <input id="portalMfaConfirmCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" style="margin-bottom:10px;" />
-              <button type="button" class="btn btn-navy-cta" onclick="confirmPortalTwoFactorSetup()">Verify &amp; enable</button>
-            </div>
-            <div id="portalMfaEnabled" hidden style="grid-column:1/-1;">
-              <label for="portalMfaDisablePassword">Current password</label>
-              <input id="portalMfaDisablePassword" type="password" autocomplete="current-password" />
-              <label for="portalMfaDisableCode">Authenticator or recovery code</label>
-              <input id="portalMfaDisableCode" autocomplete="one-time-code" style="margin-bottom:10px;" />
-              <button type="button" class="btn btn-outline-gray" onclick="disablePortalTwoFactor()">Turn off 2FA</button>
-            </div>
-            <div id="portalRecoveryCodes" class="portal-recovery" hidden>
-              <strong>Save these recovery codes now</strong>
-              <p>Each code works once. They will not appear again.</p>
-              <pre id="portalRecoveryCodeList"></pre>
-              <button type="button" class="btn btn-outline-gray" onclick="copyPortalRecoveryCodes()">Copy codes</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section: Display & Notifications -->
-        <div class="employee-card">
-          <div class="employee-card-head">
-            <div>
-              <div class="employee-card-label">Interface Preferences</div>
-              <h2>Display &amp; Notifications</h2>
-              <p>Adjust data density, visual contrast, and notification alerts.</p>
-            </div>
-          </div>
-          <form class="employee-form" onsubmit="submitPrefs(event)">
-            <div style="grid-column: 1 / -1; display:flex; justify-content:space-between; align-items:center; padding: 12px 16px; background: rgba(0,0,0,0.02); border: 1px solid var(--employee-line); border-radius: 8px; margin-bottom: 6px;">
-              <div>
-                <div style="font-weight:700; color:var(--employee-navy); font-size:14px;">Theme Mode</div>
-                <div style="color:var(--employee-muted); font-size:12px; margin-top:2px;">Switch between light and dark visual appearance.</div>
+          <div class="portal-card">
+            <div class="portal-card-header">
+              <div class="portal-card-title-wrap">
+                <h3 class="portal-card-title">Google account</h3>
+                <div id="portalGoogleAccountStatus" class="portal-card-subtitle" role="status">Loading linked account…</div>
               </div>
-              <button type="button" class="portal-theme-toggle" id="themeToggleBtnSettings" title="Switch to dark mode" aria-label="Switch to dark mode" onclick="toggleTheme()">
-                <span class="portal-theme-icon-box">
-                  <svg class="theme-toggle-icon theme-toggle-icon--sun" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="5"></circle>
-                    <line x1="12" y1="1" x2="12" y2="3"></line>
-                    <line x1="12" y1="21" x2="12" y2="23"></line>
-                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                    <line x1="1" y1="12" x2="3" y2="12"></line>
-                    <line x1="21" y1="12" x2="23" y2="12"></line>
-                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                  </svg>
-                  <svg class="theme-toggle-icon theme-toggle-icon--moon" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                  </svg>
-                </span>
-                <span class="portal-theme-label" id="themeToggleLabelSettings">Light mode</span>
+            </div>
+            <a id="portalGoogleLinkButton" class="btn-primary-cta" href="/api/auth/google/link/">
+              <span>Link Google account</span>
+            </a>
+          </div>
+
+          <!-- Section 1A: Change Password Card -->
+          <div class="portal-card">
+            <div class="portal-card-header">
+              <div class="portal-card-title-wrap">
+                <h3 class="portal-card-title">Change Password</h3>
+                <div class="portal-card-subtitle">Update your credentials to keep your account secure.</div>
+              </div>
+            </div>
+
+            <form class="portal-form" onsubmit="submitPassword(event)">
+              <div class="portal-form-group">
+                <label for="oldPassword" class="portal-label">Current Password</label>
+                <div class="password-input-wrap">
+                  <input id="oldPassword" type="password" class="portal-input" placeholder="Enter current password" autocomplete="current-password" required />
+                  <button type="button" class="btn-pwd-eye" onclick="togglePasswordVisibility('oldPassword', this)" aria-label="Toggle password visibility">
+                    <svg class="eye-icon eye-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <svg class="eye-icon eye-hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                      <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="portal-form-group">
+                <label for="newPassword" class="portal-label">New Password</label>
+                <div class="password-input-wrap">
+                  <input id="newPassword" type="password" class="portal-input" placeholder="Create new password" autocomplete="new-password" required />
+                  <button type="button" class="btn-pwd-eye" onclick="togglePasswordVisibility('newPassword', this)" aria-label="Toggle password visibility">
+                    <svg class="eye-icon eye-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <svg class="eye-icon eye-hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                      <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="portal-form-group">
+                <label for="newPassword2" class="portal-label">Confirm New Password</label>
+                <div class="password-input-wrap">
+                  <input id="newPassword2" type="password" class="portal-input" placeholder="Confirm new password" autocomplete="new-password" required />
+                  <button type="button" class="btn-pwd-eye" onclick="togglePasswordVisibility('newPassword2', this)" aria-label="Toggle password visibility">
+                    <svg class="eye-icon eye-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <svg class="eye-icon eye-hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                      <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <button class="btn-primary-cta" type="submit">
+                <span>Update Password</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- Section 1B: Two-Factor Authentication Card -->
+          <div class="portal-card">
+            <div class="portal-card-header">
+              <div class="portal-card-title-wrap">
+                <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:4px;">
+                  <h3 class="portal-card-title" style="margin:0;">Two-Factor Authentication</h3>
+                  <span class="request-status-pill status-pending" id="portalMfaPill">
+                    <span class="status-dot"></span>
+                    <span id="portalMfaBadgeText">Not Enabled</span>
+                  </span>
+                </div>
+                <div class="portal-card-subtitle" id="portalMfaStatus">
+                  Add an extra layer of sign-in protection using an authenticator app (Google Authenticator, Authy, etc.).
+                </div>
+              </div>
+            </div>
+
+            <!-- MFA Disabled State (Setup trigger) -->
+            <div id="portalMfaDisabled" class="portal-form">
+              <div class="portal-form-group">
+                <label for="portalMfaSetupPassword" class="portal-label">Current Password</label>
+                <div class="password-input-wrap">
+                  <input id="portalMfaSetupPassword" type="password" class="portal-input" placeholder="Enter current password to begin" autocomplete="current-password" />
+                  <button type="button" class="btn-pwd-eye" onclick="togglePasswordVisibility('portalMfaSetupPassword', this)" aria-label="Toggle password visibility">
+                    <svg class="eye-icon eye-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <svg class="eye-icon eye-hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                      <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <button type="button" class="btn-primary-cta" onclick="startPortalTwoFactorSetup()">
+                <span>Set Up Authenticator</span>
               </button>
             </div>
-            <label for="empPageSize">Page Size</label>
-            <select id="empPageSize">
-              <option value="5">5 per page</option>
-              <option value="10">10 per page</option>
-              <option value="25">25 per page</option>
-            </select>
-            <div style="grid-column: 1 / -1; display:flex; flex-direction:column; gap:10px; margin-top:8px;">
-              <label style="display:flex; align-items:center; gap:10px; font-weight:600; cursor:pointer;">
-                <input type="checkbox" id="empHighContrast" style="width:auto; min-height:auto;" /> Enable High Contrast
-              </label>
-              <label style="display:flex; align-items:center; gap:10px; font-weight:600; cursor:pointer;">
-                <input type="checkbox" id="empMuteLeave" style="width:auto; min-height:auto;" /> Mute Leave Notifications
-              </label>
-              <label style="display:flex; align-items:center; gap:10px; font-weight:600; cursor:pointer;">
-                <input type="checkbox" id="empMutePayroll" style="width:auto; min-height:auto;" /> Mute Payroll Notifications
-              </label>
-            </div>
-            <button class="btn btn-navy-cta" type="submit">Save Preferences</button>
-          </form>
 
-          <!-- Hidden profile edit fields preserved for API compatibility -->
-          <div style="display:none;">
-            <input id="portalFirstName" />
-            <input id="portalLastName" />
-            <input id="portalEmail" />
-          </div>
-        </div>
+            <!-- MFA Setup In Progress State -->
+            <div id="portalMfaSetup" hidden class="portal-form" style="margin-top: 10px;">
+              <div class="portal-form-group">
+                <label class="portal-label">Manual Setup Secret Key</label>
+                <div style="padding:10px 14px; background:rgba(0,0,0,0.04); border:1px dashed var(--employee-line, #cbd5e1); border-radius:10px; font-family:monospace; font-size:14px; word-break:break-all; user-select:all; color:var(--employee-navy, #0f172a);" id="portalMfaSecret"></div>
+              </div>
+              <div class="portal-form-group">
+                <label for="portalMfaConfirmCode" class="portal-label">Six-Digit Authenticator Code</label>
+                <input id="portalMfaConfirmCode" class="portal-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" />
+              </div>
+              <button type="button" class="btn-primary-cta" onclick="confirmPortalTwoFactorSetup()">
+                <span>Verify &amp; Enable</span>
+              </button>
+            </div>
 
-        <!-- Section: Session Management -->
-        <div class="employee-card">
-          <div class="employee-card-head">
-            <div>
-              <div class="employee-card-label">Access Control</div>
-              <h2>Session Management</h2>
-              <p>Inspect connection status and safely exit your session.</p>
+            <!-- MFA Enabled State (Active protection) -->
+            <div id="portalMfaEnabled" hidden class="portal-form" style="margin-top: 10px;">
+              <div class="portal-form-group">
+                <label for="portalMfaDisablePassword" class="portal-label">Current Password</label>
+                <input id="portalMfaDisablePassword" type="password" class="portal-input" autocomplete="current-password" placeholder="Confirm your password" />
+              </div>
+              <div class="portal-form-group">
+                <label for="portalMfaDisableCode" class="portal-label">Authenticator or Recovery Code</label>
+                <input id="portalMfaDisableCode" class="portal-input" autocomplete="one-time-code" placeholder="6-digit code or backup code" />
+              </div>
+              <button type="button" class="btn-danger-destructive" onclick="disablePortalTwoFactor()" style="margin-top:4px;">
+                <span>Turn off 2FA</span>
+              </button>
+            </div>
+
+            <!-- Recovery Codes Panel -->
+            <div id="portalRecoveryCodes" class="portal-recovery" hidden style="margin-top:16px; padding:14px; border:1px solid rgba(2,132,199,0.3); background:rgba(2,132,199,0.06); border-radius:12px;">
+              <strong style="display:block; font-size:14px; color:var(--employee-navy, #0f172a); margin-bottom:4px;">Save these recovery codes now</strong>
+              <p style="font-size:12px; color:#64748b; margin:0 0 10px;">Each code works once. Store them securely—they will not be shown again.</p>
+              <pre id="portalRecoveryCodeList" style="font-family:monospace; font-size:13px; line-height:1.5; padding:10px; background:rgba(0,0,0,0.06); border-radius:8px; margin:0 0 10px;"></pre>
+              <button type="button" class="btn-primary-cta" onclick="copyPortalRecoveryCodes()" style="padding:10px 16px; min-height:42px;">
+                <span>Copy Recovery Codes</span>
+              </button>
             </div>
           </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
-            <div>
-              <div style="font-weight:700; color:var(--employee-navy); font-size:15px;">Active Work Session</div>
-              <div style="color:var(--employee-muted); font-size:13px; margin-top:3px;">
-                Connected to Kumon EMS via Same-Origin Authenticated Session.
+
+          <!-- Section 2: Preferences & Display Card -->
+          <div class="portal-card">
+            <div class="portal-card-header">
+              <div class="portal-card-title-wrap">
+                <h3 class="portal-card-title">Preferences &amp; Display</h3>
+                <div class="portal-card-subtitle">Adjust appearance theme, density, and alert notifications.</div>
               </div>
             </div>
-            <button type="button" class="btn btn-outline-gray" onclick="employeeLogout()" style="color:#b91c1c; border-color:#fca5a5;">
-              Sign out of portal
+
+            <form class="portal-form" onsubmit="submitPrefs(event)">
+              <div class="settings-grouped-list">
+                <!-- 1. Theme Mode -->
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <span class="settings-row-title">Theme Mode</span>
+                    <span class="settings-row-desc" id="settingsThemeText">Dark Mode</span>
+                  </div>
+                  <div class="settings-row-action">
+                    <label class="toggle-switch" aria-label="Toggle dark mode">
+                      <input type="checkbox" id="settingsThemeSwitch" onchange="toggleTheme()" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- 2. Display Density / Page Size -->
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <label for="empPageSize" class="settings-row-title">Display Density</label>
+                    <span class="settings-row-desc">Rows shown per page in history</span>
+                  </div>
+                  <div class="settings-row-action">
+                    <select id="empPageSize" class="portal-select settings-select-compact">
+                      <option value="5">5 per page</option>
+                      <option value="10">10 per page</option>
+                      <option value="25">25 per page</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- 3. High Contrast -->
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <label for="empHighContrast" class="settings-row-title">High Contrast</label>
+                    <span class="settings-row-desc">Enhance element boundaries &amp; readability</span>
+                  </div>
+                  <div class="settings-row-action">
+                    <label class="toggle-switch" aria-label="Toggle high contrast">
+                      <input type="checkbox" id="empHighContrast" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- 4. Notifications: Leave Alerts -->
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <label for="empLeaveAlerts" class="settings-row-title">Leave Alerts</label>
+                    <span class="settings-row-desc">Receive notifications for leave approvals</span>
+                  </div>
+                  <div class="settings-row-action">
+                    <label class="toggle-switch" aria-label="Toggle leave alerts">
+                      <input type="checkbox" id="empLeaveAlerts" checked />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- 5. Notifications: Payroll Alerts -->
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <label for="empPayrollAlerts" class="settings-row-title">Payroll Alerts</label>
+                    <span class="settings-row-desc">Receive alerts for advances and payouts</span>
+                  </div>
+                  <div class="settings-row-action">
+                    <label class="toggle-switch" aria-label="Toggle payroll alerts">
+                      <input type="checkbox" id="empPayrollAlerts" checked />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Preserved legacy checkboxes for backwards compatibility if referenced -->
+              <input type="checkbox" id="empMuteLeave" style="display:none;" />
+              <input type="checkbox" id="empMutePayroll" style="display:none;" />
+
+              <button class="btn-primary-cta" type="submit">
+                <span>Save Preferences</span>
+              </button>
+            </form>
+
+            <!-- Preserved profile inputs for API compatibility -->
+            <div style="display:none;">
+              <input id="portalFirstName" />
+              <input id="portalLastName" />
+              <input id="portalEmail" />
+            </div>
+          </div>
+
+          <!-- Section 3: Session Management Card -->
+          <div class="portal-card">
+            <div class="portal-card-header">
+              <div class="portal-card-title-wrap">
+                <h3 class="portal-card-title" style="margin:0 0 4px;">Active Session</h3>
+                <div class="portal-card-subtitle">
+                  Kumon EMS Authenticated Session — Connected via secure same-origin session credentials.
+                </div>
+              </div>
+            </div>
+
+            <button type="button" class="btn-danger-destructive" onclick="employeeLogout()">
+              <span>Sign out of portal</span>
             </button>
           </div>
         </div>
@@ -2223,16 +3773,8 @@
   <!-- Fixed Bottom Navigation Bar -->
   <nav class="portal-bottom-nav" aria-label="Employee portal navigation">
     <div class="portal-bottom-nav-inner">
-      <button type="button" class="portal-tab" data-panel="profilePanel" aria-label="Profile" title="Profile">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-          <circle cx="12" cy="7" r="4"></circle>
-        </svg>
-        <span>Profile</span>
-      </button>
-
       <button type="button" class="portal-tab active" data-panel="attendancePanel" aria-label="Attendance" title="Attendance">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"></circle>
           <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
@@ -2240,14 +3782,14 @@
       </button>
 
       <button type="button" class="portal-tab" data-panel="messagesPanel" aria-label="Messages" title="Messages">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
         </svg>
         <span>Messages</span>
       </button>
 
       <button type="button" class="portal-tab" data-panel="leavePanel" aria-label="Leave Requests" title="Leave Requests">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
           <line x1="16" y1="2" x2="16" y2="6"></line>
           <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -2257,7 +3799,7 @@
       </button>
 
       <button type="button" class="portal-tab" data-panel="advancePanel" aria-label="Salary Advance" title="Salary Advance">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="2" y="4" width="20" height="16" rx="2"></rect>
           <line x1="12" y1="8" x2="12" y2="16"></line>
           <line x1="8" y1="12" x2="16" y2="12"></line>
@@ -2266,18 +3808,10 @@
       </button>
 
       <button type="button" class="portal-tab" data-panel="complaintPanel" aria-label="Complaints" title="Complaints">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
         </svg>
         <span>Complaints</span>
-      </button>
-
-      <button type="button" class="portal-tab" data-panel="settingsPanel" aria-label="Settings" title="Settings">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-        </svg>
-        <span>Settings</span>
       </button>
     </div>
   </nav>
@@ -2297,13 +3831,22 @@
     let myEmployeeEmail = '{{ employee.email|default:""|escapejs }}';
     let myEmployeeName = '{{ employee.first_name|default:""|escapejs }} {{ employee.last_name|default:""|escapejs }}'.trim();
 
+    let lastDashboardPanel = 'attendancePanel';
+
     function switchPortalTab(panelId) {
+      const isSettings = panelId === 'settingsPanel';
+      if (!isSettings && panelId !== 'profilePanel') {
+        lastDashboardPanel = panelId;
+      }
+      document.body.classList.toggle('in-settings-subview', isSettings);
+
       const targetTab = document.querySelector(`.portal-tab[data-panel="${panelId}"]`);
-      if (!targetTab) return;
-      document.querySelectorAll('.portal-tab').forEach((t) => t.classList.toggle('active', t === targetTab));
+      if (targetTab) {
+        document.querySelectorAll('.portal-tab').forEach((t) => t.classList.toggle('active', t === targetTab));
+      }
       document.querySelectorAll('.portal-panel').forEach((p) => p.classList.toggle('active', p.id === panelId));
       const subpageLabel = document.getElementById('portalSubpageLabel');
-      if (subpageLabel) {
+      if (subpageLabel && targetTab) {
         const span = targetTab.querySelector('span');
         subpageLabel.textContent = span ? span.textContent.trim() : (targetTab.getAttribute('aria-label') || targetTab.textContent.trim());
       }
@@ -2311,6 +3854,18 @@
         loadChatMessages(currentConvKey);
       }
       window.scrollTo(0, 0);
+    }
+
+    function closeSettingsSubView() {
+      switchPortalTab(lastDashboardPanel || 'attendancePanel');
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const isPwd = input.type === 'password';
+      input.type = isPwd ? 'text' : 'password';
+      if (btn) btn.classList.toggle('is-showing-text', isPwd);
     }
 
     document.querySelectorAll('.portal-tab').forEach((tab) => {
@@ -2349,12 +3904,232 @@
 
     const showStatus = (message, error = false) => {
       const activePanel = document.querySelector('.portal-panel.active');
-      const el = activePanel?.querySelector('.employee-status') || document.getElementById('attendanceStatus');
+      const el = activePanel?.querySelector('.employee-status-banner, .employee-status') || document.getElementById('attendanceStatus');
       if (el) {
-        el.textContent = message;
-        el.style.color = error ? '#b42318' : '#166534';
+        if (!message) {
+          el.style.display = 'none';
+          el.textContent = '';
+          return;
+        }
+        if (el.classList.contains('employee-status-banner')) {
+          el.className = 'employee-status-banner ' + (error ? 'is-error' : 'is-success');
+          el.innerHTML = `
+            <span class="banner-icon">
+              ${error
+                ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>'
+                : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>'
+              }
+            </span>
+            <span class="banner-message">${safe(message)}</span>
+          `;
+          el.style.display = 'flex';
+        } else {
+          el.textContent = message;
+          el.style.color = error ? '#b42318' : '#166534';
+          el.style.display = 'block';
+        }
       }
     };
+
+    function formatDateCard(dateStr) {
+      if (!dateStr) return { day: 'Today', formatted: '—' };
+      try {
+        const parts = String(dateStr).split('-');
+        if (parts.length === 3) {
+          const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+          return {
+            day: d.toLocaleDateString([], { weekday: 'short' }),
+            formatted: d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
+          };
+        }
+      } catch (_) {}
+      return { day: 'Log', formatted: String(dateStr) };
+    }
+
+    function formatTimeNice(val) {
+      if (!val || val === '-') return '—';
+      if (typeof val === 'string' && val.includes('T')) {
+        const d = new Date(val);
+        if (!isNaN(d.getTime())) return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      }
+      if (typeof val === 'string' && val.includes(':')) {
+        const parts = val.split(':');
+        let h = parseInt(parts[0], 10);
+        const m = parts[1];
+        if (!isNaN(h)) {
+          const ampm = h >= 12 ? 'PM' : 'AM';
+          h = h % 12 || 12;
+          return `${h}:${m} ${ampm}`;
+        }
+      }
+      return String(val);
+    }
+
+    function setSegmentTab(group, tab) {
+      const container = document.getElementById(`${group}Panel`);
+      if (!container) return;
+      container.querySelectorAll(`.mobile-segment-control[data-for="${group}"] .segment-btn`).forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.target === tab);
+      });
+      container.querySelectorAll(`.segment-pane[data-group="${group}"]`).forEach((pane) => {
+        pane.classList.toggle('active', pane.dataset.pane === tab);
+      });
+    }
+
+    function renderLeaveCards(list) {
+      const container = document.getElementById('leaveRows');
+      const countBadge = document.getElementById('leaveCountBadge');
+      if (countBadge) countBadge.textContent = list.length;
+      if (!container) return;
+      if (!list || list.length === 0) {
+        container.innerHTML = `
+          <div class="request-empty-card">
+            <div class="request-empty-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+            <div class="request-empty-title">No leave requests yet</div>
+            <div class="request-empty-text">Submit an application above to request scheduled time off.</div>
+          </div>
+        `;
+        return;
+      }
+      container.innerHTML = list.map((item) => {
+        const status = (item.status || 'Pending').toLowerCase();
+        const statusClass = status.includes('approv') ? 'status-approved' : status.includes('reject') ? 'status-rejected' : 'status-pending';
+        const statusLabel = status.includes('approv') ? 'Approved' : status.includes('reject') ? 'Rejected' : 'Pending';
+        const typeLabel = item.leave_type || 'General';
+        return `
+          <div class="request-card-item">
+            <div class="request-card-head">
+              <span class="request-type-badge">${safe(typeLabel)}</span>
+              <span class="request-status-pill ${statusClass}">
+                <span class="status-dot"></span>
+                <span>${safe(statusLabel)}</span>
+              </span>
+            </div>
+            <div class="request-date-range">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span>${safe(item.start_date)} to ${safe(item.end_date)}</span>
+            </div>
+            ${item.reason ? `<div class="request-card-reason">${safe(item.reason)}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderAdvanceCards(list) {
+      const container = document.getElementById('advanceRows');
+      const countBadge = document.getElementById('advanceCountBadge');
+      if (countBadge) countBadge.textContent = list.length;
+      if (!container) return;
+      if (!list || list.length === 0) {
+        container.innerHTML = `
+          <div class="request-empty-card">
+            <div class="request-empty-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"></line>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+            </div>
+            <div class="request-empty-title">No advance requests yet</div>
+            <div class="request-empty-text">Submit an advance request when emergency payroll support is needed.</div>
+          </div>
+        `;
+        return;
+      }
+      container.innerHTML = list.map((item) => {
+        const status = (item.status || 'Pending').toLowerCase();
+        const statusClass = status.includes('approv') || status.includes('disburs') ? 'status-approved' : status.includes('reject') ? 'status-rejected' : 'status-pending';
+        const statusLabel = status.includes('disburs') ? 'Disbursed' : status.includes('approv') ? 'Approved' : status.includes('reject') ? 'Rejected' : 'In Review';
+        const amountNum = Number(item.amount || 0);
+        const amountVal = isNaN(amountNum) ? item.amount : amountNum.toFixed(2);
+        return `
+          <div class="request-card-item">
+            <div class="request-card-head">
+              <div class="advance-amount-display">₱${safe(amountVal)}</div>
+              <span class="request-status-pill ${statusClass}">
+                <span class="status-dot"></span>
+                <span>${safe(statusLabel)}</span>
+              </span>
+            </div>
+            ${item.repayment_terms ? `<div class="advance-terms-chip"><span>Term:</span> <strong>${safe(item.repayment_terms)}</strong></div>` : ''}
+            ${item.purpose ? `<div class="request-card-reason">${safe(item.purpose)}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderComplaintCards(list) {
+      const container = document.getElementById('complaintRows');
+      const countBadge = document.getElementById('complaintCountBadge');
+      if (countBadge) countBadge.textContent = list.length;
+      if (!container) return;
+      if (!list || list.length === 0) {
+        container.innerHTML = `
+          <div class="request-empty-card">
+            <div class="request-empty-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </div>
+            <div class="request-empty-title">No complaints filed</div>
+            <div class="request-empty-text">Your confidential grievance records with HR will appear here.</div>
+          </div>
+        `;
+        return;
+      }
+      container.innerHTML = list.map((item) => {
+        const status = (item.status || 'Under Review').toLowerCase();
+        const statusClass = status.includes('resolv') || status.includes('closed') ? 'status-approved' : 'status-pending';
+        const statusLabel = status.includes('resolv') || status.includes('closed') ? 'Resolved' : 'Under Review';
+        const categoryName = { general: 'General', workplace: 'Workplace conduct', payroll: 'Payroll issue', harassment: 'Harassment' }[item.category] || item.category || 'Grievance';
+        const dateStr = item.created_at ? String(item.created_at).slice(0, 10) : '';
+        return `
+          <div class="request-card-item">
+            <div class="request-card-head">
+              <span class="complaint-subject-title">${safe(item.subject)}</span>
+              <span class="request-status-pill ${statusClass}">
+                <span class="status-dot"></span>
+                <span>${safe(statusLabel)}</span>
+              </span>
+            </div>
+            <div class="complaint-meta-row">
+              <span class="complaint-category-chip">${safe(categoryName)}</span>
+              ${dateStr ? `<span class="complaint-date-label">Filed ${safe(dateStr)}</span>` : ''}
+            </div>
+            ${item.description ? `<div class="request-card-reason">${safe(item.description)}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+        function calculateShiftDuration(inVal, outVal) {
+      if (!inVal || inVal === '-') return '—';
+      if (!outVal || outVal === '-') return 'Active shift';
+      try {
+        const inStr = inVal.includes('T') ? inVal : `1970-01-01T${inVal}`;
+        const outStr = outVal.includes('T') ? outVal : `1970-01-01T${outVal}`;
+        const dIn = new Date(inStr);
+        const dOut = new Date(outStr);
+        const diffMs = dOut - dIn;
+        if (isNaN(diffMs) || diffMs < 0) return '—';
+        const hrs = Math.floor(diffMs / 3600000);
+        const mins = Math.floor((diffMs % 3600000) / 60000);
+        return `${hrs}h ${mins}m`;
+      } catch (_) {
+        return '—';
+      }
+    }
 
     const rows = (data) => Array.isArray(data) ? data : data.results || [];
     const safe = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -2402,12 +4177,14 @@
         const isActive = currentConvKey === dmKey;
 
         return `<div class="chat-conv-item ${isActive ? 'active' : ''}" data-conv-key="${safe(dmKey)}" onclick="openDirectMessage('${safe(emp.id)}', '${safe(fullName)}', '${safe(roleDept)}')">
-          <div class="chat-avatar">
-            ${initials}
+          <div class="chat-avatar-wrap">
+            <div class="chat-avatar">
+              ${safe(initials)}
+            </div>
           </div>
           <div class="chat-conv-info">
-            <div class="chat-conv-name">
-              <span>${safe(fullName)}</span>
+            <div class="chat-conv-header-line">
+              <span class="chat-conv-title">${safe(fullName)}</span>
             </div>
             <div class="chat-conv-preview">${safe(roleDept)}</div>
           </div>
@@ -2487,7 +4264,7 @@
             ? `This is the start of your direct chat with <strong>${safe(currentConvName)}</strong>.<br><span style="font-size:12px; color:#64748b;">Send a message below to start chatting directly!</span>`
             : `No messages in ${safe(currentConvName)} yet.<br><span style="font-size:12px; color:#64748b;">Send a message below to start the conversation!</span>`;
           stream.innerHTML = `<div class="chat-empty-state">
-            <svg class="chat-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="chat-empty-icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
             </svg>
             <p>${emptyNote}</p>
@@ -2573,9 +4350,9 @@
         return rows(d);
       }));
       const [leaves, advances, complaints] = lists;
-      document.getElementById('leaveRows').innerHTML = leaves.map((item) => `<tr><td>${safe(item.leave_type)}</td><td>${safe(item.start_date)} to ${safe(item.end_date)}</td><td>${safe(item.status)}</td></tr>`).join('') || '<tr><td colspan="3">No leave requests.</td></tr>';
-      document.getElementById('advanceRows').innerHTML = advances.map((item) => `<tr><td>${safe(item.amount)}</td><td>${safe(item.purpose)}</td><td>${safe(item.status)}</td></tr>`).join('') || '<tr><td colspan="3">No advance requests.</td></tr>';
-      document.getElementById('complaintRows').innerHTML = complaints.map((item) => `<tr><td>${safe(item.subject)}</td><td>${safe(item.category)}</td><td>${safe(item.status)}</td><td>${safe(String(item.created_at || '').slice(0, 10))}</td></tr>`).join('') || '<tr><td colspan="4">No complaints filed.</td></tr>';
+      renderLeaveCards(leaves);
+      renderAdvanceCards(advances);
+      renderComplaintCards(complaints);
     }
 
     async function submitPortalRequest(event, endpoint, body, successMessage, fallbackMessage) {
@@ -2592,6 +4369,9 @@
         showStatus(successMessage);
         try {
           await refreshRequestLists();
+          if (endpoint.includes('leaves')) setSegmentTab('leave', 'history');
+          if (endpoint.includes('advances')) setSegmentTab('advance', 'history');
+          if (endpoint.includes('complaints')) setSegmentTab('complaint', 'history');
         } catch (_) {
           showStatus(`${successMessage} Refresh the page to see the saved request.`, true);
         }
@@ -2631,30 +4411,84 @@
         const now = new Date();
         const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         const todayRecord = attendanceData.find((item) => item.date === todayKey);
+
+        // Update Shift State Pill & Note
+        const attendanceBadge = document.getElementById('attendanceShiftBadge');
+        const attendanceShiftText = document.getElementById('attendanceShiftText');
         const attendanceNote = document.getElementById('attendanceHeroNote');
-        if (attendanceNote) {
-          attendanceNote.textContent = todayRecord?.clock_in
-            ? todayRecord.clock_out
-              ? 'Your shift is complete. Thanks for today’s work.'
-              : `Clocked in at ${new Date(todayRecord.clock_in).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}. Remember to clock out when you finish.`
-            : 'Your time log is ready. Clock in when your shift begins.';
+
+        if (todayRecord?.clock_in) {
+          if (todayRecord.clock_out) {
+            if (attendanceBadge) attendanceBadge.className = 'shift-pill shift-pill--complete';
+            if (attendanceShiftText) attendanceShiftText.textContent = 'Shift Complete';
+            if (attendanceNote) attendanceNote.textContent = 'Your shift is complete for today. Thanks for your hard work!';
+          } else {
+            const inTimeStr = formatTimeNice(todayRecord.clock_in);
+            if (attendanceBadge) attendanceBadge.className = 'shift-pill shift-pill--in';
+            if (attendanceShiftText) attendanceShiftText.textContent = 'Clocked In';
+            if (attendanceNote) attendanceNote.textContent = `Clocked in at ${inTimeStr}. Remember to clock out when you finish.`;
+          }
+        } else {
+          if (attendanceBadge) attendanceBadge.className = 'shift-pill shift-pill--ready';
+          if (attendanceShiftText) attendanceShiftText.textContent = 'Shift Ready';
+          if (attendanceNote) attendanceNote.textContent = 'Your time log is ready. Clock in when your shift begins.';
         }
 
-        document.getElementById('attendanceRows').innerHTML = attendanceData.map((item) =>
-          `<tr><td>${safe(item.date)}</td><td>${safe(item.clock_in || '-')}</td><td>${safe(item.clock_out || '-')}</td></tr>`
-        ).join('') || '<tr><td colspan="3">No attendance records.</td></tr>';
+        // Render Mobile-Optimized List/Card View (no squished table)
+        const attendanceRowsEl = document.getElementById('attendanceRows');
+        if (attendanceRowsEl) {
+          if (!attendanceData || attendanceData.length === 0) {
+            attendanceRowsEl.innerHTML = `
+              <div class="attendance-empty-card">
+                <div class="attendance-empty-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 14 14"></polyline>
+                  </svg>
+                </div>
+                <div class="attendance-empty-title">No attendance records yet</div>
+                <div class="attendance-empty-text">Your clocked shifts and logged hours will appear here.</div>
+              </div>
+            `;
+          } else {
+            attendanceRowsEl.innerHTML = attendanceData.map((item) => {
+              const dateInfo = formatDateCard(item.date);
+              const inStr = formatTimeNice(item.clock_in);
+              const outStr = formatTimeNice(item.clock_out);
+              const durationStr = calculateShiftDuration(item.clock_in, item.clock_out);
+              const isActive = item.clock_in && !item.clock_out && item.date === todayKey;
 
-        document.getElementById('leaveRows').innerHTML = rows(await payload(leaves)).map((item) =>
-          `<tr><td>${safe(item.leave_type)}</td><td>${safe(item.start_date)} to ${safe(item.end_date)}</td><td>${safe(item.status)}</td></tr>`
-        ).join('') || '<tr><td colspan="3">No leave requests.</td></tr>';
+              return `
+                <div class="attendance-card-item ${isActive ? 'is-active-shift' : ''}">
+                  <div class="attendance-card-main">
+                    <div class="attendance-card-date-col">
+                      <span class="attendance-card-day">${safe(dateInfo.day)}</span>
+                      <span class="attendance-card-date">${safe(dateInfo.formatted)}</span>
+                    </div>
+                    <div class="attendance-card-chips">
+                      <div class="attendance-time-chip chip-in">
+                        <span class="chip-label">IN</span>
+                        <span class="chip-val">${safe(inStr)}</span>
+                      </div>
+                      <div class="attendance-time-chip chip-out">
+                        <span class="chip-label">OUT</span>
+                        <span class="chip-val">${safe(outStr)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="attendance-card-footer">
+                    <span class="attendance-duration-label">Total Duration</span>
+                    <span class="attendance-duration-badge ${isActive ? 'badge-active' : ''}">${safe(durationStr)}</span>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          }
+        }
 
-        document.getElementById('advanceRows').innerHTML = rows(await payload(advances)).map((item) =>
-          `<tr><td>${safe(item.amount)}</td><td>${safe(item.purpose)}</td><td>${safe(item.status)}</td></tr>`
-        ).join('') || '<tr><td colspan="3">No advance requests.</td></tr>';
-
-        document.getElementById('complaintRows').innerHTML = rows(await payload(complaints)).map((item) =>
-          `<tr><td>${safe(item.subject)}</td><td>${safe(item.category)}</td><td>${safe(item.status)}</td><td>${safe(String(item.created_at || '').slice(0, 10))}</td></tr>`
-        ).join('') || '<tr><td colspan="4">No complaints filed.</td></tr>';
+        renderLeaveCards(rows(await payload(leaves)));
+        renderAdvanceCards(rows(await payload(advances)));
+        renderComplaintCards(rows(await payload(complaints)));
 
         const accountData = await payload(account);
         const googleAccount = accountData.google_account || {};
@@ -2675,6 +4509,22 @@
           if (ln) ln.value = profile.last_name || '';
           if (em) em.value = profile.email || '';
 
+          if (accountData) {
+            if (accountData.page_size && document.getElementById('empPageSize')) {
+              document.getElementById('empPageSize').value = String(accountData.page_size);
+            }
+            if (accountData.a11y?.high_contrast !== undefined && document.getElementById('empHighContrast')) {
+              document.getElementById('empHighContrast').checked = !!accountData.a11y.high_contrast;
+            }
+            const mutedKinds = Array.isArray(accountData.muted_kinds) ? accountData.muted_kinds : [];
+            if (document.getElementById('empLeaveAlerts')) {
+              document.getElementById('empLeaveAlerts').checked = !mutedKinds.includes('leave');
+            }
+            if (document.getElementById('empPayrollAlerts')) {
+              document.getElementById('empPayrollAlerts').checked = !mutedKinds.includes('payroll');
+            }
+          }
+
           // Populate profile tab dynamically if available
           if (profile.first_name) {
             const fullName = `${profile.first_name} ${profile.last_name || ''}`.trim();
@@ -2690,6 +4540,12 @@
 
         const greeting = document.getElementById('portalGreeting');
         if (greeting) greeting.textContent = profile.first_name ? `Hello, ${profile.first_name}` : 'Your employee portal';
+        if (profile.first_name) {
+          const topGreeting = document.getElementById('portalGreetingName');
+          if (topGreeting) topGreeting.textContent = profile.first_name;
+          const topAvatar = document.getElementById('portalTopAvatar');
+          if (topAvatar) topAvatar.textContent = profile.first_name[0].toUpperCase();
+        }
         if (profile.email) myEmployeeEmail = profile.email;
         if (profile.first_name) myEmployeeName = `${profile.first_name} ${profile.last_name || ''}`.trim();
         setPortalTwoFactorState(!!accountData.two_factor_enabled);
@@ -2760,10 +4616,30 @@
     }
 
     function setPortalTwoFactorState(enabled) {
-      document.getElementById('portalMfaDisabled').hidden = enabled;
-      document.getElementById('portalMfaEnabled').hidden = !enabled;
-      const status = document.getElementById('portalMfaStatus');
-      if (status) status.textContent = enabled ? 'Protected. An authenticator code is required when you sign in.' : 'Not enabled. Add an authenticator app for another layer of sign-in protection.';
+      const disabledWrap = document.getElementById('portalMfaDisabled');
+      const enabledWrap = document.getElementById('portalMfaEnabled');
+      const pill = document.getElementById('portalMfaPill');
+      const badgeText = document.getElementById('portalMfaBadgeText');
+      const statusNote = document.getElementById('portalMfaStatus');
+
+      if (disabledWrap) disabledWrap.hidden = enabled;
+      if (enabledWrap) enabledWrap.hidden = !enabled;
+
+      if (pill && badgeText) {
+        if (enabled) {
+          pill.className = 'request-status-pill status-approved';
+          badgeText.textContent = 'Protected';
+        } else {
+          pill.className = 'request-status-pill status-pending';
+          badgeText.textContent = 'Not Enabled';
+        }
+      }
+
+      if (statusNote) {
+        statusNote.textContent = enabled
+          ? 'Protected. An authenticator verification code is required when you sign in.'
+          : 'Add an extra layer of sign-in protection using an authenticator app (Google Authenticator, Authy, etc.).';
+      }
     }
 
     async function startPortalTwoFactorSetup() {
@@ -2833,12 +4709,24 @@
     async function submitPrefs(event) {
       event.preventDefault();
       const muted = [];
-      if (empMuteLeave.checked) muted.push('leave');
-      if (empMutePayroll.checked) muted.push('payroll');
+      const leaveAlerts = document.getElementById('empLeaveAlerts');
+      const payrollAlerts = document.getElementById('empPayrollAlerts');
+      if (leaveAlerts && !leaveAlerts.checked) muted.push('leave');
+      if (payrollAlerts && !payrollAlerts.checked) muted.push('payroll');
+
+      const muteLeaveCb = document.getElementById('empMuteLeave');
+      const mutePayrollCb = document.getElementById('empMutePayroll');
+      if (muteLeaveCb) muteLeaveCb.checked = !leaveAlerts?.checked;
+      if (mutePayrollCb) mutePayrollCb.checked = !payrollAlerts?.checked;
+
       try {
         const response = await portalFetch('/api/settings/me/', {
           method: 'PATCH',
-          body: JSON.stringify({ page_size: parseInt(empPageSize.value), muted_kinds: muted, a11y: { high_contrast: empHighContrast.checked } })
+          body: JSON.stringify({
+            page_size: parseInt(empPageSize.value, 10),
+            muted_kinds: muted,
+            a11y: { high_contrast: empHighContrast.checked }
+          })
         });
         const data = await payload(response);
         if (!response.ok) throw new Error(data.error || 'Preferences could not be saved.');

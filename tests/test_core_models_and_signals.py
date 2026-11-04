@@ -255,7 +255,7 @@ class PageViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Kumon EMS")
         self.assertContains(response, "view-dashboard")
-        self.assertContains(response, "/static/js/dashboard.js?v=6.2")
+        self.assertContains(response, "/static/js/dashboard.js?v=6.4")
 
     def test_login_view_renders_successfully(self):
         response = self.client.get("/login/")
