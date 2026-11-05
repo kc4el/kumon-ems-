@@ -74,6 +74,8 @@ class SettingsFrontendTests(SimpleTestCase):
 
 
 LOGIN_HTML = REPO / "core" / "templates" / "core" / "login.html"
+NEW_STAFF_HTML = REPO / "core" / "templates" / "core" / "new_staff_login.html"
+HR_LOGIN_HTML = REPO / "core" / "templates" / "core" / "hr_login.html"
 
 
 class Round7UxCopyTests(SimpleTestCase):
@@ -92,18 +94,22 @@ class Round7UxCopyTests(SimpleTestCase):
         self.assertIn('placeholder="EMP-XXXX or your email"', html)
         self.assertNotIn("Sign in with Google", html)
         self.assertNotIn("or sign in with your password", html)
-        self.assertIn("First-time employee? New staff login", html)
-        self.assertIn("Temporary password from HR", html)
-        self.assertIn("Use the Employee ID and temporary password provided by HR.", html)
+        self.assertNotIn("First-time employee? New staff login", html)
+        self.assertNotIn("HR Administrator? Use HR Login", html)
+
+        staff_html = NEW_STAFF_HTML.read_text(encoding="utf-8")
+        self.assertIn("New staff sign in", staff_html)
+        self.assertIn("Temporary password from HR", staff_html)
+        self.assertIn("Use the Employee ID and temporary password provided by HR.", staff_html)
         self.assertIn(
             "You can link your Google/email account later in your profile settings.",
-            html,
+            staff_html,
         )
-        self.assertIn('placeholder="Enter your temporary password"', html)
-        self.assertIn("Existing employee sign in", html)
-        self.assertIn("Sign In to Portal</button>", html)
-        self.assertNotIn("Continue to Google account setup", html)
-        self.assertIn("HR Administrator? Use HR Login", html)
+        self.assertIn('placeholder="Enter your temporary password"', staff_html)
+        self.assertIn("Sign In to Portal</button>", staff_html)
+        self.assertNotIn("Continue to Google account setup", staff_html)
+        self.assertNotIn("HR Administrator? Use HR Login", staff_html)
+        self.assertNotIn("Go to employee login", staff_html)
 
     def test_login_page_has_no_self_registration_option(self):
         html = LOGIN_HTML.read_text(encoding="utf-8")
@@ -111,7 +117,7 @@ class Round7UxCopyTests(SimpleTestCase):
         self.assertNotIn("authScreenSignup", html)
         self.assertNotIn("handleAuthSignup", html)
 
-    def test_login_page_renders_with_three_hr_managed_paths(self):
+    def test_login_pages_are_separated_without_cross_role_links(self):
         response = self.client.get("/login/")
         self.assertEqual(response.status_code, 200)
         html = response.content.decode()
@@ -119,9 +125,15 @@ class Round7UxCopyTests(SimpleTestCase):
         self.assertNotIn("Sign in with Google", html)
         self.assertNotIn("or sign in with your password", html)
         self.assertIn("Employee ID or linked email", html)
-        self.assertIn("First-time employee? New staff login", html)
-        self.assertIn("HR Administrator? Use HR Login", html)
+        self.assertNotIn("First-time employee? New staff login", html)
+        self.assertNotIn("HR Administrator? Use HR Login", html)
         self.assertNotIn("Create account / Sign up", html)
+
+        hr_response = self.client.get("/hr/login/")
+        self.assertEqual(hr_response.status_code, 200)
+        hr_html = hr_response.content.decode()
+        self.assertNotIn("Go to employee login", hr_html)
+        self.assertNotIn("Employee account?", hr_html)
 
     def test_employee_settings_support_optional_google_linking(self):
         portal = (REPO / "core" / "templates" / "core" / "employee_portal.html").read_text(
@@ -159,10 +171,18 @@ class Round7UxCopyTests(SimpleTestCase):
         self.assertIn("Copy or print these credentials.", template)
         self.assertIn("For security, the temporary password will not be shown again.", template)
 
-    def test_legacy_first_time_login_url_opens_the_login_toggle(self):
+    def test_new_staff_login_url_renders_dedicated_login(self):
         response = self.client.get("/onboarding/login/")
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response["Location"], "/login/#first-time")
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn("New staff sign in", html)
+        self.assertIn("onboardingEmployeeId", html)
+        self.assertIn("onboardingTemporaryPassword", html)
+
+        alias_resp = self.client.get("/new-staff/login/")
+        self.assertEqual(alias_resp.status_code, 200)
+        alias_html = alias_resp.content.decode()
+        self.assertIn("New staff sign in", alias_html)
 
     def test_company_login_doors_guidance(self):
         html = TEMPLATE.read_text(encoding="utf-8")

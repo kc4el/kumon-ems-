@@ -115,25 +115,6 @@
               <button type="button" class="auth-mfa-cancel" onclick="cancelEmployeeTwoFactor()">Back to password</button>
             </form>
           </section>
-
-          <details class="auth-first-time" id="firstTimeEmployee">
-            <summary>First-time employee? New staff login</summary>
-            <p>Use the Employee ID and temporary password provided by HR. You can link your Google/email account later in your profile settings.</p>
-            <form id="onboardingLoginForm" class="penpot-auth-form" onsubmit="handleOnboardingLogin(event)">
-              <div class="penpot-form-group">
-                <label class="penpot-form-label" for="onboardingEmployeeId">Employee ID</label>
-                <input type="text" id="onboardingEmployeeId" class="penpot-input" autocomplete="username" placeholder="EMP-2026-1234" required />
-              </div>
-              <div class="penpot-form-group">
-                <label class="penpot-form-label" for="onboardingTemporaryPassword">Temporary password from HR</label>
-                <input type="password" id="onboardingTemporaryPassword" class="penpot-input" autocomplete="current-password" placeholder="Enter your temporary password" required />
-              </div>
-              <button type="submit" class="penpot-btn-primary-navy">Sign In to Portal</button>
-            </form>
-          </details>
-          <div class="penpot-switcher-row auth-hr-link">
-            <a href="/hr/login/" class="penpot-switch-link navy">HR Administrator? Use HR Login</a>
-          </div>
         </div>
 
       </div>
@@ -149,21 +130,6 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const firstTimePanel = document.getElementById('firstTimeEmployee');
-      const firstTimeToggle = firstTimePanel?.querySelector('summary');
-      const updateFirstTimeToggle = () => {
-        if (firstTimeToggle) {
-          firstTimeToggle.textContent = firstTimePanel.open
-            ? 'Existing employee sign in'
-            : 'First-time employee? New staff login';
-        }
-      };
-      firstTimePanel?.addEventListener('toggle', updateFirstTimeToggle);
-      if (window.location.hash === '#first-time') {
-        firstTimePanel.open = true;
-        updateFirstTimeToggle();
-        document.getElementById('onboardingEmployeeId').focus();
-      }
       if (urlParams.get('google_mfa') === '1') {
         const form = document.getElementById('employeeLoginForm');
         const challenge = document.getElementById('employeeMfaChallenge');

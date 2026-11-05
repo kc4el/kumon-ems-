@@ -457,7 +457,7 @@ def hr_onboarding_view(request):
 def onboarding_login_view(request):
     if request.user.is_authenticated:
         return redirect("/onboarding/" if _onboarding_employee(request) else "/employee/")
-    return redirect("/login/#first-time")
+    return render(request, "core/new_staff_login.html")
 
 
 @ensure_csrf_cookie

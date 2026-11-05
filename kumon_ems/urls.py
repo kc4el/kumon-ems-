@@ -28,6 +28,7 @@ urlpatterns = [
     path("hr/onboarding/", hr_onboarding_view, name="hr-onboarding"),
     path("employee/", employee_portal_view, name="employee-portal"),
     path("onboarding/login/", onboarding_login_view, name="onboarding-login"),
+    path("new-staff/login/", onboarding_login_view, name="new-staff-login"),
     path("onboarding/", onboarding_view, name="onboarding"),
     path("signup/", RedirectView.as_view(url="/login/", permanent=False)),
     path("auth/", RedirectView.as_view(url="/login/", permanent=False)),
