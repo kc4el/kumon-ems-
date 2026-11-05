@@ -113,6 +113,37 @@ class Attendance(models.Model):
         ]
 
 
+class AttendanceQrSession(models.Model):
+    class Status(models.TextChoices):
+        ACTIVE = "ACTIVE", "Active"
+        USED = "USED", "Used"
+        EXPIRED = "EXPIRED", "Expired"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    token = models.CharField(max_length=128, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+    invalidated_at = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.ACTIVE,
+        db_index=True,
+    )
+
+    @property
+    def is_active(self):
+        return self.status == self.Status.ACTIVE and timezone.now() < self.expires_at
+
+    def invalidate(self, *, used=False):
+        now = timezone.now()
+        self.invalidated_at = now
+        self.used_at = now if used else self.used_at
+        self.status = self.Status.USED if used else self.Status.EXPIRED
+        self.save(update_fields=["used_at", "invalidated_at", "status"])
+
+
 class OvertimeSlip(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)

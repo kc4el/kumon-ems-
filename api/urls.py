@@ -3,6 +3,9 @@ from core.views import (
     AttendanceCheckInView,
     AttendanceClockOutView,
     AttendanceCorrectionDetailView,
+    AttendanceQrCurrentView,
+    AttendanceQrEventStreamView,
+    AttendanceQrScanView,
     AttendanceCorrectionListCreateView,
     AttendanceDetailView,
     AttendanceListCreateView,
@@ -124,7 +127,23 @@ urlpatterns = [
         "grievances/<uuid:pk>/", GrievanceDetailView.as_view(), name="grievance-detail"
     ),
     path(
-        "attendance/", AttendanceListCreateView.as_view(), name="attendance-list-create"
+        "attendance/qr/current/",
+        AttendanceQrCurrentView.as_view(),
+        name="attendance-qr-current",
+    ),
+    path(
+        "attendance/qr/scan/",
+        AttendanceQrScanView.as_view(),
+        name="attendance-qr-scan",
+    ),
+    path(
+        "attendance/qr/events/",
+        AttendanceQrEventStreamView.as_view(),
+        name="attendance-qr-events",
+    ),
+    path(
+        "attendance/",
+        AttendanceListCreateView.as_view(), name="attendance-list-create"
     ),
     path(
         "attendance/<uuid:pk>/",

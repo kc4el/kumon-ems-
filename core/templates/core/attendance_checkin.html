@@ -25,6 +25,12 @@
     label { display:block; margin:16px 0 7px; font-size:13px; font-weight:700; }
     input { width:100%; min-height:52px; padding:0 14px; border:1px solid #cbd7e6; border-radius:12px; color:var(--ink); background:#fff; font:inherit; font-size:16px; outline:none; }
     input:focus { border-color:var(--blue); box-shadow:0 0 0 4px #dceaff; }
+    .qr-scanner-block { margin:12px 0 18px; }
+    .qr-scan-btn, .qr-cancel-btn { width:100%; min-height:54px; margin-top:0; border:0; border-radius:12px; background:var(--blue); color:#fff; font:inherit; font-weight:750; font-size:16px; cursor:pointer; }
+    .qr-cancel-btn { background:#0f172a; margin-top:10px; }
+    .scanner-panel { margin-top:12px; padding:12px; border:1px solid var(--line); border-radius:14px; background:#f8fbff; }
+    #qrVideo { width:100%; border-radius:12px; display:block; background:#0b1220; min-height:220px; }
+    #scannerStatus { margin-top:10px; font-size:13px; color:var(--muted); }
     button { width:100%; min-height:54px; margin-top:22px; border:0; border-radius:12px; background:var(--blue); color:#fff; font:inherit; font-weight:750; font-size:16px; cursor:pointer; }
     button:disabled { opacity:.65; cursor:wait; }
     .status { min-height:25px; margin:14px 2px 0; font-size:14px; line-height:1.45; }
@@ -45,6 +51,16 @@
       </header>
       <main>
         <div class="today"><div><strong id="todayLabel">Today</strong><span>Your check-in is recorded securely.</span></div><span class="status-dot" aria-hidden="true"></span></div>
+
+        <div class="qr-scanner-block">
+          <button id="scanQrButton" class="qr-scan-btn" type="button">Scan QR attendance code</button>
+          <div id="scannerPanel" class="scanner-panel" hidden>
+            <video id="qrVideo" playsinline autoplay muted></video>
+            <div id="scannerStatus">Point your camera at the office QR code.</div>
+            <button id="cancelScanButton" type="button" class="qr-cancel-btn">Cancel</button>
+          </div>
+        </div>
+
         <form id="mobileCheckInForm">
           <label for="employeeName">Corporate email</label>
           <input id="employeeName" name="name" type="email" autocomplete="username" placeholder="employee@company.com" required>
@@ -60,6 +76,114 @@
   <script>
     const csrfToken = () => document.cookie.split('; ').find((cookie) => cookie.startsWith('csrftoken='))?.split('=')[1];
     document.getElementById('todayLabel').textContent = new Date().toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric' });
+
+    const scannerState = {
+      stream: null,
+      active: false,
+      scanTimer: null,
+      detector: null,
+    };
+
+    const setScannerUi = (visible, message = '') => {
+      const panel = document.getElementById('scannerPanel');
+      const status = document.getElementById('scannerStatus');
+      panel.hidden = !visible;
+      if (message) status.textContent = message;
+    };
+
+    async function stopScanner() {
+      if (scannerState.stream) {
+        scannerState.stream.getTracks().forEach((track) => track.stop());
+        scannerState.stream = null;
+      }
+      if (scannerState.scanTimer) {
+        cancelAnimationFrame(scannerState.scanTimer);
+        scannerState.scanTimer = null;
+      }
+      scannerState.active = false;
+      setScannerUi(false);
+    }
+
+    async function submitQrToken(token) {
+      const result = document.getElementById('result');
+      result.className = 'status';
+      result.textContent = 'Processing QR scan...';
+      try {
+        const response = await fetch('/api/attendance/qr/scan/', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(csrfToken() ? { 'X-CSRFToken': csrfToken() } : {}),
+          },
+          body: JSON.stringify({ token }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || 'Unable to process the QR code.');
+        result.className = 'status success';
+        result.textContent = data.message || 'Attendance updated.';
+        await stopScanner();
+      } catch (error) {
+        result.className = 'status error';
+        result.textContent = error.message;
+        setScannerUi(true, 'Camera is still running. Try scanning again.');
+      }
+    }
+
+    async function startQrScanner() {
+      if (!('mediaDevices' in navigator) || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        document.getElementById('result').className = 'status error';
+        document.getElementById('result').textContent = 'This device does not support camera scanning.';
+        return;
+      }
+
+      const video = document.getElementById('qrVideo');
+      const panel = document.getElementById('scannerPanel');
+      panel.hidden = false;
+      scannerState.active = true;
+      setScannerUi(true, 'Point your camera at the office QR code.');
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' },
+          audio: false,
+        });
+        scannerState.stream = stream;
+        video.srcObject = stream;
+        await video.play();
+
+        if ('BarcodeDetector' in window) {
+          scannerState.detector = new BarcodeDetector({ formats: ['qr_code'] });
+        }
+
+        const tick = async () => {
+          if (!scannerState.active) return;
+          try {
+            if (scannerState.detector && video.readyState >= 2) {
+              const detected = await scannerState.detector.detect(video);
+              const value = detected && detected[0] && detected[0].rawValue;
+              if (value) {
+                scannerState.active = false;
+                await submitQrToken(value);
+                return;
+              }
+            }
+          } catch (error) {
+            // Ignore frame detection errors and continue scanning.
+          }
+          scannerState.scanTimer = requestAnimationFrame(tick);
+        };
+        tick();
+      } catch (error) {
+        scannerState.active = false;
+        setScannerUi(false);
+        document.getElementById('result').className = 'status error';
+        document.getElementById('result').textContent = 'Unable to access the camera. Please use the email/password form instead.';
+      }
+    }
+
+    document.getElementById('scanQrButton').addEventListener('click', startQrScanner);
+    document.getElementById('cancelScanButton').addEventListener('click', stopScanner);
     document.getElementById('mobileCheckInForm').addEventListener('submit', async (event) => {
       event.preventDefault();
       const button = document.getElementById('submitButton');

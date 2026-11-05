@@ -1,3 +1,4 @@
+import json
 import logging
 import uuid
 from collections import Counter
@@ -9,7 +10,9 @@ from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, models, transaction
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views import View
 from django.utils.decorators import method_decorator
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -27,6 +30,7 @@ from .exceptions import Conflict409
 from .models import (
     Attendance,
     AttendanceCorrection,
+    AttendanceQrSession,
     AuthenticatorDevice,
     AuthenticatorRecoveryCode,
     ClaimStatus,
@@ -56,6 +60,12 @@ from .permissions import (
     IsStaffOrHR,
     OwnerQuerysetMixin,
     is_staff_or_hr,
+)
+from .qr_service import (
+    create_active_qr_session,
+    get_active_qr_session,
+    invalidate_qr_session,
+    stream_qr_events,
 )
 from .serializers import (
     MUTABLE_PROFILE_FIELDS,
@@ -858,6 +868,89 @@ class AttendanceCheckInView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class AttendanceQrCurrentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        session = get_active_qr_session()
+        return Response(
+            {
+                "token": session.token,
+                "expires_at": session.expires_at.isoformat(),
+                "expires_in_seconds": max(0, int((session.expires_at - timezone.now()).total_seconds())),
+                "status": session.status,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AttendanceQrScanView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        token = str(request.data.get("token", "") or "").strip()
+        if not token:
+            return Response({"error": "QR token is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        session = AttendanceQrSession.objects.filter(token=token).first()
+        now = timezone.now()
+        if session is None or session.status != AttendanceQrSession.Status.ACTIVE or now >= session.expires_at:
+            if session is not None and session.status == AttendanceQrSession.Status.ACTIVE:
+                session.status = AttendanceQrSession.Status.EXPIRED
+                session.invalidated_at = now
+                session.save(update_fields=["status", "invalidated_at"])
+            return Response({"error": "Expired, already-used, or invalid QR token."}, status=status.HTTP_400_BAD_REQUEST)
+
+        employee = _request_owner(request)
+        if employee is None or not employee.is_active:
+            return Response({"error": "No active employee profile is linked to this account."}, status=status.HTTP_403_FORBIDDEN)
+
+        today = timezone.localdate()
+        attendance, created = Attendance.objects.get_or_create(
+            employee=employee,
+            date=today,
+            defaults={"clock_in": now},
+        )
+
+        if created or attendance.clock_in is None:
+            attendance.clock_in = now
+            attendance.save(update_fields=["clock_in"])
+            invalidate_qr_session(session, used=True)
+            return Response(
+                {
+                    "message": "Clock-in recorded successfully.",
+                    "event": "clock_in",
+                    "attendance": AttendanceSerializer(attendance).data,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        if attendance.clock_out is not None:
+            return Response({"error": "Attendance has already been completed for today."}, status=status.HTTP_409_CONFLICT)
+
+        if attendance.clock_in and now - attendance.clock_in < timedelta(hours=1):
+            return Response({"error": "Cannot clock out within 1 hour of clocking in."}, status=status.HTTP_400_BAD_REQUEST)
+
+        attendance.clock_out = now
+        attendance.save(update_fields=["clock_out"])
+        invalidate_qr_session(session, used=True)
+        return Response(
+            {
+                "message": "Clock-out recorded successfully.",
+                "event": "clock_out",
+                "attendance": AttendanceSerializer(attendance).data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AttendanceQrEventStreamView(View):
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return HttpResponse(status=401)
+        return stream_qr_events(request)
 
 
 class AttendanceDetailView(generics.RetrieveUpdateDestroyAPIView):

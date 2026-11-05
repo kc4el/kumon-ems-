@@ -12,6 +12,7 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/main.css' %}?v=7.8" />
+  <script src="{% static 'js/qrcode.min.js' %}"></script>
   <script>
     function applyTheme(theme) {
       if (theme === 'dark') {
@@ -64,12 +65,56 @@
     window.applyTheme = applyTheme;
     window.updateThemeToggleUI = updateThemeToggleUI;
 
+    function renderAttendanceQr(token) {
+      var square = document.getElementById('attendanceQrSquare');
+      if (!square) return;
+      if (!token || !window.qrcode) {
+        square.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:700;color:#0f172a;">QR unavailable</div>';
+        return;
+      }
+      var qr = window.qrcode(0, 'L');
+      qr.addData(token);
+      qr.make();
+      square.innerHTML = qr.createImgTag(10, 0, 'Attendance QR');
+    }
+
+    function refreshAttendanceQr() {
+      fetch('/api/attendance/qr/current/', { credentials: 'same-origin' })
+        .then(function(response) { return response.ok ? response.json() : Promise.reject(new Error('Unable to load QR')); })
+        .then(function(data) {
+          if (data && data.token) {
+            renderAttendanceQr(data.token);
+            var instruction = document.getElementById('attendanceQrInstruction');
+            if (instruction) {
+              instruction.textContent = 'Scan the QR code for time in/out';
+            }
+          }
+        })
+        .catch(function() {
+          var square = document.getElementById('attendanceQrSquare');
+          if (square) {
+            square.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:700;color:#0f172a;">QR unavailable</div>';
+          }
+        });
+    }
+
     function openAttendanceQrScreen() {
       var overlay = document.getElementById('attendanceQrOverlay');
       if (overlay) {
         overlay.style.display = 'flex';
         document.body.style.overflow = 'hidden';
       }
+      refreshAttendanceQr();
+      if (window.__attendanceQrEventSource) {
+        window.__attendanceQrEventSource.close();
+      }
+      window.__attendanceQrEventSource = new EventSource('/api/attendance/qr/events/');
+      window.__attendanceQrEventSource.addEventListener('qr_refresh', function(event) {
+        var payload = JSON.parse(event.data || '{}');
+        if (payload && payload.token) {
+          renderAttendanceQr(payload.token);
+        }
+      });
     }
 
     function closeAttendanceQrScreen() {
@@ -77,6 +122,10 @@
       if (overlay) {
         overlay.style.display = 'none';
         document.body.style.overflow = '';
+      }
+      if (window.__attendanceQrEventSource) {
+        window.__attendanceQrEventSource.close();
+        window.__attendanceQrEventSource = null;
       }
     }
 
