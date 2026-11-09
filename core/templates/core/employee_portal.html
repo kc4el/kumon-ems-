@@ -2508,7 +2508,9 @@
        Mobile QR Camera Scanner Modal / Bottom Sheet
        ========================================================================== */
     .btn-clockin-primary:disabled,
-    .btn-clockin-secondary:disabled {
+    .btn-clockin-secondary:disabled,
+    .btn-clockin-primary.is-disabled,
+    .btn-clockin-secondary.is-disabled {
       opacity: 0.42;
       cursor: not-allowed;
       pointer-events: none;
@@ -3023,10 +3025,10 @@
 
           <!-- Action Row (Side-by-side min h-12 / 48px touch targets) -->
           <div class="clockin-actions-row">
-            <button type="button" class="btn-clockin-primary" id="btnClockIn" onclick="openQrScannerModal()">
+            <button type="button" class="btn-clockin-primary" id="btnClockIn" onclick="openQrScannerModal('clock_in')">
               <span>Clock In</span>
             </button>
-            <button type="button" class="btn-clockin-secondary" id="btnClockOut" onclick="attendanceAction('clock_out')" disabled>
+            <button type="button" class="btn-clockin-secondary" id="btnClockOut" onclick="openQrScannerModal('clock_out')" disabled>
               <span>Clock Out</span>
             </button>
           </div>
@@ -4576,22 +4578,22 @@
             if (attendanceBadge) attendanceBadge.className = 'shift-pill shift-pill--complete';
             if (attendanceShiftText) attendanceShiftText.textContent = 'Shift Complete';
             if (attendanceNote) attendanceNote.textContent = 'Your shift is complete for today. Thanks for your hard work!';
-            if (btnClockIn) { btnClockIn.disabled = true; btnClockIn.classList.add('is-disabled'); }
-            if (btnClockOut) { btnClockOut.disabled = true; btnClockOut.classList.add('is-disabled'); }
+            if (btnClockIn) { btnClockIn.disabled = true; btnClockIn.classList.add('is-disabled'); btnClockIn.setAttribute('aria-disabled', 'true'); }
+            if (btnClockOut) { btnClockOut.disabled = true; btnClockOut.classList.add('is-disabled'); btnClockOut.setAttribute('aria-disabled', 'true'); }
           } else {
             const inTimeStr = formatTimeNice(todayRecord.clock_in);
             if (attendanceBadge) attendanceBadge.className = 'shift-pill shift-pill--in';
             if (attendanceShiftText) attendanceShiftText.textContent = 'On Shift';
             if (attendanceNote) attendanceNote.textContent = `Clocked in at ${inTimeStr}. Remember to clock out when you finish.`;
-            if (btnClockIn) { btnClockIn.disabled = true; btnClockIn.classList.add('is-disabled'); }
-            if (btnClockOut) { btnClockOut.disabled = false; btnClockOut.classList.remove('is-disabled'); }
+            if (btnClockIn) { btnClockIn.disabled = true; btnClockIn.classList.add('is-disabled'); btnClockIn.setAttribute('aria-disabled', 'true'); }
+            if (btnClockOut) { btnClockOut.disabled = false; btnClockOut.classList.remove('is-disabled'); btnClockOut.setAttribute('aria-disabled', 'false'); }
           }
         } else {
           if (attendanceBadge) attendanceBadge.className = 'shift-pill shift-pill--ready';
           if (attendanceShiftText) attendanceShiftText.textContent = 'Shift Ready';
           if (attendanceNote) attendanceNote.textContent = 'Your time log is ready. Clock in when your shift begins.';
-          if (btnClockIn) { btnClockIn.disabled = false; btnClockIn.classList.remove('is-disabled'); }
-          if (btnClockOut) { btnClockOut.disabled = true; btnClockOut.classList.add('is-disabled'); }
+          if (btnClockIn) { btnClockIn.disabled = false; btnClockIn.classList.remove('is-disabled'); btnClockIn.setAttribute('aria-disabled', 'false'); }
+          if (btnClockOut) { btnClockOut.disabled = true; btnClockOut.classList.add('is-disabled'); btnClockOut.setAttribute('aria-disabled', 'true'); }
         }
 
         // Render Mobile-Optimized List/Card View (no squished table)
@@ -4725,8 +4727,30 @@
     let qrScanInterval = null;
     let isQrScanningPaused = false;
     let qrBannerTimeout = null;
+    let currentQrScanMode = 'clock_in';
 
-    function openQrScannerModal() {
+    function openQrScannerModal(mode) {
+      const btnClockIn = document.getElementById('btnClockIn');
+      const btnClockOut = document.getElementById('btnClockOut');
+      const requestedMode = mode === 'clock_out'
+        ? 'clock_out'
+        : (mode === 'clock_in' ? 'clock_in' : (btnClockIn?.disabled && !btnClockOut?.disabled ? 'clock_out' : 'clock_in'));
+
+      if (requestedMode === 'clock_in' && btnClockIn && (btnClockIn.disabled || btnClockIn.classList.contains('is-disabled'))) {
+        return;
+      }
+      if (requestedMode === 'clock_out' && btnClockOut && (btnClockOut.disabled || btnClockOut.classList.contains('is-disabled'))) {
+        return;
+      }
+
+      currentQrScanMode = requestedMode;
+      const helperText = document.getElementById('qrHelperText');
+      if (helperText) {
+        helperText.textContent = currentQrScanMode === 'clock_out'
+          ? 'Point camera at the Center QR code to clock out.'
+          : 'Point camera at the Center QR code to clock in.';
+      }
+
       const modal = document.getElementById('qrScannerModal');
       if (!modal) return;
       modal.classList.add('is-active');
@@ -4938,13 +4962,18 @@
         if (helperText) helperText.style.display = 'none';
         if (successCard) successCard.style.display = 'flex';
 
-        if (!isClockOut) updateDashboardToOnShift(timeStr);
+        if (isClockOut) {
+          updateDashboardToShiftComplete(timeStr, data.attendance);
+        } else {
+          updateDashboardToOnShift(timeStr);
+        }
 
         setTimeout(() => {
           closeQrScannerModal();
           loadPortalData();
         }, 1500);
       } catch (err) {
+        isQrScanningPaused = false;
         if (err.message === 'auth') {
           closeQrScannerModal();
           return;
@@ -4972,10 +5001,12 @@
       if (btnClockIn) {
         btnClockIn.disabled = true;
         btnClockIn.classList.add('is-disabled');
+        btnClockIn.setAttribute('aria-disabled', 'true');
       }
       if (btnClockOut) {
         btnClockOut.disabled = false;
         btnClockOut.classList.remove('is-disabled');
+        btnClockOut.setAttribute('aria-disabled', 'false');
       }
 
       // 4. Automatically insert new record into "Recent Logs" history
@@ -5019,6 +5050,53 @@
             </div>
           `;
           attendanceRowsEl.insertAdjacentHTML('afterbegin', newCardHtml);
+        }
+      }
+    }
+
+    function updateDashboardToShiftComplete(timeStr, attendanceRecord) {
+      // 1. Status badge flips to "Shift Complete"
+      const attendanceBadge = document.getElementById('attendanceShiftBadge');
+      const attendanceShiftText = document.getElementById('attendanceShiftText');
+      if (attendanceBadge) attendanceBadge.className = 'shift-pill shift-pill--complete';
+      if (attendanceShiftText) attendanceShiftText.textContent = 'Shift Complete';
+
+      // 2. Hero note updates
+      const attendanceNote = document.getElementById('attendanceHeroNote');
+      if (attendanceNote) {
+        attendanceNote.textContent = 'Your shift is complete for today. Thanks for your hard work!';
+      }
+
+      // 3. Disable both "Clock In" and "Clock Out" so the user cannot clock in again
+      const btnClockIn = document.getElementById('btnClockIn');
+      const btnClockOut = document.getElementById('btnClockOut');
+      if (btnClockIn) {
+        btnClockIn.disabled = true;
+        btnClockIn.classList.add('is-disabled');
+        btnClockIn.setAttribute('aria-disabled', 'true');
+      }
+      if (btnClockOut) {
+        btnClockOut.disabled = true;
+        btnClockOut.classList.add('is-disabled');
+        btnClockOut.setAttribute('aria-disabled', 'true');
+      }
+
+      // 4. Update active record in "Recent Logs" history
+      const attendanceRowsEl = document.getElementById('attendanceRows');
+      if (attendanceRowsEl) {
+        const activeCard = attendanceRowsEl.querySelector('.is-active-shift') || attendanceRowsEl.querySelector('.attendance-card-item');
+        if (activeCard) {
+          activeCard.classList.remove('is-active-shift');
+          const outVal = activeCard.querySelector('.chip-out .chip-val');
+          if (outVal) outVal.textContent = timeStr;
+          const durationBadge = activeCard.querySelector('.attendance-duration-badge');
+          if (durationBadge) {
+            durationBadge.classList.remove('badge-active');
+            const durationStr = attendanceRecord?.clock_in && attendanceRecord?.clock_out
+              ? calculateShiftDuration(attendanceRecord.clock_in, attendanceRecord.clock_out)
+              : 'Completed';
+            durationBadge.textContent = durationStr;
+          }
         }
       }
     }
