@@ -93,6 +93,53 @@ GOOGLE_OAUTH_ALLOWED_DOMAIN=example.com
 
 `SUPABASE_DB_URL` makes Django use Supabase Postgres as its primary database. Keep the database password private and URL-encode reserved characters. Existing `DB_HOST`/`DB_NAME`/`DB_USER`/`DB_PASSWORD` settings remain supported; without either configuration, local development uses SQLite.
 
+## Phone simulation requirements
+
+To test the employee portal and camera-based QR scanner on a phone connected to the same Wi-Fi as the development computer, use HTTPS. Phone browsers generally require a secure context before allowing camera access.
+
+Python requirements for the HTTPS development server are listed in `requirements.txt`: `django-extensions` provides `runserver_plus`, Werkzeug is its development server, and pyOpenSSL enables its `--cert-file` HTTPS support. Install the project requirements with the same Python interpreter you use to run Django:
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+Install **mkcert** separately because it is a Windows system tool, not a Python package. For example, with Chocolatey:
+
+```powershell
+choco install mkcert
+```
+
+Then, in PowerShell:
+
+1. Connect the phone and computer to the same trusted Wi-Fi. On the computer, run `ipconfig` and note the Wi-Fi adapter's IPv4 address (the examples below use `192.168.101.70`; replace it with your current address).
+2. Install mkcert's local CA on the computer and generate a certificate for that IP:
+
+   ```powershell
+   mkcert -install
+   mkcert -cert-file "$env:TEMP\kumon-ems.crt" -key-file "$env:TEMP\kumon-ems.key" 192.168.101.70 localhost 127.0.0.1
+   ```
+
+3. For the phone to trust the HTTPS certificate, find the CA directory with `mkcert -CAROOT` and transfer **only** `rootCA.pem` to the phone. Install and trust that certificate using the phone's certificate settings. On iPhone, after installing the profile, enable full trust under **Settings → General → About → Certificate Trust Settings**. Never transfer `rootCA-key.pem`; it is the private signing key.
+4. Stop any previous Django server with **Ctrl+C**. In the project-root PowerShell terminal, configure Django to accept the LAN hostname and run the HTTPS development server:
+
+   ```powershell
+   $env:DEBUG = "True"
+   $env:DJANGO_ALLOWED_HOSTS = "localhost,127.0.0.1,192.168.101.70"
+   python manage.py runserver_plus 0.0.0.0:8443 --cert-file "$env:TEMP\kumon-ems.crt" --key-file "$env:TEMP\kumon-ems.key"
+   ```
+
+5. If Windows Firewall blocks the phone, run this once in an elevated PowerShell. It permits HTTPS only from the local subnet; remove it when you no longer need phone testing:
+
+   ```powershell
+   New-NetFirewallRule -DisplayName "Kumon EMS HTTPS dev (LAN)" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 8443 -RemoteAddress LocalSubnet -Profile Public
+   # Later, to remove the rule:
+   Remove-NetFirewallRule -DisplayName "Kumon EMS HTTPS dev (LAN)"
+   ```
+
+6. On the phone, open `https://192.168.101.70:8443/employee/` and sign in. Replace the example address with the computer's current Wi-Fi IPv4 address. Open the dashboard's **Generate QR** screen on the computer and scan its current QR code with the employee page on the phone.
+
+This is for local development only. Keep the server on a trusted network, do not expose it to the public internet, and remove the phone's trusted development CA when finished if you no longer need it.
+
 ## Project structure
 
 - `pages/`: standalone HTML previews (`dashboard.html`, `dashboard-preview.html`, and `login.html`)

@@ -37,7 +37,7 @@ class AttendanceQrSessionTests(TestCase):
     def test_qr_scan_records_clock_in(self):
         self.client.force_login(self.user)
         session = AttendanceQrSession.objects.create(
-            token="valid-clock-in-token",
+            token="uZ9A2_pQ7-xY4",
             expires_at=timezone.now() + timedelta(minutes=5),
             status=AttendanceQrSession.Status.ACTIVE,
         )
@@ -52,6 +52,15 @@ class AttendanceQrSessionTests(TestCase):
         self.assertEqual(response.json()["event"], "clock_in")
         self.assertTrue(Attendance.objects.filter(employee=self.employee, date=timezone.localdate()).exists())
         self.assertEqual(AttendanceQrSession.objects.get(pk=session.pk).status, AttendanceQrSession.Status.USED)
+
+    def test_employee_portal_scanner_submits_qr_token_to_attendance_endpoint(self):
+        self.client.force_login(self.user)
+        response = self.client.get("/employee/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "/api/attendance/qr/scan/")
+        self.assertContains(response, "JSON.stringify({ token })")
+        self.assertNotContains(response, "code.includes('kumon')")
 
     def test_qr_scan_rejects_clock_out_within_one_hour(self):
         self.client.force_login(self.user)
