@@ -10,3 +10,8 @@ django-dbml==1.2.0
 django-extensions==4.1
 argon2-cffi>=23.1.0,<26
 google-auth[requests]>=2.30.0,<3
+
+# Phone simulation requirements
+Werkzeug==3.1.9
+pyOpenSSL==26.4.0
+# mkcert is a system tool, not a Python package; install it separately.
