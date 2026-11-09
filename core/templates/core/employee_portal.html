@@ -4753,12 +4753,18 @@
       const successCard = document.getElementById('qrSuccessCard');
       const helperText = document.getElementById('qrHelperText');
       const invalidBanner = document.getElementById('qrInvalidBanner');
+      const fallbackTitle = fallback?.querySelector('.qr-fallback-title');
+      const fallbackDescription = fallback?.querySelector('.qr-fallback-desc');
 
       if (invalidBanner) invalidBanner.style.display = 'none';
       if (successCard) successCard.style.display = 'none';
       if (viewfinderWrap) viewfinderWrap.style.display = 'block';
       if (helperText) helperText.style.display = 'block';
       if (fallback) fallback.style.display = 'none';
+      if (fallbackTitle) fallbackTitle.textContent = 'Camera Access Denied';
+      if (fallbackDescription) {
+        fallbackDescription.textContent = 'Please allow camera permissions in your browser settings to scan the Center QR code.';
+      }
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         if (fallback) fallback.style.display = 'flex';
@@ -4842,23 +4848,38 @@
         }
       }
 
+      if (!detector) {
+        const fallback = document.getElementById('qrCameraFallback');
+        const fallbackTitle = fallback?.querySelector('.qr-fallback-title');
+        const fallbackDescription = fallback?.querySelector('.qr-fallback-desc');
+        const viewfinderWrap = document.getElementById('qrViewfinderWrap');
+        if (fallbackTitle) fallbackTitle.textContent = 'QR Scanning Not Supported';
+        if (fallbackDescription) {
+          fallbackDescription.textContent = 'Use a current version of Chrome or Edge to scan attendance QR codes on this device.';
+        }
+        if (fallback) fallback.style.display = 'flex';
+        if (viewfinderWrap) viewfinderWrap.style.display = 'none';
+        stopQrCameraStream();
+        return;
+      }
+
       qrScanInterval = setInterval(async () => {
         if (isQrScanningPaused || !video || video.readyState !== video.HAVE_ENOUGH_DATA) return;
-        if (detector) {
-          try {
-            const barcodes = await detector.detect(video);
-            if (barcodes && barcodes.length > 0) {
-              const rawVal = barcodes[0].rawValue;
-              if (rawVal) handleQrCodeScanned(rawVal);
-            }
-          } catch (e) {}
-        }
+        try {
+          const barcodes = await detector.detect(video);
+          if (barcodes && barcodes.length > 0) {
+            const rawVal = barcodes[0].rawValue;
+            if (rawVal) handleQrCodeScanned(rawVal);
+          }
+        } catch (e) {}
       }, 250);
     }
 
-    function showQrInvalidBanner() {
+    function showQrInvalidBanner(message = 'Invalid QR code. Please scan the official center code.') {
       const banner = document.getElementById('qrInvalidBanner');
       if (!banner) return;
+      const text = banner.querySelector('span');
+      if (text) text.textContent = message;
       banner.style.display = 'flex';
       banner.classList.remove('qr-shake');
       void banner.offsetWidth; // Force CSS reflow to re-trigger shake animation
@@ -4877,53 +4898,53 @@
     async function handleQrCodeScanned(decodedText) {
       if (isQrScanningPaused) return;
 
-      const code = String(decodedText || '').trim().toLowerCase();
-      // Validation: verify valid center QR code (contains kumon, center, attendance, or clock_in)
-      const isValid = code.includes('kumon') || code.includes('center') || code.includes('attendance') || code.includes('clock_in');
-
-      if (!isValid) {
-        showQrInvalidBanner();
-        return;
-      }
-
-      // Valid Center QR!
+      const token = String(decodedText || '').trim();
+      if (!token) return;
       isQrScanningPaused = true;
-      stopQrCameraStream();
-
-      const now = new Date();
-      const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
-
-      // Display Success Confirmation Card inside Modal
-      const successCard = document.getElementById('qrSuccessCard');
-      const successTime = document.getElementById('qrSuccessTime');
-      const viewfinderWrap = document.getElementById('qrViewfinderWrap');
-      const helperText = document.getElementById('qrHelperText');
-      const invalidBanner = document.getElementById('qrInvalidBanner');
-
-      if (invalidBanner) invalidBanner.style.display = 'none';
-      if (successTime) successTime.textContent = `Clocked in at ${timeStr}`;
-      if (viewfinderWrap) viewfinderWrap.style.display = 'none';
-      if (helperText) helperText.style.display = 'none';
-      if (successCard) successCard.style.display = 'flex';
-
-      // Update Dashboard UI State Immediately
-      updateDashboardToOnShift(timeStr);
-
-      // Persist attendance record via backend API
       try {
-        await portalFetch('/api/attendance/me/', {
+        const response = await portalFetch('/api/attendance/qr/scan/', {
           method: 'POST',
-          body: JSON.stringify({ action: 'clock_in', qr_code: decodedText })
+          body: JSON.stringify({ token })
         });
-      } catch (err) {
-        console.warn('Clock in sync:', err.message);
-      }
+        const data = await payload(response);
+        if (!response.ok) {
+          throw new Error(apiErrorMessage(data, 'The QR code could not be used.'));
+        }
 
-      // Automatically close modal after brief delay (1.5s) and sync full portal data
-      setTimeout(() => {
-        closeQrScannerModal();
-        loadPortalData();
-      }, 1500);
+        stopQrCameraStream();
+        const isClockOut = data.event === 'clock_out';
+        const recordedAt = data.attendance?.[isClockOut ? 'clock_out' : 'clock_in'];
+        const now = recordedAt ? new Date(recordedAt) : new Date();
+        const timeStr = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+        const successCard = document.getElementById('qrSuccessCard');
+        const successTitle = successCard?.querySelector('.qr-success-title');
+        const successTime = document.getElementById('qrSuccessTime');
+        const successSubtitle = successCard?.querySelector('.qr-success-subtitle');
+        const viewfinderWrap = document.getElementById('qrViewfinderWrap');
+        const helperText = document.getElementById('qrHelperText');
+        const invalidBanner = document.getElementById('qrInvalidBanner');
+
+        if (invalidBanner) invalidBanner.style.display = 'none';
+        if (successTitle) successTitle.textContent = isClockOut ? 'Clock Out Confirmed' : 'Clock In Confirmed';
+        if (successTime) successTime.textContent = `${isClockOut ? 'Clocked out' : 'Clocked in'} at ${timeStr}`;
+        if (successSubtitle) successSubtitle.textContent = isClockOut ? 'Shift completed • Have a great day!' : 'Shift started • Have a wonderful day!';
+        if (viewfinderWrap) viewfinderWrap.style.display = 'none';
+        if (helperText) helperText.style.display = 'none';
+        if (successCard) successCard.style.display = 'flex';
+
+        if (!isClockOut) updateDashboardToOnShift(timeStr);
+
+        setTimeout(() => {
+          closeQrScannerModal();
+          loadPortalData();
+        }, 1500);
+      } catch (err) {
+        if (err.message === 'auth') {
+          closeQrScannerModal();
+          return;
+        }
+        showQrInvalidBanner(err.message || 'The QR code could not be used. Scan the current office code and try again.');
+      }
     }
 
     function updateDashboardToOnShift(timeStr) {

@@ -65,6 +65,8 @@
     window.applyTheme = applyTheme;
     window.updateThemeToggleUI = updateThemeToggleUI;
 
+    var attendanceQrRefreshTimer = null;
+
     function renderAttendanceQr(token) {
       var square = document.getElementById('attendanceQrSquare');
       if (!square) return;
@@ -75,11 +77,11 @@
       var qr = window.qrcode(0, 'L');
       qr.addData(token);
       qr.make();
-      square.innerHTML = qr.createImgTag(10, 0, 'Attendance QR');
+      square.innerHTML = qr.createImgTag(8, 32, 'Attendance QR');
     }
 
     function refreshAttendanceQr() {
-      fetch('/api/attendance/qr/current/', { credentials: 'same-origin' })
+      fetch('/api/attendance/qr/current/', { credentials: 'same-origin', cache: 'no-store' })
         .then(function(response) { return response.ok ? response.json() : Promise.reject(new Error('Unable to load QR')); })
         .then(function(data) {
           if (data && data.token) {
@@ -105,15 +107,14 @@
         document.body.style.overflow = 'hidden';
       }
       refreshAttendanceQr();
+      if (attendanceQrRefreshTimer) clearInterval(attendanceQrRefreshTimer);
+      attendanceQrRefreshTimer = setInterval(refreshAttendanceQr, 45000);
       if (window.__attendanceQrEventSource) {
         window.__attendanceQrEventSource.close();
       }
       window.__attendanceQrEventSource = new EventSource('/api/attendance/qr/events/');
-      window.__attendanceQrEventSource.addEventListener('qr_refresh', function(event) {
-        var payload = JSON.parse(event.data || '{}');
-        if (payload && payload.token) {
-          renderAttendanceQr(payload.token);
-        }
+      window.__attendanceQrEventSource.addEventListener('qr_refresh', function() {
+        refreshAttendanceQr();
       });
     }
 
@@ -122,6 +123,10 @@
       if (overlay) {
         overlay.style.display = 'none';
         document.body.style.overflow = '';
+      }
+      if (attendanceQrRefreshTimer) {
+        clearInterval(attendanceQrRefreshTimer);
+        attendanceQrRefreshTimer = null;
       }
       if (window.__attendanceQrEventSource) {
         window.__attendanceQrEventSource.close();
