@@ -76,6 +76,64 @@ class AttendanceQrSessionTests(TestCase):
         self.assertTrue(Attendance.objects.filter(employee=self.employee, date=timezone.localdate()).exists())
         self.assertEqual(AttendanceQrSession.objects.get(pk=session.pk).status, AttendanceQrSession.Status.USED)
 
+    def test_qr_scan_enforces_three_minute_clock_in_cooldown(self):
+        self.client.force_login(self.user)
+        Attendance.objects.create(
+            employee=self.employee,
+            date=timezone.localdate(),
+            clock_in=timezone.now() - timedelta(minutes=2),
+        )
+        session = AttendanceQrSession.objects.create(
+            token="clock-in-cooldown-token",
+            expires_at=timezone.now() + timedelta(minutes=5),
+            status=AttendanceQrSession.Status.ACTIVE,
+        )
+
+        response = self.client.post(
+            reverse("attendance-qr-scan"),
+            data={"token": session.token},
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.json()["code"], "clock_in_cooldown")
+        self.assertGreater(response.json()["remaining_seconds"], 0)
+        self.assertLessEqual(response.json()["remaining_seconds"], 60)
+        self.assertEqual(
+            AttendanceQrSession.objects.get(pk=session.pk).status,
+            AttendanceQrSession.Status.ACTIVE,
+        )
+
+    def test_qr_scan_shows_one_hour_clock_out_wait_after_cooldown(self):
+        self.client.force_login(self.user)
+        attendance = Attendance.objects.create(
+            employee=self.employee,
+            date=timezone.localdate(),
+            clock_in=timezone.now() - timedelta(minutes=4),
+        )
+        session = AttendanceQrSession.objects.create(
+            token="clock-out-after-one-minute-wait-token",
+            expires_at=timezone.now() + timedelta(minutes=5),
+            status=AttendanceQrSession.Status.ACTIVE,
+        )
+
+        response = self.client.post(
+            reverse("attendance-qr-scan"),
+            data={"token": session.token},
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.json()["code"], "clock_out_too_soon")
+        self.assertGreaterEqual(response.json()["remaining_minutes"], 55)
+        self.assertLessEqual(response.json()["remaining_minutes"], 56)
+        attendance.refresh_from_db()
+        self.assertIsNone(attendance.clock_out)
+        self.assertEqual(
+            AttendanceQrSession.objects.get(pk=session.pk).status,
+            AttendanceQrSession.Status.ACTIVE,
+        )
+
     def test_qr_scan_records_clock_out_after_one_hour(self):
         self.client.force_login(self.user)
         attendance = Attendance.objects.create(
@@ -119,6 +177,8 @@ class AttendanceQrSessionTests(TestCase):
         self.assertContains(response, "submitManualQrToken(event)")
         self.assertContains(response, "placeholder=\"K 178 379\"")
         self.assertContains(response, "clock_out_too_soon")
+        self.assertContains(response, "clock_in_cooldown")
+        self.assertContains(response, "remaining_seconds")
         self.assertNotContains(response, "code.includes('kumon')")
 
     def test_hr_qr_screen_displays_manual_attendance_token(self):

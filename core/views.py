@@ -944,10 +944,39 @@ class AttendanceQrScanView(APIView):
         if attendance.clock_out is not None:
             return Response({"error": "Attendance has already been completed for today."}, status=status.HTTP_409_CONFLICT)
 
-        if attendance.clock_in and now - attendance.clock_in < timedelta(hours=1):
+        if attendance.clock_in and now - attendance.clock_in < timedelta(minutes=3):
+            remaining_seconds = max(
+                1,
+                int((timedelta(minutes=3) - (now - attendance.clock_in)).total_seconds() + 0.999),
+            )
+            remaining_minutes = remaining_seconds // 60
+            remaining_remainder_seconds = remaining_seconds % 60
+            remaining_parts = []
+            if remaining_minutes:
+                remaining_parts.append(
+                    f"{remaining_minutes} minute"
+                    f"{'s' if remaining_minutes != 1 else ''}"
+                )
+            if remaining_remainder_seconds or not remaining_parts:
+                remaining_parts.append(
+                    f"{remaining_remainder_seconds} second"
+                    f"{'s' if remaining_remainder_seconds != 1 else ''}"
+                )
+            remaining_time = " and ".join(remaining_parts)
+            return Response(
+                {
+                    "code": "clock_in_cooldown",
+                    "error": f"Please wait {remaining_time} before scanning again.",
+                    "remaining_seconds": remaining_seconds,
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        minimum_clock_out_delay = timedelta(hours=1)
+        if attendance.clock_in and now - attendance.clock_in < minimum_clock_out_delay:
             remaining_seconds = max(
                 0,
-                int((timedelta(hours=1) - (now - attendance.clock_in)).total_seconds()),
+                int((minimum_clock_out_delay - (now - attendance.clock_in)).total_seconds()),
             )
             remaining_minutes = max(1, (remaining_seconds + 59) // 60)
             return Response(

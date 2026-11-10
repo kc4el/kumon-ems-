@@ -5104,6 +5104,24 @@
           body: JSON.stringify(isManualCode ? { code: token } : { token })
         });
         const data = await payload(response);
+        if (data.code === 'clock_in_cooldown') {
+          isQrScanningPaused = false;
+          stopQrCameraStream();
+          const viewfinderWrap = document.getElementById('qrViewfinderWrap');
+          const helperText = document.getElementById('qrHelperText');
+          const remainingSeconds = Math.max(0, Number(data.remaining_seconds) || 0);
+          const remainingMinutes = Math.floor(remainingSeconds / 60);
+          const seconds = remainingSeconds % 60;
+          const remainingTime = remainingMinutes
+            ? `${remainingMinutes} ${remainingMinutes === 1 ? 'minute' : 'minutes'}${seconds ? ` and ${seconds} ${seconds === 1 ? 'second' : 'seconds'}` : ''}`
+            : `${seconds} ${seconds === 1 ? 'second' : 'seconds'}`;
+          if (viewfinderWrap) viewfinderWrap.style.display = 'none';
+          if (helperText) {
+            helperText.textContent = `Please wait ${remainingTime} before scanning again.`;
+          }
+          showQrInfoBanner(data.error || `Please wait ${remainingTime} before scanning again.`);
+          return false;
+        }
         if (data.code === 'clock_out_too_soon') {
           isQrScanningPaused = false;
           stopQrCameraStream();
