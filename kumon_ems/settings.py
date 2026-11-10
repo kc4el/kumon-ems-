@@ -304,6 +304,7 @@ REST_FRAMEWORK = {
         "user": "1000/day",
         "login": "10/minute",
         "mfa": "5/minute",
+        "qr_scan": "10/minute",
         "onboarding_login": "5/minute",
         "onboarding_generate": "5/hour",
     },

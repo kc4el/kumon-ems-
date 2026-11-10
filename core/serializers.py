@@ -487,6 +487,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 class MessageSerializer(serializers.ModelSerializer):
     attachment = serializers.FileField(write_only=True, required=False, allow_null=True)
     attachment_url = serializers.SerializerMethodField()
+    is_own = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
@@ -498,6 +499,7 @@ class MessageSerializer(serializers.ModelSerializer):
             "attachment",
             "attachment_url",
             "created_at",
+            "is_own",
         )
         read_only_fields = (
             "id",
@@ -505,6 +507,7 @@ class MessageSerializer(serializers.ModelSerializer):
             "attachment_url",
             "sender_name",
             "conversation_key",
+            "is_own",
         )
 
     def get_attachment_url(self, obj):
@@ -513,6 +516,21 @@ class MessageSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         url = obj.attachment.url
         return request.build_absolute_uri(url) if request else url
+
+    def get_is_own(self, obj):
+        request = self.context.get("request")
+        if not request:
+            return False
+        user = request.user
+        employee = getattr(user, "employee_profile", None)
+        sender_names = {
+            user.get_full_name(),
+            user.username,
+        }
+        if employee:
+            sender_names.add(f"{employee.first_name} {employee.last_name}".strip())
+            sender_names.add(employee.email)
+        return obj.sender_name in sender_names
 
     def validate(self, attrs):
         if not attrs.get("text") and not self.context["request"].FILES.get(

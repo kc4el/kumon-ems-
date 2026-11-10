@@ -362,7 +362,7 @@ html[data-theme="dark"] .theme-toggle-icon--moon,
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 28px;
+  gap: 14px;
   text-align: center;
 }
 
@@ -373,6 +373,54 @@ html[data-theme="dark"] .theme-toggle-icon--moon,
   border-radius: 16px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  padding: clamp(36px, 6vmin, 48px) clamp(16px, 4vmin, 28px) 28px;
+  box-sizing: border-box;
+}
+
+.qr-placeholder-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+  padding-bottom: 8px;
+}
+
+.qr-placeholder-image img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.qr-manual-token {
+  display: grid;
+  max-width: min(520px, 90vw);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+}
+
+.qr-manual-token code {
+  color: #0f172a;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: clamp(22px, 3vw, 28px);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.qr-placeholder-square .qr-manual-token {
+  color: #475569;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .qr-fullscreen-text {
@@ -3752,6 +3800,21 @@ html[data-theme="dark"] .theme-toggle-icon--moon,
   flex-shrink: 0;
 }
 
+.chat-unread-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-left: auto;
+  border-radius: 50%;
+  background-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  flex: 0 0 9px;
+}
+
+.chat-unread-dot[hidden] {
+  display: none;
+}
+
 .inbox-user-tile:hover {
   background-color: #f1f5f9;
 }
@@ -4000,6 +4063,12 @@ html[data-theme="dark"] .theme-toggle-icon--moon,
   font-size: 13.5px;
   line-height: 1.45;
   margin-bottom: 4px;
+}
+
+.chat-message-sender {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
 }
 
 .chat-time-stamp {

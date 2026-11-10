@@ -15,6 +15,7 @@ _SSE_SUBSCRIBERS = set()
 def _payload_for_session(session):
     return {
         "token": session.token,
+        "manual_code": session.manual_code,
         "status": session.status,
         "created_at": session.created_at.isoformat(),
         "expires_at": session.expires_at.isoformat(),
@@ -37,8 +38,16 @@ def create_active_qr_session():
         status=AttendanceQrSession.Status.EXPIRED,
         invalidated_at=now,
     )
+    manual_code = f"{secrets.randbelow(1_000_000):06d}"
+    while AttendanceQrSession.objects.filter(
+        manual_code=manual_code,
+        status=AttendanceQrSession.Status.ACTIVE,
+        expires_at__gt=now,
+    ).exists():
+        manual_code = f"{secrets.randbelow(1_000_000):06d}"
     session = AttendanceQrSession.objects.create(
         token=secrets.token_urlsafe(32),
+        manual_code=manual_code,
         expires_at=now + timedelta(seconds=QR_TTL_SECONDS),
         status=AttendanceQrSession.Status.ACTIVE,
     )
@@ -57,7 +66,7 @@ def get_active_qr_session(force_new=False):
         .order_by("-created_at")
         .first()
     )
-    if session is None or force_new:
+    if session is None or force_new or not session.manual_code:
         return create_active_qr_session()
     return session
 
@@ -69,6 +78,15 @@ def invalidate_qr_session(session, *, used=False):
     payload = _payload_for_session(session)
     broadcast_qr_event("qr_refresh", payload)
     return session
+
+
+def normalize_manual_code(value):
+    normalized = "".join(str(value or "").upper().split())
+    if normalized.startswith("K"):
+        normalized = normalized[1:]
+    if len(normalized) != 6 or not normalized.isascii() or not normalized.isdigit():
+        return None
+    return normalized
 
 
 def stream_qr_events(request):

@@ -153,7 +153,23 @@ function startDashboardLiveRefresh() {
   }, refreshEveryMs);
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && !dashboardRefreshInFlight) refreshDashboardLiveData();
+    if (!document.hidden) {
+      refreshHrChatUnreadDots();
+      const messagesView = document.getElementById('view-messages');
+      if (messagesView?.classList.contains('active')) {
+        loadMessagesForConversation(activeConversationKey, false);
+      }
+    }
   });
+  if (activeMessagesRefreshTimer) clearInterval(activeMessagesRefreshTimer);
+  activeMessagesRefreshTimer = setInterval(() => {
+    if (document.hidden) return;
+    refreshHrChatUnreadDots();
+    const messagesView = document.getElementById('view-messages');
+    if (messagesView?.classList.contains('active')) {
+      loadMessagesForConversation(activeConversationKey, false);
+    }
+  }, 5000);
 }
 
 function initializeCurrentDateLabels() {
@@ -2678,6 +2694,24 @@ function handleApplyLeave(e) {
 // ==========================================================================
 let activeConversationKey = 'announcements';
 let messagesLoadVersion = 0;
+let activeMessagesRefreshTimer = null;
+
+function messageReadState() {
+  try {
+    return JSON.parse(localStorage.getItem('hr-chat-read-state') || '{}');
+  } catch (_) {
+    return {};
+  }
+}
+
+function markConversationRead(key, messageId) {
+  if (!key || !messageId) return;
+  const state = messageReadState();
+  state[key] = messageId;
+  try {
+    localStorage.setItem('hr-chat-read-state', JSON.stringify(state));
+  } catch (_) {}
+}
 
 
 function filterInboxes(input) {
@@ -2712,10 +2746,12 @@ async function loadEmployeeInbox() {
       const tile = document.createElement('div');
       const employeeKey = String(employee.id);
       tile.className = `inbox-user-tile${employeeKey === previousKey ? ' active' : ''}`;
+      tile.dataset.conversationKey = employeeKey;
       tile.innerHTML =
         `<div class="avatar-circle-sm ${avatarClasses[index % avatarClasses.length]}">${escapeHtml(initials)}</div>` +
         `<div class="inbox-tile-content"><div class="inbox-tile-top"><strong>${escapeHtml(name)}</strong>` +
-        `<span class="inbox-timestamp">Roster</span></div><span class="inbox-snippet">${escapeHtml(role)}</span></div>`;
+        `<span class="inbox-timestamp">Roster</span></div><span class="inbox-snippet">${escapeHtml(role)}</span></div>` +
+        '<span class="chat-unread-dot" aria-label="Unread message" hidden></span>';
       tile.addEventListener('click', () => selectInboxUser(tile, name, initials, role, employeeKey));
       list.appendChild(tile);
       if (employeeKey === previousKey) {
@@ -2728,6 +2764,7 @@ async function loadEmployeeInbox() {
       if (channel) selectChannel(channel, 'announcements', false);
       else loadMessagesForConversation('announcements');
     }
+    refreshHrChatUnreadDots();
   } catch (_) {
     list.innerHTML = '<div class="card-sub">Employee conversations are unavailable.</div>';
     activeConversationKey = 'announcements';
@@ -2793,18 +2830,35 @@ function selectInboxUser(elem, userName, initials, userRole, key, notify = true)
   if (notify) showToast(`Active chat: ${userName}`);
 }
 
-async function loadMessagesForConversation(conversationKey) {
+async function loadMessagesForConversation(conversationKey, showLoading = true) {
   const stream = document.getElementById('chatStreamMessages');
   if (!stream) return;
 
   const loadVersion = ++messagesLoadVersion;
-  stream.innerHTML = '<div class="chat-loading-state">Loading messages...</div>';
+  const wasAtBottom = stream.scrollHeight - stream.scrollTop - stream.clientHeight < 60;
+  if (showLoading) stream.innerHTML = '<div class="chat-loading-state">Loading messages...</div>';
   try {
-    const params = new URLSearchParams({ conversation: conversationKey, page_size: '100' });
+    const params = new URLSearchParams({
+      conversation: conversationKey,
+      recent: '1',
+      _: String(Date.now()),
+    });
     const search = document.getElementById('conversationSearchInput')?.value.trim();
     if (search) params.set('search', search);
-    const messages = await fetchAllApiRows(`/api/messages/?${params.toString()}`);
+    const messages = (await fetchAllApiRows(`/api/messages/?${params.toString()}`)).reverse();
     if (loadVersion !== messagesLoadVersion) return;
+    const messagesView = document.getElementById('view-messages');
+    if (
+      conversationKey === activeConversationKey &&
+      messagesView?.classList.contains('active') &&
+      messages.length
+    ) {
+      markConversationRead(conversationKey, messages[messages.length - 1].id);
+      const tile = Array.from(document.querySelectorAll('#inboxConversationsList .inbox-user-tile'))
+        .find((item) => item.dataset.conversationKey === conversationKey);
+      const dot = tile?.querySelector('.chat-unread-dot');
+      if (dot) dot.hidden = true;
+    }
     if (conversationKey === 'announcements') {
       const preview = document.querySelector('.channel-last-msg');
       if (preview) {
@@ -2817,11 +2871,47 @@ async function loadMessagesForConversation(conversationKey) {
       stream.innerHTML = '<div class="chat-loading-state">No messages in this conversation yet.</div>';
     }
     messages.forEach(message => appendPersistedMessage(stream, message));
-    stream.scrollTop = stream.scrollHeight;
+    if (wasAtBottom || showLoading) stream.scrollTop = stream.scrollHeight;
   } catch (error) {
     if (loadVersion !== messagesLoadVersion) return;
-    stream.innerHTML = '<div class="chat-loading-state">Messages are unavailable. Check your connection and try again.</div>';
-    showToast('Messages could not be loaded.', 'error');
+    if (showLoading) {
+      stream.innerHTML = '<div class="chat-loading-state">Messages are unavailable. Check your connection and try again.</div>';
+      showToast('Messages could not be loaded.', 'error');
+    } else {
+      console.warn('Active chat messages could not be refreshed.', error);
+    }
+  }
+}
+
+async function refreshHrChatUnreadDots() {
+  const inbox = document.getElementById('inboxConversationsList');
+  if (!inbox) return;
+  try {
+    const messages = await fetchAllApiRows(`/api/messages/?inbox=1&recent=1&_=${Date.now()}`);
+    const latestByEmployee = new Map();
+    messages.forEach((message) => {
+      const key = String(message.conversation_key || '');
+      const employeeKey = key.startsWith('hr_') ? key.slice(3) : key;
+      const previous = latestByEmployee.get(employeeKey);
+      if (!previous || new Date(message.created_at) > new Date(previous.created_at)) {
+        latestByEmployee.set(employeeKey, message);
+      }
+    });
+    const readState = messageReadState();
+    const messagesView = document.getElementById('view-messages');
+    const conversationVisible = messagesView?.classList.contains('active');
+    inbox.querySelectorAll('.inbox-user-tile').forEach((tile) => {
+      const key = tile.dataset.conversationKey;
+      const latest = latestByEmployee.get(key);
+      const unread = Boolean(
+        latest && !latest.is_own && latest.id !== readState[key] &&
+        !(conversationVisible && key === activeConversationKey)
+      );
+      const dot = tile.querySelector('.chat-unread-dot');
+      if (dot) dot.hidden = !unread;
+    });
+  } catch (error) {
+    console.warn('HR chat unread status could not be refreshed.', error);
   }
 }
 
@@ -2850,11 +2940,18 @@ function clearConversationSearch() {
 
 function appendPersistedMessage(stream, message) {
   const row = document.createElement('div');
-  row.className = 'chat-msg-row outgoing';
+  const outgoing = message.is_own === true;
+  row.className = `chat-msg-row ${outgoing ? 'outgoing' : 'incoming'}`;
   row.dataset.persistedMessage = 'true';
 
   const bubble = document.createElement('div');
-  bubble.className = 'chat-bubble outgoing';
+  bubble.className = `chat-bubble ${outgoing ? 'outgoing' : 'incoming'}`;
+  if (!outgoing && message.sender_name) {
+    const sender = document.createElement('strong');
+    sender.className = 'chat-message-sender';
+    sender.textContent = message.sender_name;
+    bubble.appendChild(sender);
+  }
   if (message.text) {
     const text = document.createElement('p');
     text.textContent = message.text;
@@ -2869,8 +2966,8 @@ function appendPersistedMessage(stream, message) {
     bubble.appendChild(link);
   }
   const timestamp = document.createElement('span');
-  timestamp.className = 'chat-time-stamp outgoing-stamp';
-  timestamp.textContent = `${new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Sent`;
+  timestamp.className = `chat-time-stamp ${outgoing ? 'outgoing-stamp' : 'incoming-stamp'}`;
+  timestamp.textContent = `${new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • ${outgoing ? 'Sent' : 'Received'}`;
   bubble.appendChild(timestamp);
   row.appendChild(bubble);
   stream.appendChild(row);
@@ -2924,6 +3021,8 @@ async function handleSendChatMessage(e) {
   fileInput.value = '';
   imageInput.value = '';
   showToast('Message sent.');
+  markConversationRead(activeConversationKey, savedMessage.id);
+  refreshHrChatUnreadDots();
 }
 
 function escapeHtml(str) {

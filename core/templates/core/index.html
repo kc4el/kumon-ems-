@@ -66,18 +66,47 @@
     window.updateThemeToggleUI = updateThemeToggleUI;
 
     var attendanceQrRefreshTimer = null;
+    var attendanceQrCountdownTimer = null;
+    var attendanceQrExpiresAt = null;
 
-    function renderAttendanceQr(token) {
+    function stopAttendanceQrCountdown() {
+      if (attendanceQrCountdownTimer) {
+        clearInterval(attendanceQrCountdownTimer);
+        attendanceQrCountdownTimer = null;
+      }
+    }
+
+    function updateAttendanceQrCountdown() {
+      var countdown = document.getElementById('attendanceQrCountdown');
+      if (!countdown || !attendanceQrExpiresAt) return;
+      var secondsLeft = Math.max(0, Math.ceil((attendanceQrExpiresAt - Date.now()) / 1000));
+      countdown.textContent = secondsLeft + (secondsLeft === 1 ? ' second' : ' seconds');
+      if (secondsLeft === 0) {
+        stopAttendanceQrCountdown();
+        refreshAttendanceQr();
+      }
+    }
+
+    function renderAttendanceQr(token, manualCode) {
       var square = document.getElementById('attendanceQrSquare');
+      var qrImage = document.getElementById('attendanceQrImage');
+      var tokenCode = document.getElementById('attendanceQrToken');
+      if (tokenCode) {
+        tokenCode.textContent = manualCode
+          ? 'K ' + manualCode.slice(0, 3) + ' ' + manualCode.slice(3)
+          : 'Unavailable';
+      }
       if (!square) return;
       if (!token || !window.qrcode) {
-        square.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:700;color:#0f172a;">QR unavailable</div>';
+        if (qrImage) {
+          qrImage.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:700;color:#0f172a;">QR unavailable</div>';
+        }
         return;
       }
       var qr = window.qrcode(0, 'L');
       qr.addData(token);
       qr.make();
-      square.innerHTML = qr.createImgTag(8, 32, 'Attendance QR');
+      if (qrImage) qrImage.innerHTML = qr.createImgTag(8, 8, 'Attendance QR');
     }
 
     function refreshAttendanceQr() {
@@ -85,7 +114,11 @@
         .then(function(response) { return response.ok ? response.json() : Promise.reject(new Error('Unable to load QR')); })
         .then(function(data) {
           if (data && data.token) {
-            renderAttendanceQr(data.token);
+            stopAttendanceQrCountdown();
+            attendanceQrExpiresAt = Date.now() + Math.max(0, Number(data.expires_in_seconds) || 0) * 1000;
+            renderAttendanceQr(data.token, data.manual_code);
+            updateAttendanceQrCountdown();
+            attendanceQrCountdownTimer = setInterval(updateAttendanceQrCountdown, 1000);
             var instruction = document.getElementById('attendanceQrInstruction');
             if (instruction) {
               instruction.textContent = 'Scan the QR code for time in/out';
@@ -93,10 +126,16 @@
           }
         })
         .catch(function() {
-          var square = document.getElementById('attendanceQrSquare');
-          if (square) {
-            square.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:700;color:#0f172a;">QR unavailable</div>';
+          var qrImage = document.getElementById('attendanceQrImage');
+          var tokenCode = document.getElementById('attendanceQrToken');
+          var countdown = document.getElementById('attendanceQrCountdown');
+          if (qrImage) {
+            qrImage.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:700;color:#0f172a;">QR unavailable</div>';
           }
+          stopAttendanceQrCountdown();
+          attendanceQrExpiresAt = null;
+          if (tokenCode) tokenCode.textContent = 'Unavailable';
+          if (countdown) countdown.textContent = 'unavailable';
         });
     }
 
@@ -108,7 +147,7 @@
       }
       refreshAttendanceQr();
       if (attendanceQrRefreshTimer) clearInterval(attendanceQrRefreshTimer);
-      attendanceQrRefreshTimer = setInterval(refreshAttendanceQr, 45000);
+      attendanceQrRefreshTimer = setInterval(refreshAttendanceQr, 30000);
       if (window.__attendanceQrEventSource) {
         window.__attendanceQrEventSource.close();
       }
@@ -128,6 +167,8 @@
         clearInterval(attendanceQrRefreshTimer);
         attendanceQrRefreshTimer = null;
       }
+      stopAttendanceQrCountdown();
+      attendanceQrExpiresAt = null;
       if (window.__attendanceQrEventSource) {
         window.__attendanceQrEventSource.close();
         window.__attendanceQrEventSource = null;
@@ -3030,7 +3071,15 @@
       <span>Exit</span>
     </button>
     <div class="qr-fullscreen-center">
-      <div id="attendanceQrSquare" class="qr-placeholder-square" aria-label="Attendance QR code placeholder"></div>
+      <div id="attendanceQrSquare" class="qr-placeholder-square" aria-label="Attendance QR code placeholder">
+        <div id="attendanceQrImage" class="qr-placeholder-image"></div>
+        <div class="qr-manual-token">
+          <code id="attendanceQrToken" aria-live="polite">Loading…</code>
+        </div>
+      </div>
+      <div class="qr-manual-token">
+        <span>Enter the code if you can’t scan · expires after <span id="attendanceQrCountdown">60 seconds</span></span>
+      </div>
       <p id="attendanceQrInstruction" class="qr-fullscreen-text">Scan the QR code for time in/out</p>
     </div>
   </div>

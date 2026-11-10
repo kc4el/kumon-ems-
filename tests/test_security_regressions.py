@@ -124,16 +124,70 @@ class SecurityRegressionTests(TestCase):
         )
         reply = self.client.post(
             "/api/messages/",
-            {"conversation_key": key, "text": "HR response"},
+            {"conversation_key": str(self.employee.pk), "text": "HR response"},
             format="json",
         )
         self.assertEqual(reply.status_code, 201)
+        self.assertEqual(reply.json()["conversation_key"], key)
+        inbox = self.client.get("/api/messages/", {"inbox": "1"})
+        self.assertEqual(inbox.status_code, 200)
+        self.assertTrue(
+            any(message["text"] == "HR response" and message["is_own"]
+                for message in inbox.json()["results"])
+        )
+        recent_inbox = self.client.get(
+            "/api/messages/", {"inbox": "1", "recent": "1"}
+        )
+        self.assertEqual(recent_inbox.status_code, 200)
+        self.assertIsInstance(recent_inbox.json(), list)
+        self.assertTrue(
+            any(message["text"] == "HR response" and message["is_own"]
+                for message in recent_inbox.json())
+        )
         self.client.force_authenticate(self.user)
         response = self.client.get("/api/messages/", {"conversation": key})
-        self.assertIn(
-            "HR response",
-            [message["text"] for message in response.json()["results"]],
+        employee_messages = response.json()["results"]
+        self.assertIn("HR response", [message["text"] for message in employee_messages])
+        self.assertFalse(next(
+            message["is_own"]
+            for message in employee_messages
+            if message["text"] == "HR response"
+        ))
+        employee_inbox = self.client.get("/api/messages/", {"inbox": "1"})
+        self.assertTrue(
+            any(message["text"] == "HR response" and not message["is_own"]
+                for message in employee_inbox.json()["results"])
         )
+
+    def test_employee_message_inbox_only_summarizes_own_direct_conversations(self):
+        direct_key = get_dm_key(self.employee.pk, self.other_employee.pk)
+        Message.objects.create(
+            conversation_key=direct_key,
+            sender_name="Employee B",
+            text="Incoming",
+        )
+        response = self.client.get("/api/messages/", {"inbox": "1"})
+        self.assertEqual(response.status_code, 200)
+        messages = response.json()["results"]
+        self.assertEqual([message["text"] for message in messages], ["Incoming"])
+        self.assertFalse(messages[0]["is_own"])
+
+        Message.objects.create(
+            conversation_key=direct_key,
+            sender_name="Employee A",
+            text="Outgoing",
+        )
+        response = self.client.get("/api/messages/", {"inbox": "1"})
+        self.assertEqual(response.status_code, 200)
+        messages = response.json()["results"]
+        self.assertEqual([message["text"] for message in messages], ["Outgoing"])
+        self.assertTrue(messages[0]["is_own"])
+        recent = self.client.get(
+            "/api/messages/",
+            {"conversation": direct_key, "recent": "1"},
+        )
+        self.assertEqual(recent.status_code, 200)
+        self.assertEqual(recent.json()[0]["text"], "Outgoing")
 
     def test_payroll_runs_are_hr_only(self):
         payroll = PayrollRun.objects.create(

@@ -121,6 +121,7 @@ class AttendanceQrSession(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     token = models.CharField(max_length=128, unique=True, db_index=True)
+    manual_code = models.CharField(max_length=6, blank=True, default="", db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     used_at = models.DateTimeField(null=True, blank=True)

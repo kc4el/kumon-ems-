@@ -62,3 +62,15 @@ class CredentialGenerationThrottle(MfaSessionThrottle):
             "scope": self.scope,
             "ident": f"{self.get_ident(request)}:{identity}",
         }
+
+
+class AttendanceQrScanThrottle(SimpleRateThrottle):
+    """Limit guessing of short-lived manual attendance codes per source IP."""
+
+    scope = "qr_scan"
+
+    def get_cache_key(self, request, view):
+        return self.cache_format % {
+            "scope": self.scope,
+            "ident": self.get_ident(request),
+        }

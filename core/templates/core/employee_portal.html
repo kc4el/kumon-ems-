@@ -2770,6 +2770,45 @@
       margin: 12px 0 6px;
     }
 
+    .qr-manual-entry {
+      display: grid;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .qr-manual-entry label {
+      color: var(--employee-navy);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .qr-manual-entry input {
+      width: 100%;
+      min-height: 48px;
+      padding: 10px 12px;
+      border: 1px solid var(--employee-line);
+      border-radius: 10px;
+      background: var(--employee-card-bg);
+      color: var(--employee-navy);
+      font: 14px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .qr-manual-entry button {
+      min-height: 46px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--employee-primary-btn-bg, #0284c7);
+      color: #fff;
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .qr-manual-entry button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
     /* Alert Banner (Invalid Scan) */
     .qr-alert-banner {
       display: flex;
@@ -2790,10 +2829,23 @@
       color: #dc2626;
     }
 
+    .qr-alert-info {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      animation: none;
+    }
+
     [data-theme="dark"] .qr-alert-error {
       background: rgba(239, 68, 68, 0.15);
       border: 1px solid rgba(239, 68, 68, 0.35);
       color: #fca5a5;
+    }
+
+    [data-theme="dark"] .qr-alert-info {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      color: #bfdbfe;
     }
 
     @keyframes qrShake {
@@ -3264,6 +3316,7 @@
                   </div>
                   <div class="chat-conv-preview">Confidential support with HR Staff</div>
                 </div>
+                <span class="chat-unread-dot" aria-label="Unread message" hidden></span>
               </div>
 
               <!-- DIRECT MESSAGES Section -->
@@ -3881,6 +3934,12 @@
       <!-- Helper Text -->
       <p class="qr-helper-text" id="qrHelperText">Point camera at the Center QR code to clock in.</p>
 
+      <form class="qr-manual-entry" onsubmit="submitManualQrToken(event)">
+        <label for="qrManualToken">Or enter the manual attendance code</label>
+        <input id="qrManualToken" name="code" type="text" inputmode="text" maxlength="9" placeholder="K 178 379" autocomplete="off" autocapitalize="characters" spellcheck="false" required>
+        <button id="qrManualSubmit" type="submit">Submit attendance code</button>
+      </form>
+
       <!-- Inline Invalid QR Alert Banner -->
       <div id="qrInvalidBanner" class="qr-alert-banner qr-alert-error" style="display: none;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -3971,6 +4030,7 @@
   </nav>
 
   {{ colleagues|json_script:"colleaguesData" }}
+  <script src="{% static 'js/jsQR.js' %}?v=1.4.0"></script>
   <script>
     let allEmployeesCache = [];
     try {
@@ -3981,6 +4041,7 @@
     let currentConvMeta = 'Center-wide broadcast';
     let currentConvAvatar = '#';
     let currentConvIsDirect = false;
+    let chatMessagesLoadVersion = 0;
     let myEmployeeId = '{{ employee.id|default:""|escapejs }}';
     let myEmployeeEmail = '{{ employee.email|default:""|escapejs }}';
     let myEmployeeName = '{{ employee.first_name|default:""|escapejs }} {{ employee.last_name|default:""|escapejs }}'.trim();
@@ -4342,6 +4403,7 @@
             </div>
             <div class="chat-conv-preview">${safe(roleDept)}</div>
           </div>
+          <span class="chat-unread-dot" aria-label="Unread message" hidden></span>
         </div>`;
       }).join('');
     }
@@ -4399,6 +4461,53 @@
       loadChatMessages(key);
     }
 
+    function chatReadState() {
+      try {
+        return JSON.parse(localStorage.getItem('employee-chat-read-state') || '{}');
+      } catch (_) {
+        return {};
+      }
+    }
+
+    function markChatConversationRead(key, messageId) {
+      if (!key || !messageId) return;
+      const state = chatReadState();
+      state[key] = messageId;
+      try {
+        localStorage.setItem('employee-chat-read-state', JSON.stringify(state));
+      } catch (_) {}
+    }
+
+    function updateEmployeeChatUnreadDots(latestMessages) {
+      const readState = chatReadState();
+      const platform = document.getElementById('chatPlatform');
+      document.querySelectorAll('#chatConvList .chat-conv-item[data-conv-key]').forEach((item) => {
+        const key = item.getAttribute('data-conv-key');
+        const latest = latestMessages[key];
+        const unread = Boolean(
+          latest && !latest.is_own && latest.id !== readState[key] &&
+          !(key === currentConvKey && platform?.classList.contains('mobile-chat-open'))
+        );
+        const dot = item.querySelector('.chat-unread-dot');
+        if (dot) dot.hidden = !unread;
+      });
+    }
+
+    async function refreshEmployeeChatUnreadDots() {
+      try {
+        const response = await portalFetch(`/api/messages/?inbox=1&recent=1&_=${Date.now()}`);
+        if (!response.ok) throw new Error('Unread message status could not be loaded.');
+        const messages = rows(await payload(response));
+        const latestMessages = {};
+        messages.forEach((message) => {
+          latestMessages[message.conversation_key] = message;
+        });
+        updateEmployeeChatUnreadDots(latestMessages);
+      } catch (error) {
+        console.warn('Employee chat unread status could not be refreshed.', error);
+      }
+    }
+
     function closeMobileChat() {
       const platform = document.getElementById('chatPlatform');
       if (platform) platform.classList.remove('mobile-chat-open');
@@ -4406,12 +4515,25 @@
 
     async function loadChatMessages(convKey) {
       const key = convKey || currentConvKey;
+      const loadVersion = ++chatMessagesLoadVersion;
+      const stream = document.getElementById('chatMessagesStream');
+      const wasAtBottom = stream
+        ? stream.scrollHeight - stream.scrollTop - stream.clientHeight < 60
+        : true;
       try {
-        const response = await portalFetch(`/api/messages/?conversation=${encodeURIComponent(key)}&_=${Date.now()}`);
-        if (!response.ok) return;
-        const msgList = rows(await payload(response));
-        const stream = document.getElementById('chatMessagesStream');
+        const response = await portalFetch(`/api/messages/?conversation=${encodeURIComponent(key)}&recent=1&_=${Date.now()}`);
+        if (!response.ok) throw new Error('Chat messages could not be loaded.');
+        const msgList = rows(await payload(response)).reverse();
+        if (loadVersion !== chatMessagesLoadVersion || key !== currentConvKey) return;
         if (!stream) return;
+        const platform = document.getElementById('chatPlatform');
+        if (key === currentConvKey && platform?.classList.contains('mobile-chat-open') && msgList.length) {
+          markChatConversationRead(key, msgList[msgList.length - 1].id);
+          const item = Array.from(document.querySelectorAll('#chatConvList .chat-conv-item[data-conv-key]'))
+            .find((candidate) => candidate.getAttribute('data-conv-key') === key);
+          const dot = item?.querySelector('.chat-unread-dot');
+          if (dot) dot.hidden = true;
+        }
 
         if (msgList.length === 0) {
           const emptyNote = currentConvIsDirect
@@ -4432,7 +4554,8 @@
         stream.innerHTML = msgList.map((msg) => {
           const sender = (msg.sender_name || 'Staff').trim();
           const senderLower = sender.toLowerCase();
-          const isOutgoing = (myNameLower && senderLower === myNameLower) ||
+          const isOutgoing = typeof msg.is_own === 'boolean' ? msg.is_own :
+                             (myNameLower && senderLower === myNameLower) ||
                              (myEmailLower && senderLower === myEmailLower) ||
                              senderLower === 'you' ||
                              senderLower.startsWith('you ');
@@ -4449,8 +4572,10 @@
           </div>`;
         }).join('');
 
-        stream.scrollTop = stream.scrollHeight;
-      } catch (_) {}
+        if (wasAtBottom) stream.scrollTop = stream.scrollHeight;
+      } catch (error) {
+        console.warn('Employee chat messages could not be refreshed.', error);
+      }
     }
 
     async function sendChatMessage(event) {
@@ -4744,6 +4869,8 @@
       }
 
       currentQrScanMode = requestedMode;
+      const manualTokenInput = document.getElementById('qrManualToken');
+      if (manualTokenInput) manualTokenInput.value = '';
       const helperText = document.getElementById('qrHelperText');
       if (helperText) {
         helperText.textContent = currentQrScanMode === 'clock_out'
@@ -4877,15 +5004,19 @@
           detector = null;
         }
       }
+      const canvas = detector || typeof window.jsQR !== 'function'
+        ? null
+        : document.createElement('canvas');
+      const context = canvas ? canvas.getContext('2d', { willReadFrequently: true }) : null;
 
-      if (!detector) {
+      if (!detector && (!canvas || !context)) {
         const fallback = document.getElementById('qrCameraFallback');
         const fallbackTitle = fallback?.querySelector('.qr-fallback-title');
         const fallbackDescription = fallback?.querySelector('.qr-fallback-desc');
         const viewfinderWrap = document.getElementById('qrViewfinderWrap');
         if (fallbackTitle) fallbackTitle.textContent = 'QR Scanning Not Supported';
         if (fallbackDescription) {
-          fallbackDescription.textContent = 'Use a current version of Chrome or Edge to scan attendance QR codes on this device.';
+          fallbackDescription.textContent = 'The QR scanning component could not load. Refresh the page and try again.';
         }
         if (fallback) fallback.style.display = 'flex';
         if (viewfinderWrap) viewfinderWrap.style.display = 'none';
@@ -4896,10 +5027,21 @@
       qrScanInterval = setInterval(async () => {
         if (isQrScanningPaused || !video || video.readyState !== video.HAVE_ENOUGH_DATA) return;
         try {
-          const barcodes = await detector.detect(video);
-          if (barcodes && barcodes.length > 0) {
-            const rawVal = barcodes[0].rawValue;
-            if (rawVal) handleQrCodeScanned(rawVal);
+          if (detector) {
+            const barcodes = await detector.detect(video);
+            if (barcodes && barcodes.length > 0 && barcodes[0].rawValue) {
+              handleQrCodeScanned(barcodes[0].rawValue);
+            }
+          } else if (video.videoWidth && video.videoHeight) {
+            const scanWidth = Math.min(video.videoWidth, 640);
+            canvas.width = scanWidth;
+            canvas.height = Math.round(video.videoHeight * scanWidth / video.videoWidth);
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const image = context.getImageData(0, 0, canvas.width, canvas.height);
+            const result = window.jsQR(image.data, image.width, image.height, {
+              inversionAttempts: 'attemptBoth',
+            });
+            if (result?.data) handleQrCodeScanned(result.data);
           }
         } catch (e) {}
       }, 250);
@@ -4910,6 +5052,8 @@
       if (!banner) return;
       const text = banner.querySelector('span');
       if (text) text.textContent = message;
+      banner.classList.remove('qr-alert-info');
+      banner.classList.add('qr-alert-error');
       banner.style.display = 'flex';
       banner.classList.remove('qr-shake');
       void banner.offsetWidth; // Force CSS reflow to re-trigger shake animation
@@ -4921,22 +5065,57 @@
       }, 3500);
     }
 
+    function showQrInfoBanner(message) {
+      const banner = document.getElementById('qrInvalidBanner');
+      if (!banner) return;
+      const text = banner.querySelector('span');
+      if (text) text.textContent = message;
+      banner.classList.remove('qr-alert-error', 'qr-shake');
+      banner.classList.add('qr-alert-info');
+      banner.style.display = 'flex';
+      clearTimeout(qrBannerTimeout);
+    }
+
     function simulateQrScan(sampleCode) {
       handleQrCodeScanned(sampleCode);
     }
 
-    async function handleQrCodeScanned(decodedText) {
-      if (isQrScanningPaused) return;
+    async function submitManualQrToken(event) {
+      event.preventDefault();
+      const input = document.getElementById('qrManualToken');
+      const button = document.getElementById('qrManualSubmit');
+      const token = input?.value.trim();
+      if (!token || isQrScanningPaused) return;
+      if (button) button.disabled = true;
+      const succeeded = await handleQrCodeScanned(token, true);
+      if (button) button.disabled = false;
+      if (succeeded && input) input.value = '';
+    }
+
+    async function handleQrCodeScanned(decodedText, isManualCode = false) {
+      if (isQrScanningPaused) return false;
 
       const token = String(decodedText || '').trim();
-      if (!token) return;
+      if (!token) return false;
       isQrScanningPaused = true;
       try {
         const response = await portalFetch('/api/attendance/qr/scan/', {
           method: 'POST',
-          body: JSON.stringify({ token })
+          body: JSON.stringify(isManualCode ? { code: token } : { token })
         });
         const data = await payload(response);
+        if (data.code === 'clock_out_too_soon') {
+          isQrScanningPaused = false;
+          stopQrCameraStream();
+          const viewfinderWrap = document.getElementById('qrViewfinderWrap');
+          const helperText = document.getElementById('qrHelperText');
+          if (viewfinderWrap) viewfinderWrap.style.display = 'none';
+          if (helperText) {
+            helperText.textContent = `You can scan again to clock out in ${data.remaining_minutes} ${data.remaining_minutes === 1 ? 'minute' : 'minutes'}.`;
+          }
+          showQrInfoBanner(data.message || data.error);
+          return false;
+        }
         if (!response.ok) {
           throw new Error(apiErrorMessage(data, 'The QR code could not be used.'));
         }
@@ -4972,13 +5151,15 @@
           closeQrScannerModal();
           loadPortalData();
         }, 1500);
+        return true;
       } catch (err) {
         isQrScanningPaused = false;
         if (err.message === 'auth') {
           closeQrScannerModal();
-          return;
+          return false;
         }
         showQrInvalidBanner(err.message || 'The QR code could not be used. Scan the current office code and try again.');
+        return false;
       }
     }
 
@@ -5288,6 +5469,15 @@
     }
 
     loadPortalEmployees().catch((error) => showStatus(error.message || 'Employee list could not be loaded.', true));
+    refreshEmployeeChatUnreadDots();
+    setInterval(() => {
+      if (document.hidden) return;
+      const platform = document.getElementById('chatPlatform');
+      if (currentConvKey && platform?.classList.contains('mobile-chat-open')) {
+        loadChatMessages(currentConvKey);
+      }
+      refreshEmployeeChatUnreadDots();
+    }, 5000);
     loadPortalData().catch(() => showStatus('Portal data could not be loaded.', true));
 
     const portalRefreshEveryMs = 30000;

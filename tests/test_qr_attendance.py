@@ -32,7 +32,30 @@ class AttendanceQrSessionTests(TestCase):
         self.assertEqual(response.status_code, 200)
         body = response.json()
         self.assertIn("token", body)
+        self.assertRegex(body["manual_code"], r"^\d{6}$")
         self.assertTrue(AttendanceQrSession.objects.filter(token=body["token"]).exists())
+
+    def test_manual_attendance_code_records_clock_in(self):
+        self.client.force_login(self.user)
+        session = AttendanceQrSession.objects.create(
+            token="manual-code-clock-in-token",
+            manual_code="178379",
+            expires_at=timezone.now() + timedelta(minutes=5),
+            status=AttendanceQrSession.Status.ACTIVE,
+        )
+
+        response = self.client.post(
+            reverse("attendance-qr-scan"),
+            data={"code": "K 178 379"},
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["event"], "clock_in")
+        self.assertEqual(
+            AttendanceQrSession.objects.get(pk=session.pk).status,
+            AttendanceQrSession.Status.USED,
+        )
 
     def test_qr_scan_records_clock_in(self):
         self.client.force_login(self.user)
@@ -53,14 +76,68 @@ class AttendanceQrSessionTests(TestCase):
         self.assertTrue(Attendance.objects.filter(employee=self.employee, date=timezone.localdate()).exists())
         self.assertEqual(AttendanceQrSession.objects.get(pk=session.pk).status, AttendanceQrSession.Status.USED)
 
+    def test_qr_scan_records_clock_out_after_one_hour(self):
+        self.client.force_login(self.user)
+        attendance = Attendance.objects.create(
+            employee=self.employee,
+            date=timezone.localdate(),
+            clock_in=timezone.now() - timedelta(hours=1, minutes=1),
+        )
+        session = AttendanceQrSession.objects.create(
+            token="valid-clock-out-token",
+            expires_at=timezone.now() + timedelta(minutes=5),
+            status=AttendanceQrSession.Status.ACTIVE,
+        )
+
+        response = self.client.post(
+            reverse("attendance-qr-scan"),
+            data={"token": session.token},
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["event"], "clock_out")
+        self.assertEqual(response.json()["message"], "Clock-out recorded successfully.")
+        attendance.refresh_from_db()
+        self.assertIsNotNone(attendance.clock_out)
+        self.assertGreaterEqual(attendance.clock_out, attendance.clock_in + timedelta(hours=1))
+        self.assertEqual(
+            AttendanceQrSession.objects.get(pk=session.pk).status,
+            AttendanceQrSession.Status.USED,
+        )
+
     def test_employee_portal_scanner_submits_qr_token_to_attendance_endpoint(self):
         self.client.force_login(self.user)
         response = self.client.get("/employee/")
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "/api/attendance/qr/scan/")
-        self.assertContains(response, "JSON.stringify({ token })")
+        self.assertContains(response, "JSON.stringify(isManualCode ? { code: token } : { token })")
+        self.assertContains(response, "/static/js/jsQR.js")
+        self.assertContains(response, "window.jsQR(image.data")
+        self.assertContains(response, 'id="qrManualToken"')
+        self.assertContains(response, "submitManualQrToken(event)")
+        self.assertContains(response, "placeholder=\"K 178 379\"")
+        self.assertContains(response, "clock_out_too_soon")
         self.assertNotContains(response, "code.includes('kumon')")
+
+    def test_hr_qr_screen_displays_manual_attendance_token(self):
+        hr_user = get_user_model().objects.create_user(
+            username="hr-admin",
+            email="hr-admin@example.com",
+            password="test-password",
+            is_staff=True,
+        )
+        self.client.force_login(hr_user)
+
+        response = self.client.get("/hr/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="attendanceQrToken"')
+        self.assertContains(response, "Enter this code if you can’t scan")
+        self.assertContains(response, 'id="attendanceQrCountdown">60 seconds</span>')
+        self.assertContains(response, "updateAttendanceQrCountdown")
+        self.assertContains(response, 'id="attendanceQrToken" aria-live="polite"')
 
     def test_qr_scan_rejects_clock_out_within_one_hour(self):
         self.client.force_login(self.user)
@@ -81,10 +158,16 @@ class AttendanceQrSessionTests(TestCase):
             content_type="application/json",
         )
 
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("Cannot clock out within 1 hour of clocking in", response.json()["error"])
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.json()["code"], "clock_out_too_soon")
+        self.assertEqual(response.json()["remaining_minutes"], 30)
+        self.assertEqual(response.json()["error"], "You can clock out in 30 minutes.")
         attendance.refresh_from_db()
         self.assertIsNone(attendance.clock_out)
+        self.assertEqual(
+            AttendanceQrSession.objects.get(pk=session.pk).status,
+            AttendanceQrSession.Status.ACTIVE,
+        )
 
     def test_qr_event_stream_is_served_as_sse(self):
         self.client.force_login(self.user)

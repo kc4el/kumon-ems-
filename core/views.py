@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, models, transaction
+from django.db.models import OuterRef, Subquery
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
@@ -65,6 +66,7 @@ from .qr_service import (
     create_active_qr_session,
     get_active_qr_session,
     invalidate_qr_session,
+    normalize_manual_code,
     stream_qr_events,
 )
 from .serializers import (
@@ -101,7 +103,7 @@ from .mfa import (
     new_secret,
     provisioning_uri,
 )
-from .throttles import MfaSessionThrottle, SessionLoginThrottle
+from .throttles import AttendanceQrScanThrottle, MfaSessionThrottle, SessionLoginThrottle
 
 logger = logging.getLogger(__name__)
 
@@ -878,6 +880,7 @@ class AttendanceQrCurrentView(APIView):
         return Response(
             {
                 "token": session.token,
+                "manual_code": session.manual_code,
                 "expires_at": session.expires_at.isoformat(),
                 "expires_in_seconds": max(0, int((session.expires_at - timezone.now()).total_seconds())),
                 "status": session.status,
@@ -888,13 +891,24 @@ class AttendanceQrCurrentView(APIView):
 
 class AttendanceQrScanView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [AttendanceQrScanThrottle]
 
     def post(self, request):
         token = str(request.data.get("token", "") or "").strip()
-        if not token:
-            return Response({"error": "QR token is required."}, status=status.HTTP_400_BAD_REQUEST)
-
-        session = AttendanceQrSession.objects.filter(token=token).first()
+        manual_code = normalize_manual_code(request.data.get("code"))
+        if token:
+            session = AttendanceQrSession.objects.filter(token=token).first()
+        elif manual_code:
+            session = AttendanceQrSession.objects.filter(
+                manual_code=manual_code,
+                status=AttendanceQrSession.Status.ACTIVE,
+                expires_at__gt=timezone.now(),
+            ).first()
+        else:
+            return Response(
+                {"error": "A valid QR token or manual attendance code is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         now = timezone.now()
         if session is None or session.status != AttendanceQrSession.Status.ACTIVE or now >= session.expires_at:
             if session is not None and session.status == AttendanceQrSession.Status.ACTIVE:
@@ -931,7 +945,22 @@ class AttendanceQrScanView(APIView):
             return Response({"error": "Attendance has already been completed for today."}, status=status.HTTP_409_CONFLICT)
 
         if attendance.clock_in and now - attendance.clock_in < timedelta(hours=1):
-            return Response({"error": "Cannot clock out within 1 hour of clocking in."}, status=status.HTTP_400_BAD_REQUEST)
+            remaining_seconds = max(
+                0,
+                int((timedelta(hours=1) - (now - attendance.clock_in)).total_seconds()),
+            )
+            remaining_minutes = max(1, (remaining_seconds + 59) // 60)
+            return Response(
+                {
+                    "code": "clock_out_too_soon",
+                    "error": (
+                        f"You can clock out in {remaining_minutes} "
+                        f"{'minute' if remaining_minutes == 1 else 'minutes'}."
+                    ),
+                    "remaining_minutes": remaining_minutes,
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
 
         attendance.clock_out = now
         attendance.save(update_fields=["clock_out"])
@@ -1930,6 +1959,16 @@ class MessageListCreateView(generics.ListCreateAPIView):
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated]
 
+    def list(self, request, *args, **kwargs):
+        if request.query_params.get("recent") == "1":
+            queryset = self.filter_queryset(self.get_queryset()).order_by(
+                "-created_at", "-pk"
+            )
+            limit = 500 if request.query_params.get("inbox") == "1" else 100
+            serializer = self.get_serializer(queryset[:limit], many=True)
+            return Response(serializer.data)
+        return super().list(request, *args, **kwargs)
+
     def _employee(self):
         return Employee.objects.filter(
             user=self.request.user, is_active=True
@@ -1991,6 +2030,35 @@ class MessageListCreateView(generics.ListCreateAPIView):
         return False
 
     def get_queryset(self):
+        if self.request.query_params.get("inbox") == "1":
+            employee = self._employee()
+            if is_staff_or_hr(self.request.user):
+                employee_ids = Employee.objects.filter(is_active=True).values_list(
+                    "pk", flat=True
+                )
+                conversation_keys = [
+                    key
+                    for employee_id in employee_ids
+                    for key in (str(employee_id), f"hr_{employee_id}")
+                ]
+            elif employee:
+                colleague_ids = Employee.objects.filter(is_active=True).exclude(
+                    pk=employee.pk
+                ).values_list("pk", flat=True)
+                conversation_keys = [f"hr_{employee.pk}"] + [
+                    get_dm_key(employee.pk, colleague_id) for colleague_id in colleague_ids
+                ]
+            else:
+                return Message.objects.none()
+
+            latest_message = Message.objects.filter(
+                conversation_key=OuterRef("conversation_key")
+            ).order_by("-created_at", "-pk").values("pk")[:1]
+            return Message.objects.filter(
+                conversation_key__in=conversation_keys,
+                pk=Subquery(latest_message),
+            ).order_by("-created_at", "-pk")
+
         conversation_key = self.request.query_params.get("conversation", "announcements")
         if not self._can_access_conversation(conversation_key):
             raise PermissionDenied("You are not a participant in this conversation.")
@@ -1999,6 +2067,20 @@ class MessageListCreateView(generics.ListCreateAPIView):
                 models.Q(conversation_key="hr")
                 | models.Q(conversation_key__startswith="hr_")
             )
+        elif is_staff_or_hr(self.request.user):
+            try:
+                employee_id = uuid.UUID(conversation_key)
+            except (ValueError, AttributeError, TypeError):
+                employee_id = None
+            if employee_id and Employee.objects.filter(
+                pk=employee_id, is_active=True
+            ).exists():
+                queryset = Message.objects.filter(
+                    models.Q(conversation_key=conversation_key)
+                    | models.Q(conversation_key=f"hr_{employee_id}")
+                )
+            else:
+                queryset = Message.objects.filter(conversation_key=conversation_key)
         else:
             queryset = Message.objects.filter(conversation_key=conversation_key)
         search = (self.request.query_params.get("search") or "").strip()
@@ -2023,6 +2105,15 @@ class MessageListCreateView(generics.ListCreateAPIView):
             )
         if not self._can_access_conversation(key):
             raise PermissionDenied("You are not a participant in this conversation.")
+        if is_staff_or_hr(user):
+            try:
+                employee_id = uuid.UUID(key)
+            except (ValueError, AttributeError, TypeError):
+                employee_id = None
+            if employee_id and Employee.objects.filter(
+                pk=employee_id, is_active=True
+            ).exists():
+                key = f"hr_{employee_id}"
         serializer.save(conversation_key=key, sender_name=name)
 
 
