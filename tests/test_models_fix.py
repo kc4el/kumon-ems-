@@ -3,7 +3,6 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from django.db.models import Q
 from django.test import TestCase
 from django.utils import timezone
 
@@ -104,4 +103,3 @@ class AttendanceOpenPerDayTests(TestCase):
         # No partial constraint should exist with the old name.
         old_constraint_names = [getattr(c, "name", "") for c in constraints]
         self.assertNotIn("one_open_attendance_per_employee_per_day", old_constraint_names)
-

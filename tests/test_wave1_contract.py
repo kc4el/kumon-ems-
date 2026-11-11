@@ -19,7 +19,7 @@ Run (repo root, SQLite):
 READ-ONLY wrt source: these tests only exercise HTTP + ORM introspection.
 """
 
-from datetime import date, time, timedelta
+from datetime import date, time
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -32,7 +32,6 @@ from core.models import (
     LeaveAllocation,
     LeaveRequest,
     OvertimeSlip,
-    PayrollItem,
     PayrollRun,
     ShiftRoster,
     ShiftSwap,

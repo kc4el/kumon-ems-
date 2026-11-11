@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.test import APIClient
 
-from core.models import Employee, LeaveAllocation, LeaveRequest, SiteSetting
+from core.models import Employee, LeaveAllocation, SiteSetting
 
 
 def _staff_client(username="frappe-enf"):

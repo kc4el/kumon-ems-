@@ -5076,10 +5076,6 @@
       clearTimeout(qrBannerTimeout);
     }
 
-    function simulateQrScan(sampleCode) {
-      handleQrCodeScanned(sampleCode);
-    }
-
     async function submitManualQrToken(event) {
       event.preventDefault();
       const input = document.getElementById('qrManualToken');
@@ -5297,21 +5293,6 @@
             durationBadge.textContent = durationStr;
           }
         }
-      }
-    }
-
-    async function attendanceAction(action) {
-      try {
-        const response = await portalFetch('/api/attendance/me/', {
-          method: 'POST',
-          body: JSON.stringify({ action })
-        });
-        const data = await payload(response);
-        if (!response.ok) throw new Error(data.error || 'Attendance could not be recorded.');
-        showStatus(action === 'clock_in' ? 'Clock-in recorded.' : 'Clock-out recorded.');
-        loadPortalData();
-      } catch (error) {
-        if (error.message !== 'auth') showStatus(error.message, true);
       }
     }
 

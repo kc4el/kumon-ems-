@@ -1771,23 +1771,6 @@ function initializeShiftEditorDate() {
   loadShiftEditorForDate(todayStr);
 }
 
-// Live employee id lookup shared by the advance + roster forms: the
-// directory loaded at startup first, then a fresh /api/employees/ fetch.
-async function resolveEmployeeId(name) {
-  const key = String(name || '').trim().toLowerCase();
-  if (!key) return null;
-  if (employeeNameIndex[key]) return employeeNameIndex[key];
-  try {
-    const rows = await fetchAllApiRows('/api/employees/?page_size=100');
-    rows.forEach((e) => {
-      const full = `${e.first_name || ''} ${e.last_name || ''}`.trim().toLowerCase();
-      if (full) employeeNameIndex[full] = e.id;
-      if (e.email) employeeNameIndex[String(e.email).toLowerCase()] = e.id;
-    });
-  } catch (_) { /* directory unreachable */ }
-  return employeeNameIndex[key] || null;
-}
-
 function toggleAddStaffForm(shiftKey, show) {
   const form = document.getElementById(`addStaffForm-${shiftKey}`);
   const addBtn = document.getElementById(`btnAddStaff-${shiftKey}`);
@@ -3312,26 +3295,6 @@ function collectMutedKinds() {
   return kinds;
 }
 
-async function saveSettingsProfile() {
-  const profile = {
-    first_name: document.getElementById('setFirstName')?.value.trim() || '',
-    last_name: document.getElementById('setLastName')?.value.trim() || '',
-    email: document.getElementById('setEmail')?.value.trim() || '',
-  };
-  openSettingsConfirm('Save profile?', 'Your employee name and email will be updated.', async () => {
-    try {
-      const res = await apiFetch('/api/settings/me/', { method: 'PATCH', body: JSON.stringify({ profile }) });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(typeof data.error === 'string' ? data.error : (data.email && data.email.join(' ')) || 'save failed');
-      settingsCache = { ...(settingsCache || {}), profile: data.profile || profile };
-      renderSettingsForm({ ...(settingsCache || {}), profile: settingsCache.profile });
-      showToast('Profile saved.');
-    } catch (error) {
-      showToast(error.message || 'Profile save failed.', 'error');
-    }
-  });
-}
-
 async function saveSettingsPassword() {
   const oldPw = document.getElementById('setOldPassword')?.value || '';
   const nw = document.getElementById('setNewPassword')?.value || '';
@@ -4226,42 +4189,6 @@ async function submitSelfAttendance(action) {
     showToast(error.message, 'error');
   } finally {
     if (button) button.disabled = false;
-  }
-}
-
-async function submitAttendanceCheckIn(event) {
-  event.preventDefault();
-  const nameInput = document.getElementById('attendanceEmployeeName');
-  const passwordInput = document.getElementById('attendancePassword');
-  const button = document.getElementById('attendanceCheckInButton');
-  const status = document.getElementById('attendanceCheckInStatus');
-  const csrf = document.cookie.split('; ').find((cookie) => cookie.startsWith('csrftoken='))?.split('=')[1];
-  if (!nameInput || !passwordInput || !button || !status) return;
-
-  button.disabled = true;
-  status.textContent = 'Checking your details...';
-  try {
-    const response = await fetch('/api/attendance/check-in/', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json', ...(csrf ? { 'X-CSRFToken': csrf } : {}) },
-      body: JSON.stringify({ name: nameInput.value.trim(), password: passwordInput.value }),
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.error || 'Unable to record attendance.');
-    status.textContent = data.already_present
-      ? `${data.employee} is already marked present today.`
-      : `${data.employee} is now marked present.`;
-    status.style.color = '#166534';
-    passwordInput.value = '';
-    loadDashboardSummary();
-    loadDashboardAttendance();
-    loadAttendanceView();
-  } catch (error) {
-    status.textContent = error.message;
-    status.style.color = '#b91c1c';
-  } finally {
-    button.disabled = false;
   }
 }
 

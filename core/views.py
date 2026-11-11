@@ -1,4 +1,3 @@
-import json
 import logging
 import uuid
 from collections import Counter
@@ -63,7 +62,6 @@ from .permissions import (
     is_staff_or_hr,
 )
 from .qr_service import (
-    create_active_qr_session,
     get_active_qr_session,
     invalidate_qr_session,
     normalize_manual_code,

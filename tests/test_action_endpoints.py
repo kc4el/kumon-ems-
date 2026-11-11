@@ -16,7 +16,6 @@ from core.models import (
     ShiftRoster,
     ShiftSwap,
     SiteSetting,
-    UserSetting,
 )
 
 
