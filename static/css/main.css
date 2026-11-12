@@ -9889,7 +9889,7 @@ html[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--moon,
 }
 .hr-workflow-card { margin-bottom: 20px; padding: 24px; }
 .hr-workflow-form { display: flex; flex-wrap: wrap; align-items: end; gap: 14px; margin: 16px 0; }
-.hr-workflow-form[hidden], #payrollFinalize[hidden], #payrollSelected[hidden] { display: none; }
+.hr-workflow-form[hidden], #estimateDetail[hidden], #estimateCancel[hidden] { display: none; }
 .hr-workflow-form .input-cell { min-width: 160px; flex: 1; }
 .hr-workflow-form input, .hr-workflow-form select, .hr-case select, .hr-case textarea { width: 100%; padding: 9px; border: 1px solid #cbd5e1; border-radius: 6px; font: inherit; }
 .hr-run-button { display: block; width: 100%; padding: 12px; text-align: left; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-top: 8px; cursor: pointer; }
@@ -9897,3 +9897,12 @@ html[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--moon,
 .hr-case form { display: grid; gap: 10px; margin-top: 12px; }
 .hr-case label { display: grid; gap: 4px; font-weight: 600; }
 .hr-case button { justify-self: start; margin-top: 8px; }
+.estimate-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 16px 0; }
+.estimate-controls select, .estimate-adjustment input { padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font: inherit; }
+.estimate-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 16px 0; }
+.estimate-summary span { display: grid; gap: 4px; padding: 12px; background: #eff6ff; border-radius: 6px; color: #334155; }
+.estimate-summary strong { color: #0f172a; }
+.estimate-warning { padding: 12px; margin: 12px 0; border-left: 4px solid #d97706; background: #fffbeb; color: #78350f; }
+.estimate-status { color: #1e40af; font-weight: 600; }
+.estimate-line, .estimate-adjustment { padding: 12px 0; border-bottom: 1px solid #e2e8f0; overflow-wrap: anywhere; }
+.estimate-adjustment button { margin: 4px; }

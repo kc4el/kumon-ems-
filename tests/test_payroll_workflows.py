@@ -39,30 +39,30 @@ class PayrollWorkflowTests(TestCase):
         self.assertEqual(self.client.post("/api/payroll-runs/", {"pay_period_start": "2026-02-01", "pay_period_end": "2026-01-01"}, format="json").status_code, 400)
         self.assertEqual(self.client.patch(f"/api/payroll-runs/{self.run.pk}/", {"is_processed": True}, format="json").status_code, 400)
 
-    def test_permissions_and_finalized_visibility(self):
+    def test_payroll_access_is_hr_only_before_and_after_finalization(self):
         row = self.create_item()
         self.client.force_authenticate(self.user)
         self.assertEqual(self.client.get("/api/payroll-runs/").status_code, 403)
-        self.assertEqual(self.client.get(f"/api/payroll-items/{row['id']}/").status_code, 404)
+        self.assertEqual(self.client.get("/api/payroll-items/").status_code, 403)
+        self.assertEqual(self.client.get(f"/api/payroll-items/{row['id']}/").status_code, 403)
         self.assertEqual(self.client.post("/api/payroll-items/", self.payload(), format="json").status_code, 403)
         self.assertEqual(self.client.patch(f"/api/payroll-items/{row['id']}/", {"base_pay": "20"}, format="json").status_code, 403)
         self.assertEqual(self.client.post(f"/api/payroll-runs/{self.run.pk}/finalize/").status_code, 403)
         self.run.is_processed = True
         self.run.save(update_fields=["is_processed"])
-        self.assertEqual(self.client.get(f"/api/payroll-items/{row['id']}/").status_code, 200)
+        self.assertEqual(self.client.get(f"/api/payroll-items/{row['id']}/").status_code, 403)
         self.client.force_authenticate(self.other_user)
-        self.assertEqual(self.client.get(f"/api/payroll-items/{row['id']}/").status_code, 404)
+        self.assertEqual(self.client.get(f"/api/payroll-items/{row['id']}/").status_code, 403)
 
     @patch("core.notifications.notify_employee")
-    def test_finalize_recomputes_notifies_once_and_locks_every_write(self, notify):
+    def test_finalize_recomputes_without_notifying_and_locks_every_write(self, notify):
         self.assertEqual(self.client.post(f"/api/payroll-runs/{self.run.pk}/finalize/").status_code, 400)
         row = self.create_item()
         PayrollItem.objects.filter(pk=row["id"]).update(net_pay=Decimal("1.00"))
         self.assertEqual(self.client.post(f"/api/payroll-runs/{self.run.pk}/finalize/").status_code, 200)
         self.assertEqual(PayrollItem.objects.get(pk=row["id"]).net_pay, Decimal("13500.00"))
         self.assertEqual(self.client.post(f"/api/payroll-runs/{self.run.pk}/finalize/").status_code, 200)
-        self.assertEqual(notify.call_count, 1)
-        self.assertEqual(notify.call_args.kwargs["event_key"], f"payroll:{self.run.pk}:{row['id']}:finalized")
+        notify.assert_not_called()
         self.assertEqual(self.client.patch(f"/api/payroll-items/{row['id']}/", {"base_pay": "99.00"}, format="json").status_code, 400)
         self.assertEqual(self.client.delete(f"/api/payroll-items/{row['id']}/").status_code, 400)
         self.assertEqual(self.client.post("/api/payroll-items/", self.payload(employee=str(self.other.pk)), format="json").status_code, 400)
@@ -76,12 +76,16 @@ class PayrollWorkflowTests(TestCase):
         PayrollItem.objects.filter(pk=row["id"]).update(payroll_run=closed)
         self.assertEqual(self.client.patch(f"/api/payroll-items/{row['id']}/", {"payroll_run": str(self.run.pk)}, format="json").status_code, 400)
 
-    def test_notifications_only_after_finalize_and_never_duplicated(self):
+    def test_legacy_posted_notices_hidden_but_overtime_notices_remain(self):
         row = self.create_item()
-        self.assertFalse(Notification.objects.filter(employee=self.employee, kind="payroll").exists())
-        url = f"/api/payroll-runs/{self.run.pk}/finalize/"
-        self.assertEqual(self.client.post(url).status_code, 200)
-        self.assertEqual(self.client.post(url).status_code, 200)
-        notices = Notification.objects.filter(employee=self.employee, kind="payroll")
-        self.assertEqual(notices.count(), 1)
-        self.assertEqual(str(notices.get().target_id), row["id"])
+        legacy = Notification.objects.create(employee=self.employee, kind="payroll", text="Payroll posted for January.", target_type="payroll", target_id=row["id"])
+        untargeted = Notification.objects.create(employee=self.employee, kind="payroll", text="Payroll posted for February.")
+        overtime = Notification.objects.create(employee=self.employee, kind="payroll", text="Overtime request approved.")
+        self.client.force_authenticate(self.user)
+        response = self.client.get("/api/notifications/")
+        self.assertEqual(response.status_code, 200)
+        records = response.data if isinstance(response.data, list) else response.data["results"]
+        self.assertEqual({item["id"] for item in records}, {str(overtime.pk)})
+        for hidden in (legacy, untargeted):
+            self.assertEqual(self.client.patch(f"/api/notifications/{hidden.pk}/read/").status_code, 404)
+        self.assertEqual(Notification.objects.filter(pk__in=[legacy.pk, untargeted.pk]).count(), 2)

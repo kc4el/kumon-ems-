@@ -98,8 +98,24 @@ from core.views_payroll import (
     PayrollRunListCreateView,
 )
 from core.views_notifications import NotificationListView, NotificationMarkReadView
+from core.views_pay_estimates import (
+    PayEstimateAdjustmentDecisionView,
+    PayEstimateDetailView,
+    PayEstimateExportView,
+    PayEstimateListCreateView,
+    PayEstimatePolicyListCreateView,
+    PayEstimateRecalculateView,
+    PayEstimateRevisionView,
+)
 
 urlpatterns = [
+    path("pay-estimate-policies/", PayEstimatePolicyListCreateView.as_view(), name="pay-estimate-policy-list-create"),
+    path("pay-estimates/", PayEstimateListCreateView.as_view(), name="pay-estimate-list-create"),
+    path("pay-estimates/<uuid:pk>/", PayEstimateDetailView.as_view(), name="pay-estimate-detail"),
+    path("pay-estimates/<uuid:pk>/recalculate/", PayEstimateRecalculateView.as_view(), name="pay-estimate-recalculate"),
+    path("pay-estimates/<uuid:pk>/revisions/<int:number>/", PayEstimateRevisionView.as_view(), name="pay-estimate-revision"),
+    path("pay-estimates/<uuid:pk>/export/", PayEstimateExportView.as_view(), name="pay-estimate-export"),
+    path("pay-estimate-adjustments/<uuid:pk>/decision/", PayEstimateAdjustmentDecisionView.as_view(), name="pay-estimate-adjustment-decision"),
     path("complaints/<uuid:pk>/escalate/", ComplaintEscalateView.as_view(), name="complaint-escalate"),
     path("payroll-runs/<uuid:pk>/finalize/", PayrollFinalizeView.as_view(), name="payroll-run-finalize"),
     path(

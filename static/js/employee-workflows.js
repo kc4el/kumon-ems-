@@ -25,12 +25,11 @@
   panel.innerHTML = `
     <div class="portal-card">
       <div class="portal-card-header"><h2 class="portal-card-title">Requests &amp; notifications</h2>
-        <div class="portal-card-subtitle">Follow your requests, payroll and updates.</div></div>
+        <div class="portal-card-subtitle">Follow your requests and updates.</div></div>
       <div class="workflow-tabs" role="group" aria-label="Choose an area">
         <button type="button" data-area="notifications">Inbox</button>
         <button type="button" data-area="claims">Expense claims</button>
         <button type="button" data-area="grievances">Grievances</button>
-        <button type="button" data-area="payroll">Payroll</button>
       </div>
       <div class="employee-status-banner" role="status" style="display:none"></div>
       <div id="workflowContent" aria-live="polite"></div>
@@ -124,11 +123,10 @@
     claim: [['Title','title'],['Category','category'],['Amount','amount'],['Status','status']],
     complaint: [['Subject','subject'],['Category','category'],['Details','description'],['Status','status'],['Resolution','resolution']],
     grievance: [['Title','title'],['Category','category'],['Details','details'],['Status','status'],['Resolution','resolution']],
-    payroll: [['Payroll run','payroll_run'],['Base pay','base_pay'],['Deductions','deductions'],['Net pay','net_pay']],
     leave: [['Leave type','leave_type'],['Start','start_date'],['End','end_date'],['Status','status'],['Reason','reason']],
     shift: [['Date','work_date'],['Start','start_time'],['End','end_time'],['Shift','shift_type'],['Break (minutes)','break_mins']]
   };
-  const endpoints = { claim:'expense-claims', complaint:'complaints', grievance:'grievances', payroll:'payroll-items', leave:'leaves', shift:'shift-rosters' };
+  const endpoints = { claim:'expense-claims', complaint:'complaints', grievance:'grievances', leave:'leaves', shift:'shift-rosters' };
   function record(type, item) {
     const card = node('div', null, 'workflow-record');
     for (const [label, key] of fields[type]) {
@@ -190,7 +188,7 @@
         } catch (error) { message(error.message, true); return false; }
       };
       if (!item.is_read) actions.append(action('Mark read', async () => { if (await markRead()) renderNotifications(); }));
-      const aliases = {expense_claim:'claim', expense:'claim', payroll_item:'payroll', shift_roster:'shift', leave_request:'leave'};
+      const aliases = {expense_claim:'claim', expense:'claim', shift_roster:'shift', leave_request:'leave'};
       const type = aliases[item.target_type] || item.target_type;
       if (endpoints[type] && item.target_id) actions.append(action('View details', async () => { if (await markRead()) await openDetail(type, item.target_id); }));
       card.append(actions);
@@ -204,10 +202,10 @@
     updateTabs();
     message('');
     if (area === 'notifications') { renderNotifications(); await refreshNotifications(); return; }
-    const types = {claims:'claim', grievances:'grievance', payroll:'payroll'};
+    const types = {claims:'claim', grievances:'grievance'};
     const type = types[area];
-    content.replaceChildren(node('h3', {claims:'Expense claims', grievances:'Grievances', payroll:'Finalized payroll'}[area]));
-    if (area !== 'payroll') addForm(area);
+    content.replaceChildren(node('h3', {claims:'Expense claims', grievances:'Grievances'}[area]));
+    addForm(area);
     const list = node('div', 'Loading records…', 'workflow-list');
     content.append(list);
     try {

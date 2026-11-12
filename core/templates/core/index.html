@@ -258,7 +258,7 @@
           </svg>
           <span>Claims</span>
         </a>
-        <a href="#" class="nav-link" data-view="payroll"><span class="nav-icon" aria-hidden="true">&#36;</span><span>Payroll</span></a>
+        <a href="#" class="nav-link" data-view="pay-estimates"><span class="nav-icon" aria-hidden="true">&#36;</span><span>Pay Estimates</span></a>
         <a href="#" class="nav-link" data-view="messages">
           <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="2">
@@ -2897,11 +2897,12 @@
       </section>
 
       <section class="view-panel" id="view-notifications"><div class="page-title-block"><h1 class="penpot-page-heading">My notifications</h1><p class="penpot-page-sub">Updates sent to your account.</p></div><div class="white-card hr-workflow-card" id="hrNotifications" aria-live="polite">Loading notifications...</div></section>
-      <section class="view-panel" id="view-payroll">
-        <div class="page-title-block"><h1 class="penpot-page-heading">Payroll</h1><p class="penpot-page-sub">Create pay periods, review employee lines, and finalize payroll.</p></div>
-        <div class="white-card hr-workflow-card"><h2 class="card-title">Create pay period</h2><form id="payrollRunForm" class="hr-workflow-form" onsubmit="createPayrollRun(event)"><div class="input-cell"><label for="payrollStart">Start date</label><input id="payrollStart" type="date" required></div><div class="input-cell"><label for="payrollEnd">End date</label><input id="payrollEnd" type="date" required></div><button class="btn btn-navy-cta">Create draft</button></form></div>
-        <div class="white-card hr-workflow-card"><h2 class="card-title">Pay periods</h2><div id="payrollRuns" aria-live="polite">Loading pay periods...</div></div>
-        <div class="white-card hr-workflow-card" id="payrollSelected" hidden><h2 class="card-title" id="payrollSelectedTitle">Payroll lines</h2><div id="payrollLines" aria-live="polite"></div><form id="payrollItemForm" class="hr-workflow-form" onsubmit="savePayrollItem(event)"><input type="hidden" id="payrollItemId"><div class="input-cell"><label for="payrollEmployee">Employee</label><select id="payrollEmployee" required></select></div><div class="input-cell"><label for="payrollBase">Base pay</label><input id="payrollBase" type="number" min="0" step="0.01" required oninput="previewPayrollNet()"></div><div class="input-cell"><label for="payrollDeductions">Deductions</label><input id="payrollDeductions" type="number" min="0" step="0.01" value="0" required oninput="previewPayrollNet()"></div><p id="payrollPreview">Estimated net: —</p><button class="btn btn-navy-cta" id="payrollSave">Add line</button><button type="button" class="tab-pill" onclick="resetPayrollItem()">Cancel edit</button></form><button type="button" class="btn btn-navy-cta" id="payrollFinalize" onclick="finalizePayroll()">Finalize payroll</button></div>
+      <section class="view-panel" id="view-pay-estimates">
+        <div class="page-title-block"><h1 class="penpot-page-heading">Pay estimates</h1><p class="penpot-page-sub">Advisory estimates for the pay handler. Review attendance, leave, and adjustments before using an amount.</p></div>
+        <div class="white-card hr-workflow-card"><h2 class="card-title">Estimate rules</h2><p>Base pay uses worked hours after scheduled breaks. Overtime and paid leave require rules effective for the period. Leave overtime fields blank to leave overtime unassessed.</p><form id="estimatePolicyForm" class="hr-workflow-form" onsubmit="saveEstimatePolicy(event)"><div class="input-cell"><label for="policyDate">Effective date</label><input id="policyDate" type="date" required></div><div class="input-cell"><label for="policyThreshold">Overtime threshold (hours)</label><input id="policyThreshold" type="number" min="0" step="0.01"></div><div class="input-cell"><label for="policyMultiplier">Overtime multiplier</label><input id="policyMultiplier" type="number" min="1" step="0.01"></div><div class="input-cell"><label for="policyLeaveTypes">Paid leave types</label><input id="policyLeaveTypes" placeholder="Names separated by commas"></div><button class="btn btn-navy-cta">Save rules</button></form><div id="estimatePolicies" aria-live="polite"></div></div>
+        <div class="white-card hr-workflow-card"><h2 class="card-title" id="estimateFormTitle">Create estimate</h2><form id="estimateForm" class="hr-workflow-form" onsubmit="savePayEstimate(event)"><div class="input-cell"><label for="estimateEmployee">Employee</label><select id="estimateEmployee" required></select></div><div class="input-cell"><label for="estimateStart">Period start</label><input id="estimateStart" type="date" required></div><div class="input-cell"><label for="estimateEnd">Period end</label><input id="estimateEnd" type="date" required></div><div class="input-cell"><label for="estimateRate">Hourly rate</label><input id="estimateRate" type="number" min="0" step="0.01" required></div><div class="input-cell"><label for="estimateDeductions">Deductions</label><input id="estimateDeductions" type="number" min="0" step="0.01" value="0" required></div><button class="btn btn-navy-cta" id="estimateSave">Create estimate</button><button type="button" class="tab-pill" id="estimateCancel" onclick="resetEstimateForm()" hidden>Cancel edit</button></form></div>
+        <div class="white-card hr-workflow-card"><h2 class="card-title">Estimates</h2><div id="estimateList" aria-live="polite">Loading estimates...</div></div>
+        <div class="white-card hr-workflow-card" id="estimateDetail" hidden aria-live="polite"></div>
       </section>
 
       <!-- ======================================================================
@@ -2922,24 +2923,6 @@
           <h3 style="font-size:22px; font-weight:800; color:#0f172a; margin-bottom:8px;">Production Module Active</h3>
           <p style="color:#64748b; max-width:480px; margin:0 auto 24px auto;">This module connects directly with
             Kumon EMS records and HR analytics.</p>
-          <!-- Live payroll runs (H7c: filled from /api/payroll-runs/ when a payroll view opens) -->
-          <div id="payrollLiveWrap" style="display:none; text-align:left; max-width:720px; margin:0 auto 24px auto;">
-            <table class="penpot-table">
-              <thead>
-                <tr>
-                  <th>PAY PERIOD</th>
-                  <th>PROCESSED</th>
-                  <th>LINES</th>
-                  <th>TOTAL NET</th>
-                </tr>
-              </thead>
-              <tbody id="payrollRunsTableBody">
-                <tr>
-                  <td colspan="4">Loading…</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
           <button class="btn btn-navy-cta" onclick="switchView('dashboard')">Back to Overview</button>
         </div>
       </section>
@@ -3096,12 +3079,12 @@
 
   <div id="toastContainer" class="toast-stack"></div>
 
-  <script src="{% static 'js/dashboard.js' %}?v=6.4"></script>
-  <script src="{% static 'js/hr-workflows.js' %}?v=1"></script>
+  <script src="{% static 'js/dashboard.js' %}?v=6.5"></script>
+  <script src="{% static 'js/hr-workflows.js' %}?v=2"></script>
   <script>
     if (typeof switchView === 'undefined') {
       const relPrefix = window.location.protocol === 'file:' ? '../../../' : '/';
-      document.write('<script src="' + relPrefix + 'static/js/dashboard.js?v=6.4"><\/script>');
+      document.write('<script src="' + relPrefix + 'static/js/dashboard.js?v=6.5"><\/script>');
     }
   </script>
   <script>

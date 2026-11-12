@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 
 from .exceptions import Conflict409
 from .models import PayrollItem, PayrollRun
-from .permissions import IsAuthenticatedReadOrStaffHRWrite, IsOwnerOrStaff, IsStaffOrHR, is_staff_or_hr
+from .permissions import IsStaffOrHR
 from .serializers import PayrollItemSerializer, PayrollRunSerializer
 from .signals import create_audit_log
 
@@ -81,12 +81,10 @@ class PayrollRunDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class PayrollItemScopeMixin:
-    permission_classes = [IsAuthenticated, IsAuthenticatedReadOrStaffHRWrite, IsOwnerOrStaff]
+    permission_classes = [IsAuthenticated, IsStaffOrHR]
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        if not is_staff_or_hr(self.request.user):
-            queryset = queryset.filter(employee__user=self.request.user, payroll_run__is_processed=True)
         run_id = self.request.query_params.get("payroll_run")
         if run_id:
             queryset = queryset.filter(payroll_run_id=serializers.UUIDField().run_validation(run_id))
@@ -170,8 +168,4 @@ class PayrollFinalizeView(APIView):
         run.is_processed = True
         run.save(update_fields=["is_processed"])
         _audit(request.user, f"run {run.pk} finalized")
-        from .notifications import notify_employee
-
-        for item in items:
-            notify_employee(item.employee, f"Payroll posted for {run.pay_period_start} to {run.pay_period_end}.", kind="payroll", target_type="payroll", target_id=item.pk, event_key=f"payroll:{run.pk}:{item.pk}:finalized")
         return Response(PayrollRunSerializer(run).data)

@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadShiftRosterView();
   initializeShiftEditorDate();
   loadMasterShiftCalendar();
-  loadPayrollView();
+  loadPayEstimates();
   loadAuditView();
   applySettingsA11yOnLoad();
   initDashboardWidgets();
@@ -433,7 +433,7 @@ const viewBreadcrumbs = {
   'attendance-shift': { root: 'Attendance', active: 'Shift Management' },
   'attendance-leave': { root: 'Attendance', active: 'Leave Management' },
   'claims': { root: 'Claims', active: 'Pending Claims' },
-  'payroll': { active: 'Payroll' },
+  'pay-estimates': { active: 'Pay Estimates' },
   'messages': { active: 'Messages & Channels' },
   'logs': { active: 'Audit & Activity Logs' },
   'settings': { active: '' },
@@ -509,7 +509,7 @@ function switchView(viewName) {
     if (viewName === 'dashboard') {
       refreshDashboardLiveData();
     }
-    if (viewName === 'payroll') loadPayrollView();
+    if (viewName === 'pay-estimates') loadPayEstimates();
     if (viewName === 'employee-grievance') loadGrievanceView();
   } else {
     // Show placeholder view with specific title
@@ -518,15 +518,7 @@ function switchView(viewName) {
     if (placeholderPanel && placeholderTitle) {
       placeholderTitle.textContent = viewName.replace('-', ' ').toUpperCase();
       placeholderPanel.classList.add('active');
-      const payrollWrap = document.getElementById('payrollLiveWrap');
-      if (payrollWrap) {
-        if (viewName.includes('payroll')) {
-          payrollWrap.style.display = 'block';
-          loadPayrollView();
-        } else {
-          payrollWrap.style.display = 'none';
-        }
-      }
+
     }
   }
 
@@ -4292,37 +4284,6 @@ async function refreshShiftConflictBadges() {
         if (cell) cell.textContent = `⚠ ${payload.conflicts.length} leave clash`;
       }
     } catch (_) { /* badge stays clear */ }
-  }
-}
-
-async function loadPayrollView() {
-  const body = document.getElementById('payrollRunsTableBody');
-  if (!body) return;
-  try {
-    const [runs, items] = await Promise.all([
-      fetchAllApiRows('/api/payroll-runs/?page_size=100'),
-      fetchAllApiRows('/api/payroll-items/?page_size=100'),
-    ]);
-    body.innerHTML = '';
-    if (!runs.length) {
-      body.innerHTML = '<tr><td colspan="4">No records yet.</td></tr>';
-    } else {
-      runs.forEach((run) => {
-        const lines = items.filter((i) => i.payroll_run === run.id);
-        const total = lines.reduce((sum, i) => sum + Number(i.net_pay || 0), 0);
-        const tr = document.createElement('tr');
-        tr.setAttribute('data-live', 'true');
-        tr.innerHTML =
-          `<td>${escapeHtml(String(run.pay_period_start || ''))} – ${escapeHtml(String(run.pay_period_end || ''))}</td>` +
-          `<td>${run.is_processed ? 'Yes' : 'No'}</td>` +
-          `<td>${lines.length}</td>` +
-          `<td>₱${escapeHtml(total.toFixed(2))}</td>`;
-        body.appendChild(tr);
-      });
-    }
-  } catch (e) {
-    body.innerHTML = '<tr><td colspan="4">Payroll data is unavailable. Try refreshing.</td></tr>';
-    showToast('Payroll data could not be loaded.', 'error');
   }
 }
 

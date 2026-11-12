@@ -1,5 +1,6 @@
 """Private notification inbox endpoints."""
 
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, serializers
 from rest_framework.permissions import IsAuthenticated
@@ -7,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import (Complaint, ExpenseClaim, Grievance, LeaveRequest, Notification,
-                     PayrollItem, ShiftRoster, UserSetting)
+                     ShiftRoster, UserSetting)
 
 
 class InboxNotificationSerializer(serializers.ModelSerializer):
@@ -23,7 +24,7 @@ class InboxNotificationSerializer(serializers.ModelSerializer):
         targets = {
             "leave": ("leaves", LeaveRequest), "shift": ("shift-rosters", ShiftRoster),
             "claim": ("expense-claims", ExpenseClaim), "complaint": ("complaints", Complaint),
-            "grievance": ("grievances", Grievance), "payroll": ("payroll-items", PayrollItem),
+            "grievance": ("grievances", Grievance),
         }
         target = targets.get(obj.target_type)
         if not target or not obj.target_id:
@@ -35,7 +36,10 @@ class InboxNotificationSerializer(serializers.ModelSerializer):
 
 
 def owned_notifications(user):
-    return Notification.objects.filter(employee__user=user, employee__is_active=True)
+    return Notification.objects.filter(employee__user=user, employee__is_active=True).exclude(
+        Q(target_type__in=["payroll", "payroll_item"]) |
+        Q(kind="payroll", text__istartswith="Payroll posted")
+    )
 
 
 class NotificationListView(generics.ListAPIView):
