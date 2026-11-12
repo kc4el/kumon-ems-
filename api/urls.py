@@ -45,8 +45,6 @@ from core.views import (
     PayrollItemListCreateView,
     PayrollRunDetailView,
     PayrollRunListCreateView,
-    PerformanceReviewDetailView,
-    PerformanceReviewListCreateView,
     PurgeRunView,
     SessionLoginView,
     SessionLogoutView,
@@ -98,6 +96,19 @@ from core.views_payroll import (
     PayrollRunListCreateView,
 )
 from core.views_notifications import NotificationListView, NotificationMarkReadView
+from core.views_staff_requests import (
+    AvailableShiftRosterView,
+    AttendanceCorrectionListCreateView,
+    AttendanceCorrectionDetailView,
+    OvertimeSlipListCreateView,
+    OvertimeSlipDetailView,
+    ShiftRosterListCreateView,
+    ShiftRosterDetailView,
+    ShiftSwapListCreateView,
+    ShiftSwapDetailView,
+)
+from core.views_message_files import MessageAttachmentDownloadView
+from core.notification_events import NotificationEventsView
 from core.views_pay_estimates import (
     PayEstimateAdjustmentDecisionView,
     PayEstimateDetailView,
@@ -109,6 +120,9 @@ from core.views_pay_estimates import (
 )
 
 urlpatterns = [
+    path("shift-rosters/available-for-swap/", AvailableShiftRosterView.as_view(), name="available-shift-rosters"),
+    path("messages/<uuid:pk>/attachment/", MessageAttachmentDownloadView.as_view(), name="message-attachment-download"),
+    path("notifications/events/", NotificationEventsView.as_view(), name="notification-events"),
     path("pay-estimate-policies/", PayEstimatePolicyListCreateView.as_view(), name="pay-estimate-policy-list-create"),
     path("pay-estimates/", PayEstimateListCreateView.as_view(), name="pay-estimate-list-create"),
     path("pay-estimates/<uuid:pk>/", PayEstimateDetailView.as_view(), name="pay-estimate-detail"),
@@ -275,16 +289,6 @@ urlpatterns = [
         "payroll-items/<uuid:pk>/",
         PayrollItemDetailView.as_view(),
         name="payroll-item-detail",
-    ),
-    path(
-        "performance/",
-        PerformanceReviewListCreateView.as_view(),
-        name="performance-list-create",
-    ),
-    path(
-        "performance/<uuid:pk>/",
-        PerformanceReviewDetailView.as_view(),
-        name="performance-detail",
     ),
     path("audit-logs/", EmployeeAuditLogListView.as_view(), name="audit-log-list"),
     path("logs/", EmployeeAuditLogListView.as_view(), name="logs-alias"),

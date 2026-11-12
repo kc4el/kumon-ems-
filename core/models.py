@@ -253,6 +253,14 @@ class ShiftSwap(models.Model):
     target_roster = models.ForeignKey(
         ShiftRoster, on_delete=models.CASCADE, related_name="swap_targets"
     )
+    requester_employee = models.ForeignKey(
+        Employee, null=True, blank=True, on_delete=models.SET_NULL,
+        related_name="requested_shift_swaps",
+    )
+    target_employee = models.ForeignKey(
+        Employee, null=True, blank=True, on_delete=models.SET_NULL,
+        related_name="targeted_shift_swaps",
+    )
     reason = models.TextField(blank=True)
     status = models.CharField(
         max_length=50,
@@ -399,14 +407,6 @@ class PayEstimateAdjustment(models.Model):
             models.CheckConstraint(condition=models.Q(status__in=["Pending", "Approved", "Rejected"]), name="estimate_adjustment_valid_status"),
             models.CheckConstraint(condition=models.Q(kind__in=["OVERTIME", "PAID_LEAVE"]), name="estimate_adjustment_valid_kind"),
         ]
-
-
-class PerformanceReview(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    review_date = models.DateField()
-    score = models.IntegerField()
-    comments = models.TextField()
 
 
 class ExpenseClaim(models.Model):

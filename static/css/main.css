@@ -9906,3 +9906,13 @@ html[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--moon,
 .estimate-status { color: #1e40af; font-weight: 600; }
 .estimate-line, .estimate-adjustment { padding: 12px 0; border-bottom: 1px solid #e2e8f0; overflow-wrap: anywhere; }
 .estimate-adjustment button { margin: 4px; }
+
+/* Attendance request reviews */
+.staff-review { margin-top: 20px; }
+.staff-review-tabs, .staff-review-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.staff-review-tabs button { border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #17365d; padding: 9px 12px; cursor: pointer; }
+.staff-review-tabs button[aria-pressed="true"] { background: #123b65; color: #fff; }
+.staff-review-record { border: 1px solid #dce5ee; border-radius: 10px; padding: 14px; margin-top: 10px; overflow-wrap: anywhere; }
+.staff-review-record p { margin: 5px 0; }
+.staff-review-message { color: #a12c32; }
+.staff-review-actions button:disabled { opacity: .6; cursor: wait; }

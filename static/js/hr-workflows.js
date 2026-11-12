@@ -6,7 +6,7 @@ async function hrRequest(url, options = {}) {
   const response = await apiFetch(url, options);
   if (!response.ok) {
     const data = await response.json().catch(() => ({}));
-    const message = typeof data.detail === 'string' ? data.detail : typeof data.error === 'string' ? data.error : 'Please check the entered values and try again.';
+    const message = typeof data.detail === 'string' ? data.detail : typeof data.error === 'string' ? data.error : Object.entries(data).map(([key, value]) => `${key.replaceAll('_', ' ')}: ${Array.isArray(value) ? value.join(' ') : value}`).join(' ') || 'Please check the entered values and try again.';
     throw new Error(message);
   }
   return response.status === 204 ? null : response.json();
@@ -235,7 +235,78 @@ async function loadHrNotifications() {
       const row = document.createElement('article'); row.className = 'hr-payroll-line';
       const text = document.createElement('span'); text.textContent = `${note.is_read ? 'Read' : 'Unread'} · ${note.text || ''}`; row.appendChild(text);
       if (!note.is_read) { const button = document.createElement('button'); button.type = 'button'; button.className = 'tab-pill'; button.textContent = 'Mark read'; button.onclick = async () => { try { await hrRequest(`/api/notifications/${encodeURIComponent(note.id)}/read/`, {method: 'PATCH'}); await loadHrNotifications(); refreshNotifBell(); } catch (_) { showToast('Notification could not be marked read.', 'error'); } }; row.appendChild(button); }
+      const reviewTypes = {shift_swap:'swaps', swap:'swaps', attendance_correction:'corrections', correction:'corrections', overtime:'overtime', overtime_slip:'overtime'};
+      const reviewType = reviewTypes[note.target_type];
+      if (reviewType && note.target_id) { const open = document.createElement('button'); open.type = 'button'; open.className = 'tab-pill'; open.textContent = 'View request'; open.onclick = () => window.openStaffReview(reviewType, note.target_id); row.appendChild(open); }
       list.appendChild(row);
     });
   } catch (_) { list.textContent = 'Notifications could not be loaded.'; }
 }
+
+
+// Attendance requests are reviewed alongside the daily attendance register.
+(() => {
+  const view = document.getElementById('view-attendance-daily');
+  if (!view) return;
+  const section = document.createElement('section'); section.className = 'white-card staff-review';
+  section.innerHTML = '<h2 class="card-title">Attendance requests</h2><div class="staff-review-tabs" role="group" aria-label="Request type"><button type="button" data-type="swaps">Shift swaps</button><button type="button" data-type="corrections">Attendance corrections</button><button type="button" data-type="overtime">Overtime</button></div><p class="staff-review-message" role="status"></p><div class="staff-review-list" aria-live="polite"></div>';
+  view.appendChild(section);
+  const list = section.querySelector('.staff-review-list'); const message = section.querySelector('.staff-review-message');
+  let current = 'swaps'; let version = 0;
+  const paths = {swaps:'shift-swaps', corrections:'attendance-corrections', overtime:'overtime'};
+  const add = (parent, text, tag = 'p') => { const el = document.createElement(tag); el.textContent = text; parent.appendChild(el); return el; };
+  const format = value => value ? new Date(value).toLocaleString() : 'Not recorded';
+  const rosterText = r => r ? `${r.employee_name || r.employee} · ${r.work_date} ${r.start_time || ''}–${r.end_time || ''} ${r.shift_type || ''}` : 'Shift unavailable';
+  async function load(type) {
+    current = type; const stamp = ++version; message.textContent = ''; list.textContent = 'Loading requests...';
+    section.querySelectorAll('[data-type]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.type === type)));
+    try {
+      const [rows, related] = await Promise.all([
+        fetchAllApiRows(`/api/${paths[type]}/`),
+        fetchAllApiRows(type === 'swaps' ? '/api/shift-rosters/' : '/api/attendance/')
+      ]);
+      if (stamp !== version) return;
+      list.replaceChildren();
+      if (!rows.length) add(list, 'No requests.');
+      rows.forEach(row => {
+        const card = document.createElement('article'); card.className = 'staff-review-record'; card.dataset.requestId = row.id;
+        if (type === 'swaps') {
+          add(card, `Requested shift: ${rosterText(row.requester_roster_display ? {...row.requester_roster_display, employee_name: row.requester_employee_name || row.requester_roster_display.employee_name} : related.find(r => String(r.id) === String(row.requester_roster)))}`);
+          add(card, `Other shift: ${rosterText(row.target_roster_display ? {...row.target_roster_display, employee_name: row.target_employee_name || row.target_roster_display.employee_name} : related.find(r => String(r.id) === String(row.target_roster)))}`);
+          add(card, `Reason: ${row.reason || ''}`);
+        } else {
+          const attendance = related.find(a => String(a.id) === String(row.attendance));
+          add(card, `Employee: ${attendance?.employee_name || row.employee || 'Unavailable'} · ${attendance?.date || row.date || ''}`);
+          if (type === 'corrections') {
+            add(card, `Current: ${format(attendance?.clock_in)} – ${format(attendance?.clock_out)}`);
+            add(card, `Proposed: ${row.proposed_clock_in ? format(row.proposed_clock_in) : 'No change'} – ${row.proposed_clock_out ? format(row.proposed_clock_out) : 'No change'}`);
+            add(card, `Reason: ${row.reason || ''}`);
+          } else add(card, `Calculated overtime: ${row.hours} hours · ${row.multiplier}×`);
+        }
+        add(card, `Status: ${row.status}`);
+        const legacySwap = type === 'swaps' && (!row.requester_employee || !row.target_employee);
+        if (legacySwap && row.status === 'Pending') add(card, 'Confirm participants, reject this legacy request, and create a new request.');
+        if (row.status === 'Pending') {
+          const actions = document.createElement('div'); actions.className = 'staff-review-actions'; card.appendChild(actions);
+          ['Approved', 'Rejected'].forEach(status => {
+            const button = document.createElement('button'); button.type = 'button'; button.className = 'tab-pill'; button.textContent = status === 'Approved' ? 'Approve' : 'Reject'; if (legacySwap && status === 'Approved') { button.disabled = true; button.title = 'Legacy requests must be rejected and recreated.'; } actions.appendChild(button);
+            button.onclick = async () => {
+              actions.querySelectorAll('button').forEach(b => b.disabled = true); message.textContent = '';
+              try { await hrRequest(`/api/${paths[type]}/${encodeURIComponent(row.id)}/`, {method:'PATCH', body:JSON.stringify({status})}); await load(type); message.textContent = 'Decision saved.'; }
+              catch (error) { message.textContent = error.message; actions.querySelectorAll('button').forEach(b => { b.disabled = legacySwap && b.textContent === 'Approve'; }); }
+            };
+          });
+        }
+        list.appendChild(card);
+      });
+    } catch (error) { if (stamp === version) { list.replaceChildren(); message.textContent = error.message || 'Requests could not be loaded.'; } }
+  }
+  window.openStaffReview = async (type, id) => { observer.disconnect(); switchView('attendance-daily'); await load(type); const card = [...list.querySelectorAll('[data-request-id]')].find(el => el.dataset.requestId === String(id)); if (card) { card.scrollIntoView({block:'center'}); card.setAttribute('tabindex', '-1'); card.focus(); } };
+  section.querySelectorAll('[data-type]').forEach(button => button.addEventListener('click', () => load(button.dataset.type)));
+  const observer = new MutationObserver(() => { if (view.classList.contains('active')) { observer.disconnect(); load(current); } });
+  if (view.classList.contains('active')) load(current); else observer.observe(view, {attributes:true, attributeFilter:['class']});
+  window.addEventListener('notifications:changed', () => {
+    if (typeof refreshNotifBell === 'function') refreshNotifBell();
+    if (document.getElementById('view-notifications')?.classList.contains('active')) loadHrNotifications();
+  });
+})();

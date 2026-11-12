@@ -119,9 +119,9 @@ class AutoAllocateTests(TestCase):
 
 
 class MobileCheckinToggleTests(TestCase):
-    def test_kiosk_default_path_unchanged(self):
+    def test_legacy_credential_checkin_is_disabled(self):
         r = APIClient().post("/api/attendance/check-in/", {}, format="json")
-        self.assertEqual(r.status_code, 400)
+        self.assertEqual(r.status_code, 403)
 
     def test_kiosk_disabled_returns_403(self):
         SiteSetting.objects.update_or_create(

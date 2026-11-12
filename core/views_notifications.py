@@ -7,8 +7,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import (Complaint, ExpenseClaim, Grievance, LeaveRequest, Notification,
-                     ShiftRoster, UserSetting)
+from .models import (AttendanceCorrection, Complaint, ExpenseClaim, Grievance, LeaveRequest,
+                     Notification, OvertimeSlip, ShiftRoster, ShiftSwap, UserSetting)
 
 
 class InboxNotificationSerializer(serializers.ModelSerializer):
@@ -21,10 +21,19 @@ class InboxNotificationSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_target_url(self, obj):
+        if obj.target_id and obj.target_type == "shift_swap":
+            if ShiftSwap.objects.filter(Q(requester_employee_id=obj.employee_id) | Q(target_employee_id=obj.employee_id), pk=obj.target_id).exists():
+                return f"/api/shift-swaps/{obj.target_id}/"
+            return None
+        if obj.target_id and obj.target_type == "attendance_correction":
+            if AttendanceCorrection.objects.filter(pk=obj.target_id, attendance__employee_id=obj.employee_id).exists():
+                return f"/api/attendance-corrections/{obj.target_id}/"
+            return None
         targets = {
             "leave": ("leaves", LeaveRequest), "shift": ("shift-rosters", ShiftRoster),
             "claim": ("expense-claims", ExpenseClaim), "complaint": ("complaints", Complaint),
             "grievance": ("grievances", Grievance),
+            "overtime": ("overtime", OvertimeSlip),
         }
         target = targets.get(obj.target_type)
         if not target or not obj.target_id:

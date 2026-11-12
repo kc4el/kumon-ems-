@@ -48,7 +48,6 @@ from .models import (
     OvertimeSlip,
     PayrollItem,
     PayrollRun,
-    PerformanceReview,
     ShiftRoster,
     ShiftSwap,
     SiteSetting,
@@ -85,7 +84,6 @@ from .serializers import (
     OvertimeSlipSerializer,
     PayrollItemSerializer,
     PayrollRunSerializer,
-    PerformanceReviewSerializer,
     ShiftRosterSerializer,
     ShiftSwapSerializer,
     SiteSettingSerializer,
@@ -108,6 +106,18 @@ logger = logging.getLogger(__name__)
 def _request_owner(request):
     """The Employee row behind the request user, or None."""
     return Employee.objects.filter(user=request.user).first()
+
+
+def _attendance_account_ready(user):
+    """Enforce onboarding for session and DRF token authentication alike."""
+    employee = Employee.objects.filter(user=user).first()
+    if employee is None:
+        return bool(user.is_staff or user.is_superuser)
+    return bool(
+        employee.is_active
+        and employee.status == Employee.OnboardingStatus.ACTIVE
+        and not employee.force_password_change
+    )
 
 
 class ForceOwnerCreateMixin:
@@ -155,12 +165,14 @@ class ForceOwnerCreateMixin:
 def dashboard_view(request):
     if request.user.is_authenticated:
         return redirect("/hr/" if _is_hr_user(request.user) else "/employee/")
-    return render(request, "core/index.html")
+    return redirect("/login/")
 
 
 @ensure_csrf_cookie
 def attendance_checkin_view(request):
-    return render(request, "core/attendance_checkin.html")
+    if request.user.is_authenticated:
+        return redirect("/employee/")
+    return redirect("/login/?next=/employee/")
 
 
 @ensure_csrf_cookie
@@ -798,11 +810,22 @@ class AttendanceListCreateView(
     queryset = Attendance.objects.all().order_by("-date", "-clock_in")
     serializer_class = AttendanceSerializer
 
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        if not _attendance_account_ready(request.user):
+            raise PermissionDenied("Complete account onboarding before using attendance.")
+
     def perform_create(self, serializer):
+        if not is_staff_or_hr(self.request.user) or not _attendance_account_ready(self.request.user):
+            raise PermissionDenied("Only HR staff can manually create attendance.")
         self._enforce_owner(serializer)
         try:
             with transaction.atomic():
-                serializer.save()
+                attendance = serializer.save()
+                EmployeeAuditLog.objects.create(
+                    employee=attendance.employee,
+                    action=f"attendance manually created {attendance.date} by user {self.request.user.pk}",
+                )
         except IntegrityError:
             raise Conflict409("This employee has already clocked in on this date.")
 
@@ -811,69 +834,23 @@ class AttendanceCheckInView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        # FrappeHR 6.1 mirror: the mobile/self-service clock-in path can be
-        # switched off without touching the HR-desk attendance endpoints.
         if get_site_setting("mobile_checkin_enabled").lower() != "true":
             return Response(
                 {"error": "Mobile check-in is disabled by your administrator."},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        identifier = str(request.data.get("name", "")).strip()
-        password = str(request.data.get("password", ""))
-        if not identifier or not password:
-            return Response(
-                {"error": "Name and password are required."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        user = authenticate(request, username=identifier, password=password)
-        employee = Employee.objects.filter(email__iexact=identifier).first()
-        if user is None and " " in identifier:
-            parts = identifier.split(None, 1)
-            employee = Employee.objects.filter(
-                first_name__iexact=parts[0], last_name__iexact=parts[1]
-            ).first()
-            if employee and employee.user:
-                user = authenticate(
-                    request, username=employee.user.username, password=password
-                )
-        if user is None or employee is None:
-            if user is not None:
-                employee = Employee.objects.filter(user=user).first()
-            if user is None or employee is None or not employee.is_active:
-                return Response(
-                    {"error": "Invalid employee name or password."},
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
-
-        login(request, user)
-        today = timezone.localdate()
-        attendance, created = Attendance.objects.get_or_create(
-            employee=employee,
-            date=today,
-            defaults={"clock_in": timezone.now()},
-        )
-        if not created and attendance.clock_out is not None:
-            return Response(
-                {"error": "Attendance was already completed for today."},
-                status=status.HTTP_409_CONFLICT,
-            )
         return Response(
-            {
-                "message": "You are marked present.",
-                "already_present": not created,
-                "employee": f"{employee.first_name} {employee.last_name}".strip(),
-                "date": str(today),
-                "clock_in": attendance.clock_in,
-            },
-            status=status.HTTP_200_OK,
+            {"error": "Please sign in normally, then scan the office attendance QR code."},
+            status=status.HTTP_403_FORBIDDEN,
         )
 
 
 class AttendanceQrCurrentView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsStaffOrHR]
 
     def get(self, request):
+        if not _attendance_account_ready(request.user):
+            raise PermissionDenied("Complete account onboarding before using attendance.")
         session = get_active_qr_session()
         return Response(
             {
@@ -891,13 +868,23 @@ class AttendanceQrScanView(APIView):
     permission_classes = [IsAuthenticated]
     throttle_classes = [AttendanceQrScanThrottle]
 
+    @transaction.atomic
     def post(self, request):
+        return _scan_attendance(request)
+
+
+def _scan_attendance(request):
+        if get_site_setting("mobile_checkin_enabled").lower() != "true":
+            return Response(
+                {"error": "Mobile check-in is disabled by your administrator."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         token = str(request.data.get("token", "") or "").strip()
         manual_code = normalize_manual_code(request.data.get("code"))
         if token:
-            session = AttendanceQrSession.objects.filter(token=token).first()
+            session = AttendanceQrSession.objects.select_for_update().filter(token=token).first()
         elif manual_code:
-            session = AttendanceQrSession.objects.filter(
+            session = AttendanceQrSession.objects.select_for_update().filter(
                 manual_code=manual_code,
                 status=AttendanceQrSession.Status.ACTIVE,
                 expires_at__gt=timezone.now(),
@@ -915,8 +902,10 @@ class AttendanceQrScanView(APIView):
                 session.save(update_fields=["status", "invalidated_at"])
             return Response({"error": "Expired, already-used, or invalid QR token."}, status=status.HTTP_400_BAD_REQUEST)
 
-        employee = _request_owner(request)
-        if employee is None or not employee.is_active:
+        employee = Employee.objects.select_for_update().filter(user=request.user).first()
+        if (employee is None or not employee.is_active
+                or employee.status != Employee.OnboardingStatus.ACTIVE
+                or employee.force_password_change):
             return Response({"error": "No active employee profile is linked to this account."}, status=status.HTTP_403_FORBIDDEN)
 
         today = timezone.localdate()
@@ -927,9 +916,11 @@ class AttendanceQrScanView(APIView):
         )
 
         if created or attendance.clock_in is None:
+            if not invalidate_qr_session(session, used=True):
+                transaction.set_rollback(True)
+                return Response({"error": "Expired, already-used, or invalid QR token."}, status=status.HTTP_400_BAD_REQUEST)
             attendance.clock_in = now
             attendance.save(update_fields=["clock_in"])
-            invalidate_qr_session(session, used=True)
             return Response(
                 {
                     "message": "Clock-in recorded successfully.",
@@ -989,9 +980,11 @@ class AttendanceQrScanView(APIView):
                 status=status.HTTP_409_CONFLICT,
             )
 
+        if not invalidate_qr_session(session, used=True):
+            transaction.set_rollback(True)
+            return Response({"error": "Expired, already-used, or invalid QR token."}, status=status.HTTP_400_BAD_REQUEST)
         attendance.clock_out = now
         attendance.save(update_fields=["clock_out"])
-        invalidate_qr_session(session, used=True)
         return Response(
             {
                 "message": "Clock-out recorded successfully.",
@@ -1006,6 +999,8 @@ class AttendanceQrEventStreamView(View):
     def get(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return HttpResponse(status=401)
+        if not is_staff_or_hr(request.user) or not _attendance_account_ready(request.user):
+            return HttpResponse(status=403)
         return stream_qr_events(request)
 
 
@@ -1014,10 +1009,35 @@ class AttendanceDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = AttendanceSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        if not _attendance_account_ready(request.user):
+            raise PermissionDenied("Complete account onboarding before using attendance.")
+
+    def update(self, request, *args, **kwargs):
+        if not is_staff_or_hr(request.user) or not _attendance_account_ready(request.user):
+            raise PermissionDenied("Only HR staff can change attendance directly.")
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        if not is_staff_or_hr(request.user) or not _attendance_account_ready(request.user):
+            raise PermissionDenied("Only HR staff can delete attendance directly.")
+        with transaction.atomic():
+            row = self.get_object()
+            EmployeeAuditLog.objects.create(
+                employee=row.employee,
+                action=f"attendance deleted {row.date} by user {request.user.pk}",
+            )
+            return super().destroy(request, *args, **kwargs)
+
     def perform_update(self, serializer):
         try:
             with transaction.atomic():
-                serializer.save()
+                attendance = serializer.save()
+                EmployeeAuditLog.objects.create(
+                    employee=attendance.employee,
+                    action=f"attendance manually updated {attendance.date} by user {self.request.user.pk}",
+                )
         except IntegrityError:
             raise Conflict409("This change conflicts with an existing record.")
 
@@ -1111,15 +1131,8 @@ class AttendanceClockOutView(APIView):
     def post(self, request):
         emp_id = request.data.get("employee_id")
         is_hr = is_staff_or_hr(request.user)
-        if not is_hr:
-            employee = _request_owner(request)
-            if employee is None or not employee.is_active:
-                raise PermissionDenied("No active employee profile is linked to this account.")
-            if emp_id and str(emp_id) != str(employee.pk):
-                raise PermissionDenied("You can only clock out your own attendance.")
-            if request.data.get("clock_out"):
-                raise PermissionDenied("Only HR staff can set a manual clock-out time.")
-            emp_id = employee.pk
+        if not is_hr or not _attendance_account_ready(request.user):
+            raise PermissionDenied("Scan the office attendance QR code to clock out.")
         if not emp_id:
             return Response(
                 {"error": "employee_id is required."},
@@ -1169,6 +1182,10 @@ class AttendanceClockOutView(APIView):
                     )
                 attendance.clock_out = clock_out_time
                 attendance.save()
+                EmployeeAuditLog.objects.create(
+                    employee=attendance.employee,
+                    action=f"attendance manually clocked out {attendance.date} by user {request.user.pk}",
+                )
                 return Response(
                     {"message": "Clocked out successfully."},
                     status=status.HTTP_200_OK,
@@ -1184,28 +1201,16 @@ class AttendanceSelfView(APIView):
     """Session-authenticated clock-in/out for the employee portal."""
 
     permission_classes = [IsAuthenticated]
+    throttle_classes = [AttendanceQrScanThrottle]
+
+    def get_throttles(self):
+        return super().get_throttles() if self.request.method == "POST" else []
 
     def _employee(self, request):
         employee = _request_owner(request)
-        if (employee is None or not employee.is_active) and (
-            request.user.is_staff or request.user.is_superuser
-        ):
-            employee, _ = Employee.objects.get_or_create(
-                user=request.user,
-                defaults={
-                    "first_name": request.user.first_name or request.user.username,
-                    "last_name": request.user.last_name or "Staff",
-                    "email": request.user.email
-                    or f"{request.user.username}@kumon-ems.com",
-                    "role": "HR Administrator",
-                    "is_active": True,
-                },
-            )
-            if not employee.is_active:
-                employee.is_active = True
-                employee.resigned_at = None
-                employee.save(update_fields=["is_active", "resigned_at"])
-        if employee is None or not employee.is_active:
+        if (employee is None or not employee.is_active
+                or employee.status != Employee.OnboardingStatus.ACTIVE
+                or employee.force_password_change):
             raise PermissionDenied(
                 "No active employee profile is linked to this account."
             )
@@ -1218,47 +1223,9 @@ class AttendanceSelfView(APIView):
         )[:31]
         return Response(AttendanceSerializer(rows, many=True).data)
 
+    @transaction.atomic
     def post(self, request):
-        if get_site_setting("mobile_checkin_enabled").lower() != "true":
-            return Response(
-                {"error": "Mobile check-in is disabled by your administrator."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-        employee = self._employee(request)
-        action = str(request.data.get("action", "clock_in")).lower()
-        if action == "clock_out":
-            open_row = (
-                Attendance.objects.filter(
-                    employee=employee,
-                    clock_out__isnull=True,
-                )
-                .order_by("-clock_in")
-                .first()
-            )
-            if open_row is None:
-                return Response(
-                    {"error": "No open clock-in found for today."},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
-            open_row.clock_out = timezone.now()
-            open_row.save(update_fields=["clock_out"])
-            return Response(AttendanceSerializer(open_row).data)
-        today = timezone.localdate()
-        try:
-            with transaction.atomic():
-                row, created = Attendance.objects.get_or_create(
-                    employee=employee,
-                    date=today,
-                    defaults={"clock_in": timezone.now()},
-                )
-        except IntegrityError:
-            raise Conflict409("Attendance has already been started for today.")
-        if not created:
-            return Response(
-                {"error": "Attendance has already been started for today."},
-                status=status.HTTP_409_CONFLICT,
-            )
-        return Response(AttendanceSerializer(row).data, status=status.HTTP_201_CREATED)
+        return _scan_attendance(request)
 
 
 class LeaveRequestListCreateView(
@@ -1676,19 +1643,6 @@ class PayrollItemDetailView(generics.RetrieveUpdateDestroyAPIView):
         PayrollItemListCreateView._save_computed(serializer)
 
 
-class PerformanceReviewListCreateView(
-    ForceOwnerCreateMixin, OwnerQuerysetMixin, generics.ListCreateAPIView
-):
-    queryset = PerformanceReview.objects.all().order_by("-review_date")
-    serializer_class = PerformanceReviewSerializer
-
-
-class PerformanceReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = PerformanceReview.objects.all()
-    serializer_class = PerformanceReviewSerializer
-    permission_classes = [IsAuthenticated, IsOwnerOrStaff]
-
-
 class EmployeeAuditLogListView(OwnerQuerysetMixin, generics.ListAPIView):
     queryset = EmployeeAuditLog.objects.all().order_by("-timestamp")
     serializer_class = EmployeeAuditLogSerializer
@@ -1822,6 +1776,11 @@ class MfaAwareAuthTokenView(APIView):
             return Response(
                 {"error": "Invalid credentials."},
                 status=status.HTTP_401_UNAUTHORIZED,
+            )
+        if not _attendance_account_ready(user):
+            return Response(
+                {"error": "Complete account onboarding before using this service."},
+                status=status.HTTP_403_FORBIDDEN,
             )
         device = AuthenticatorDevice.objects.filter(
             user=user, is_confirmed=True

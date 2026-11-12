@@ -14,7 +14,6 @@ from .models import (
     OvertimeSlip,
     PayrollItem,
     PayrollRun,
-    PerformanceReview,
     ShiftRoster,
     ShiftSwap,
     UserSetting,
@@ -150,18 +149,6 @@ def log_payroll_item_action(sender, instance, created, **kwargs):
         )
 
 
-@receiver(post_save, sender=PerformanceReview)
-def log_performance_review_action(sender, instance, created, **kwargs):
-    if created:
-        create_audit_log(
-            instance.employee, f"Performance review created for {instance.employee}."
-        )
-    else:
-        create_audit_log(
-            instance.employee, f"Performance review updated for {instance.employee}."
-        )
-
-
 @receiver(post_save, sender=LeaveRequest)
 def notify_leave_decision(sender, instance, created, **kwargs):
     # Submit (Pending) stays silent. Decision only.
@@ -210,7 +197,8 @@ def notify_overtime_approval(sender, instance, created, **kwargs):
     if not created and getattr(instance, "_previous_status", None) == instance.status:
         return
     notify_employee(instance.employee, f"Overtime {instance.status.lower()}: {instance.hours}h on {instance.date}",
-                    "payroll", event_key=f"overtime:{instance.pk}:{instance.status}:{instance.employee_id}")
+                    "payroll", target_type="overtime", target_id=instance.pk,
+                    event_key=f"overtime:{instance.pk}:{instance.status}:{instance.employee_id}")
 
 
 @receiver(post_save, sender=LeaveAllocation)
@@ -251,30 +239,28 @@ def log_swap_action(sender, instance, created, **kwargs):
     parties = {
         e
         for e in (
-            getattr(instance.requester_roster, "employee", None),
-            getattr(instance.target_roster, "employee", None),
+            instance.requester_employee,
+            instance.target_employee,
         )
         if e is not None
     }
     if created:
         create_audit_log(
-            instance.requester_roster.employee,
+            instance.requester_employee,
             f"Shift swap requested for {instance.requester_roster.work_date}.",
         )
         # Both parties learn a swap exists. Silent request = missed shift.
         for emp in parties:
-            roster = instance.requester_roster if instance.requester_roster.employee_id == emp.pk else instance.target_roster
             notify_employee(emp, f"Shift swap requested for {instance.requester_roster.work_date}",
-                            "shift", "shift", roster.pk, f"swap:{instance.pk}:requested:{emp.pk}")
+                            "shift", "shift_swap", instance.pk, f"swap:{instance.pk}:requested:{emp.pk}")
     elif getattr(instance, "_previous_status", None) not in (None, instance.status):
         create_audit_log(
-            instance.requester_roster.employee,
+            instance.requester_employee,
             f"Shift swap {instance.status.lower()} for {instance.requester_roster.work_date}.",
         )
         for emp in parties:
-            roster = instance.requester_roster if instance.requester_roster.employee_id == emp.pk else instance.target_roster
             notify_employee(emp, f"Shift swap {instance.status.lower()} for {instance.requester_roster.work_date}",
-                            "shift", "shift", roster.pk, f"swap:{instance.pk}:{instance.status}:{emp.pk}")
+                            "shift", "shift_swap", instance.pk, f"swap:{instance.pk}:{instance.status}:{emp.pk}")
 
 
 @receiver(post_save, sender=get_user_model())
