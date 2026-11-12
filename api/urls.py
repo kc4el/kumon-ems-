@@ -79,7 +79,29 @@ from core.views_onboarding import (
 from core.views_import import import_urls
 from core.views_actions import action_urls
 
+# Completed workflows share the established API URLs with the legacy modules.
+from core.views_workflows import (
+    ClaimDecisionView,
+    ComplaintDetailView,
+    ComplaintEscalateView,
+    ComplaintListCreateView,
+    ExpenseClaimDetailView,
+    ExpenseClaimListCreateView,
+    GrievanceDetailView,
+    GrievanceListCreateView,
+)
+from core.views_payroll import (
+    PayrollFinalizeView,
+    PayrollItemDetailView,
+    PayrollItemListCreateView,
+    PayrollRunDetailView,
+    PayrollRunListCreateView,
+)
+from core.views_notifications import NotificationListView, NotificationMarkReadView
+
 urlpatterns = [
+    path("complaints/<uuid:pk>/escalate/", ComplaintEscalateView.as_view(), name="complaint-escalate"),
+    path("payroll-runs/<uuid:pk>/finalize/", PayrollFinalizeView.as_view(), name="payroll-run-finalize"),
     path(
         "dashboard-summary/", DashboardSummaryView.as_view(), name="dashboard-summary"
     ),

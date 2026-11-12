@@ -1566,16 +1566,6 @@ class ShiftSwapDetailView(generics.RetrieveUpdateDestroyAPIView):
                 with transaction.atomic():
                     swap.status = "Rejected"
                     swap.save(update_fields=["status"])
-                    Notification.objects.create(
-                        employee=swap.requester_roster.employee,
-                        kind="shift",
-                        text=(
-                            "Swap rejected for "
-                            f"{swap.requester_roster.work_date} "
-                            f"({swap.requester_roster.shift_type} / "
-                            f"{swap.target_roster.shift_type})"
-                        ),
-                    )
             return Response(
                 self.get_serializer(self.get_object()).data,
                 status=status.HTTP_200_OK,
@@ -1619,15 +1609,6 @@ class ShiftSwapDetailView(generics.RetrieveUpdateDestroyAPIView):
                 guard.is_valid(raise_exception=True)
             swap.status = "Approved"
             swap.save(update_fields=["status"])
-            for roster in (requester, target):
-                Notification.objects.create(
-                    employee_id=roster.employee_id,
-                    kind="shift",
-                    text=(
-                        f"You are now on {roster.shift_type} "
-                        f"{roster.work_date} (swap approved)"
-                    ),
-                )
 
 
 class PayrollRunListCreateView(generics.ListCreateAPIView):

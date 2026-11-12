@@ -433,6 +433,7 @@ const viewBreadcrumbs = {
   'attendance-shift': { root: 'Attendance', active: 'Shift Management' },
   'attendance-leave': { root: 'Attendance', active: 'Leave Management' },
   'claims': { root: 'Claims', active: 'Pending Claims' },
+  'payroll': { active: 'Payroll' },
   'messages': { active: 'Messages & Channels' },
   'logs': { active: 'Audit & Activity Logs' },
   'settings': { active: '' },
@@ -508,6 +509,8 @@ function switchView(viewName) {
     if (viewName === 'dashboard') {
       refreshDashboardLiveData();
     }
+    if (viewName === 'payroll') loadPayrollView();
+    if (viewName === 'employee-grievance') loadGrievanceView();
   } else {
     // Show placeholder view with specific title
     const placeholderPanel = document.getElementById('view-placeholder');
@@ -2136,20 +2139,13 @@ async function loadClaimStatuses() {
 }
 
 async function saveClaimStatus(id, status) {
-  // Claim decisions go through POST /api/claims/<id>/decision/ (UUID rows
-  // and demo CLM-/ADV- codes alike); the legacy claim-statuses upsert stays
-  // as the offline-shaped fallback.
+  // Claim decisions go through the decision endpoint.
   const decision = status === 'Approved' ? 'Approved' : 'Rejected';
   const res = await apiFetch(`/api/claims/${encodeURIComponent(id)}/decision/`, {
     method: 'POST',
     body: JSON.stringify({ decision })
   });
-  if (res.ok) return;
-  const legacy = await apiFetch('/api/claim-statuses/', {
-    method: 'POST',
-    body: JSON.stringify({ claim_id: id, status: decision })
-  });
-  if (!legacy.ok) throw new Error('Unable to save claim status.');
+  if (!res.ok) throw new Error('Unable to save claim status.');
 }
 
 async function handleClaimAction(id, action) {

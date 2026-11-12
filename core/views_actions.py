@@ -57,14 +57,6 @@ class LeaveApproveView(APIView):
             employee=leave.employee,
             action=f"Leave request for {leave.leave_type} ({leave.start_date} to {leave.end_date}) was Approved by {request.user}.",
         )
-        try:
-            Notification.objects.create(
-                employee=leave.employee,
-                kind="leave",
-                text=f"Your {leave.leave_type} leave request ({leave.start_date} to {leave.end_date}) has been Approved.",
-            )
-        except Exception:
-            pass
 
         return Response(LeaveRequestSerializer(leave).data, status=status.HTTP_200_OK)
 
@@ -89,17 +81,6 @@ class LeaveRejectView(APIView):
             log_msg += f" Reason: {reason}"
         EmployeeAuditLog.objects.create(employee=leave.employee, action=log_msg)
 
-        try:
-            notif_msg = f"Your {leave.leave_type} leave request has been Rejected."
-            if reason:
-                notif_msg += f" Reason: {reason}"
-            Notification.objects.create(
-                employee=leave.employee,
-                kind="leave",
-                text=notif_msg,
-            )
-        except Exception:
-            pass
 
         return Response(LeaveRequestSerializer(leave).data, status=status.HTTP_200_OK)
 
@@ -137,14 +118,6 @@ class LeaveBulkDecideView(APIView):
                         employee=leave.employee,
                         action=f"Bulk-decision: {leave.leave_type} leave {decision} by {request.user}.",
                     )
-                    try:
-                        Notification.objects.create(
-                            employee=leave.employee,
-                            kind="leave",
-                            text=f"Your {leave.leave_type} leave request has been {decision} in batch.",
-                        )
-                    except Exception:
-                        pass
 
         return Response(
             {"decision": decision, "updated_count": updated_count, "total_requested": len(ids)},
@@ -166,14 +139,6 @@ class OvertimeSlipApproveView(APIView):
             employee=slip.employee,
             action=f"Overtime slip on {slip.date} ({slip.hours} hrs) Approved by {request.user}.",
         )
-        try:
-            Notification.objects.create(
-                employee=slip.employee,
-                kind="payroll",
-                text=f"Your overtime slip for {slip.date} ({slip.hours} hrs) has been Approved.",
-            )
-        except Exception:
-            pass
 
         return Response(OvertimeSlipSerializer(slip).data, status=status.HTTP_200_OK)
 
@@ -195,14 +160,6 @@ class OvertimeSlipRejectView(APIView):
             log_msg += f" Reason: {reason}"
         EmployeeAuditLog.objects.create(employee=slip.employee, action=log_msg)
 
-        try:
-            Notification.objects.create(
-                employee=slip.employee,
-                kind="payroll",
-                text=f"Your overtime slip for {slip.date} was Rejected.",
-            )
-        except Exception:
-            pass
 
         return Response(OvertimeSlipSerializer(slip).data, status=status.HTTP_200_OK)
 

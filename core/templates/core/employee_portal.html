@@ -4306,7 +4306,7 @@
       container.innerHTML = list.map((item) => {
         const status = (item.status || 'Under Review').toLowerCase();
         const statusClass = status.includes('resolv') || status.includes('closed') ? 'status-approved' : 'status-pending';
-        const statusLabel = status.includes('resolv') || status.includes('closed') ? 'Resolved' : 'Under Review';
+        const statusLabel = item.status || 'Under Review';
         const categoryName = { general: 'General', workplace: 'Workplace conduct', payroll: 'Payroll issue', harassment: 'Harassment' }[item.category] || item.category || 'Grievance';
         const dateStr = item.created_at ? String(item.created_at).slice(0, 10) : '';
         return `
@@ -4323,6 +4323,8 @@
               ${dateStr ? `<span class="complaint-date-label">Filed ${safe(dateStr)}</span>` : ''}
             </div>
             ${item.description ? `<div class="request-card-reason">${safe(item.description)}</div>` : ''}
+            ${item.resolution ? `<div class="request-card-reason"><strong>Resolution:</strong> ${safe(item.resolution)}</div>` : ''}
+            <button type="button" class="btn-subtab-link" data-complaint-detail="${safe(item.id)}">View details</button>
           </div>
         `;
       }).join('');
@@ -5492,6 +5494,7 @@
       }
     });
   </script>
+  <script src="{% static 'js/employee-workflows.js' %}"></script>
 </body>
 
 </html>

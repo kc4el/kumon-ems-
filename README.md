@@ -1,5 +1,9 @@
 # Kumon EMS
 
+See [completed employee and HR workflows](docs/completed-workflows.md) for the
+claims, payroll, case review, and notification interfaces, migration instructions,
+and verification limits of this branch.
+
 Kumon EMS is a Django-based employee-management dashboard. The server-rendered dashboard now consumes the same-origin Django REST API to display live employee, department, attendance, and leave-request data from Supabase.
 
 ## Employee portal data mapping

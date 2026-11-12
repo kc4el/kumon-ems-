@@ -258,6 +258,7 @@
           </svg>
           <span>Claims</span>
         </a>
+        <a href="#" class="nav-link" data-view="payroll"><span class="nav-icon" aria-hidden="true">&#36;</span><span>Payroll</span></a>
         <a href="#" class="nav-link" data-view="messages">
           <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="2">
@@ -1107,7 +1108,8 @@
         <div class="grievance-split-grid">
           <!-- Left Column: Active Cases -->
           <div class="white-card grievance-cases-card">
-            <h2 class="card-title" style="margin-bottom:16px;">Active & Recent Workplace Grievance Cases</h2>
+            <h2 class="card-title" style="margin-bottom:16px;">Case registers</h2>
+            <div class="pill-tabs-container" role="group" aria-label="Case register"><button type="button" class="tab-pill active" id="hrGrievancesTab" onclick="selectHrCaseRegister('grievances')">Grievances</button><button type="button" class="tab-pill" id="hrComplaintsTab" onclick="selectHrCaseRegister('complaints')">Complaints</button></div>
 
             <div class="grievance-case-list" id="grievanceCaseList">
               <p class="card-sub">Loading confidential cases…</p>
@@ -1117,7 +1119,7 @@
           <!-- Right Column: File Confidential Grievance Record -->
           <div class="white-card grievance-file-card">
             <h2 class="card-title">File Confidential Grievance Record</h2>
-            <p class="card-sub" style="margin-bottom:16px;">Log a formal internal complaint or mediation request for HR
+            <p class="card-sub" style="margin-bottom:16px;">Log a formal grievance or mediation request for HR
               review</p>
 
             <form onsubmit="handleGrievanceSubmit(event)">
@@ -2894,8 +2896,16 @@
         </div>
       </section>
 
+      <section class="view-panel" id="view-notifications"><div class="page-title-block"><h1 class="penpot-page-heading">My notifications</h1><p class="penpot-page-sub">Updates sent to your account.</p></div><div class="white-card hr-workflow-card" id="hrNotifications" aria-live="polite">Loading notifications...</div></section>
+      <section class="view-panel" id="view-payroll">
+        <div class="page-title-block"><h1 class="penpot-page-heading">Payroll</h1><p class="penpot-page-sub">Create pay periods, review employee lines, and finalize payroll.</p></div>
+        <div class="white-card hr-workflow-card"><h2 class="card-title">Create pay period</h2><form id="payrollRunForm" class="hr-workflow-form" onsubmit="createPayrollRun(event)"><div class="input-cell"><label for="payrollStart">Start date</label><input id="payrollStart" type="date" required></div><div class="input-cell"><label for="payrollEnd">End date</label><input id="payrollEnd" type="date" required></div><button class="btn btn-navy-cta">Create draft</button></form></div>
+        <div class="white-card hr-workflow-card"><h2 class="card-title">Pay periods</h2><div id="payrollRuns" aria-live="polite">Loading pay periods...</div></div>
+        <div class="white-card hr-workflow-card" id="payrollSelected" hidden><h2 class="card-title" id="payrollSelectedTitle">Payroll lines</h2><div id="payrollLines" aria-live="polite"></div><form id="payrollItemForm" class="hr-workflow-form" onsubmit="savePayrollItem(event)"><input type="hidden" id="payrollItemId"><div class="input-cell"><label for="payrollEmployee">Employee</label><select id="payrollEmployee" required></select></div><div class="input-cell"><label for="payrollBase">Base pay</label><input id="payrollBase" type="number" min="0" step="0.01" required oninput="previewPayrollNet()"></div><div class="input-cell"><label for="payrollDeductions">Deductions</label><input id="payrollDeductions" type="number" min="0" step="0.01" value="0" required oninput="previewPayrollNet()"></div><p id="payrollPreview">Estimated net: —</p><button class="btn btn-navy-cta" id="payrollSave">Add line</button><button type="button" class="tab-pill" onclick="resetPayrollItem()">Cancel edit</button></form><button type="button" class="btn btn-navy-cta" id="payrollFinalize" onclick="finalizePayroll()">Finalize payroll</button></div>
+      </section>
+
       <!-- ======================================================================
-           GENERIC PLACEHOLDER VIEW (Payroll, Reports)
+           GENERIC PLACEHOLDER VIEW (Reports)
            ====================================================================== -->
       <section class="view-panel" id="view-placeholder">
         <div class="page-title-block">
@@ -3087,6 +3097,7 @@
   <div id="toastContainer" class="toast-stack"></div>
 
   <script src="{% static 'js/dashboard.js' %}?v=6.4"></script>
+  <script src="{% static 'js/hr-workflows.js' %}?v=1"></script>
   <script>
     if (typeof switchView === 'undefined') {
       const relPrefix = window.location.protocol === 'file:' ? '../../../' : '/';

@@ -338,6 +338,12 @@ class Grievance(models.Model):
     category = models.CharField(max_length=150)
     title = models.CharField(max_length=255)
     details = models.TextField()
+    resolution = models.TextField(blank=True, default="")
+    internal_notes = models.TextField(blank=True, default="")
+    source_complaint = models.OneToOneField(
+        "Complaint", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="escalated_grievance",
+    )
     status = models.CharField(
         max_length=50,
         choices=[
@@ -375,6 +381,8 @@ class Complaint(models.Model):
     )
     subject = models.CharField(max_length=200)
     description = models.TextField()
+    resolution = models.TextField(blank=True, default="")
+    internal_notes = models.TextField(blank=True, default="")
     category = models.CharField(
         max_length=20, choices=Category.choices, default=Category.GENERAL
     )
@@ -416,6 +424,9 @@ class Notification(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     text = models.CharField(max_length=255)
     kind = models.CharField(max_length=50, default="info")
+    target_type = models.CharField(max_length=30, blank=True, default="")
+    target_id = models.UUIDField(null=True, blank=True)
+    event_key = models.CharField(max_length=160, null=True, blank=True, unique=True)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -11,7 +11,6 @@ from .models import (
     EmployeeAuditLog,
     LeaveAllocation,
     LeaveRequest,
-    Notification,
     OvertimeSlip,
     PayrollItem,
     PayrollRun,
@@ -20,6 +19,7 @@ from .models import (
     ShiftSwap,
     UserSetting,
 )
+from .notifications import notify_employee
 
 logger = logging.getLogger(__name__)
 
@@ -144,11 +144,6 @@ def log_payroll_item_action(sender, instance, created, **kwargs):
         create_audit_log(
             instance.employee, f"Payroll item created for {instance.employee}."
         )
-        Notification.objects.create(
-            employee=instance.employee,
-            text=f"Payroll posted: net {instance.net_pay} for {instance.payroll_run}",
-            kind="payroll",
-        )
     else:
         create_audit_log(
             instance.employee, f"Payroll item updated for {instance.employee}."
@@ -186,21 +181,16 @@ def notify_leave_decision(sender, instance, created, **kwargs):
         )
         if balance["remaining"] < 0:
             text += f" ({balance['remaining']} days over balance)"
-    Notification.objects.create(
-        employee=instance.employee,
-        text=text,
-        kind="leave",
-    )
+    notify_employee(instance.employee, text, "leave", "leave", instance.pk,
+                    f"leave:{instance.pk}:{instance.status}:{instance.employee_id}")
 
 
 @receiver(post_save, sender=ShiftRoster)
 def notify_shift_assignment(sender, instance, created, **kwargs):
     if created and instance.employee_id:
-        Notification.objects.create(
-            employee_id=instance.employee_id,
-            text=f"You were assigned {instance.shift_type} on {instance.work_date}",
-            kind="shift",
-        )
+        notify_employee(instance.employee, f"You were assigned {instance.shift_type} on {instance.work_date}",
+                        "shift", "shift", instance.pk,
+                        f"shift:{instance.pk}:assigned:{instance.employee_id}")
 
 
 @receiver(pre_save, sender=OvertimeSlip)
@@ -215,15 +205,12 @@ def cache_overtime_status(sender, instance, **kwargs):
 
 @receiver(post_save, sender=OvertimeSlip)
 def notify_overtime_approval(sender, instance, created, **kwargs):
-    if instance.status != "Approved":
+    if instance.status not in ("Approved", "Rejected"):
         return
-    if not created and getattr(instance, "_previous_status", None) == "Approved":
+    if not created and getattr(instance, "_previous_status", None) == instance.status:
         return
-    Notification.objects.create(
-        employee=instance.employee,
-        text=f"Overtime approved: {instance.hours}h × {instance.multiplier} on {instance.date}",
-        kind="payroll",
-    )
+    notify_employee(instance.employee, f"Overtime {instance.status.lower()}: {instance.hours}h on {instance.date}",
+                    "payroll", event_key=f"overtime:{instance.pk}:{instance.status}:{instance.employee_id}")
 
 
 @receiver(post_save, sender=LeaveAllocation)
@@ -276,25 +263,18 @@ def log_swap_action(sender, instance, created, **kwargs):
         )
         # Both parties learn a swap exists. Silent request = missed shift.
         for emp in parties:
-            Notification.objects.create(
-                employee=emp,
-                text=f"Shift swap requested for {instance.requester_roster.work_date}",
-                kind="shift",
-            )
+            roster = instance.requester_roster if instance.requester_roster.employee_id == emp.pk else instance.target_roster
+            notify_employee(emp, f"Shift swap requested for {instance.requester_roster.work_date}",
+                            "shift", "shift", roster.pk, f"swap:{instance.pk}:requested:{emp.pk}")
     elif getattr(instance, "_previous_status", None) not in (None, instance.status):
         create_audit_log(
             instance.requester_roster.employee,
             f"Shift swap {instance.status.lower()} for {instance.requester_roster.work_date}.",
         )
         for emp in parties:
-            Notification.objects.create(
-                employee=emp,
-                text=(
-                    f"Shift swap {instance.status.lower()} "
-                    f"for {instance.requester_roster.work_date}"
-                ),
-                kind="shift",
-            )
+            roster = instance.requester_roster if instance.requester_roster.employee_id == emp.pk else instance.target_roster
+            notify_employee(emp, f"Shift swap {instance.status.lower()} for {instance.requester_roster.work_date}",
+                            "shift", "shift", roster.pk, f"swap:{instance.pk}:{instance.status}:{emp.pk}")
 
 
 @receiver(post_save, sender=get_user_model())
