@@ -432,7 +432,7 @@ class FrontendFixTests(TestCase):
         js = (settings.BASE_DIR / "static" / "js" / "dashboard.js").read_text(encoding="utf-8")
         self.assertIn("/api/expense-claims/?status=", js)
         self.assertIn("&page=", js)
-        self.assertIn("/api/audit-logs/?page=", js)
+        self.assertIn("auditApiUrl(page, AUDIT_PAGE_SIZE)", js)
         self.assertIn("/api/advances/?page=", js)
         self.assertIn("claimsPagerGoto", js)
         self.assertIn("auditPagerGoto", js)

@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Employee Portal | Kumon EMS</title>
-  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=3.3" />
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=3.4" />
   <script>
     function applyTheme(theme) {
       if (theme === 'dark') {
@@ -3372,6 +3372,8 @@
 
             <form class="chat-composer" onsubmit="sendChatMessage(event)">
               <textarea id="chatComposerInput" class="chat-composer-input" placeholder="Message announcements… (Press Enter to send)" rows="1" onkeydown="handleChatKeyDown(event)"></textarea>
+              <label for="chatComposerFile">Attach file</label>
+              <input id="chatComposerFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.txt" aria-label="Attach a PDF, image, or text file">
               <button type="submit" class="chat-send-btn" aria-label="Send message" title="Send message">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -3830,14 +3832,14 @@
                   </div>
                 </div>
 
-                <!-- 5. Notifications: Payroll Alerts -->
+                <!-- 5. Notifications: Overtime Updates -->
                 <div class="settings-row">
                   <div class="settings-row-info">
-                    <label for="empPayrollAlerts" class="settings-row-title">Payroll Alerts</label>
-                    <span class="settings-row-desc">Receive alerts for advances and payouts</span>
+                    <label for="empPayrollAlerts" class="settings-row-title">Overtime updates</label>
+                    <span class="settings-row-desc">Receive updates about reviewed overtime requests</span>
                   </div>
                   <div class="settings-row-action">
-                    <label class="toggle-switch" aria-label="Toggle payroll alerts">
+                    <label class="toggle-switch" aria-label="Toggle overtime updates">
                       <input type="checkbox" id="empPayrollAlerts" checked />
                       <span class="toggle-slider"></span>
                     </label>
@@ -4090,7 +4092,7 @@
     const csrf = () => document.cookie.split('; ').find((cookie) => cookie.startsWith('csrftoken='))?.split('=')[1];
 
     async function portalFetch(url, options = {}) {
-      const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+      const headers = { ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }), ...(options.headers || {}) };
       if (csrf()) headers['X-CSRFToken'] = csrf();
       const response = await fetch(url, { credentials: 'same-origin', ...options, headers });
       if (response.status === 401) { window.location.href = '/login/?next=/employee/'; throw new Error('auth'); }
@@ -4306,7 +4308,7 @@
       container.innerHTML = list.map((item) => {
         const status = (item.status || 'Under Review').toLowerCase();
         const statusClass = status.includes('resolv') || status.includes('closed') ? 'status-approved' : 'status-pending';
-        const statusLabel = status.includes('resolv') || status.includes('closed') ? 'Resolved' : 'Under Review';
+        const statusLabel = item.status || 'Under Review';
         const categoryName = { general: 'General', workplace: 'Workplace conduct', payroll: 'Payroll issue', harassment: 'Harassment' }[item.category] || item.category || 'Grievance';
         const dateStr = item.created_at ? String(item.created_at).slice(0, 10) : '';
         return `
@@ -4323,6 +4325,8 @@
               ${dateStr ? `<span class="complaint-date-label">Filed ${safe(dateStr)}</span>` : ''}
             </div>
             ${item.description ? `<div class="request-card-reason">${safe(item.description)}</div>` : ''}
+            ${item.resolution ? `<div class="request-card-reason"><strong>Resolution:</strong> ${safe(item.resolution)}</div>` : ''}
+            <button type="button" class="btn-subtab-link" data-complaint-detail="${safe(item.id)}">View details</button>
           </div>
         `;
       }).join('');
@@ -4563,10 +4567,11 @@
           const senderInitials = (sender.split(' ').map((n) => n[0]).join('').slice(0, 2) || 'E').toUpperCase();
 
           return `<div class="message-row ${isOutgoing ? 'outgoing' : 'incoming'}">
-            ${isOutgoing ? '' : `<div class="msg-avatar">${senderInitials}</div>`}
+            ${isOutgoing ? '' : `<div class="msg-avatar">${safe(senderInitials)}</div>`}
             <div class="message-bubble">
               ${isOutgoing ? '' : `<div class="msg-sender-name">${safe(sender)}</div>`}
-              <div style="white-space:pre-wrap;">${safe(msg.text)}</div>
+              <div style="white-space:pre-wrap;">${safe(msg.text || "")}</div>
+              ${/^\/api\/messages\/[0-9a-f-]+\/attachment\/$/i.test(msg.attachment_url || "") ? `<a href="${safe(msg.attachment_url)}">Download attachment</a>` : ""}
               <span class="msg-time">${safe(timeStr)}</span>
             </div>
           </div>`;
@@ -4582,34 +4587,28 @@
       if (event) event.preventDefault();
       const input = document.getElementById('chatComposerInput');
       if (!input) return;
+      const fileInput = document.getElementById('chatComposerFile');
+      const file = fileInput?.files?.[0];
       const text = input.value.trim();
-      if (!text) return;
-      input.value = '';
-
-      const stream = document.getElementById('chatMessagesStream');
-      if (stream) {
-        const emptyState = stream.querySelector('.chat-empty-state');
-        if (emptyState) emptyState.remove();
-
-        const row = document.createElement('div');
-        row.className = 'message-row outgoing';
-        row.innerHTML = `<div class="message-bubble"><div style="white-space:pre-wrap;">${safe(text)}</div><span class="msg-time">Just now</span></div>`;
-        stream.appendChild(row);
-        stream.scrollTop = stream.scrollHeight;
-      }
-
+      if (!text && !file) return;
+      const key = currentConvKey;
+      const formData = new FormData();
+      formData.append('text', text);
+      formData.append('conversation_key', key);
+      if (file) formData.append('attachment', file);
+      const button = input.form.querySelector('button[type="submit"]');
+      button.disabled = true;
       try {
-        const response = await portalFetch('/api/messages/', {
-          method: 'POST',
-          body: JSON.stringify({
-            text: text,
-            conversation_key: currentConvKey
-          })
-        });
-        if (!response.ok) throw new Error('Message could not be sent.');
-        setTimeout(() => loadChatMessages(currentConvKey), 400);
+        const response = await portalFetch('/api/messages/', { method: 'POST', body: formData });
+        const data = await payload(response);
+        if (!response.ok) throw new Error(apiErrorMessage(data, 'Message could not be sent.'));
+        input.value = '';
+        if (fileInput) fileInput.value = '';
+        if (key === currentConvKey) await loadChatMessages(key);
       } catch (err) {
         showStatus(err.message, true);
+      } finally {
+        button.disabled = false;
       }
     }
 
@@ -5492,6 +5491,9 @@
       }
     });
   </script>
+  <script src="{% static 'js/employee-workflows.js' %}"></script>
+  <script src="{% static 'js/leave-allocations.js' %}?v=1"></script>
+  <script src="{% static 'js/live-notifications.js' %}"></script>
 </body>
 
 </html>

@@ -253,6 +253,14 @@ class ShiftSwap(models.Model):
     target_roster = models.ForeignKey(
         ShiftRoster, on_delete=models.CASCADE, related_name="swap_targets"
     )
+    requester_employee = models.ForeignKey(
+        Employee, null=True, blank=True, on_delete=models.SET_NULL,
+        related_name="requested_shift_swaps",
+    )
+    target_employee = models.ForeignKey(
+        Employee, null=True, blank=True, on_delete=models.SET_NULL,
+        related_name="targeted_shift_swaps",
+    )
     reason = models.TextField(blank=True)
     status = models.CharField(
         max_length=50,
@@ -292,12 +300,113 @@ class PayrollItem(models.Model):
         unique_together = ("payroll_run", "employee")
 
 
-class PerformanceReview(models.Model):
+class PayEstimate(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    review_date = models.DateField()
-    score = models.IntegerField()
-    comments = models.TextField()
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="pay_estimates")
+    period_start = models.DateField()
+    period_end = models.DateField()
+    hourly_rate = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal("0"))])
+    deductions = models.DecimalField(max_digits=12, decimal_places=2, default=0, validators=[MinValueValidator(Decimal("0"))])
+    current_revision = models.PositiveIntegerField(default=0)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="created_pay_estimates")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=models.Q(period_end__gte=models.F("period_start")), name="estimate_valid_period"),
+            models.CheckConstraint(condition=models.Q(hourly_rate__gte=0), name="estimate_rate_nonnegative"),
+            models.CheckConstraint(condition=models.Q(deductions__gte=0), name="estimate_deductions_nonnegative"),
+        ]
+
+
+class PayEstimatePolicy(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    effective_date = models.DateField(db_index=True)
+    overtime_threshold_hours = models.DecimalField(max_digits=8, decimal_places=4, null=True, blank=True)
+    overtime_multiplier = models.DecimalField(max_digits=8, decimal_places=4, null=True, blank=True)
+    paid_leave_types = models.JSONField(default=list)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="created_pay_estimate_policies")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("effective_date", "created_at", "id")
+        constraints = [
+            models.CheckConstraint(condition=(models.Q(overtime_threshold_hours__isnull=True, overtime_multiplier__isnull=True) | models.Q(overtime_threshold_hours__isnull=False, overtime_multiplier__isnull=False, overtime_threshold_hours__gte=0, overtime_multiplier__gte=1)), name="estimate_policy_valid_overtime"),
+        ]
+
+    def clean(self):
+        super().clean()
+        if not isinstance(self.paid_leave_types, list) or any(not isinstance(v, str) or not v.strip() for v in self.paid_leave_types):
+            raise ValidationError({"paid_leave_types": "Provide a list of nonempty leave type names."})
+        if (self.overtime_threshold_hours is None) != (self.overtime_multiplier is None):
+            raise ValidationError("Overtime threshold and multiplier must both be supplied or both omitted.")
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            raise ValidationError("Estimate policies are immutable; create a new effective-dated policy.")
+        super().save(*args, **kwargs)
+
+
+class PayEstimateRevision(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    estimate = models.ForeignKey(PayEstimate, on_delete=models.CASCADE, related_name="revisions")
+    number = models.PositiveIntegerField()
+    input_snapshot = models.JSONField()
+    fingerprint = models.CharField(max_length=64)
+    base_amount = models.DecimalField(max_digits=14, decimal_places=2)
+    deductions = models.DecimalField(max_digits=12, decimal_places=2)
+    is_complete = models.BooleanField(default=True)
+    warnings = models.JSONField(default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=("estimate", "number"), name="unique_estimate_revision")]
+        ordering = ("-number",)
+
+
+class PayEstimateLine(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    revision = models.ForeignKey(PayEstimateRevision, on_delete=models.CASCADE, related_name="lines")
+    work_date = models.DateField()
+    attendance = models.ForeignKey(Attendance, null=True, blank=True, on_delete=models.SET_NULL)
+    worked_seconds = models.DecimalField(max_digits=16, decimal_places=6)
+    break_seconds = models.DecimalField(max_digits=16, decimal_places=6)
+    paid_seconds = models.DecimalField(max_digits=16, decimal_places=6)
+    base_amount = models.DecimalField(max_digits=14, decimal_places=2)
+    source = models.JSONField(default=dict)
+
+
+class PayEstimateAdjustment(models.Model):
+    class Kind(models.TextChoices):
+        OVERTIME = "OVERTIME", "Overtime"
+        PAID_LEAVE = "PAID_LEAVE", "Paid leave"
+
+    class Status(models.TextChoices):
+        PENDING = "Pending", "Pending"
+        APPROVED = "Approved", "Approved"
+        REJECTED = "Rejected", "Rejected"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    revision = models.ForeignKey(PayEstimateRevision, on_delete=models.CASCADE, related_name="adjustments")
+    kind = models.CharField(max_length=20, choices=Kind.choices)
+    work_date = models.DateField()
+    hours = models.DecimalField(max_digits=16, decimal_places=6)
+    hourly_rate = models.DecimalField(max_digits=12, decimal_places=2)
+    multiplier = models.DecimalField(max_digits=8, decimal_places=4)
+    amount = models.DecimalField(max_digits=14, decimal_places=2)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="reviewed_pay_estimate_adjustments")
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reason = models.TextField(blank=True, default="")
+    source_key = models.CharField(max_length=128)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=("revision", "source_key"), name="unique_estimate_adjustment_source"),
+            models.CheckConstraint(condition=models.Q(status__in=["Pending", "Approved", "Rejected"]), name="estimate_adjustment_valid_status"),
+            models.CheckConstraint(condition=models.Q(kind__in=["OVERTIME", "PAID_LEAVE"]), name="estimate_adjustment_valid_kind"),
+        ]
 
 
 class ExpenseClaim(models.Model):
@@ -326,8 +435,22 @@ class ExpenseClaim(models.Model):
 class EmployeeAuditLog(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True)
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="employee_audit_events",
+    )
+    actor_name = models.CharField(max_length=255, blank=True, default="")
     action = models.CharField(max_length=255)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            from .audit_context import actor_name, current_actor
+            if self.actor_id is None:
+                self.actor = current_actor()
+            if not self.actor_name:
+                self.actor_name = actor_name(self.actor) if self.actor_id else "System"
+        super().save(*args, **kwargs)
 
 
 class Grievance(models.Model):
@@ -338,6 +461,12 @@ class Grievance(models.Model):
     category = models.CharField(max_length=150)
     title = models.CharField(max_length=255)
     details = models.TextField()
+    resolution = models.TextField(blank=True, default="")
+    internal_notes = models.TextField(blank=True, default="")
+    source_complaint = models.OneToOneField(
+        "Complaint", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="escalated_grievance",
+    )
     status = models.CharField(
         max_length=50,
         choices=[
@@ -375,6 +504,8 @@ class Complaint(models.Model):
     )
     subject = models.CharField(max_length=200)
     description = models.TextField()
+    resolution = models.TextField(blank=True, default="")
+    internal_notes = models.TextField(blank=True, default="")
     category = models.CharField(
         max_length=20, choices=Category.choices, default=Category.GENERAL
     )
@@ -416,6 +547,9 @@ class Notification(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     text = models.CharField(max_length=255)
     kind = models.CharField(max_length=50, default="info")
+    target_type = models.CharField(max_length=30, blank=True, default="")
+    target_id = models.UUIDField(null=True, blank=True)
+    event_key = models.CharField(max_length=160, null=True, blank=True, unique=True)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 

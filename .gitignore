@@ -22,3 +22,8 @@ media/
 .DS_Store
 Thumbs.db
 powershell.cmd
+
+# Local workflow verification tools and browser artifacts
+.testdeps/
+.runtime-temp/
+.workflow-checks/

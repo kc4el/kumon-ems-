@@ -11,7 +11,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=7.8" />
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=7.9" />
   <script src="{% static 'js/qrcode.min.js' %}"></script>
   <script>
     function applyTheme(theme) {
@@ -200,7 +200,7 @@
       const relPrefix = window.location.protocol === 'file:' ? '../../../' : '/';
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = relPrefix + 'static/css/main.css?v=7.8';
+      link.href = relPrefix + 'static/css/main.css?v=7.9';
       document.head.appendChild(link);
     }
   </script>
@@ -258,6 +258,7 @@
           </svg>
           <span>Claims</span>
         </a>
+        <a href="#" class="nav-link" data-view="pay-estimates"><span class="nav-icon" aria-hidden="true">&#36;</span><span>Pay Estimates</span></a>
         <a href="#" class="nav-link" data-view="messages">
           <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="2">
@@ -1107,7 +1108,8 @@
         <div class="grievance-split-grid">
           <!-- Left Column: Active Cases -->
           <div class="white-card grievance-cases-card">
-            <h2 class="card-title" style="margin-bottom:16px;">Active & Recent Workplace Grievance Cases</h2>
+            <h2 class="card-title" style="margin-bottom:16px;">Case registers</h2>
+            <div class="pill-tabs-container" role="group" aria-label="Case register"><button type="button" class="tab-pill active" id="hrGrievancesTab" onclick="selectHrCaseRegister('grievances')">Grievances</button><button type="button" class="tab-pill" id="hrComplaintsTab" onclick="selectHrCaseRegister('complaints')">Complaints</button></div>
 
             <div class="grievance-case-list" id="grievanceCaseList">
               <p class="card-sub">Loading confidential cases…</p>
@@ -1117,7 +1119,7 @@
           <!-- Right Column: File Confidential Grievance Record -->
           <div class="white-card grievance-file-card">
             <h2 class="card-title">File Confidential Grievance Record</h2>
-            <p class="card-sub" style="margin-bottom:16px;">Log a formal internal complaint or mediation request for HR
+            <p class="card-sub" style="margin-bottom:16px;">Log a formal grievance or mediation request for HR
               review</p>
 
             <form onsubmit="handleGrievanceSubmit(event)">
@@ -2235,10 +2237,10 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                   </svg>
-                  <input type="text" id="auditSearchInput" placeholder="Search admin, action, employee, or detail..."
-                    oninput="filterAuditLogs()" />
+                  <input type="text" id="auditSearchInput" placeholder="Search actor, action, or employee..."
+                    oninput="scheduleAuditFilters()" />
                 </div>
-                <input class="audit-select-control" id="auditAdminFilter" type="search" aria-label="Filter audit events by administrator" placeholder="Filter by administrator" oninput="filterAuditLogs()" />
+                <input class="audit-select-control" id="auditAdminFilter" type="search" aria-label="Filter audit events by actor" placeholder="Filter by actor" oninput="scheduleAuditFilters()" />
                 <button class="btn btn-navy-cta" onclick="exportAuditLogs()"
                   style="height:38px; display:inline-flex; align-items:center; gap:6px; padding:0 14px; font-size:13px;">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2267,11 +2269,11 @@
             <table class="claims-table audit-logs-table" id="auditLogsTable">
               <thead>
                 <tr>
-                  <th style="width: 210px;">ADMINISTRATOR</th>
+                  <th style="width: 210px;">PERFORMED BY</th>
                   <th style="width: 140px;">ACTION CLASS</th>
                   <th style="width: 150px;">TIMESTAMP</th>
                   <th style="width: 250px;">ACTION &amp; TARGET RECORD</th>
-                  <th>DETAILS &amp; AUDIT NOTES</th>
+                  <th>AFFECTED EMPLOYEE</th>
                   <th style="width: 120px;">STATUS</th>
                   <th style="width: 110px; text-align: right;">AUDIT ID</th>
                 </tr>
@@ -2880,8 +2882,17 @@
         </div>
       </section>
 
+      <section class="view-panel" id="view-notifications"><div class="page-title-block"><h1 class="penpot-page-heading">My notifications</h1><p class="penpot-page-sub">Updates sent to your account.</p></div><div class="white-card hr-workflow-card" id="hrNotifications" aria-live="polite">Loading notifications...</div></section>
+      <section class="view-panel" id="view-pay-estimates">
+        <div class="page-title-block"><h1 class="penpot-page-heading">Pay estimates</h1><p class="penpot-page-sub">Advisory estimates for the pay handler. Review attendance, leave, and adjustments before using an amount.</p></div>
+        <div class="white-card hr-workflow-card"><h2 class="card-title">Estimate rules</h2><p>Base pay uses worked hours after scheduled breaks. Overtime and paid leave require rules effective for the period. Leave overtime fields blank to leave overtime unassessed.</p><form id="estimatePolicyForm" class="hr-workflow-form" onsubmit="saveEstimatePolicy(event)"><div class="input-cell"><label for="policyDate">Effective date</label><input id="policyDate" type="date" required></div><div class="input-cell"><label for="policyThreshold">Overtime threshold (hours)</label><input id="policyThreshold" type="number" min="0" step="0.01"></div><div class="input-cell"><label for="policyMultiplier">Overtime multiplier</label><input id="policyMultiplier" type="number" min="1" step="0.01"></div><div class="input-cell"><label for="policyLeaveTypes">Paid leave types</label><input id="policyLeaveTypes" placeholder="Names separated by commas"></div><button class="btn btn-navy-cta">Save rules</button></form><div id="estimatePolicies" aria-live="polite"></div></div>
+        <div class="white-card hr-workflow-card"><h2 class="card-title" id="estimateFormTitle">Create estimate</h2><form id="estimateForm" class="hr-workflow-form" onsubmit="savePayEstimate(event)"><div class="input-cell"><label for="estimateEmployee">Employee</label><select id="estimateEmployee" required></select></div><div class="input-cell"><label for="estimateStart">Period start</label><input id="estimateStart" type="date" required></div><div class="input-cell"><label for="estimateEnd">Period end</label><input id="estimateEnd" type="date" required></div><div class="input-cell"><label for="estimateRate">Hourly rate</label><input id="estimateRate" type="number" min="0" step="0.01" required></div><div class="input-cell"><label for="estimateDeductions">Deductions</label><input id="estimateDeductions" type="number" min="0" step="0.01" value="0" required></div><button class="btn btn-navy-cta" id="estimateSave">Create estimate</button><button type="button" class="tab-pill" id="estimateCancel" onclick="resetEstimateForm()" hidden>Cancel edit</button></form></div>
+        <div class="white-card hr-workflow-card"><h2 class="card-title">Estimates</h2><div id="estimateList" aria-live="polite">Loading estimates...</div></div>
+        <div class="white-card hr-workflow-card" id="estimateDetail" hidden aria-live="polite"></div>
+      </section>
+
       <!-- ======================================================================
-           GENERIC PLACEHOLDER VIEW (Payroll, Reports)
+           GENERIC PLACEHOLDER VIEW (Reports)
            ====================================================================== -->
       <section class="view-panel" id="view-placeholder">
         <div class="page-title-block">
@@ -2898,24 +2909,6 @@
           <h3 style="font-size:22px; font-weight:800; color:#0f172a; margin-bottom:8px;">Production Module Active</h3>
           <p style="color:#64748b; max-width:480px; margin:0 auto 24px auto;">This module connects directly with
             Kumon EMS records and HR analytics.</p>
-          <!-- Live payroll runs (H7c: filled from /api/payroll-runs/ when a payroll view opens) -->
-          <div id="payrollLiveWrap" style="display:none; text-align:left; max-width:720px; margin:0 auto 24px auto;">
-            <table class="penpot-table">
-              <thead>
-                <tr>
-                  <th>PAY PERIOD</th>
-                  <th>PROCESSED</th>
-                  <th>LINES</th>
-                  <th>TOTAL NET</th>
-                </tr>
-              </thead>
-              <tbody id="payrollRunsTableBody">
-                <tr>
-                  <td colspan="4">Loading…</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
           <button class="btn btn-navy-cta" onclick="switchView('dashboard')">Back to Overview</button>
         </div>
       </section>
@@ -3072,11 +3065,14 @@
 
   <div id="toastContainer" class="toast-stack"></div>
 
-  <script src="{% static 'js/dashboard.js' %}?v=6.4"></script>
+  <script src="{% static 'js/dashboard.js' %}?v=6.6"></script>
+  <script src="{% static 'js/hr-workflows.js' %}?v=2"></script>
+  <script src="{% static 'js/leave-allocations.js' %}?v=1"></script>
+  <script src="{% static 'js/live-notifications.js' %}"></script>
   <script>
     if (typeof switchView === 'undefined') {
       const relPrefix = window.location.protocol === 'file:' ? '../../../' : '/';
-      document.write('<script src="' + relPrefix + 'static/js/dashboard.js?v=6.4"><\/script>');
+      document.write('<script src="' + relPrefix + 'static/js/dashboard.js?v=6.6"><\/script>');
     }
   </script>
   <script>

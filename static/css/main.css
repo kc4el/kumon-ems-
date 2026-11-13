@@ -9887,3 +9887,39 @@ html[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--moon,
 [data-theme="dark"] .account-kicker {
   color: #38bdf8 !important;
 }
+.hr-workflow-card { margin-bottom: 20px; padding: 24px; }
+.hr-workflow-form { display: flex; flex-wrap: wrap; align-items: end; gap: 14px; margin: 16px 0; }
+.hr-workflow-form[hidden], #estimateDetail[hidden], #estimateCancel[hidden] { display: none; }
+.hr-workflow-form .input-cell { min-width: 160px; flex: 1; }
+.hr-workflow-form input, .hr-workflow-form select, .hr-case select, .hr-case textarea { width: 100%; padding: 9px; border: 1px solid #cbd5e1; border-radius: 6px; font: inherit; }
+.hr-run-button { display: block; width: 100%; padding: 12px; text-align: left; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-top: 8px; cursor: pointer; }
+.hr-payroll-line { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid #e2e8f0; }
+.hr-case form { display: grid; gap: 10px; margin-top: 12px; }
+.hr-case label { display: grid; gap: 4px; font-weight: 600; }
+.hr-case button { justify-self: start; margin-top: 8px; }
+.estimate-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 16px 0; }
+.estimate-controls select, .estimate-adjustment input { padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font: inherit; }
+.estimate-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 16px 0; }
+.estimate-summary span { display: grid; gap: 4px; padding: 12px; background: #eff6ff; border-radius: 6px; color: #334155; }
+.estimate-summary strong { color: #0f172a; }
+.estimate-warning { padding: 12px; margin: 12px 0; border-left: 4px solid #d97706; background: #fffbeb; color: #78350f; }
+.estimate-status { color: #1e40af; font-weight: 600; }
+.estimate-line, .estimate-adjustment { padding: 12px 0; border-bottom: 1px solid #e2e8f0; overflow-wrap: anywhere; }
+.estimate-adjustment button { margin: 4px; }
+
+/* Attendance request reviews */
+.staff-review { margin-top: 20px; }
+.staff-review-tabs, .staff-review-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.staff-review-tabs button { border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #17365d; padding: 9px 12px; cursor: pointer; }
+.staff-review-tabs button[aria-pressed="true"] { background: #123b65; color: #fff; }
+.staff-review-record { border: 1px solid #dce5ee; border-radius: 10px; padding: 14px; margin-top: 10px; overflow-wrap: anywhere; }
+.staff-review-record p { margin: 5px 0; }
+.staff-review-message { color: #a12c32; }
+.staff-review-actions button:disabled { opacity: .6; cursor: wait; }
+.leave-allocation-card { margin: 0 0 20px; padding: 20px; }
+.leave-allocation-controls, .leave-allocation-form { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin: 14px 0; }
+.leave-allocation-controls label, .leave-allocation-form label { display: grid; gap: 6px; }
+.leave-allocation-card input, .leave-allocation-card select { font: inherit; color: inherit; background: transparent; border: 1px solid var(--employee-line, #94a3b8); border-radius: 8px; padding: 9px; min-width: 100px; max-width: 100%; }
+.leave-allocation-table-wrap { overflow-x: auto; }
+.leave-allocation-card td, .leave-allocation-card th { padding: 10px; text-align: left; }
+.leave-allocation-card td button { margin: 3px; }

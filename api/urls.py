@@ -45,8 +45,6 @@ from core.views import (
     PayrollItemListCreateView,
     PayrollRunDetailView,
     PayrollRunListCreateView,
-    PerformanceReviewDetailView,
-    PerformanceReviewListCreateView,
     PurgeRunView,
     SessionLoginView,
     SessionLogoutView,
@@ -79,7 +77,61 @@ from core.views_onboarding import (
 from core.views_import import import_urls
 from core.views_actions import action_urls
 
+# Completed workflows share the established API URLs with the legacy modules.
+from core.views_workflows import (
+    ClaimDecisionView,
+    ComplaintDetailView,
+    ComplaintEscalateView,
+    ComplaintListCreateView,
+    ExpenseClaimDetailView,
+    ExpenseClaimListCreateView,
+    GrievanceDetailView,
+    GrievanceListCreateView,
+)
+from core.views_payroll import (
+    PayrollFinalizeView,
+    PayrollItemDetailView,
+    PayrollItemListCreateView,
+    PayrollRunDetailView,
+    PayrollRunListCreateView,
+)
+from core.views_notifications import NotificationListView, NotificationMarkReadView
+from core.views_staff_requests import (
+    AvailableShiftRosterView,
+    AttendanceCorrectionListCreateView,
+    AttendanceCorrectionDetailView,
+    OvertimeSlipListCreateView,
+    OvertimeSlipDetailView,
+    ShiftRosterListCreateView,
+    ShiftRosterDetailView,
+    ShiftSwapListCreateView,
+    ShiftSwapDetailView,
+)
+from core.views_message_files import MessageAttachmentDownloadView
+from core.notification_events import NotificationEventsView
+from core.views_pay_estimates import (
+    PayEstimateAdjustmentDecisionView,
+    PayEstimateDetailView,
+    PayEstimateExportView,
+    PayEstimateListCreateView,
+    PayEstimatePolicyListCreateView,
+    PayEstimateRecalculateView,
+    PayEstimateRevisionView,
+)
+
 urlpatterns = [
+    path("shift-rosters/available-for-swap/", AvailableShiftRosterView.as_view(), name="available-shift-rosters"),
+    path("messages/<uuid:pk>/attachment/", MessageAttachmentDownloadView.as_view(), name="message-attachment-download"),
+    path("notifications/events/", NotificationEventsView.as_view(), name="notification-events"),
+    path("pay-estimate-policies/", PayEstimatePolicyListCreateView.as_view(), name="pay-estimate-policy-list-create"),
+    path("pay-estimates/", PayEstimateListCreateView.as_view(), name="pay-estimate-list-create"),
+    path("pay-estimates/<uuid:pk>/", PayEstimateDetailView.as_view(), name="pay-estimate-detail"),
+    path("pay-estimates/<uuid:pk>/recalculate/", PayEstimateRecalculateView.as_view(), name="pay-estimate-recalculate"),
+    path("pay-estimates/<uuid:pk>/revisions/<int:number>/", PayEstimateRevisionView.as_view(), name="pay-estimate-revision"),
+    path("pay-estimates/<uuid:pk>/export/", PayEstimateExportView.as_view(), name="pay-estimate-export"),
+    path("pay-estimate-adjustments/<uuid:pk>/decision/", PayEstimateAdjustmentDecisionView.as_view(), name="pay-estimate-adjustment-decision"),
+    path("complaints/<uuid:pk>/escalate/", ComplaintEscalateView.as_view(), name="complaint-escalate"),
+    path("payroll-runs/<uuid:pk>/finalize/", PayrollFinalizeView.as_view(), name="payroll-run-finalize"),
     path(
         "dashboard-summary/", DashboardSummaryView.as_view(), name="dashboard-summary"
     ),
@@ -237,16 +289,6 @@ urlpatterns = [
         "payroll-items/<uuid:pk>/",
         PayrollItemDetailView.as_view(),
         name="payroll-item-detail",
-    ),
-    path(
-        "performance/",
-        PerformanceReviewListCreateView.as_view(),
-        name="performance-list-create",
-    ),
-    path(
-        "performance/<uuid:pk>/",
-        PerformanceReviewDetailView.as_view(),
-        name="performance-detail",
     ),
     path("audit-logs/", EmployeeAuditLogListView.as_view(), name="audit-log-list"),
     path("logs/", EmployeeAuditLogListView.as_view(), name="logs-alias"),

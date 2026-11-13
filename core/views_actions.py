@@ -57,14 +57,6 @@ class LeaveApproveView(APIView):
             employee=leave.employee,
             action=f"Leave request for {leave.leave_type} ({leave.start_date} to {leave.end_date}) was Approved by {request.user}.",
         )
-        try:
-            Notification.objects.create(
-                employee=leave.employee,
-                kind="leave",
-                text=f"Your {leave.leave_type} leave request ({leave.start_date} to {leave.end_date}) has been Approved.",
-            )
-        except Exception:
-            pass
 
         return Response(LeaveRequestSerializer(leave).data, status=status.HTTP_200_OK)
 
@@ -89,17 +81,6 @@ class LeaveRejectView(APIView):
             log_msg += f" Reason: {reason}"
         EmployeeAuditLog.objects.create(employee=leave.employee, action=log_msg)
 
-        try:
-            notif_msg = f"Your {leave.leave_type} leave request has been Rejected."
-            if reason:
-                notif_msg += f" Reason: {reason}"
-            Notification.objects.create(
-                employee=leave.employee,
-                kind="leave",
-                text=notif_msg,
-            )
-        except Exception:
-            pass
 
         return Response(LeaveRequestSerializer(leave).data, status=status.HTTP_200_OK)
 
@@ -137,14 +118,6 @@ class LeaveBulkDecideView(APIView):
                         employee=leave.employee,
                         action=f"Bulk-decision: {leave.leave_type} leave {decision} by {request.user}.",
                     )
-                    try:
-                        Notification.objects.create(
-                            employee=leave.employee,
-                            kind="leave",
-                            text=f"Your {leave.leave_type} leave request has been {decision} in batch.",
-                        )
-                    except Exception:
-                        pass
 
         return Response(
             {"decision": decision, "updated_count": updated_count, "total_requested": len(ids)},
@@ -153,178 +126,44 @@ class LeaveBulkDecideView(APIView):
 
 
 class OvertimeSlipApproveView(APIView):
-    """POST /api/overtime/<id>/approve/ - HR/Staff approves an overtime slip."""
-
-    permission_classes = [IsStaffOrHR]
-
-    def post(self, request, pk):
-        slip = get_object_or_404(OvertimeSlip, pk=pk)
-        slip.status = "Approved"
-        slip.save(update_fields=["status"])
-
-        EmployeeAuditLog.objects.create(
-            employee=slip.employee,
-            action=f"Overtime slip on {slip.date} ({slip.hours} hrs) Approved by {request.user}.",
-        )
-        try:
-            Notification.objects.create(
-                employee=slip.employee,
-                kind="payroll",
-                text=f"Your overtime slip for {slip.date} ({slip.hours} hrs) has been Approved.",
-            )
-        except Exception:
-            pass
-
-        return Response(OvertimeSlipSerializer(slip).data, status=status.HTTP_200_OK)
-
-
-class OvertimeSlipRejectView(APIView):
-    """POST /api/overtime/<id>/reject/ - HR/Staff rejects an overtime slip."""
-
-    permission_classes = [IsStaffOrHR]
-
-    def post(self, request, pk):
-        slip = get_object_or_404(OvertimeSlip, pk=pk)
-        reason = str(request.data.get("reason", "")).strip()
-
-        slip.status = "Rejected"
-        slip.save(update_fields=["status"])
-
-        log_msg = f"Overtime slip on {slip.date} Rejected by {request.user}."
-        if reason:
-            log_msg += f" Reason: {reason}"
-        EmployeeAuditLog.objects.create(employee=slip.employee, action=log_msg)
-
-        try:
-            Notification.objects.create(
-                employee=slip.employee,
-                kind="payroll",
-                text=f"Your overtime slip for {slip.date} was Rejected.",
-            )
-        except Exception:
-            pass
-
-        return Response(OvertimeSlipSerializer(slip).data, status=status.HTTP_200_OK)
-
-
-class AttendanceCorrectionApproveView(APIView):
-    """POST /api/attendance-corrections/<id>/approve/ - HR/Staff approves correction and updates attendance times."""
-
-    permission_classes = [IsStaffOrHR]
-
-    def post(self, request, pk):
-        correction = get_object_or_404(AttendanceCorrection, pk=pk)
-        attendance = correction.attendance
-
-        with transaction.atomic():
-            correction.status = "Approved"
-            correction.save(update_fields=["status"])
-
-            updated_fields = []
-            if correction.proposed_clock_in is not None:
-                attendance.clock_in = correction.proposed_clock_in
-                updated_fields.append("clock_in")
-            if correction.proposed_clock_out is not None:
-                attendance.clock_out = correction.proposed_clock_out
-                updated_fields.append("clock_out")
-
-            if updated_fields:
-                attendance.save(update_fields=updated_fields)
-
-            EmployeeAuditLog.objects.create(
-                employee=attendance.employee,
-                action=f"Attendance correction on {attendance.date} Approved by {request.user} ({', '.join(updated_fields)} adjusted).",
-            )
-            try:
-                Notification.objects.create(
-                    employee=attendance.employee,
-                    kind="attendance",
-                    text=f"Your attendance correction request for {attendance.date} has been Approved.",
-                )
-            except Exception:
-                pass
-
-        return Response(
-            AttendanceCorrectionSerializer(correction).data, status=status.HTTP_200_OK
-        )
-
-
-class AttendanceCorrectionRejectView(APIView):
-    """POST /api/attendance-corrections/<id>/reject/ - HR/Staff rejects attendance correction."""
-
-    permission_classes = [IsStaffOrHR]
-
-    def post(self, request, pk):
-        correction = get_object_or_404(AttendanceCorrection, pk=pk)
-        correction.status = "Rejected"
-        correction.save(update_fields=["status"])
-
-        EmployeeAuditLog.objects.create(
-            employee=correction.attendance.employee,
-            action=f"Attendance correction on {correction.attendance.date} Rejected by {request.user}.",
-        )
-        try:
-            Notification.objects.create(
-                employee=correction.attendance.employee,
-                kind="attendance",
-                text=f"Your attendance correction request for {correction.attendance.date} was Rejected.",
-            )
-        except Exception:
-            pass
-
-        return Response(
-            AttendanceCorrectionSerializer(correction).data, status=status.HTTP_200_OK
-        )
-
-
-class ShiftSwapDecideView(APIView):
-    """POST /api/shift-swaps/<id>/decide/ - Approves or rejects a shift swap and exchanges roster assignments."""
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
-        swap = get_object_or_404(ShiftSwap, pk=pk)
-        decision = request.data.get("decision", "").strip().capitalize()
-        if decision not in ("Approved", "Rejected"):
-            return Response(
-                {"error": 'decision must be "Approved" or "Rejected".'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        from .views_staff_requests import decide_overtime
+        return Response(OvertimeSlipSerializer(decide_overtime(pk, "Approved", request.user)).data)
 
-        # Check authorization: user must be staff/HR or target roster's employee
-        target_user = getattr(getattr(swap.target_roster, "employee", None), "user", None)
-        if not is_staff_or_hr(request.user) and target_user != request.user:
-            return Response(
-                {"error": "Only the target shift employee or HR staff can decide this swap."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
 
-        with transaction.atomic():
-            swap.status = decision
-            swap.save(update_fields=["status"])
+class OvertimeSlipRejectView(APIView):
+    permission_classes = [IsAuthenticated]
 
-            if decision == "Approved":
-                # Swap employees on the two shift rosters
-                emp_a = swap.requester_roster.employee
-                emp_b = swap.target_roster.employee
+    def post(self, request, pk):
+        from .views_staff_requests import decide_overtime
+        return Response(OvertimeSlipSerializer(decide_overtime(pk, "Rejected", request.user)).data)
 
-                swap.requester_roster.employee = emp_b
-                swap.target_roster.employee = emp_a
-                swap.requester_roster.save(update_fields=["employee"])
-                swap.target_roster.save(update_fields=["employee"])
 
-                if emp_a:
-                    EmployeeAuditLog.objects.create(
-                        employee=emp_a,
-                        action=f"Shift swap on {swap.requester_roster.work_date} Approved.",
-                    )
-                if emp_b:
-                    EmployeeAuditLog.objects.create(
-                        employee=emp_b,
-                        action=f"Shift swap on {swap.target_roster.work_date} Approved.",
-                    )
+class AttendanceCorrectionApproveView(APIView):
+    permission_classes = [IsAuthenticated]
 
-        return Response(ShiftSwapSerializer(swap).data, status=status.HTTP_200_OK)
+    def post(self, request, pk):
+        from .views_staff_requests import decide_correction
+        return Response(AttendanceCorrectionSerializer(decide_correction(pk, "Approved", request.user)).data)
+
+
+class AttendanceCorrectionRejectView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        from .views_staff_requests import decide_correction
+        return Response(AttendanceCorrectionSerializer(decide_correction(pk, "Rejected", request.user)).data)
+
+
+class ShiftSwapDecideView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        from .views_staff_requests import decide_swap
+        decision = str(request.data.get("decision", "")).strip().capitalize()
+        return Response(ShiftSwapSerializer(decide_swap(pk, decision, request.user)).data)
 
 
 class ShiftRosterBulkCreateView(APIView):

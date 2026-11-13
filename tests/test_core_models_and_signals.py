@@ -142,7 +142,6 @@ class PaginationOrderingTests(TestCase):
             EmployeeListCreateView,
             PayrollItemListCreateView,
             PayrollRunListCreateView,
-            PerformanceReviewListCreateView,
             ShiftRosterListCreateView,
         )
 
@@ -162,12 +161,6 @@ class PaginationOrderingTests(TestCase):
             PayrollItemListCreateView.queryset.query.order_by,
             ("payroll_run__pay_period_start", "employee__last_name"),
         )
-        self.assertEqual(
-            PerformanceReviewListCreateView.queryset.query.order_by,
-            ("-review_date",),
-        )
-
-
 class PurgeResignedTests(TestCase):
     @patch("core.management.commands.purge_resigned.supabase")
     def test_purge_removes_only_old_resignations(self, supabase):

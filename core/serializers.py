@@ -24,7 +24,6 @@ from .models import (
     OvertimeSlip,
     PayrollItem,
     PayrollRun,
-    PerformanceReview,
     ShiftRoster,
     ShiftSwap,
     SiteSetting,
@@ -268,21 +267,28 @@ class LeaveAllocationSerializer(serializers.ModelSerializer):
         validators = []
 
     def validate_leave_type(self, value):
-        return value.strip().title()
+        value = value.strip().title()
+        if not value:
+            raise serializers.ValidationError("Enter a leave type.")
+        return value
+
+    def validate_year(self, value):
+        if not 1 <= value <= 9999:
+            raise serializers.ValidationError("Use a year between 1 and 9999.")
+        return value
 
 
 class OvertimeSlipSerializer(serializers.ModelSerializer):
     STATUS_CHOICES = ("Pending", "Approved", "Rejected")
-    status = serializers.ChoiceField(choices=STATUS_CHOICES, default="Pending")
-    hours = serializers.DecimalField(max_digits=5, decimal_places=2, required=False)
+    status = serializers.ChoiceField(choices=STATUS_CHOICES, read_only=True)
+    hours = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True)
     # Multiplier bounds are NOT hardcoded here: they follow the
     # overtime_min_hours / overtime_max_hours SiteSettings (see validate),
     # defaulting to 0.01/5.00 when unset or invalid.
     multiplier = serializers.DecimalField(
         max_digits=4,
         decimal_places=2,
-        default=Decimal("1.25"),
-        required=False,
+        read_only=True,
     )
 
     class Meta:
@@ -297,7 +303,8 @@ class OvertimeSlipSerializer(serializers.ModelSerializer):
             "status",
             "created_at",
         )
-        read_only_fields = ("id", "created_at")
+        read_only_fields = ("id", "created_at", "hours", "multiplier")
+        extra_kwargs = {"employee": {"required": False}, "date": {"required": False}}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -382,17 +389,46 @@ class ShiftRosterSerializer(serializers.ModelSerializer):
 
 
 class ShiftSwapSerializer(serializers.ModelSerializer):
+    requester_roster_display = serializers.SerializerMethodField()
+    target_roster_display = serializers.SerializerMethodField()
+    requester_employee_name = serializers.SerializerMethodField()
+    target_employee_name = serializers.SerializerMethodField()
+
+    def get_requester_employee_name(self, obj):
+        return str(obj.requester_employee) if obj.requester_employee_id else None
+
+    def get_target_employee_name(self, obj):
+        return str(obj.target_employee) if obj.target_employee_id else None
+
+    @staticmethod
+    def _display(roster, employee):
+        return {"id": str(roster.pk), "employee_name": str(employee) if employee else "",
+                "work_date": roster.work_date, "start_time": roster.start_time,
+                "end_time": roster.end_time, "shift_type": roster.shift_type}
+
+    def get_requester_roster_display(self, obj):
+        return self._display(obj.requester_roster, obj.requester_employee)
+
+    def get_target_roster_display(self, obj):
+        return self._display(obj.target_roster, obj.target_employee)
+
     class Meta:
         model = ShiftSwap
         fields = (
             "id",
             "requester_roster",
             "target_roster",
+            "requester_employee",
+            "target_employee",
+            "requester_employee_name",
+            "target_employee_name",
+            "requester_roster_display",
+            "target_roster_display",
             "reason",
             "status",
             "created_at",
         )
-        read_only_fields = ("id", "created_at", "status")
+        read_only_fields = ("id", "created_at", "status", "requester_employee", "target_employee")
 
     def validate(self, data):
         def val(name):
@@ -401,6 +437,14 @@ class ShiftSwapSerializer(serializers.ModelSerializer):
         requester = val("requester_roster")
         target = val("target_roster")
         if requester and target:
+            if not requester.employee_id or not target.employee_id:
+                raise serializers.ValidationError("Both shifts must have assigned employees.")
+            for roster in (requester, target):
+                employee = roster.employee
+                if not employee.is_active or employee.status != Employee.OnboardingStatus.ACTIVE or not employee.user_id or not employee.user.is_active:
+                    raise serializers.ValidationError("Both shifts must belong to active employees with active accounts.")
+            if not requester.work_date or not target.work_date:
+                raise serializers.ValidationError("Both shifts must have a work date.")
             if requester.pk == target.pk:
                 raise serializers.ValidationError("Cannot swap a roster with itself.")
             if requester.employee_id == target.employee_id:
@@ -446,12 +490,6 @@ class PayrollItemSerializer(serializers.ModelSerializer):
         validators = []
 
 
-class PerformanceReviewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PerformanceReview
-        fields = "__all__"
-
-
 class ExpenseClaimSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExpenseClaim
@@ -472,9 +510,15 @@ class ExpenseClaimSerializer(serializers.ModelSerializer):
 
 
 class EmployeeAuditLogSerializer(serializers.ModelSerializer):
+    employee_name = serializers.SerializerMethodField()
+
+    def get_employee_name(self, obj):
+        return str(obj.employee) if obj.employee_id else None
+
     class Meta:
         model = EmployeeAuditLog
-        fields = "__all__"
+        fields = ("id", "employee", "employee_name", "actor", "actor_name", "action", "timestamp")
+        read_only_fields = fields
 
 
 class NotificationSerializer(serializers.ModelSerializer):
@@ -488,6 +532,10 @@ class MessageSerializer(serializers.ModelSerializer):
     attachment = serializers.FileField(write_only=True, required=False, allow_null=True)
     attachment_url = serializers.SerializerMethodField()
     is_own = serializers.SerializerMethodField()
+
+    def validate_attachment(self, value):
+        from .message_files import validate_message_attachment
+        return validate_message_attachment(value)
 
     class Meta:
         model = Message
@@ -513,9 +561,7 @@ class MessageSerializer(serializers.ModelSerializer):
     def get_attachment_url(self, obj):
         if not obj.attachment:
             return None
-        request = self.context.get("request")
-        url = obj.attachment.url
-        return request.build_absolute_uri(url) if request else url
+        return f"/api/messages/{obj.pk}/attachment/"
 
     def get_is_own(self, obj):
         request = self.context.get("request")

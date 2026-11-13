@@ -25,9 +25,12 @@ class AttendanceQrSessionTests(TestCase):
             user=self.user,
             is_active=True,
         )
+        self.hr_user = get_user_model().objects.create_user(
+            username="qr-admin", password="Password123!", is_staff=True,
+        )
 
     def test_current_qr_endpoint_creates_token(self):
-        self.client.force_login(self.user)
+        self.client.force_login(self.hr_user)
         response = self.client.get(reverse("attendance-qr-current"))
         self.assertEqual(response.status_code, 200)
         body = response.json()
@@ -230,7 +233,7 @@ class AttendanceQrSessionTests(TestCase):
         )
 
     def test_qr_event_stream_is_served_as_sse(self):
-        self.client.force_login(self.user)
+        self.client.force_login(self.hr_user)
         response = self.client.get(
             reverse("attendance-qr-events"),
             HTTP_ACCEPT="text/event-stream",

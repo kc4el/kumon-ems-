@@ -3,6 +3,9 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView
+from django.http import Http404
+from urllib.parse import urlsplit
+import re
 
 from core.views import (
     dashboard_view,
@@ -13,6 +16,11 @@ from core.views import (
     login_view,
 )
 from core.views_onboarding import hr_onboarding_view, onboarding_login_view, onboarding_view
+
+
+def private_message_media(request, **kwargs):
+    # Files must pass conversation authorization at the API download endpoint.
+    raise Http404
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -40,6 +48,7 @@ from django.contrib.staticfiles.views import serve
 from django.urls import re_path
 
 urlpatterns += [
+    re_path(r"^" + re.escape(urlsplit(settings.MEDIA_URL).path.lstrip("/")) + r"message-attachments(?:/.*)?$", private_message_media),
     re_path(r"^static/(?P<path>.*)$", serve, {"insecure": True}),
 ]
 

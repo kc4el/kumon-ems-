@@ -4,9 +4,10 @@ from datetime import timedelta
 from queue import Empty, Queue
 
 from django.http import StreamingHttpResponse
+from django.db import transaction
 from django.utils import timezone
 
-from .models import AttendanceQrSession
+from .models import AttendanceQrSession, SiteSetting
 
 QR_TTL_SECONDS = 60
 _SSE_SUBSCRIBERS = set()
@@ -32,7 +33,7 @@ def broadcast_qr_event(event_name, payload):
             _SSE_SUBSCRIBERS.discard(subscriber)
 
 
-def create_active_qr_session():
+def _create_active_qr_session():
     now = timezone.now()
     AttendanceQrSession.objects.filter(status=AttendanceQrSession.Status.ACTIVE).update(
         status=AttendanceQrSession.Status.EXPIRED,
@@ -52,31 +53,53 @@ def create_active_qr_session():
         status=AttendanceQrSession.Status.ACTIVE,
     )
     payload = _payload_for_session(session)
-    broadcast_qr_event("qr_refresh", payload)
+    transaction.on_commit(lambda: broadcast_qr_event("qr_refresh", payload))
     return session
+
+
+def create_active_qr_session():
+    return get_active_qr_session(force_new=True)
 
 
 def get_active_qr_session(force_new=False):
-    now = timezone.now()
-    session = (
-        AttendanceQrSession.objects.filter(
-            status=AttendanceQrSession.Status.ACTIVE,
-            expires_at__gt=now,
+    # A stable row serializes generators even when no session exists yet.
+    with transaction.atomic():
+        lock_row, _ = SiteSetting.objects.get_or_create(
+            key="_attendance_qr_lock", defaults={"value": "1"}
         )
-        .order_by("-created_at")
-        .first()
-    )
-    if session is None or force_new or not session.manual_code:
-        return create_active_qr_session()
-    return session
+        SiteSetting.objects.select_for_update().get(pk=lock_row.pk)
+        now = timezone.now()
+        session = (
+            AttendanceQrSession.objects.filter(
+                status=AttendanceQrSession.Status.ACTIVE,
+                expires_at__gt=now,
+            )
+            .order_by("-created_at")
+            .first()
+        )
+        if session is None or force_new or not session.manual_code:
+            return _create_active_qr_session()
+        return session
 
 
 def invalidate_qr_session(session, *, used=False):
     if session is None:
         return None
-    session.invalidate(used=used)
+    now = timezone.now()
+    filters = {"pk": session.pk, "status": AttendanceQrSession.Status.ACTIVE}
+    if used:
+        filters["expires_at__gt"] = now
+    updates = {
+        "status": AttendanceQrSession.Status.USED if used else AttendanceQrSession.Status.EXPIRED,
+        "invalidated_at": now,
+    }
+    if used:
+        updates["used_at"] = now
+    if not AttendanceQrSession.objects.filter(**filters).update(**updates):
+        return None
+    session.refresh_from_db()
     payload = _payload_for_session(session)
-    broadcast_qr_event("qr_refresh", payload)
+    transaction.on_commit(lambda: broadcast_qr_event("qr_refresh", payload))
     return session
 
 

@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadShiftRosterView();
   initializeShiftEditorDate();
   loadMasterShiftCalendar();
-  loadPayrollView();
+  loadPayEstimates();
   loadAuditView();
   applySettingsA11yOnLoad();
   initDashboardWidgets();
@@ -433,6 +433,7 @@ const viewBreadcrumbs = {
   'attendance-shift': { root: 'Attendance', active: 'Shift Management' },
   'attendance-leave': { root: 'Attendance', active: 'Leave Management' },
   'claims': { root: 'Claims', active: 'Pending Claims' },
+  'pay-estimates': { active: 'Pay Estimates' },
   'messages': { active: 'Messages & Channels' },
   'logs': { active: 'Audit & Activity Logs' },
   'settings': { active: '' },
@@ -508,6 +509,8 @@ function switchView(viewName) {
     if (viewName === 'dashboard') {
       refreshDashboardLiveData();
     }
+    if (viewName === 'pay-estimates') loadPayEstimates();
+    if (viewName === 'employee-grievance') loadGrievanceView();
   } else {
     // Show placeholder view with specific title
     const placeholderPanel = document.getElementById('view-placeholder');
@@ -515,15 +518,7 @@ function switchView(viewName) {
     if (placeholderPanel && placeholderTitle) {
       placeholderTitle.textContent = viewName.replace('-', ' ').toUpperCase();
       placeholderPanel.classList.add('active');
-      const payrollWrap = document.getElementById('payrollLiveWrap');
-      if (payrollWrap) {
-        if (viewName.includes('payroll')) {
-          payrollWrap.style.display = 'block';
-          loadPayrollView();
-        } else {
-          payrollWrap.style.display = 'none';
-        }
-      }
+
     }
   }
 
@@ -2136,20 +2131,13 @@ async function loadClaimStatuses() {
 }
 
 async function saveClaimStatus(id, status) {
-  // Claim decisions go through POST /api/claims/<id>/decision/ (UUID rows
-  // and demo CLM-/ADV- codes alike); the legacy claim-statuses upsert stays
-  // as the offline-shaped fallback.
+  // Claim decisions go through the decision endpoint.
   const decision = status === 'Approved' ? 'Approved' : 'Rejected';
   const res = await apiFetch(`/api/claims/${encodeURIComponent(id)}/decision/`, {
     method: 'POST',
     body: JSON.stringify({ decision })
   });
-  if (res.ok) return;
-  const legacy = await apiFetch('/api/claim-statuses/', {
-    method: 'POST',
-    body: JSON.stringify({ claim_id: id, status: decision })
-  });
-  if (!legacy.ok) throw new Error('Unable to save claim status.');
+  if (!res.ok) throw new Error('Unable to save claim status.');
 }
 
 async function handleClaimAction(id, action) {
@@ -3656,6 +3644,22 @@ function filterLogsByTab(category, btnElement) {
   filterAuditLogs();
 }
 
+let auditFilterTimer;
+function scheduleAuditFilters() {
+  clearTimeout(auditFilterTimer);
+  auditFilterTimer = setTimeout(() => auditPagerGoto(1), 250);
+}
+
+function auditApiUrl(page = null, pageSize = 100) {
+  const params = new URLSearchParams({page_size: String(pageSize)});
+  if (page !== null) params.set('page', String(page));
+  const actor = document.getElementById('auditAdminFilter')?.value.trim();
+  const search = document.getElementById('auditSearchInput')?.value.trim();
+  if (actor) params.set('actor_name', actor);
+  if (search) params.set('search', search);
+  return '/api/audit-logs/?' + params;
+}
+
 function filterAuditLogs() {
   const searchInput = document.getElementById('auditSearchInput');
   const adminSelect = document.getElementById('auditAdminFilter');
@@ -3770,12 +3774,12 @@ function downloadCsv(filename, rows) {
 }
 
 async function exportAuditLogs() {
-  const rows = [['Timestamp', 'Administrator', 'Action Class', 'Action', 'Target Record', 'Details', 'Status', 'Audit ID']];
+  const rows = [['Timestamp', 'Performed By', 'Actor User ID', 'Affected Employee', 'Action Class', 'Action', 'Target Record', 'Status', 'Audit ID']];
   let logs;
   let names = {};
   try {
     [logs, names] = await Promise.all([
-      fetchAllApiRows('/api/audit-logs/?page_size=100'),
+      fetchAllApiRows(auditApiUrl()),
       liveEmployeeNames().catch(() => ({})),
     ]);
   } catch (error) {
@@ -3783,19 +3787,21 @@ async function exportAuditLogs() {
     return;
   }
   logs.forEach((log) => {
-    const who = names[log.employee] || (log.employee ? `Employee #${log.employee}` : 'System');
+    const who = log.actor_name || 'Not recorded';
+    const affected = log.employee_name || names[log.employee] || (log.employee ? `Employee #${log.employee}` : 'None');
     const when = log.timestamp ? new Date(log.timestamp).toLocaleString() : '';
     const category = classifyAuditAction(log.action || '');
+    if (activeLogTabCategory !== 'all' && category.toLowerCase() !== activeLogTabCategory.toLowerCase()) return;
     const actionText = formatAuditActionText(log.action || '');
     const target = log.target || log.target_record || (log.employee ? `EMP-${log.employee}` : '—');
-    const details = log.details || log.notes || actionText;
     rows.push([
       when,
       who,
+      log.actor == null ? '' : String(log.actor),
+      affected,
       category,
       actionText,
       target,
-      details,
       'Logged',
       String(log.id || '').slice(0, 8),
     ]);
@@ -4299,37 +4305,6 @@ async function refreshShiftConflictBadges() {
   }
 }
 
-async function loadPayrollView() {
-  const body = document.getElementById('payrollRunsTableBody');
-  if (!body) return;
-  try {
-    const [runs, items] = await Promise.all([
-      fetchAllApiRows('/api/payroll-runs/?page_size=100'),
-      fetchAllApiRows('/api/payroll-items/?page_size=100'),
-    ]);
-    body.innerHTML = '';
-    if (!runs.length) {
-      body.innerHTML = '<tr><td colspan="4">No records yet.</td></tr>';
-    } else {
-      runs.forEach((run) => {
-        const lines = items.filter((i) => i.payroll_run === run.id);
-        const total = lines.reduce((sum, i) => sum + Number(i.net_pay || 0), 0);
-        const tr = document.createElement('tr');
-        tr.setAttribute('data-live', 'true');
-        tr.innerHTML =
-          `<td>${escapeHtml(String(run.pay_period_start || ''))} – ${escapeHtml(String(run.pay_period_end || ''))}</td>` +
-          `<td>${run.is_processed ? 'Yes' : 'No'}</td>` +
-          `<td>${lines.length}</td>` +
-          `<td>₱${escapeHtml(total.toFixed(2))}</td>`;
-        body.appendChild(tr);
-      });
-    }
-  } catch (e) {
-    body.innerHTML = '<tr><td colspan="4">Payroll data is unavailable. Try refreshing.</td></tr>';
-    showToast('Payroll data could not be loaded.', 'error');
-  }
-}
-
 async function loadAuditView() {
   auditPagerPage = 1;
   return auditPagerGoto(1);
@@ -4337,6 +4312,7 @@ async function loadAuditView() {
 
 // Audit pager (D34): ?page=N against /api/audit-logs/.
 let auditPagerPage = 1;
+let auditFetchVersion = 0;
 const AUDIT_PAGE_SIZE = 10;
 // Live total from the last audit fetch.
 let auditLiveTotal = 0;
@@ -4346,7 +4322,8 @@ function auditPagerStep(delta) {
 }
 
 function buildAuditRow(log, names) {
-  const who = names[log.employee] || 'System';
+  const who = log.actor_name || 'Not recorded';
+  const affected = log.employee_name || names[log.employee] || (log.employee ? `Employee #${log.employee}` : 'None');
   const category = classifyAuditAction(log.action);
   const when = log.timestamp ? new Date(log.timestamp).toLocaleString() : '—';
   const tr = document.createElement('tr');
@@ -4357,7 +4334,7 @@ function buildAuditRow(log, names) {
     `<td><div class="claims-applicant-cell"><div class="claims-applicant-info">` +
     `<strong>${escapeHtml(String(who))}</strong></div></div></td>` +
     `<td>${escapeHtml(category)}</td><td>${escapeHtml(String(when))}</td>` +
-    `<td>${escapeHtml(String(log.action || ''))}</td><td>—</td>` +
+    `<td>${escapeHtml(String(log.action || ''))}</td><td>${escapeHtml(String(affected))}</td>` +
     `<td><span class="penpot-badge badge-present">Logged</span></td>` +
     `<td style="text-align: right;">${escapeHtml(String(log.id || '').slice(0, 8))}</td>`;
   return tr;
@@ -4367,16 +4344,19 @@ async function auditPagerGoto(page) {
   if (page < 1) return;
   const body = document.getElementById('auditLogsTableBody');
   if (!body) return;
+  const version = ++auditFetchVersion;
   try {
-    const res = await apiFetch(`/api/audit-logs/?page=${page}&page_size=${AUDIT_PAGE_SIZE}`);
+    const res = await apiFetch(auditApiUrl(page, AUDIT_PAGE_SIZE));
     if (!res.ok) throw new Error('load failed');
     const payload = await res.json();
+    if (version !== auditFetchVersion) return;
     const rows = Array.isArray(payload) ? payload : payload.results || [];
     const total = typeof payload.count === 'number' ? payload.count : rows.length;
     const totalPages = Math.max(1, Math.ceil(total / AUDIT_PAGE_SIZE));
     if (page > totalPages) return auditPagerGoto(totalPages);
     let names = {};
     try { names = await liveEmployeeNames(); } catch (_) { /* fall back to System */ }
+    if (version !== auditFetchVersion) return;
     body.innerHTML = '';
     if (!rows.length) {
       body.innerHTML = '<tr><td colspan="7">No audit events on this page yet.</td></tr>';
@@ -4389,6 +4369,7 @@ async function auditPagerGoto(page) {
     markPagerActive('audit', page);
     filterAuditLogs();
   } catch (e) {
+    if (version !== auditFetchVersion) return;
     body.innerHTML = '<tr><td colspan="7">This audit page is unavailable. Try refreshing.</td></tr>';
     showToast('Audit page could not be loaded.', 'error');
   }
