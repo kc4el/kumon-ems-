@@ -10,6 +10,7 @@ Provides dedicated endpoints for:
 """
 
 import logging
+import uuid
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -45,10 +46,13 @@ class LeaveApproveView(APIView):
 
     permission_classes = [IsStaffOrHR]
 
+    @transaction.atomic
     def post(self, request, pk):
-        leave = get_object_or_404(LeaveRequest, pk=pk)
+        leave = get_object_or_404(LeaveRequest.objects.select_for_update(), pk=pk)
         if leave.status == "Approved":
             return Response(LeaveRequestSerializer(leave).data, status=status.HTTP_200_OK)
+        if leave.status != "Pending":
+            return Response({"error": "This request has already been decided."}, status=status.HTTP_409_CONFLICT)
 
         leave.status = "Approved"
         leave.save(update_fields=["status"])
@@ -66,12 +70,15 @@ class LeaveRejectView(APIView):
 
     permission_classes = [IsStaffOrHR]
 
+    @transaction.atomic
     def post(self, request, pk):
-        leave = get_object_or_404(LeaveRequest, pk=pk)
+        leave = get_object_or_404(LeaveRequest.objects.select_for_update(), pk=pk)
         reason = str(request.data.get("reason", "")).strip()
 
         if leave.status == "Rejected":
             return Response(LeaveRequestSerializer(leave).data, status=status.HTTP_200_OK)
+        if leave.status != "Pending":
+            return Response({"error": "This request has already been decided."}, status=status.HTTP_409_CONFLICT)
 
         leave.status = "Rejected"
         leave.save(update_fields=["status"])
@@ -92,7 +99,10 @@ class LeaveBulkDecideView(APIView):
 
     def post(self, request):
         ids = request.data.get("ids", [])
-        decision = request.data.get("decision", "").strip().capitalize()
+        decision = request.data.get("decision", "")
+        if not isinstance(decision, str):
+            return Response({"error": "decision must be a string."}, status=status.HTTP_400_BAD_REQUEST)
+        decision = decision.strip().capitalize()
         reason = str(request.data.get("reason", "")).strip()
 
         if decision not in ("Approved", "Rejected"):
@@ -105,12 +115,20 @@ class LeaveBulkDecideView(APIView):
                 {"error": "ids must be a non-empty list of leave request IDs."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        try:
+            ids = [uuid.UUID(str(value)) for value in ids]
+        except (ValueError, TypeError, AttributeError):
+            return Response({"error": "Each id must be a valid UUID."}, status=status.HTTP_400_BAD_REQUEST)
 
-        leaves = list(LeaveRequest.objects.filter(pk__in=ids))
         updated_count = 0
         with transaction.atomic():
+            leaves = list(LeaveRequest.objects.select_for_update().filter(pk__in=ids).order_by("pk"))
+            if len(leaves) != len(set(ids)):
+                return Response({"error": "One or more leave requests were not found."}, status=status.HTTP_400_BAD_REQUEST)
+            if any(leave.status not in ("Pending", decision) for leave in leaves):
+                return Response({"error": "This request has already been decided."}, status=status.HTTP_409_CONFLICT)
             for leave in leaves:
-                if leave.status != decision:
+                if leave.status == "Pending":
                     leave.status = decision
                     leave.save(update_fields=["status"])
                     updated_count += 1

@@ -1,6 +1,22 @@
 // HR case registers and pay estimates use the server as the source of truth.
 let hrCaseRegister = 'grievances';
 let hrCases = { grievances: [], complaints: [] };
+// Drafts survive register switches and background refreshes until their own save succeeds.
+const hrCaseDrafts = new Map();
+const hrCaseSaves = new Set();
+let hrCaseLoadVersion = 0;
+function hrCaseKey(register, id) { return `${register}:${id}`; }
+function hrCaseValues(form, terminal) {
+  return {
+    internal_notes: form.elements.internal_notes.value,
+    ...(!terminal ? { status: form.elements.status.value, resolution: form.elements.resolution.value } : {})
+  };
+}
+function hrCaseServerValues(item, terminal) {
+  return { internal_notes: item.internal_notes || '', ...(!terminal ? { status: item.status, resolution: item.resolution || '' } : {}) };
+}
+function hrSameCaseValues(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+
 
 async function hrRequest(url, options = {}) {
   const response = await apiFetch(url, options);
@@ -22,41 +38,76 @@ function selectHrCaseRegister(register) {
 async function loadGrievanceView() {
   const list = document.getElementById('grievanceCaseList');
   if (!list) return;
+  const loadVersion = ++hrCaseLoadVersion;
   try {
     const [grievances, complaints, employees] = await Promise.all([
       fetchAllApiRows('/api/grievances/?page_size=100'), fetchAllApiRows('/api/complaints/?page_size=100'), fetchAllApiRows('/api/employees/?page_size=100')
     ]);
+    if (loadVersion !== hrCaseLoadVersion) return;
     hrCases = { grievances, complaints };
     const select = document.getElementById('grievComplainant');
+    const previousEmployee = select.value;
     select.innerHTML = '<option value="">Select employee...</option>';
     employees.filter(e => e.is_active !== false).forEach(e => select.add(new Option(`${e.first_name || ''} ${e.last_name || ''}`.trim() || e.email, e.id)));
+    select.value = previousEmployee;
     document.getElementById('grievanceOpenCount').textContent = String(grievances.filter(g => !['Resolved', 'Rejected'].includes(g.status)).length).padStart(2, '0');
     document.getElementById('grievanceMediationCount').textContent = String(grievances.filter(g => g.status === 'In Mediation').length).padStart(2, '0');
     document.getElementById('grievanceResolvedCount').textContent = String(grievances.filter(g => g.status === 'Resolved').length).padStart(2, '0');
     renderHrCases();
-  } catch (_) { list.textContent = 'Case registers could not be loaded.'; }
+  } catch (_) { if (loadVersion === hrCaseLoadVersion && !hrCaseDrafts.size) list.textContent = 'Case registers could not be loaded.'; }
 }
 
 function renderHrCases() {
   const list = document.getElementById('grievanceCaseList');
   const items = hrCases[hrCaseRegister];
+  const active = document.activeElement;
+  const activeCard = active && active.closest && active.closest('[data-case-key]');
+  const focus = activeCard && list.contains(activeCard) ? {
+    key: activeCard.dataset.caseKey, name: active.name,
+    start: active.selectionStart, end: active.selectionEnd
+  } : null;
   list.innerHTML = '';
   if (!items.length) { list.textContent = `No ${hrCaseRegister} found.`; return; }
   items.forEach(item => {
     const isComplaint = hrCaseRegister === 'complaints';
     const terminalStates = isComplaint ? ['Resolved', 'Dismissed'] : ['Resolved', 'Rejected'];
-    const terminal = terminalStates.includes(item.status);
+    const key = hrCaseKey(hrCaseRegister, item.id);
+    const draft = hrCaseDrafts.get(key);
+    // A draft started before the server closed a case must remain editable.
+    const terminal = draft ? draft.terminal : terminalStates.includes(item.status);
     const transitions = isComplaint
       ? { 'Open': ['In Review'], 'In Review': ['Resolved', 'Dismissed'] }
       : { 'Pending': ['Investigating', 'Resolved', 'Rejected'], 'Investigating': ['In Mediation', 'Resolved', 'Rejected'], 'In Mediation': ['Resolved', 'Rejected'] };
-    const states = [item.status, ...(transitions[item.status] || [])];
+    const states = [...new Set([item.status, ...(transitions[item.status] || []), ...(draft && draft.values.status ? [draft.values.status] : [])])];
     const card = document.createElement('article');
     card.className = 'grievance-case-item hr-case';
+    card.dataset.caseKey = key;
     const reviewFields = terminal
       ? `<p><strong>Status:</strong> ${escapeHtml(item.status)}</p><p><strong>Resolution (visible to employee):</strong> ${escapeHtml(item.resolution || '')}</p>`
       : `<label>Status <select name="status">${states.map(s => `<option${s === item.status ? ' selected' : ''}>${escapeHtml(s)}</option>`).join('')}</select></label><label>Resolution (visible to employee)<textarea name="resolution" rows="2">${escapeHtml(item.resolution || '')}</textarea></label>`;
     card.innerHTML = `<h3>${escapeHtml(item.subject || item.title || '')}</h3><p class="case-submeta">${escapeHtml(item.employee_name || 'Anonymous Filing')} · ${escapeHtml(String(item.created_at || '').slice(0, 10))}</p><p>${escapeHtml(item.description || item.details || '')}</p><form>${reviewFields}<label>Internal notes (HR only)<textarea name="internal_notes" rows="2">${escapeHtml(item.internal_notes || '')}</textarea></label><button class="btn btn-navy-cta" type="submit">Save review</button></form>`;
-    card.querySelector('form').addEventListener('submit', async event => {
+    const form = card.querySelector('form');
+    if (draft) {
+      form.elements.internal_notes.value = draft.values.internal_notes;
+      if (!terminal) {
+        form.elements.status.value = draft.values.status;
+        form.elements.resolution.value = draft.values.resolution;
+      }
+      if (!hrSameCaseValues(draft.baseline, hrCaseServerValues(item, terminal))) {
+        const notice = document.createElement('p');
+        notice.textContent = 'This case has changed on the server. Your unsaved review is preserved; check it before saving.';
+        card.insertBefore(notice, form);
+      }
+    }
+    const baseline = draft ? draft.baseline : hrCaseServerValues(item, terminal);
+    const rememberDraft = () => {
+      const values = hrCaseValues(form, terminal);
+      if (!hrCaseSaves.has(key) && hrSameCaseValues(values, baseline)) hrCaseDrafts.delete(key);
+      else hrCaseDrafts.set(key, { values, baseline, terminal });
+    };
+    form.addEventListener('input', rememberDraft);
+    form.addEventListener('change', rememberDraft);
+    form.addEventListener('submit', async event => {
       event.preventDefault();
       const data = new FormData(event.currentTarget);
       const payload = {internal_notes: data.get('internal_notes')};
@@ -65,8 +116,22 @@ function renderHrCases() {
         payload.resolution = data.get('resolution').trim();
         if (terminalStates.includes(payload.status) && !payload.resolution) { showToast('Enter a resolution for a closed case.', 'error'); return; }
       }
-      try { await hrRequest(`/api/${isComplaint ? 'complaints' : 'grievances'}/${encodeURIComponent(item.id)}/`, { method: 'PATCH', body: JSON.stringify(payload) }); showToast('Case review saved.'); await loadGrievanceView(); }
-      catch (_) { showToast('Case review could not be saved.', 'error'); }
+      if (hrCaseSaves.has(key)) return;
+      const submittedValues = hrCaseValues(form, terminal);
+      hrCaseSaves.add(key);
+      hrCaseDrafts.set(key, { values: submittedValues, baseline, terminal });
+      try {
+        await hrRequest(`/api/${isComplaint ? 'complaints' : 'grievances'}/${encodeURIComponent(item.id)}/`, { method: 'PATCH', body: JSON.stringify(payload) });
+        // Invalidate reads started before the write, and keep edits made while saving.
+        ++hrCaseLoadVersion;
+        const current = hrCaseDrafts.get(key);
+        if (current && hrSameCaseValues(current.values, submittedValues)) hrCaseDrafts.delete(key);
+        else if (current) current.baseline = submittedValues;
+        hrCaseSaves.delete(key);
+        showToast('Case review saved.');
+        await loadGrievanceView();
+      }
+      catch (_) { hrCaseSaves.delete(key); showToast('Case review could not be saved.', 'error'); }
     });
     if (isComplaint && !hrCases.grievances.some(g => String(g.source_complaint) === String(item.id))) {
       const button = document.createElement('button'); button.type = 'button'; button.className = 'tab-pill'; button.textContent = 'Escalate to grievance';
@@ -74,6 +139,11 @@ function renderHrCases() {
       card.appendChild(button);
     }
     list.appendChild(card);
+    if (focus && focus.key === key && form.elements[focus.name]) {
+      const field = form.elements[focus.name];
+      field.focus();
+      if (typeof focus.start === 'number' && field.setSelectionRange) field.setSelectionRange(focus.start, focus.end);
+    }
   });
 }
 

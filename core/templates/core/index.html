@@ -2846,7 +2846,7 @@
                 </div>
                 <div class="settings-card-actions" style="margin-bottom:14px;">
                   <button class="btn btn-outline-gray" onclick="settingsImportDryRun()">Dry-run preview</button>
-                  <button class="btn btn-navy-cta" onclick="settingsImportCommit()">Confirm import</button>
+                  <button id="settingsImportCommitBtn" class="btn btn-navy-cta" onclick="settingsImportCommit()">Confirm import</button>
                 </div>
                 <div style="overflow-x:auto;">
                   <table class="penpot-table">
@@ -2865,6 +2865,12 @@
                     </tbody>
                   </table>
                 </div>
+                <section id="settingsImportCredentials" hidden aria-label="Imported employee sign-in credentials" style="margin-top:16px;">
+                  <h3>Employee sign-in credentials</h3>
+                  <p>Give each employee only their own credentials through a private channel. Temporary passwords expire after 24 hours. These details are displayed only in this page session.</p>
+                  <div id="settingsImportCredentialRows"></div>
+                  <button type="button" class="btn btn-outline-gray" onclick="clearSettingsImportCredentials()">Clear credentials from this page</button>
+                </section>
               </div>
             </div>
           </div>
@@ -3069,14 +3075,14 @@
 
   <div id="toastContainer" class="toast-stack"></div>
 
-  <script src="{% static 'js/dashboard.js' %}?v=6.7"></script>
-  <script src="{% static 'js/hr-workflows.js' %}?v=2"></script>
+  <script src="{% static 'js/dashboard.js' %}?v=6.8"></script>
+  <script src="{% static 'js/hr-workflows.js' %}?v=3"></script>
   <script src="{% static 'js/leave-allocations.js' %}?v=1"></script>
   <script src="{% static 'js/live-notifications.js' %}"></script>
   <script>
     if (typeof switchView === 'undefined') {
       const relPrefix = window.location.protocol === 'file:' ? '../../../' : '/';
-      document.write('<script src="' + relPrefix + 'static/js/dashboard.js?v=6.7"><\/script>');
+      document.write('<script src="' + relPrefix + 'static/js/dashboard.js?v=6.8"><\/script>');
     }
   </script>
   <script>
@@ -3084,7 +3090,7 @@
   </script>
 
   <div id="walkthroughContext" data-portal="hr" data-account="{{ request.user.pk }}" data-employee="{{ employee.pk|default:'' }}" hidden></div>
-  <script src="{% static 'js/guided-tour.js' %}?v=1"></script>
+  <script src="{% static 'js/guided-tour.js' %}?v=2"></script>
 </body>
 
 

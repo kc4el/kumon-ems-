@@ -6,7 +6,7 @@ from datetime import timedelta
 from io import BytesIO
 
 from django.conf import settings
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
@@ -1308,6 +1308,10 @@ class LeaveRequestListCreateView(
     )
     serializer_class = LeaveRequestSerializer
 
+    def perform_create(self, serializer):
+        self._enforce_owner(serializer)
+        serializer.save(status="Pending")
+
 
 DECIDED_409_BODY = {"error": "This request has already been decided."}
 
@@ -1343,12 +1347,44 @@ class HRDecisionUpdateMixin:
         return super().update(request, *args, **kwargs)
 
 
-class LeaveRequestDetailView(
-    DecidedGuardMixin, HRDecisionUpdateMixin, generics.RetrieveUpdateDestroyAPIView
-):
+class LeaveRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = LeaveRequest.objects.all()
     serializer_class = LeaveRequestSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrStaff]
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        self.queryset = self.queryset.select_for_update()
+        instance = self.get_object()
+        data = request.data
+        if "employee" in data and str(data.get("employee")) != str(instance.employee_id):
+            raise DRFValidationError({"employee": "The employee cannot be changed."})
+        if "status" in data or "decision" in data:
+            if not is_staff_or_hr(request.user):
+                raise PermissionDenied("Only HR staff can change decision state.")
+            if set(data.keys()) != {"status"}:
+                raise DRFValidationError({"status": "Submit the decision separately from other changes."})
+            decision = data.get("status")
+            if decision not in ("Approved", "Rejected"):
+                raise DRFValidationError({"status": "Must be Approved or Rejected."})
+            if instance.status != "Pending" and instance.status != decision:
+                raise Conflict409("This request has already been decided.")
+            if instance.status == "Pending":
+                instance.status = decision
+                instance.save(update_fields=["status"])
+            return Response(self.get_serializer(instance).data)
+        if instance.status != "Pending":
+            raise Conflict409("This request has already been decided.")
+        return super().update(request, *args, **kwargs)
+
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        self.queryset = self.queryset.select_for_update()
+        instance = self.get_object()
+        if instance.status != "Pending":
+            raise Conflict409("This request has already been decided.")
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class LeaveAllocationAccessMixin:
@@ -2598,6 +2634,8 @@ class ChangePasswordView(APIView):
             )
         user.set_password(new)
         user.save(update_fields=["password"])
+        # Keep the caller signed in with the new hash while revoking other sessions.
+        update_session_auth_hash(request, user)
         # Scope to this user's sessions only: _auth_user_id lives inside
         # session data, so decode each row instead of bulk-deleting.
         for s in Session.objects.filter(expire_date__gt=timezone.now()):

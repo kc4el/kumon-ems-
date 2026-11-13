@@ -51,17 +51,28 @@ def owned_notifications(user):
     )
 
 
+def visible_notifications(user):
+    qs = owned_notifications(user)
+    setting = UserSetting.objects.filter(user=user).first()
+    muted = setting.muted_kinds if setting else []
+    if isinstance(muted, list):
+        qs = qs.exclude(kind__in=[kind for kind in muted if isinstance(kind, str)])
+    return qs
+
+
 class NotificationListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = InboxNotificationSerializer
 
     def get_queryset(self):
-        qs = owned_notifications(self.request.user).order_by("-created_at")
-        setting = UserSetting.objects.filter(user=self.request.user).first()
-        muted = setting.muted_kinds if setting else []
-        if isinstance(muted, list):
-            qs = qs.exclude(kind__in=[kind for kind in muted if isinstance(kind, str)])
-        return qs
+        return visible_notifications(self.request.user).order_by("-created_at")
+
+
+class NotificationUnreadCountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({"unread_count": visible_notifications(request.user).filter(is_read=False).count()})
 
 
 class NotificationMarkReadView(APIView):

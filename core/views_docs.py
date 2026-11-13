@@ -251,19 +251,39 @@ class SalaryAdvanceDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = SalaryAdvanceSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
-    def perform_update(self, serializer):
-        decision = self.request.data.get("decision")
-        if decision is not None:
-            if not is_staff_or_hr(self.request.user):
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        self.queryset = self.queryset.select_for_update()
+        instance = self.get_object()
+        data = request.data
+        if "employee" in data and str(data.get("employee")) != str(instance.employee_id):
+            raise DRFValidationError({"employee": "The employee cannot be changed."})
+        if "decision" in data or "status" in data:
+            if not is_staff_or_hr(request.user):
                 raise PermissionDenied("Only HR staff can decide salary advances.")
+            if set(data.keys()) != {"decision"}:
+                raise DRFValidationError({"decision": "Submit the decision separately from other changes."})
+            decision = data.get("decision")
             if decision not in DECISION_CHOICES:
                 raise DRFValidationError({"decision": "Must be Approved or Rejected."})
-            instance = serializer.instance
             if instance.status != "Pending" and instance.status != decision:
                 raise Conflict409("This request has already been decided.")
-            serializer.save(status=decision)
-        else:
-            serializer.save()
+            if instance.status == "Pending":
+                instance.status = decision
+                instance.save(update_fields=["status"])
+            return Response(self.get_serializer(instance).data)
+        if instance.status != "Pending":
+            raise Conflict409("This request has already been decided.")
+        return super().update(request, *args, **kwargs)
+
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        self.queryset = self.queryset.select_for_update()
+        instance = self.get_object()
+        if instance.status != "Pending":
+            raise Conflict409("This request has already been decided.")
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ClaimDecisionView(APIView):

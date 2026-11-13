@@ -2,7 +2,7 @@ const {test} = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const {GuideController, progressStore, cardPosition, waitForElement, guidesFor} = require('../static/js/guided-tour.js');
+const {GuideController, progressStore, cardPosition, waitForElement, guidesFor, formTracker} = require('../static/js/guided-tour.js');
 
 function setup(options = {}) {
   const events = [], saved = [];
@@ -14,6 +14,20 @@ function setup(options = {}) {
   return {controller:new GuideController(adapter,store),events,saved};
 }
 const guide = {title:'Test', steps:[{view:'one',target:'#one'},{view:'two',target:'#two'}]};
+
+test('form tracking blocks pending and failed saves and retains later edits', () => {
+  const tracker = formTracker(), form = {isConnected:true};
+  tracker.change(form); assert.equal(tracker.hasUnsaved(), true);
+  tracker.start(form); tracker.end(form, false); assert.equal(tracker.hasUnsaved(), true);
+  tracker.start(form); assert.equal(tracker.hasUnsaved(), true);
+  tracker.end(form, true); assert.equal(tracker.hasUnsaved(), false);
+  tracker.change(form); tracker.start(form); tracker.change(form); tracker.end(form, true);
+  assert.equal(tracker.hasUnsaved(), true);
+  tracker.start(form); tracker.end(form, true); assert.equal(tracker.hasUnsaved(), false);
+  tracker.start(form); tracker.reset(form); assert.equal(tracker.hasUnsaved(), true);
+  tracker.end(form, false); assert.equal(tracker.hasUnsaved(), false);
+  tracker.change(form); form.isConnected = false; assert.equal(tracker.hasUnsaved(), false);
+});
 
 test('each account, portal and task has independent progress', () => {
   const values = new Map(); const storage={getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v)};
