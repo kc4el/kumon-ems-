@@ -1,7 +1,8 @@
 import json
 import secrets
 from datetime import timedelta
-from queue import Empty, Queue
+from queue import Empty, Full, Queue
+from threading import Lock
 
 from django.http import StreamingHttpResponse
 from django.db import transaction
@@ -11,6 +12,8 @@ from .models import AttendanceQrSession, SiteSetting
 
 QR_TTL_SECONDS = 60
 _SSE_SUBSCRIBERS = set()
+_SSE_LOCK = Lock()
+_SSE_QUEUE_SIZE = 32
 
 
 def _payload_for_session(session):
@@ -26,11 +29,21 @@ def _payload_for_session(session):
 
 
 def broadcast_qr_event(event_name, payload):
-    for subscriber in list(_SSE_SUBSCRIBERS):
+    with _SSE_LOCK:
+        subscribers = list(_SSE_SUBSCRIBERS)
+    for subscriber in subscribers:
         try:
-            subscriber.put({"event": event_name, "payload": payload})
-        except Exception:
-            _SSE_SUBSCRIBERS.discard(subscriber)
+            subscriber.put_nowait({"event": event_name, "payload": payload})
+        except Full:
+            # A slow client needs the newest state, not an unbounded backlog.
+            try:
+                subscriber.get_nowait()
+            except Empty:
+                pass
+            try:
+                subscriber.put_nowait({"event": event_name, "payload": payload})
+            except Full:
+                pass  # Another producer filled the available slot.
 
 
 def _create_active_qr_session():
@@ -113,19 +126,24 @@ def normalize_manual_code(value):
 
 
 def stream_qr_events(request):
-    queue = Queue()
-    _SSE_SUBSCRIBERS.add(queue)
+    queue = Queue(maxsize=_SSE_QUEUE_SIZE)
 
     def event_stream():
-        yield "retry: 1000\n\n"
-        while True:
-            try:
-                message = queue.get(timeout=30)
-            except Empty:
-                yield ": heartbeat\n\n"
-                continue
-            yield f"event: {message['event']}\n"
-            yield f"data: {json.dumps(message['payload'])}\n\n"
+        with _SSE_LOCK:
+            _SSE_SUBSCRIBERS.add(queue)
+        try:
+            yield "retry: 1000\n\n"
+            while True:
+                try:
+                    message = queue.get(timeout=30)
+                except Empty:
+                    yield ": heartbeat\n\n"
+                    continue
+                yield f"event: {message['event']}\n"
+                yield f"data: {json.dumps(message['payload'])}\n\n"
+        finally:
+            with _SSE_LOCK:
+                _SSE_SUBSCRIBERS.discard(queue)
 
     response = StreamingHttpResponse(event_stream(), content_type="text/event-stream")
     response["Cache-Control"] = "no-cache, no-store, must-revalidate"

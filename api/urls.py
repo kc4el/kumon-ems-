@@ -96,7 +96,7 @@ from core.views_payroll import (
     PayrollRunDetailView,
     PayrollRunListCreateView,
 )
-from core.views_notifications import NotificationListView, NotificationMarkReadView
+from core.views_notifications import NotificationListView, NotificationMarkReadView, NotificationUnreadCountView
 from core.views_staff_requests import (
     AvailableShiftRosterView,
     AttendanceCorrectionListCreateView,
@@ -121,6 +121,7 @@ from core.views_pay_estimates import (
 )
 
 urlpatterns = [
+    path("notifications/unread-count/", NotificationUnreadCountView.as_view(), name="notification-unread-count"),
     path("shift-rosters/available-for-swap/", AvailableShiftRosterView.as_view(), name="available-shift-rosters"),
     path("messages/<uuid:pk>/attachment/", MessageAttachmentDownloadView.as_view(), name="message-attachment-download"),
     path("notifications/events/", NotificationEventsView.as_view(), name="notification-events"),

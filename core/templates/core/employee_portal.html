@@ -3281,7 +3281,7 @@
 
           <!-- Action Row (Side-by-side min h-12 / 48px touch targets) -->
           <div class="clockin-actions-row">
-            <button type="button" class="btn-clockin-primary" id="btnClockIn" onclick="openQrScannerModal('clock_in')">
+            <button type="button" class="btn-clockin-primary" id="btnClockIn" disabled aria-disabled="true" onclick="openQrScannerModal('clock_in')">
               <span>Clock In</span>
             </button>
             <button type="button" class="btn-clockin-secondary" id="btnClockOut" onclick="openQrScannerModal('clock_out')" disabled>
@@ -5018,24 +5018,68 @@
       }
     }
 
-    async function refreshRequestLists() {
-      const endpoints = [
-        '/api/leaves/?page_size=50',
-        '/api/advances/?page_size=50',
-        '/api/complaints/?page_size=50',
-        '/api/expense-claims/?page_size=50'
-      ];
-      const responses = await Promise.all(endpoints.map((url) => portalFetch(`${url}&_=${Date.now()}`)));
-      const lists = await Promise.all(responses.map(async (r) => {
-        const d = await payload(r);
-        if (!r.ok) throw new Error(apiErrorMessage(d, 'Saved request list could not be refreshed.'));
-        return rows(d);
-      }));
-      const [leaves, advances, complaints, claims] = lists;
-      renderLeaveCards(leaves);
-      renderAdvanceCards(advances);
-      renderComplaintCards(complaints);
-      renderClaimCards(claims);
+    async function fetchPortalPages(endpoint) {
+      let url = new URL(endpoint, window.location.origin);
+      const visited = new Set();
+      const items = [];
+      while (url) {
+        if (url.origin !== window.location.origin || visited.has(url.href)) throw new Error('Invalid pagination link');
+        visited.add(url.href);
+        const response = await portalFetch(url.href);
+        const data = await payload(response);
+        if (!response.ok) throw new Error(apiErrorMessage(data, 'History could not be loaded.'));
+        if (!Array.isArray(data) && (!data || !Array.isArray(data.results))) throw new Error('Invalid history response');
+        items.push(...(Array.isArray(data) ? data : data.results));
+        url = !Array.isArray(data) && data.next ? new URL(data.next, url) : null;
+      }
+      return items;
+    }
+
+    function setPortalLoadError(containerId, failed, retry) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const id = containerId + 'LoadError';
+      let notice = document.getElementById(id);
+      if (!failed) { if (notice) notice.remove(); return; }
+      container.querySelectorAll('.attendance-loading-placeholder').forEach((placeholder) => placeholder.remove());
+      if (!notice) {
+        notice = document.createElement('div');
+        notice.id = id;
+        notice.setAttribute('role', 'alert');
+        notice.textContent = 'Could not load the latest records. ';
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = 'Retry';
+        button.addEventListener('click', retry);
+        notice.appendChild(button);
+        container.before(notice);
+      }
+    }
+
+    let requestRefreshQueue = Promise.resolve();
+    function refreshRequestLists() {
+      const refresh = async () => {
+        const areas = [
+          ['/api/leaves/?page_size=50', 'leaveRows', renderLeaveCards],
+          ['/api/advances/?page_size=50', 'advanceRows', renderAdvanceCards],
+          ['/api/complaints/?page_size=50', 'complaintRows', renderComplaintCards],
+          ['/api/expense-claims/?page_size=50', 'claimRows', renderClaimCards]
+        ];
+        const results = await Promise.allSettled(areas.map(async ([endpoint, id, render]) => {
+          try {
+            const list = await fetchPortalPages(endpoint);
+            render(list);
+            setPortalLoadError(id, false);
+          } catch (error) {
+            setPortalLoadError(id, true, () => { refreshRequestLists().catch(() => {}); });
+            throw error;
+          }
+        }));
+        if (results.some((result) => result.status === 'rejected')) throw new Error('Some histories could not be refreshed.');
+      };
+      const result = requestRefreshQueue.then(refresh);
+      requestRefreshQueue = result.catch(() => {});
+      return result;
     }
 
     async function submitPortalRequest(event, endpoint, body, successMessage, fallbackMessage) {
@@ -5083,16 +5127,20 @@
       if (portalRefreshInFlight) return;
       portalRefreshInFlight = true;
       try {
-        const [attendance, leaves, advances, complaints, claims, account] = await Promise.all([
-          portalFetch('/api/attendance/me/?_=' + Date.now()),
-          portalFetch('/api/leaves/?page_size=50&_=' + Date.now()),
-          portalFetch('/api/advances/?page_size=50&_=' + Date.now()),
-          portalFetch('/api/complaints/?page_size=50&_=' + Date.now()),
-          portalFetch('/api/expense-claims/?page_size=50&_=' + Date.now()),
-          portalFetch('/api/settings/me/?_=' + Date.now())
+        const [attendanceResult, , accountResult] = await Promise.allSettled([
+          fetchPortalPages('/api/attendance/me/?_=' + Date.now()),
+          refreshRequestLists(),
+          (async () => {
+            const response = await portalFetch('/api/settings/me/?_=' + Date.now());
+            const data = await payload(response);
+            if (!response.ok) throw new Error('Account settings could not be loaded.');
+            return data;
+          })()
         ]);
 
-        const attendanceData = rows(await payload(attendance));
+        if (attendanceResult.status === 'fulfilled') {
+        setPortalLoadError('attendanceRows', false);
+        const attendanceData = attendanceResult.value;
         const now = new Date();
         const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         const todayRecord = attendanceData.find((item) => item.date === todayKey);
@@ -5179,12 +5227,18 @@
           }
         }
 
-        renderLeaveCards(rows(await payload(leaves)));
-        renderAdvanceCards(rows(await payload(advances)));
-        renderComplaintCards(rows(await payload(complaints)));
-        renderClaimCards(rows(await payload(claims)));
+        } else {
+          ['btnClockIn', 'btnClockOut'].forEach((id) => {
+            const button = document.getElementById(id);
+            if (button) { button.disabled = true; button.classList.add('is-disabled'); button.setAttribute('aria-disabled', 'true'); }
+          });
+          const note = document.getElementById('attendanceHeroNote');
+          if (note) note.textContent = 'Attendance status could not be verified. Retry to use the clock.';
+          setPortalLoadError('attendanceRows', true, loadPortalData);
+        }
 
-        const accountData = await payload(account);
+        if (accountResult.status === 'fulfilled') {
+        const accountData = accountResult.value;
         const googleAccount = accountData.google_account || {};
         const googleStatus = document.getElementById('portalGoogleAccountStatus');
         const googleLinkButton = document.getElementById('portalGoogleLinkButton');
@@ -5247,6 +5301,7 @@
         if (profile.first_name) myEmployeeName = `${profile.first_name} ${profile.last_name || ''}`.trim();
         setPortalTwoFactorState(!!accountData.two_factor_enabled);
         loadChatMessages(currentConvKey);
+        }
       } finally {
         portalRefreshInFlight = false;
       }
@@ -5911,6 +5966,12 @@
 
     async function submitPrefs(event) {
       event.preventDefault();
+      const form = event.target;
+      const submit = form.querySelector('button[type="submit"]');
+      if (submit?.disabled) return;
+      if (submit) submit.disabled = true;
+      let saved = false;
+      form.dispatchEvent(new CustomEvent('guide:save-start', { bubbles: true }));
       const muted = [];
       const leaveAlerts = document.getElementById('empLeaveAlerts');
       const payrollAlerts = document.getElementById('empPayrollAlerts');
@@ -5933,9 +5994,13 @@
         });
         const data = await payload(response);
         if (!response.ok) throw new Error(data.error || 'Preferences could not be saved.');
+        saved = true;
         showStatus('Preferences saved.');
       } catch (error) {
         showStatus(error.message, true);
+      } finally {
+        if (submit) submit.disabled = false;
+        form.dispatchEvent(new CustomEvent('guide:save-end', { bubbles: true, detail: { success: saved } }));
       }
     }
 
@@ -5974,7 +6039,7 @@
   <script src="{% static 'js/live-notifications.js' %}"></script>
   <div id="walkthroughContext" data-portal="employee" data-account="{{ request.user.pk }}" data-employee="{{ employee.pk|default:'' }}" hidden></div>
   <script src="{% static 'js/profile-records.js' %}?v=1"></script>
-  <script src="{% static 'js/guided-tour.js' %}?v=1"></script>
+  <script src="{% static 'js/guided-tour.js' %}?v=2"></script>
 </body>
 
 </html>

@@ -279,20 +279,23 @@ function filterAttendanceRegisterByDate() {
 
 // Bell counts live unread notifications. Same apiFetch + pill style as inbox.
 // Fails quiet on login page: apiFetch already skips redirect there.
+let notifBellRequestVersion = 0;
 async function refreshNotifBell() {
+  const requestVersion = ++notifBellRequestVersion;
   const pill = document.getElementById('notifUnreadPill');
   try {
-    const res = await apiFetch('/api/notifications/', { headers: { Accept: 'application/json' } });
+    const res = await apiFetch('/api/notifications/unread-count/', { headers: { Accept: 'application/json' }, cache: 'no-store' });
     if (!res.ok) throw new Error('notif unavailable');
     const payload = await res.json();
-    const rows = Array.isArray(payload) ? payload : payload.results || [];
-    const unread = rows.filter((n) => !n.is_read).length;
+    const unread = payload.unread_count;
+    if (!Number.isInteger(unread) || unread < 0) throw new Error('invalid notification count');
+    if (requestVersion !== notifBellRequestVersion) return;
     if (pill) {
       pill.textContent = String(unread);
       pill.style.display = unread > 0 ? '' : 'none';
     }
   } catch (error) {
-    if (pill) pill.style.display = 'none';
+    if (pill && requestVersion === notifBellRequestVersion) pill.style.display = 'none';
   }
 }
 
@@ -3388,7 +3391,50 @@ async function settingsImportDryRun() {
   } catch (error) { showToast(error.message || 'Roster preview failed.', 'error'); }
 }
 
+function clearSettingsImportCredentials() {
+  document.getElementById('settingsImportCredentialRows')?.replaceChildren();
+  const section = document.getElementById('settingsImportCredentials');
+  if (section) section.hidden = true;
+}
+
+function renderSettingsImportCredentials(credentials) {
+  const section = document.getElementById('settingsImportCredentials');
+  const list = document.getElementById('settingsImportCredentialRows');
+  if (!section || !list || !Array.isArray(credentials) || !credentials.length) return;
+  for (const credential of credentials) {
+    const card = document.createElement('div');
+    card.className = 'input-cell';
+    const label = document.createElement('label');
+    label.textContent = `${credential.employee_name} — ${credential.employee_id}`;
+    const password = document.createElement('input');
+    password.type = 'password'; password.readOnly = true;
+    password.autocomplete = 'off'; password.className = 'penpot-input';
+    password.value = credential.temporary_password;
+    password.setAttribute('aria-label', `Temporary password for ${credential.employee_name}`);
+    const reveal = document.createElement('button');
+    reveal.type = 'button'; reveal.className = 'btn btn-outline-gray'; reveal.textContent = 'Show password';
+    reveal.setAttribute('aria-pressed', 'false');
+    reveal.onclick = () => {
+      password.type = password.type === 'password' ? 'text' : 'password';
+      reveal.textContent = password.type === 'password' ? 'Show password' : 'Hide password';
+      reveal.setAttribute('aria-pressed', String(password.type === 'text'));
+    };
+    const copy = document.createElement('button');
+    copy.type = 'button'; copy.className = 'btn btn-outline-gray'; copy.textContent = 'Copy employee credentials';
+    copy.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(`Employee: ${credential.employee_name}\nEmployee ID: ${credential.employee_id}\nTemporary password: ${password.value}\nSign in: ${location.origin}/login/`);
+        showToast('Credentials copied. Share privately with this employee.');
+      } catch (_) { showToast('Copy is unavailable. Use Show password and copy the credentials manually.', 'error'); }
+    };
+    card.append(label, password, reveal, copy); list.append(card);
+  }
+  section.hidden = false;
+}
+
+let settingsImportInFlight = false;
 async function settingsImportCommit() {
+  if (settingsImportInFlight) return;
   const preview = (settingsCache && settingsCache._importPreview) || [];
   const ready = preview.filter((row) => row.ok);
   if (!ready.length) { showToast('Run a preview with at least one valid row first.', 'error'); return; }
@@ -3399,6 +3445,10 @@ async function settingsImportCommit() {
     return;
   }
   openSettingsConfirm('Import roster?', `${ready.length} valid employee row(s) will be created.`, async () => {
+    if (settingsImportInFlight) return;
+    settingsImportInFlight = true;
+    const button = document.getElementById('settingsImportCommitBtn');
+    if (button) button.disabled = true;
     try {
       const res = await apiFetch('/api/settings/import-employees/', { method: 'POST', body: upload.form });
       const data = await res.json().catch(() => ({}));
@@ -3412,8 +3462,10 @@ async function settingsImportCommit() {
       }));
       settingsCache._importPreview = results;
       renderSettingsImportPreview(results);
+      renderSettingsImportCredentials(data.credentials || []);
       showToast(`Import complete: ${data.created || 0} created, ${(data.failed || []).length} failed.`);
     } catch (error) { showToast(error.message || 'Roster import failed.', 'error'); }
+    finally { settingsImportInFlight = false; if (button) button.disabled = false; }
   });
 }
 

@@ -131,6 +131,30 @@
     };
   }
 
+  function formTracker() {
+    const states = new Map();
+    const state = form => {
+      if (!states.has(form)) states.set(form, {revision: 0, clean: 0, pending: []});
+      return states.get(form);
+    };
+    return {
+      change(form) { state(form).revision++; },
+      reset(form) { const s = state(form); s.clean = ++s.revision; },
+      start(form) { const s = state(form); s.pending.push(s.revision); },
+      end(form, success) {
+        const s = state(form), revision = s.pending.shift();
+        if (success && revision !== undefined && s.revision === revision) s.clean = revision;
+      },
+      hasUnsaved() {
+        for (const [form, s] of states) {
+          if (!form.isConnected) { states.delete(form); continue; }
+          if (s.pending.length || s.revision !== s.clean) return true;
+        }
+        return false;
+      }
+    };
+  }
+
   function boot(win) {
     const doc = win.document, context = doc.getElementById('walkthroughContext');
     if (!context || win.KumonGuide) return;
@@ -139,11 +163,11 @@
     let storage; try { storage = win.localStorage; } catch (_) { storage = null; }
     const store = progressStore(storage, account, portal), guides = guidesFor(portal);
     let card, ring, target, waitAbort, returnFocus, menu, invite, navigating = false;
-    const dirty = new Set();
+    const dirty = formTracker();
     const editableForm = form => form && !form.matches('.workflow-date-filters, [data-guide-ignore-dirty]');
     const make = (tag, text) => { const el = doc.createElement(tag); if (text) el.textContent = text; return el; };
     const visible = el => el && el.isConnected && !el.hidden && el.getClientRects().length;
-    const hasUnsaved = () => [...dirty].some(form => form.isConnected) || [...doc.querySelectorAll('form button[type="submit"]:disabled')].some(visible);
+    const hasUnsaved = () => dirty.hasUnsaved() || [...doc.querySelectorAll('form button[type="submit"]:disabled')].some(visible);
     function clean() { card?.remove(); ring?.remove(); card = ring = target = null; }
     function position() {
       if (!card) return;
@@ -212,9 +236,11 @@
     win.startTour = () => win.KumonGuide.start('overview');
     doc.getElementById('replayTourBtn')?.addEventListener('click', win.startTour);
     doc.addEventListener('keydown', e => { if (e.key === 'Escape') { controller.dismiss(); closeMenu(); } });
-    doc.addEventListener('input', e => { if (editableForm(e.target.form) && !e.target.closest('.guide-menu, .guide-card')) { dirty.add(e.target.form); controller.dismiss(); } }, true);
-    doc.addEventListener('change', e => { if (editableForm(e.target.form) && !e.target.closest('.guide-menu, .guide-card')) { dirty.add(e.target.form); controller.dismiss(); } }, true);
-    doc.addEventListener('reset', e => dirty.delete(e.target), true);
+    doc.addEventListener('input', e => { if (editableForm(e.target.form) && !e.target.closest('.guide-menu, .guide-card')) { dirty.change(e.target.form); controller.dismiss(); } }, true);
+    doc.addEventListener('change', e => { if (editableForm(e.target.form) && !e.target.closest('.guide-menu, .guide-card')) { dirty.change(e.target.form); controller.dismiss(); } }, true);
+    doc.addEventListener('reset', e => { queueMicrotask(() => { if (!e.defaultPrevented) dirty.reset(e.target); }); }, true);
+    doc.addEventListener('guide:save-start', e => { if (editableForm(e.target)) { dirty.start(e.target); controller.dismiss(); } }, true);
+    doc.addEventListener('guide:save-end', e => { if (editableForm(e.target)) dirty.end(e.target, e.detail?.success === true); }, true);
     doc.addEventListener('click', e => { if (controller.active && !navigating && e.target.closest('.portal-tab, .nav-link, .tab-pill, .workflow-tabs button') && !e.target.closest('.guide-card')) controller.dismiss(); }, true);
     win.addEventListener('resize', position); win.addEventListener('scroll', position, true); win.visualViewport?.addEventListener('resize', position);
     win.addEventListener('pagehide', () => controller.dismiss());
@@ -227,5 +253,5 @@
       invite.append(start, skip); doc.body.append(invite);
     }
   }
-  return {VERSION, progressStore, GuideController, cardPosition, waitForElement, guidesFor, boot};
+  return {VERSION, progressStore, GuideController, cardPosition, waitForElement, guidesFor, formTracker, boot};
 });

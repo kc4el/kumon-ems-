@@ -5,16 +5,13 @@ route (parent owns api/urls.py) via a test-only URLconf.
 """
 
 from io import BytesIO
-from types import SimpleNamespace
-from unittest.mock import patch
-
 from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import include, path
 from rest_framework.test import APIClient
 
-from core.models import Department, Employee
+from core.models import AccountCredential, Department, Employee
 from core.views_import import import_urls
 
 urlpatterns = [
@@ -39,10 +36,6 @@ def xlsx_file(rows, name="employees.xlsx"):
     wb.save(buf)
     buf.seek(0)
     return SimpleUploadedFile(name, buf.getvalue(), content_type=XLSX_CT)
-
-
-def _supa_users(*ids):
-    return [SimpleNamespace(user=SimpleNamespace(id=i)) for i in ids]
 
 
 @override_settings(ROOT_URLCONF="tests.test_settings_import")
@@ -109,13 +102,7 @@ class EmployeeImportTests(TestCase):
         # Dry run writes nothing: only the pre-seeded row exists.
         self.assertEqual(Employee.objects.count(), 1)
 
-    @patch("core.views_import.supabase")
-    def test_commit_path_three_good_one_bad(self, supabase):
-        supabase.auth.admin.create_user.side_effect = _supa_users(
-            "11111111-1111-4111-8111-111111111111",
-            "22222222-2222-4222-8222-222222222222",
-            "33333333-3333-4333-8333-333333333333",
-        )
+    def test_commit_path_three_good_one_bad(self):
         upload = xlsx_file(
             [
                 ["Ada", "Lovelace", "ada@example.com", "Engineer", "Engineering"],
@@ -130,8 +117,12 @@ class EmployeeImportTests(TestCase):
         self.assertEqual(body["created"], 3)
         self.assertEqual(len(body["failed"]), 1)
         self.assertEqual(body["failed"][0]["row"], 5)
-        self.assertEqual(supabase.auth.admin.create_user.call_count, 3)
         self.assertEqual(Employee.objects.count(), 3)
+        self.assertEqual(AccountCredential.objects.count(), 3)
+        self.assertEqual([item["row"] for item in body["credentials"]], [2, 3, 4])
+        self.assertEqual(r["Cache-Control"], "no-store, private")
         ada = Employee.objects.get(email="ada@example.com")
         self.assertEqual(ada.department_id, self.dept.id)
         self.assertEqual(ada.role, "Engineer")
+        self.assertEqual(ada.status, Employee.OnboardingStatus.PENDING_ONBOARDING)
+        self.assertIsNotNone(ada.user)

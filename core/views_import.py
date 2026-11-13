@@ -5,12 +5,12 @@ parent-owned. The parent wires :data:`import_urls` into the API router.
 """
 
 import logging
-import uuid
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.validators import validate_email
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.urls import path
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
@@ -18,7 +18,7 @@ from rest_framework.views import APIView
 
 from .models import Department, Employee
 from .permissions import IsStaffOrHR
-from .supabase_client import rollback_supabase_user, supabase
+from .views_onboarding import provision_employee
 
 logger = logging.getLogger(__name__)
 
@@ -107,87 +107,40 @@ def _validate_rows(data):
     return validated
 
 
-def _commit_rows(validated):
-    """Create Supabase users first (per EmployeeListCreateView.post), then
-    persist Employee rows with bulk_create. Per-row failures are recorded
-    and never abort the batch. Returns (created, failed)."""
-    created = 0
+def _commit_rows(validated, actor_id):
+    """Provision each valid row independently, returning credentials on success."""
+    credentials = []
     failed = []
-    pending = []
     for item in validated:
         if not item["ok"]:
             failed.append({"row": item["row"], "error": "; ".join(item["errors"])})
             continue
         row = item["data"]
-        created_user_id = None
         try:
-            with transaction.atomic():
-                record_id = str(uuid.uuid4())
-                auth_response = supabase.auth.admin.create_user(
-                    {
-                        "id": record_id,
-                        "email": row["email"],
-                        "email_confirm": True,
-                        "user_metadata": {
-                            "first_name": row["first_name"],
-                            "last_name": row["last_name"],
-                        },
-                    }
-                )
-                created_user_id = str(auth_response.user.id)
-                pending.append(
-                    (
-                        item["row"],
-                        Employee(
-                            id=created_user_id,
-                            first_name=row["first_name"],
-                            last_name=row["last_name"],
-                            email=row["email"],
-                            role=row["role"] or None,
-                            department=item["department"],
-                        ),
-                    )
-                )
+            result = provision_employee(
+                first_name=row["first_name"], last_name=row["last_name"],
+                email=row["email"], role=row["role"], department=item["department"],
+                date_hired=timezone.localdate(), actor_id=actor_id,
+            )
+            credentials.append({"row": item["row"], **result})
         except IntegrityError:
-            rollback_supabase_user(created_user_id, logger)
-            logger.warning("import: duplicate employee race for %s", row["email"])
             failed.append(
                 {
                     "row": item["row"],
-                    "error": "An employee with this email already exists.",
+                    "error": "Employee creation conflicted with an existing record.",
                 }
             )
-        except Exception as error:
-            rollback_supabase_user(created_user_id, logger)
-            logger.warning(
-                "import: unable to create employee row %s: %s", item["row"], error
-            )
+        except DjangoValidationError:
+            failed.append({"row": item["row"], "error": "Employee data is invalid."})
+        except Exception:
+            logger.warning("import: unable to create employee row %s", item["row"])
             failed.append(
                 {
                     "row": item["row"],
-                    "error": "Unable to create employee upstream. Try again later.",
+                    "error": "Unable to create employee. Try again later.",
                 }
             )
-    if pending:
-        try:
-            Employee.objects.bulk_create([employee for _, employee in pending])
-            created = len(pending)
-        except IntegrityError:
-            # A duplicate landed after validation: fall back to per-row
-            # saves so one conflict never aborts the batch.
-            for lineno, employee in pending:
-                try:
-                    with transaction.atomic():
-                        employee.save()
-                    created += 1
-                except IntegrityError:
-                    failed.append(
-                        {
-                            "row": lineno,
-                            "error": ("An employee with this email already exists."),
-                        }
-                    )
-    return created, failed
+    return len(credentials), failed, credentials
 
 
 class EmployeeImportView(APIView):
@@ -225,8 +178,11 @@ class EmployeeImportView(APIView):
                     ],
                 }
             )
-        created, failed = _commit_rows(validated)
-        return Response({"created": created, "failed": failed})
+        created, failed, credentials = _commit_rows(validated, request.user.pk)
+        response = Response({"created": created, "failed": failed, "credentials": credentials})
+        response["Cache-Control"] = "no-store, private"
+        response["Pragma"] = "no-cache"
+        return response
 
 
 import_urls = [
