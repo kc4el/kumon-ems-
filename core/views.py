@@ -2221,6 +2221,8 @@ class MessageListCreateView(generics.ListCreateAPIView):
             raise DRFValidationError(
                 {"conversation_key": "Must be a string of at most 100 characters."}
             )
+        if key == "announcements" and not is_staff_or_hr(user):
+            raise PermissionDenied("Only HR can post in company announcements.")
         if not self._can_access_conversation(key):
             raise PermissionDenied("You are not a participant in this conversation.")
         if is_staff_or_hr(user):

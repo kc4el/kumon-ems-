@@ -104,6 +104,28 @@ class SecurityRegressionTests(TestCase):
         )
         self.assertEqual(malformed_write.status_code, 400)
 
+    def test_company_announcements_are_read_only_for_employees(self):
+        response = self.client.post(
+            "/api/messages/",
+            {"conversation_key": "announcements", "text": "Employee post"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(
+            Message.objects.filter(
+                conversation_key="announcements", text="Employee post"
+            ).exists()
+        )
+
+        self.client.force_authenticate(self.hr_user)
+        response = self.client.post(
+            "/api/messages/",
+            {"conversation_key": "announcements", "text": "HR announcement"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["conversation_key"], "announcements")
+
     def test_hr_helpdesk_thread_is_private_to_owner_and_hr(self):
         key = f"hr_{self.employee.pk}"
         self.client.post(
