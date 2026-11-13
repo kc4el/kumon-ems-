@@ -389,7 +389,7 @@ class PageViewTests(TestCase):
         self.client.force_login(user)
         response = self.client.get("/employee/")
         self.assertEqual(response.status_code, 200)
-        for label in ("Attendance", "Leave Requests", "Salary Advance", "Complaints"):
+        for label in ("Attendance", "Leave Requests", "Salary Advance", "Claims", "Complaints"):
             self.assertContains(response, label)
 
     def test_employee_portal_has_dark_mode_switch(self):

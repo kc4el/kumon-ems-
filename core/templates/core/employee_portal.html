@@ -904,7 +904,7 @@
 
     .portal-bottom-nav-inner {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(6, minmax(0, 1fr));
       width: 100%;
       max-width: 1040px;
       gap: 4px;
@@ -2050,7 +2050,7 @@
 
       .portal-bottom-nav-inner {
         display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
+        grid-template-columns: repeat(6, minmax(0, 1fr));
         gap: 4px;
       }
 
@@ -3521,6 +3521,78 @@
         </div>
       </article>
 
+      <!-- 5. CLAIMS & REIMBURSEMENT PANEL -->
+      <article class="portal-panel" id="claimPanel">
+        <!-- Top Segmented Control -->
+        <div class="mobile-segment-control" data-for="claim">
+          <button type="button" class="segment-btn active" data-target="apply" onclick="setSegmentTab('claim', 'apply')">File Claim</button>
+          <button type="button" class="segment-btn" data-target="history" onclick="setSegmentTab('claim', 'history')">My Claims <span class="segment-badge" id="claimCountBadge">0</span></button>
+        </div>
+
+        <!-- Segment 1: File Claim Form -->
+        <div id="claimFormSection" class="segment-pane active" data-group="claim" data-pane="apply">
+          <div class="portal-card">
+            <div class="portal-card-header">
+              <h2 class="portal-card-title">Expense & Reimbursement Claim</h2>
+              <div class="portal-card-subtitle">Submit out-of-pocket expenses and purchase receipts for HR administrator review and settlement.</div>
+            </div>
+            <div id="claimActionStatus" class="employee-status-banner" role="status" style="display: none;"></div>
+            <form class="portal-form" onsubmit="submitClaim(event)">
+              {% if show_employee_request_picker %}
+              <div class="portal-form-group">
+                <label for="claimEmployee" class="portal-label">Employee</label>
+                <select id="claimEmployee" class="portal-select" required>
+                  <option value="">Choose an employee</option>
+                  {% for c in colleagues %}
+                  <option value="{{ c.id }}">{{ c.full_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              {% endif %}
+              <div class="portal-form-group">
+                <label for="claimCategory" class="portal-label">Expense Category</label>
+                <select id="claimCategory" class="portal-select" required>
+                  <option value="General Expense">General Expense</option>
+                  <option value="Teaching Materials">Teaching Materials</option>
+                  <option value="Office Supplies">Office Supplies</option>
+                  <option value="Travel & Meals">Travel &amp; Meals</option>
+                  <option value="Center Utilities">Center Utilities</option>
+                  <option value="Equipment & Hardware">Equipment &amp; Hardware</option>
+                </select>
+              </div>
+              <div class="portal-form-group">
+                <label for="claimAmount" class="portal-label">Amount</label>
+                <div class="currency-input-wrap">
+                  <span class="currency-symbol">₱</span>
+                  <input id="claimAmount" class="portal-input" type="number" min="0.01" step="0.01" placeholder="0.00" required />
+                </div>
+              </div>
+              <div class="portal-form-group">
+                <label for="claimTitle" class="portal-label">Expense Description & Receipt Notes</label>
+                <textarea id="claimTitle" class="portal-textarea" rows="3" placeholder="Describe the purchased items or service, reason for expense, and receipt reference..." required></textarea>
+              </div>
+              <button class="btn-primary-cta" type="submit">
+                <span>Submit Expense Claim</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Segment 2: My Claims List -->
+        <div id="claimHistorySection" class="segment-pane" data-group="claim" data-pane="history">
+          <div class="attendance-records-header">
+            <div class="attendance-records-title-group">
+              <h3 class="attendance-records-title">Expense Claims</h3>
+              <span class="attendance-count-badge">Records</span>
+            </div>
+            <button type="button" class="btn-subtab-link" onclick="setSegmentTab('claim', 'apply')">+ New Claim</button>
+          </div>
+          <div id="claimRows" class="request-card-list">
+            <div class="attendance-loading-placeholder">Loading expense claims…</div>
+          </div>
+        </div>
+      </article>
+
       <!-- 6. COMPLAINTS PANEL -->
       <article class="portal-panel" id="complaintPanel">
         <!-- Privacy Notice Banner -->
@@ -4022,6 +4094,17 @@
         <span>Salary Advance</span>
       </button>
 
+      <button type="button" class="portal-tab" data-panel="claimPanel" aria-label="Claims" title="Claims">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        <span>Claims</span>
+      </button>
+
       <button type="button" class="portal-tab" data-panel="complaintPanel" aria-label="Complaints" title="Complaints">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
@@ -4332,6 +4415,55 @@
       }).join('');
     }
 
+    function renderClaimCards(list) {
+      const container = document.getElementById('claimRows');
+      const countBadge = document.getElementById('claimCountBadge');
+      if (countBadge) countBadge.textContent = list.length;
+      if (!container) return;
+      if (!list || list.length === 0) {
+        container.innerHTML = `
+          <div class="request-empty-card">
+            <div class="request-empty-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            </div>
+            <div class="request-empty-title">No expense claims yet</div>
+            <div class="request-empty-text">Submit an expense claim to request reimbursement for out-of-pocket costs.</div>
+          </div>
+        `;
+        return;
+      }
+      container.innerHTML = list.map((item) => {
+        const status = (item.status || 'Pending').toLowerCase();
+        const statusClass = status.includes('approv') ? 'status-approved' : status.includes('reject') ? 'status-rejected' : 'status-pending';
+        const statusLabel = status.includes('approv') ? 'Approved' : status.includes('reject') ? 'Rejected' : 'In Review';
+        const amountNum = Number(item.amount || 0);
+        const amountVal = isNaN(amountNum) ? item.amount : amountNum.toFixed(2);
+        const dateStr = item.created_at ? String(item.created_at).slice(0, 10) : '';
+        return `
+          <div class="request-card-item">
+            <div class="request-card-head">
+              <div class="advance-amount-display">₱${safe(amountVal)}</div>
+              <span class="request-status-pill ${statusClass}">
+                <span class="status-dot"></span>
+                <span>${safe(statusLabel)}</span>
+              </span>
+            </div>
+            <div class="complaint-meta-row">
+              <span class="complaint-category-chip">${safe(item.category || 'General Expense')}</span>
+              ${dateStr ? `<span class="complaint-date-label">Filed ${safe(dateStr)}</span>` : ''}
+            </div>
+            ${item.title ? `<div class="request-card-reason">${safe(item.title)}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
         function calculateShiftDuration(inVal, outVal) {
       if (!inVal || inVal === '-') return '—';
       if (!outVal || outVal === '-') return 'Active shift';
@@ -4620,17 +4752,23 @@
     }
 
     async function refreshRequestLists() {
-      const endpoints = ['/api/leaves/?page_size=50', '/api/advances/?page_size=50', '/api/complaints/?page_size=50'];
+      const endpoints = [
+        '/api/leaves/?page_size=50',
+        '/api/advances/?page_size=50',
+        '/api/complaints/?page_size=50',
+        '/api/expense-claims/?page_size=50'
+      ];
       const responses = await Promise.all(endpoints.map((url) => portalFetch(`${url}&_=${Date.now()}`)));
       const lists = await Promise.all(responses.map(async (r) => {
         const d = await payload(r);
         if (!r.ok) throw new Error(apiErrorMessage(d, 'Saved request list could not be refreshed.'));
         return rows(d);
       }));
-      const [leaves, advances, complaints] = lists;
+      const [leaves, advances, complaints, claims] = lists;
       renderLeaveCards(leaves);
       renderAdvanceCards(advances);
       renderComplaintCards(complaints);
+      renderClaimCards(claims);
     }
 
     async function submitPortalRequest(event, endpoint, body, successMessage, fallbackMessage) {
@@ -4650,6 +4788,7 @@
           if (endpoint.includes('leaves')) setSegmentTab('leave', 'history');
           if (endpoint.includes('advances')) setSegmentTab('advance', 'history');
           if (endpoint.includes('complaints')) setSegmentTab('complaint', 'history');
+          if (endpoint.includes('claims') || endpoint.includes('expense-claims')) setSegmentTab('claim', 'history');
         } catch (_) {
           showStatus(`${successMessage} Refresh the page to see the saved request.`, true);
         }
@@ -4677,11 +4816,12 @@
       if (portalRefreshInFlight) return;
       portalRefreshInFlight = true;
       try {
-        const [attendance, leaves, advances, complaints, account] = await Promise.all([
+        const [attendance, leaves, advances, complaints, claims, account] = await Promise.all([
           portalFetch('/api/attendance/me/?_=' + Date.now()),
           portalFetch('/api/leaves/?page_size=50&_=' + Date.now()),
           portalFetch('/api/advances/?page_size=50&_=' + Date.now()),
           portalFetch('/api/complaints/?page_size=50&_=' + Date.now()),
+          portalFetch('/api/expense-claims/?page_size=50&_=' + Date.now()),
           portalFetch('/api/settings/me/?_=' + Date.now())
         ]);
 
@@ -4775,6 +4915,7 @@
         renderLeaveCards(rows(await payload(leaves)));
         renderAdvanceCards(rows(await payload(advances)));
         renderComplaintCards(rows(await payload(complaints)));
+        renderClaimCards(rows(await payload(claims)));
 
         const accountData = await payload(account);
         const googleAccount = accountData.google_account || {};
@@ -5321,6 +5462,15 @@
         repayment_terms: portalValue('advanceTerms'),
         purpose: portalValue('advancePurpose').trim(),
       }, 'Salary advance request submitted.', 'Salary advance request could not be submitted.');
+    }
+
+    function submitClaim(event) {
+      return submitPortalRequest(event, '/api/expense-claims/', {
+        ...(portalValue('claimEmployee') ? { employee: portalValue('claimEmployee') } : {}),
+        category: portalValue('claimCategory') || 'General Expense',
+        amount: portalValue('claimAmount'),
+        title: portalValue('claimTitle').trim(),
+      }, 'Expense claim submitted.', 'Expense claim could not be submitted.');
     }
 
     async function submitPassword(event) {
