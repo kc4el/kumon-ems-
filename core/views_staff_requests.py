@@ -160,15 +160,30 @@ def decide_overtime(pk, decision, user):
     ensure_pending(slip)
     if decision not in ("Approved", "Rejected"):
         raise ValidationError({"decision": "Choose Approved or Rejected."})
+    if decision == "Approved":
+        hours, multiplier = current_overtime_values(slip)
+        if hours <= 0:
+            raise Conflict409("This attendance no longer qualifies for overtime. Review or reject the request.")
+        if (hours, multiplier) != (slip.hours, slip.multiplier):
+            raise Conflict409("Overtime inputs changed. Recalculate hours and review the updated request before approving.")
     slip.status = decision
     slip.save(update_fields=["status"])
     audit(slip.employee, user, f"Overtime request {slip.pk} {decision.lower()}")
     return slip
 
 
-def overtime_values(attendance):
+def current_overtime_values(slip):
+    attendance = get_object_or_404(Attendance.objects.select_for_update(), pk=slip.attendance_id)
+    if attendance.employee_id != slip.employee_id or attendance.date != slip.date:
+        raise Conflict409("The attendance no longer matches this overtime request.")
+    return overtime_values(attendance, lock_sources=True)
+
+
+def overtime_values(attendance, lock_sources=False):
+    def source_rows(queryset):
+        return queryset.select_for_update() if lock_sources else queryset
     day = attendance.date
-    policy = PayEstimatePolicy.objects.filter(effective_date__lte=day).order_by("-effective_date", "-created_at", "-id").first()
+    policy = source_rows(PayEstimatePolicy.objects.filter(effective_date__lte=day)).order_by("-effective_date", "-created_at", "-id").first()
     if not policy or policy.overtime_threshold_hours is None or policy.overtime_multiplier is None:
         raise ValidationError("Configure an effective overtime policy before requesting overtime.")
     if policy.overtime_multiplier > Decimal("99.99"):
@@ -178,7 +193,7 @@ def overtime_values(attendance):
     start, end = _dt(day), _dt(day + timedelta(days=1))
     if attendance.clock_in < start or attendance.clock_out > end:
         raise ValidationError("Overnight attendance needs manual review.")
-    shifts = list(ShiftRoster.objects.filter(employee=attendance.employee, work_date=day).order_by("start_time"))
+    shifts = list(source_rows(ShiftRoster.objects.filter(employee=attendance.employee, work_date=day)).order_by("start_time"))
     if not shifts:
         raise ValidationError("A schedule is required to assess breaks and overtime.")
     if ShiftRoster.objects.filter(employee=attendance.employee, work_date=day-timedelta(days=1), end_time__lte=F('start_time')).exists():
@@ -186,7 +201,7 @@ def overtime_values(attendance):
     if Attendance.objects.filter(employee=attendance.employee, date=day, clock_in__isnull=True).exists():
         raise ValidationError("Open or invalid attendance needs manual review.")
     intervals = []
-    for row in Attendance.objects.filter(employee=attendance.employee, clock_in__lt=end).filter(Q(clock_out__gt=start) | Q(clock_out__isnull=True)):
+    for row in source_rows(Attendance.objects.filter(employee=attendance.employee, clock_in__lt=end).filter(Q(clock_out__gt=start) | Q(clock_out__isnull=True))):
         if not row.clock_out or row.clock_out <= row.clock_in:
             raise ValidationError("Open or invalid attendance needs manual review.")
         intervals.append((max(start, row.clock_in), min(end, row.clock_out)))
@@ -371,3 +386,17 @@ class OvertimeSlipDetailView(DecisionDetail):
     queryset = OvertimeSlip.objects.all()
     serializer_class = OvertimeSlipSerializer
     decision_function = staticmethod(decide_overtime)
+
+
+class OvertimeRecalculateView(APIView):
+    permission_classes = [IsAuthenticated, ActiveAccount]
+
+    @transaction.atomic
+    def post(self, request, pk):
+        require_hr(request.user)
+        slip = get_object_or_404(OvertimeSlip.objects.select_for_update(), pk=pk)
+        ensure_pending(slip)
+        slip.hours, slip.multiplier = current_overtime_values(slip)
+        slip.save(update_fields=["hours", "multiplier"])
+        audit(slip.employee, request.user, f"Overtime request {slip.pk} recalculated for review")
+        return Response(OvertimeSlipSerializer(slip, context={"request": request}).data)

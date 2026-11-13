@@ -358,6 +358,15 @@ async function loadHrNotifications() {
         if (legacySwap && row.status === 'Pending') add(card, 'Confirm participants, reject this legacy request, and create a new request.');
         if (row.status === 'Pending') {
           const actions = document.createElement('div'); actions.className = 'staff-review-actions'; card.appendChild(actions);
+          if (type === 'overtime') {
+            const recalculate = document.createElement('button'); recalculate.type = 'button'; recalculate.className = 'tab-pill'; recalculate.textContent = 'Recalculate hours';
+            recalculate.onclick = async () => {
+              actions.querySelectorAll('button').forEach(b => { b.disabled = true; }); message.textContent = '';
+              try { await hrRequest(`/api/overtime/${encodeURIComponent(row.id)}/recalculate/`, {method:'POST'}); await load(type); message.textContent = 'Updated overtime values loaded. Review them before approving.'; }
+              catch (error) { message.textContent = error.message; actions.querySelectorAll('button').forEach(b => { b.disabled = false; }); }
+            };
+            actions.appendChild(recalculate);
+          }
           ['Approved', 'Rejected'].forEach(status => {
             const button = document.createElement('button'); button.type = 'button'; button.className = 'tab-pill'; button.textContent = status === 'Approved' ? 'Approve' : 'Reject'; if (legacySwap && status === 'Approved') { button.disabled = true; button.title = 'Legacy requests must be rejected and recreated.'; } actions.appendChild(button);
             button.onclick = async () => {

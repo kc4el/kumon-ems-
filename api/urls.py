@@ -107,6 +107,7 @@ from core.views_staff_requests import (
     ShiftRosterDetailView,
     ShiftSwapListCreateView,
     ShiftSwapDetailView,
+    OvertimeRecalculateView,
 )
 from core.views_message_files import MessageAttachmentDownloadView
 from core.notification_events import NotificationEventsView
@@ -121,6 +122,7 @@ from core.views_pay_estimates import (
 )
 
 urlpatterns = [
+    path("overtime/<uuid:pk>/recalculate/", OvertimeRecalculateView.as_view(), name="overtime-recalculate"),
     path("notifications/unread-count/", NotificationUnreadCountView.as_view(), name="notification-unread-count"),
     path("shift-rosters/available-for-swap/", AvailableShiftRosterView.as_view(), name="available-shift-rosters"),
     path("messages/<uuid:pk>/attachment/", MessageAttachmentDownloadView.as_view(), name="message-attachment-download"),
