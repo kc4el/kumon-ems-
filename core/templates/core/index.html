@@ -2306,7 +2306,6 @@
             <h1 class="penpot-page-heading">My account</h1>
             <p class="penpot-page-sub">Manage your work profile and sign-in security.</p>
           </div>
-          <button type="button" class="btn btn-outline-gray" onclick="switchView('settings')">Preferences &amp; company settings</button>
         </div>
         <div class="account-layout">
           <!-- Left Column: Condensed Identity Card -->
@@ -2457,19 +2456,6 @@
 
           <p id="settingsLoadError" class="card-sub" style="display:none; color:#991b1b;">Settings could not be loaded.
             Check your connection and retry.</p>
-        </div>
-
-        <!-- Subnav Pill Tabs -->
-        <div class="penpot-subnav-row">
-          <div class="pill-tabs-container">
-            <button class="tab-pill active" id="settingsTabNotif" onclick="settingsSwitchTab('notif')">
-              <span>Notifications &amp; display</span>
-            </button>
-            <button class="tab-pill" id="settingsTabCompany" onclick="settingsSwitchTab('company')" data-staff-only
-              hidden title="Staff only — contact your HR admin">
-              <span>Company</span>
-            </button>
-          </div>
         </div>
 
         <!-- TAB: NOTIFICATIONS & DISPLAY -->

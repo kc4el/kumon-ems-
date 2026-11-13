@@ -48,8 +48,10 @@ class SettingsFrontendTests(SimpleTestCase):
     def test_template_company_tab_is_staff_only_hidden(self):
         html = TEMPLATE.read_text(encoding="utf-8")
         self.assertIn("data-staff-only", html)
-        # Company pane + tab both carry the staff-only hidden marker.
-        self.assertGreaterEqual(html.count("data-staff-only"), 2)
+        # Subtab selector buttons were removed; company pane remains hidden and staff-only.
+        self.assertNotIn("settingsTabNotif", html)
+        self.assertNotIn("settingsTabCompany", html)
+        self.assertIn('id="settingsPaneCompany"', html)
 
     def test_template_has_import_dry_run_results(self):
         html = TEMPLATE.read_text(encoding="utf-8")
