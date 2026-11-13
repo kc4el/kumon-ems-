@@ -2982,6 +2982,7 @@
     }
 
   </style>
+  <link rel="stylesheet" href="{% static 'css/guided-tour.css' %}?v=1" />
 </head>
 
 <body class="portal-header">
@@ -3162,19 +3163,19 @@
           <div class="profile-meta-grid">
             <div class="profile-meta-item">
               <span class="profile-meta-label">Employee ID</span>
-              <span class="profile-meta-value" id="profId">{% if employee.id %}{{ employee.id|stringformat:".8s"|upper }}{% else %}EMP-2026{% endif %}</span>
+              <span class="profile-meta-value" id="profId">{{ employee.employee_id|default:"Not assigned" }}</span>
             </div>
             <div class="profile-meta-item">
               <span class="profile-meta-label">Job Title</span>
-              <span class="profile-meta-value" id="profTitle">{% if employee.role %}{{ employee.role }}{% else %}Staff Instructor{% endif %}</span>
+              <span class="profile-meta-value" id="profTitle">{% if employee.role %}{{ employee.role }}{% else %}Not recorded{% endif %}</span>
             </div>
             <div class="profile-meta-item">
               <span class="profile-meta-label">Department</span>
-              <span class="profile-meta-value" id="profDepartment">{% if employee.department %}{{ employee.department.name }} ({{ employee.department.code|default:"GEN" }}){% else %}Operations{% endif %}</span>
+              <span class="profile-meta-value" id="profDepartment">{% if employee.department %}{{ employee.department.name }} ({{ employee.department.code|default:"GEN" }}){% else %}Not assigned{% endif %}</span>
             </div>
             <div class="profile-meta-item">
               <span class="profile-meta-label">Manager</span>
-              <span class="profile-meta-value" id="profManager">{% if employee.department.manager %}{{ employee.department.manager.first_name }} {{ employee.department.manager.last_name }}{% else %}Center Director{% endif %}</span>
+              <span class="profile-meta-value" id="profManager">{% if employee.department.manager %}{{ employee.department.manager.first_name }} {{ employee.department.manager.last_name }}{% else %}Not assigned{% endif %}</span>
             </div>
           </div>
         </div>
@@ -3191,15 +3192,15 @@
           <div class="profile-meta-grid">
             <div class="profile-meta-item">
               <span class="profile-meta-label">Corporate Email</span>
-              <span class="profile-meta-value" id="profEmail">{% if employee.email %}{{ employee.email }}{% else %}employee@kumon-ems.com{% endif %}</span>
+              <span class="profile-meta-value" id="profEmail">{% if employee.email %}{{ employee.email }}{% else %}Not recorded{% endif %}</span>
             </div>
             <div class="profile-meta-item">
               <span class="profile-meta-label">Phone</span>
-              <span class="profile-meta-value" id="profPhone">+65 8234 5678</span>
+              <span class="profile-meta-value" id="profPhone">Not recorded</span>
             </div>
             <div class="profile-meta-item" style="grid-column: 1 / -1;">
               <span class="profile-meta-label">Address</span>
-              <span class="profile-meta-value" id="profAddress">Bukit Batok Central, Block 128, Singapore 650128</span>
+              <span class="profile-meta-value" id="profAddress">Not recorded</span>
             </div>
           </div>
         </div>
@@ -3217,15 +3218,15 @@
           <div class="profile-meta-grid">
             <div class="profile-meta-item">
               <span class="profile-meta-label">Hire Date</span>
-              <span class="profile-meta-value" id="profHireDate">{% if employee.date_hired %}{{ employee.date_hired }}{% else %}2024-03-01{% endif %}</span>
+              <span class="profile-meta-value" id="profHireDate">{% if employee.date_hired %}{{ employee.date_hired }}{% else %}Not recorded{% endif %}</span>
             </div>
             <div class="profile-meta-item">
               <span class="profile-meta-label">Employment Status</span>
-              <span class="profile-meta-value"><span class="employee-session-badge">Active Full-Time</span></span>
+              <span class="profile-meta-value"><span class="employee-session-badge">{% if employee.is_active %}{{ employee.get_status_display }}{% else %}Inactive{% endif %}</span></span>
             </div>
             <div class="profile-meta-item" style="grid-column: 1 / -1;">
               <span class="profile-meta-label">Shift Schedule</span>
-              <span class="profile-meta-value">Standard Center Roster • Mon-Fri 09:00 - 18:00 (UTC+8)</span>
+              <span class="profile-meta-value">Loading assigned schedule...</span>
             </div>
           </div>
         </div>
@@ -3239,23 +3240,7 @@
               <p>Available balances and recent leave status snapshot.</p>
             </div>
           </div>
-          <div class="leave-stat-row">
-            <div class="leave-stat-pill">
-              <span class="profile-meta-label">Annual Leave</span>
-              <strong>12 / 14 Days</strong>
-              <span style="font-size:12px; color:var(--employee-muted);">Remaining this cycle</span>
-            </div>
-            <div class="leave-stat-pill">
-              <span class="profile-meta-label">Sick Leave</span>
-              <strong>10 / 14 Days</strong>
-              <span style="font-size:12px; color:var(--employee-muted);">Medical certificate</span>
-            </div>
-            <div class="leave-stat-pill">
-              <span class="profile-meta-label">Personal Leave</span>
-              <strong>2 / 2 Days</strong>
-              <span style="font-size:12px; color:var(--employee-muted);">Available</span>
-            </div>
-          </div>
+          <p>View your current allocated, used and remaining days in Leave Requests. HR manages annual entitlements.</p>
           <button type="button" class="btn btn-outline-gray" onclick="switchPortalTab('leavePanel')">Open Leave Requests tab →</button>
         </div>
 
@@ -3268,36 +3253,9 @@
               <p>Contracts, identification credentials, and HR agreements.</p>
             </div>
           </div>
-          <div class="doc-list-item">
-            <div class="doc-info">
-              <div class="doc-icon">PDF</div>
-              <div>
-                <strong style="color:var(--employee-navy); font-size:14px;">Employment Contract</strong>
-                <div style="font-size:12px; color:var(--employee-muted);">Signed &amp; Onboarded</div>
-              </div>
-            </div>
-            <span class="employee-session-badge">ON FILE</span>
-          </div>
-          <div class="doc-list-item">
-            <div class="doc-info">
-              <div class="doc-icon">DOC</div>
-              <div>
-                <strong style="color:var(--employee-navy); font-size:14px;">Government ID &amp; Tax Documentation</strong>
-                <div style="font-size:12px; color:var(--employee-muted);">Identity records validated</div>
-              </div>
-            </div>
-            <span class="employee-session-badge">VERIFIED</span>
-          </div>
-          <div class="doc-list-item">
-            <div class="doc-info">
-              <div class="doc-icon">HR</div>
-              <div>
-                <strong style="color:var(--employee-navy); font-size:14px;">Center Instructor Code of Conduct</strong>
-                <div style="font-size:12px; color:var(--employee-muted);">Annual policy acknowledgment</div>
-              </div>
-            </div>
-            <span class="employee-session-badge">ACKNOWLEDGED</span>
-          </div>
+          <p>Stored documents are listed here. Their presence does not certify that HR has verified them.</p>
+          <button id="refreshProfileDocuments" type="button" class="btn btn-outline-gray">Refresh documents</button>
+          <div id="profileDocuments" role="status">Open this panel to load documents.</div>
         </div>
       </article>
 
@@ -5730,9 +5688,12 @@
       }
     });
   </script>
-  <script src="{% static 'js/employee-workflows.js' %}"></script>
+  <script src="{% static 'js/employee-workflows.js' %}?v=2"></script>
   <script src="{% static 'js/leave-allocations.js' %}?v=1"></script>
   <script src="{% static 'js/live-notifications.js' %}"></script>
+  <div id="walkthroughContext" data-portal="employee" data-account="{{ request.user.pk }}" data-employee="{{ employee.pk|default:'' }}" hidden></div>
+  <script src="{% static 'js/profile-records.js' %}?v=1"></script>
+  <script src="{% static 'js/guided-tour.js' %}?v=1"></script>
 </body>
 
 </html>

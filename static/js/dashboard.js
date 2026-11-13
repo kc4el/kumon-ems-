@@ -112,7 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initDashboardWidgets();
   loadActivityFeed();
   refreshNotifBell();
-  initTour();
   populatePromotionTransferDropdowns();
   startDashboardLiveRefresh();
 });
@@ -554,7 +553,7 @@ document.addEventListener("keydown", (e) => {
   const tag = (e.target.tagName || "").toLowerCase();
   if (tag === "input" || tag === "textarea" || e.target.isContentEditable) return;
   if (e.key === "?") { toggleShortcutHelp(); return; }
-  if (e.key === "Escape") { if (typeof closeAttendanceQrScreen === "function") closeAttendanceQrScreen(); hideShortcutHelp(); if (kumonTourIndex >= 0) endTour(); kumonKeyPrefix = null; return; }
+  if (e.key === "Escape") { if (typeof closeAttendanceQrScreen === "function") closeAttendanceQrScreen(); hideShortcutHelp(); kumonKeyPrefix = null; return; }
   const seq = kumonKeyPrefix ? kumonKeyPrefix + " " + e.key.toLowerCase() : null;
   kumonKeyPrefix = null;
   if (seq && KUMON_SHORTCUTS[seq]) { switchView(KUMON_SHORTCUTS[seq]); return; }
@@ -788,120 +787,6 @@ async function loadActivityFeed() {
         }).join("")
       : "<li>No activity yet today.</li>";
   } catch (e) { list.innerHTML = "<li>Activity unavailable.</li>"; }
-}
-
-// Short first-run guide; only points to panels backed by current app flows.
-const KUMON_TOUR_KEY = "kumon.tourSeen.v2";
-const KUMON_TOUR_STEPS = [
-  { view: "dashboard", text: "Your home page brings today’s activity and team summaries together. Use the left menu to move between people, attendance, requests, and account tools." },
-  { view: "employee-directory", text: "Search the directory to find an employee. Open a record to review the details and available HR actions." },
-  { view: "attendance-daily", text: "Review the daily attendance register and move between dates to check clock-in and clock-out records." },
-  { view: "attendance-leave", text: "Review leave requests and submit your own request from the employee portal." },
-  { view: "settings", text: "Set notification and display preferences. Staff administrators can also manage company rules and roster imports here." },
-  { view: "profile", text: "Update your own account details, set a new password, and enable authenticator-based two-factor sign-in." },
-];
-let kumonTourIndex = -1;
-function startTour() {
-  try { localStorage.removeItem(KUMON_TOUR_KEY); } catch (e) { }
-  kumonTourIndex = -1; nextTourStep();
-}
-function nextTourStep() {
-  kumonTourIndex += 1;
-  if (kumonTourIndex >= KUMON_TOUR_STEPS.length) { endTour(); return; }
-  const step = KUMON_TOUR_STEPS[kumonTourIndex];
-  switchView(step.view);
-  showTourBubble(step, kumonTourIndex + 1, KUMON_TOUR_STEPS.length);
-}
-function previousTourStep() {
-  if (kumonTourIndex <= 0) return;
-  kumonTourIndex -= 2;
-  nextTourStep();
-}
-function endTour() {
-  kumonTourIndex = -1;
-  const b = document.getElementById("tourBubble");
-  if (b) b.remove();
-  try { localStorage.setItem(KUMON_TOUR_KEY, "1"); } catch (e) { }
-}
-function showTourBubble(step, n, total) {
-  const old = document.getElementById("tourBubble");
-  if (old) old.remove();
-  const b = document.createElement("div");
-  b.id = "tourBubble";
-  b.className = "modal-card";
-  b.setAttribute("role", "dialog");
-  b.setAttribute("aria-label", "Onboarding tour step " + n + " of " + total);
-  const head = document.createElement("div");
-  head.className = "modal-head";
-  const badge = document.createElement("span");
-  badge.className = "penpot-badge badge-onduty";
-  badge.textContent = "Step " + n + " of " + total;
-  const title = document.createElement("h3");
-  title.textContent = "Quick tour";
-  head.appendChild(title);
-  head.appendChild(badge);
-  const p = document.createElement("p");
-  p.className = "tour-text";
-  p.textContent = step.text;
-  p.setAttribute("aria-live", "polite");
-  const dots = document.createElement("div");
-  dots.className = "tour-dots";
-  dots.setAttribute("aria-hidden", "true");
-  for (let i = 1; i <= total; i++) {
-    const d = document.createElement("span");
-    d.className = "tour-dot" + (i === n ? " on" : "") + (i < n ? " done" : "");
-    dots.appendChild(d);
-  }
-  const foot = document.createElement("div");
-  foot.className = "modal-foot";
-  const back = document.createElement("button");
-  back.type = "button";
-  back.className = "btn btn-outline-gray";
-  back.textContent = "Back";
-  back.disabled = n === 1;
-  back.addEventListener("click", previousTourStep);
-  const skip = document.createElement("button");
-  skip.type = "button";
-  skip.className = "btn-black-sm";
-  skip.textContent = "Skip";
-  skip.addEventListener("click", endTour);
-  const next = document.createElement("button");
-  next.type = "button";
-  next.className = "btn-blue-sm";
-  next.textContent = n >= total ? "Finish" : "Continue";
-  next.addEventListener("click", nextTourStep);
-  foot.appendChild(back);
-  foot.appendChild(skip);
-  foot.appendChild(next);
-  b.appendChild(head);
-  b.appendChild(p);
-  b.appendChild(dots);
-  b.appendChild(foot);
-  document.body.appendChild(b);
-  next.focus();
-}
-function initTour() {
-  const view = document.getElementById("view-dashboard");
-  const existingBtn = document.getElementById("replayTourBtn");
-  if (existingBtn) {
-    existingBtn.addEventListener("click", startTour);
-  } else if (view) {
-    const bar = document.createElement("div");
-    bar.className = "dashboard-footer-bar";
-    const btn = document.createElement("button");
-    btn.id = "replayTourBtn";
-    btn.type = "button";
-    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg><span>Take a quick tour</span>`;
-    btn.addEventListener("click", startTour);
-    bar.appendChild(btn);
-    view.appendChild(bar);
-  }
-  let seen = null;
-  try { seen = localStorage.getItem(KUMON_TOUR_KEY); } catch (e) { seen = null; }
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && kumonTourIndex >= 0) endTour();
-  });
-  if (!seen && view) setTimeout(startTour, 1100);
 }
 
 // Accordion toggle for Employee Directory

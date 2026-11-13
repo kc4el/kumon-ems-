@@ -347,6 +347,9 @@
   }
   updateProfileSchedule();
 
+  // Guides may navigate to an area, but cannot submit or decide a request.
+  window.openEmployeeWorkflowArea = showArea;
+
   button.addEventListener('click', () => { switchPortalTab('workflowsPanel'); showArea('notifications'); });
   panel.querySelectorAll('[data-area]').forEach(el => el.addEventListener('click', () => showArea(el.dataset.area)));
   document.getElementById('complaintRows').addEventListener('click', event => {
