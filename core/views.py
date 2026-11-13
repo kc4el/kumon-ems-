@@ -5,6 +5,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -28,6 +29,7 @@ from rest_framework.views import APIView
 from .constants import SITE_SETTING_DEFAULTS
 from .exceptions import Conflict409
 from .models import (
+    AccountCredential,
     Attendance,
     AttendanceCorrection,
     AttendanceQrSession,
@@ -165,6 +167,8 @@ def attendance_checkin_view(request):
 
 @ensure_csrf_cookie
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect("/hr/" if _is_hr_user(request.user) else "/employee/")
     return render(request, "core/login.html")
 
 
@@ -216,9 +220,71 @@ def _authenticate_login(request, identifier, password):
     return authenticate(request, username=user.username, password=password)
 
 
+def _authenticate_or_activate_login(request, identifier, password):
+    """Authenticate active user or activate onboarding employee with temporary credentials."""
+    user = _authenticate_login(request, identifier, password)
+    if user is not None:
+        return user
+
+    identifier = str(identifier or "").strip()
+    password = str(password or "")
+    if not identifier or not password:
+        return None
+
+    with transaction.atomic():
+        employee = (
+            Employee.objects.select_for_update()
+            .select_related("user")
+            .filter(
+                models.Q(employee_id__iexact=identifier)
+                | models.Q(user__username__iexact=identifier)
+                | models.Q(email__iexact=identifier)
+                | models.Q(user__email__iexact=identifier),
+                is_active=True,
+                status=Employee.OnboardingStatus.PENDING_ONBOARDING,
+                force_password_change=True,
+                user__isnull=False,
+            )
+            .first()
+        )
+        if employee is None:
+            return None
+
+        credential = (
+            AccountCredential.objects.select_for_update()
+            .filter(
+                employee=employee,
+                consumed_at__isnull=True,
+                expires_at__gt=timezone.now(),
+            )
+            .first()
+        )
+        if (
+            credential is None
+            or not employee.user.is_active
+            or not check_password(password, credential.password_hash)
+        ):
+            return None
+
+        u = employee.user
+        u.set_password(password)
+        u.save(update_fields=["password"])
+        employee.status = Employee.OnboardingStatus.ACTIVE
+        employee.force_password_change = False
+        employee.save(update_fields=["status", "force_password_change"])
+        EmployeeAuditLog.objects.create(
+            employee=employee,
+            action="Employee signed in with HR-issued credentials and activated the account.",
+        )
+        credential.delete()
+        request.session.pop("onboarding_employee_id", None)
+        return u
+
+
 def _start_authenticated_login(request, user, next_url):
     request.session.pop("pending_mfa_user_id", None)
     request.session.pop("pending_mfa_next_url", None)
+    request.session.pop("onboarding_employee_id", None)
     if AuthenticatorDevice.objects.filter(user=user, is_confirmed=True).exists():
         request.session.cycle_key()
         request.session["pending_mfa_user_id"] = str(user.pk)
@@ -1720,7 +1786,7 @@ class SessionLoginView(APIView):
     throttle_classes = [SessionLoginThrottle]
 
     def post(self, request):
-        user = _authenticate_login(
+        user = _authenticate_or_activate_login(
             request, request.data.get("username"), request.data.get("password")
         )
         if user is None:

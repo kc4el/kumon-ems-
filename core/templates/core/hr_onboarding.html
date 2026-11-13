@@ -81,7 +81,7 @@
     <div class="credential-value" id="handoverEmployeeId"></div>
     <p><strong>Temporary password</strong></p>
     <div class="credential-value" id="handoverTemporaryPassword"></div>
-    <p>Copy or print these credentials. For security, the temporary password will not be shown again. Hand these directly to the new employee for their first sign-in.</p>
+    <p>Copy or print these credentials. For security, the temporary password will not be shown again. Hand these directly to the new employee to sign in at <strong>/login/</strong>.</p>
     <div class="credential-actions">
       <button id="copyCredentials" type="button">Copy Credentials</button>
       <button id="printCredentials" class="secondary" type="button">Print</button>
@@ -202,7 +202,7 @@
       if (!displayedCredentials) return;
       try {
         await navigator.clipboard.writeText(
-          `Employee: ${displayedCredentials.employee_name}\nEmployee ID: ${displayedCredentials.employee_id}\nTemporary password: ${displayedCredentials.temporary_password}`
+          `Employee: ${displayedCredentials.employee_name}\nEmployee ID: ${displayedCredentials.employee_id}\nTemporary password: ${displayedCredentials.temporary_password}\nPortal login: ${window.location.origin}/login/`
         );
         message.textContent = 'Credentials copied. Share them directly with the new employee.';
       } catch (error) {

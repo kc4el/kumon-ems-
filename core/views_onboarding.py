@@ -457,13 +457,13 @@ def hr_onboarding_view(request):
 def onboarding_login_view(request):
     if request.user.is_authenticated:
         return redirect("/onboarding/" if _onboarding_employee(request) else "/employee/")
-    return render(request, "core/new_staff_login.html")
+    return redirect("/login/")
 
 
 @ensure_csrf_cookie
 def onboarding_view(request):
     if not request.user.is_authenticated:
-        return redirect("/onboarding/login/")
+        return redirect("/login/")
     if _onboarding_employee(request) is None:
         return redirect("/employee/")
     return render(request, "core/onboarding.html")

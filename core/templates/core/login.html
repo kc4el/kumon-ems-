@@ -74,8 +74,8 @@
 
         <!-- Card 1: Penpot Login (auth - login) -->
         <div class="penpot-auth-card" id="authScreenLogin">
-          <div class="penpot-auth-badge badge-portal">EMPLOYEE SIGN IN</div>
-          <h1 class="penpot-auth-title">Welcome back</h1>
+          <div class="penpot-auth-badge badge-portal">EMPLOYEE PORTAL</div>
+          <h1 class="penpot-auth-title">Employee Sign In</h1>
           <p class="penpot-auth-sub">Sign in with your Employee ID or linked email and password.</p>
 
           <form id="employeeLoginForm" class="penpot-auth-form" onsubmit="handleAuthLogin(event)">
@@ -89,7 +89,7 @@
             <div class="penpot-form-group">
               <label class="penpot-form-label" for="loginPasswordInput">Password</label>
               <div class="penpot-input-wrap">
-                <input type="password" id="loginPasswordInput" class="penpot-input has-action" autocomplete="current-password" placeholder="Enter your password" required />
+                <input type="password" id="loginPasswordInput" class="penpot-input has-action" autocomplete="current-password" placeholder="Password or temporary password" required />
                 <button type="button" class="penpot-input-action" onclick="togglePasswordVisibility('loginPasswordInput', this)">Show</button>
               </div>
             </div>
@@ -102,6 +102,10 @@
             </div>
 
             <button type="submit" class="penpot-btn-primary-navy">Sign In to Portal</button>
+
+            <p class="auth-helper-note" style="margin-top: 18px; margin-bottom: 0; font-size: 13px; line-height: 1.5; color: #64748b; text-align: center;">
+              <strong>New staff?</strong> Enter your HR-issued Employee ID and temporary password to sign in and activate your portal account.
+            </p>
           </form>
 
           <section id="employeeMfaChallenge" class="auth-mfa-challenge" hidden>
