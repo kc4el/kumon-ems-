@@ -2796,15 +2796,18 @@ html[data-theme="dark"] .theme-toggle-icon--moon,
 }
 
 .widget-settings-content {
-  margin-top: 2px;
+  margin-top: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .widget-settings-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   max-width: 100%;
-  margin-top: 6px;
+  margin-top: 0;
 }
 
 .widget-setting-row {
@@ -2812,10 +2815,10 @@ html[data-theme="dark"] .theme-toggle-icon--moon,
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 6px 12px;
-  min-height: 38px;
+  padding: 8px 12px;
+  min-height: 42px;
   border: 1px solid var(--card-border);
-  border-radius: 7px;
+  border-radius: 8px;
   background-color: #f8fafc;
   transition: all 0.16s ease;
   box-sizing: border-box;
@@ -5775,7 +5778,7 @@ body {
   display: grid;
   grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .account-cards-stack,
@@ -5796,7 +5799,10 @@ body {
 
 .account-identity-card {
   grid-row: auto;
-  align-self: start;
+  align-self: stretch;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   color: var(--text-body, #334155);
   background: var(--card-bg, #ffffff);
@@ -5805,6 +5811,7 @@ body {
   box-shadow: var(--card-shadow, none);
   padding: 18px 20px !important;
   margin-bottom: 0 !important;
+  box-sizing: border-box;
 }
 
 .account-identity-top {
@@ -5859,9 +5866,11 @@ body {
 }
 
 .account-facts {
-  display: grid;
-  gap: 12px;
-  padding: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 0;
+  flex: 1;
 }
 
 .account-facts div {
@@ -5885,7 +5894,7 @@ body {
 }
 
 .account-identity-card .account-card-actions {
-  margin-top: 14px;
+  margin-top: auto;
   padding-top: 14px;
   border-top: 1px solid var(--card-border, #e6ecf5);
 }
@@ -6377,6 +6386,7 @@ body {
 
   .account-identity-card {
     grid-row: auto;
+    height: auto;
   }
 
   .account-fields {
@@ -7514,13 +7524,16 @@ tbody tr:hover {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .settings-notif-grid > .white-card {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .notif-condensed-body {
@@ -7598,17 +7611,17 @@ tbody tr:hover {
 .notif-compact-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .notif-compact-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 10px;
-  min-height: 38px;
+  padding: 8px 12px;
+  min-height: 42px;
   border: 1px solid var(--card-border);
-  border-radius: 7px;
+  border-radius: 8px;
   background-color: #f8fafc;
   cursor: pointer;
   user-select: none;
@@ -9551,6 +9564,10 @@ html[data-theme="dark"] {
 
 [data-theme="dark"] .account-identity-top {
   border-bottom-color: #334155 !important;
+}
+
+[data-theme="dark"] .account-identity-card .account-card-actions {
+  border-top-color: #334155 !important;
 }
 
 [data-theme="dark"] .account-avatar {
