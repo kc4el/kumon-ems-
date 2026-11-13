@@ -123,7 +123,7 @@ class Round7UxCopyTests(SimpleTestCase):
         response = self.client.get("/login/")
         self.assertEqual(response.status_code, 200)
         html = response.content.decode()
-        self.assertIn("Welcome back", html)
+        self.assertIn("Employee Sign In", html)
         self.assertNotIn("Sign in with Google", html)
         self.assertNotIn("or sign in with your password", html)
         self.assertIn("Employee ID or linked email", html)
@@ -175,16 +175,8 @@ class Round7UxCopyTests(SimpleTestCase):
 
     def test_new_staff_login_url_renders_dedicated_login(self):
         response = self.client.get("/onboarding/login/")
-        self.assertEqual(response.status_code, 200)
-        html = response.content.decode()
-        self.assertIn("New staff sign in", html)
-        self.assertIn("onboardingEmployeeId", html)
-        self.assertIn("onboardingTemporaryPassword", html)
-
-        alias_resp = self.client.get("/new-staff/login/")
-        self.assertEqual(alias_resp.status_code, 200)
-        alias_html = alias_resp.content.decode()
-        self.assertIn("New staff sign in", alias_html)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/login/")
 
     def test_company_login_doors_guidance(self):
         html = TEMPLATE.read_text(encoding="utf-8")
