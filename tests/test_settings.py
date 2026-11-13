@@ -1,5 +1,8 @@
 from django.contrib.auth.models import User
-from django.test import TestCase
+from base64 import b64decode
+from unittest.mock import patch
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
 
 
 class UserSettingTests(TestCase):
@@ -95,3 +98,93 @@ class SettingsEndpointTests(TestCase):
                 employee=staff_emp, action__contains="purge_retention_days"
             ).exists()
         )
+
+
+@override_settings(MEDIA_ROOT="test-profile-pictures")
+class ProfilePictureEndpointTests(TestCase):
+    PNG = b64decode(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZQ0kAAAAASUVORK5CYII="
+    )
+
+    def setUp(self):
+        from rest_framework.test import APIClient
+        from core.models import Employee
+
+        self.client = APIClient()
+        self.user = User.objects.create_user(username="photo-user", password="x")
+        self.employee = Employee.objects.create(
+            first_name="Photo",
+            last_name="User",
+            email="photo-user@example.com",
+            user=self.user,
+        )
+        self.client.force_authenticate(self.user)
+        upload_patch = patch(
+            "core.views.profile_pictures.upload",
+            return_value=f"{self.user.id}/portrait.png",
+        )
+        download_patch = patch(
+            "core.views.profile_pictures.download", return_value=self.PNG
+        )
+        remove_patch = patch("core.views.profile_pictures.remove")
+        self.upload_to_supabase = upload_patch.start()
+        self.download_from_supabase = download_patch.start()
+        self.remove_from_supabase = remove_patch.start()
+        self.addCleanup(upload_patch.stop)
+        self.addCleanup(download_patch.stop)
+        self.addCleanup(remove_patch.stop)
+
+    def test_upload_is_returned_by_settings_and_can_be_removed(self):
+        upload = SimpleUploadedFile(
+            "portrait.png",
+            self.PNG,
+            content_type="image/png",
+        )
+        response = self.client.post(
+            "/api/settings/profile-picture/", {"profile_picture": upload}, format="multipart"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("/api/settings/profile-picture/", response.json()["profile_picture"])
+        self.upload_to_supabase.assert_called_once()
+
+        settings_response = self.client.get("/api/settings/me/")
+        self.assertEqual(settings_response.status_code, 200)
+        self.assertEqual(
+            settings_response.json()["profile"]["profile_picture"],
+            response.json()["profile_picture"],
+        )
+        picture_response = self.client.get("/api/settings/profile-picture/")
+        self.assertEqual(picture_response.status_code, 200)
+        self.assertEqual(picture_response["Content-Type"], "image/png")
+        self.download_from_supabase.assert_called_once()
+
+        remove_response = self.client.delete("/api/settings/profile-picture/")
+        self.assertEqual(remove_response.status_code, 204)
+        self.user.setting.refresh_from_db()
+        self.assertFalse(self.user.setting.profile_picture)
+        self.remove_from_supabase.assert_called_once()
+
+    def test_rejects_non_image_uploads(self):
+        upload = SimpleUploadedFile("notes.txt", b"not an image", content_type="text/plain")
+        response = self.client.post(
+            "/api/settings/profile-picture/", {"profile_picture": upload}, format="multipart"
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("valid PNG", response.json()["error"])
+
+    def test_staff_account_without_employee_profile_can_upload(self):
+        staff = User.objects.create_user(username="dashboard-staff", password="x", is_staff=True)
+        self.client.force_authenticate(staff)
+        upload = SimpleUploadedFile(
+            "staff-photo.png",
+            self.PNG,
+            content_type="image/png",
+        )
+        response = self.client.post(
+            "/api/settings/profile-picture/", {"profile_picture": upload}, format="multipart"
+        )
+        self.assertEqual(response.status_code, 200)
+        staff.setting.refresh_from_db()
+        self.assertTrue(staff.setting.profile_picture)
+        profile = self.client.get("/api/settings/me/").json()["profile"]
+        self.assertEqual(profile["profile_picture"], response.json()["profile_picture"])

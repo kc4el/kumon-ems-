@@ -109,6 +109,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "email",
+            "profile_picture",
             "role",
             "department",
             "department_name",

@@ -355,7 +355,7 @@
           </button>
 
           <button type="button" class="user-avatar-circle" title="Open my account" aria-label="Open my account" onclick="switchView('profile')">
-            <span>{% if user.is_authenticated %}{% if user.first_name and user.last_name %}{{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}{% elif user.employee_profile.first_name and user.employee_profile.last_name %}{{ user.employee_profile.first_name|slice:":1"|upper }}{{ user.employee_profile.last_name|slice:":1"|upper }}{% elif user.first_name %}{{ user.first_name|slice:":2"|upper }}{% elif user.employee_profile.first_name %}{{ user.employee_profile.first_name|slice:":2"|upper }}{% else %}{{ user.username|slice:":2"|upper }}{% endif %}{% else %}GU{% endif %}</span>
+            <span id="headerAccountAvatar">{% if user.is_authenticated %}{% if user.first_name and user.last_name %}{{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}{% elif user.employee_profile.first_name and user.employee_profile.last_name %}{{ user.employee_profile.first_name|slice:":1"|upper }}{{ user.employee_profile.last_name|slice:":1"|upper }}{% elif user.first_name %}{{ user.first_name|slice:":2"|upper }}{% elif user.employee_profile.first_name %}{{ user.employee_profile.first_name|slice:":2"|upper }}{% else %}{{ user.username|slice:":2"|upper }}{% endif %}{% else %}GU{% endif %}</span>
           </button>
         </div>
       </header>
@@ -2346,6 +2346,9 @@
                 <div class="input-cell"><label for="accountRole">ROLE</label><input id="accountRole" class="penpot-input" disabled /></div>
               </div>
               <div class="account-card-actions">
+                <input id="accountProfilePictureInput" type="file" accept="image/png,image/jpeg,image/webp" hidden onchange="uploadAccountProfilePicture(this)" />
+                <button type="button" class="btn btn-outline-gray btn-sm" onclick="document.getElementById('accountProfilePictureInput').click()">Change photo</button>
+                <button type="button" class="btn btn-outline-gray btn-sm" id="removeAccountProfilePicture" onclick="removeAccountProfilePicture()" hidden>Remove photo</button>
                 <button type="button" class="btn btn-navy-cta" onclick="saveAccountProfile()">Save profile</button>
                 <span id="accountProfileStatus" class="account-inline-status" role="status"></span>
               </div>

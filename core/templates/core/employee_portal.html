@@ -276,6 +276,7 @@
       flex-shrink: 0;
       box-shadow: 0 2px 6px rgba(2, 132, 199, 0.28);
       transition: transform 0.15s ease, box-shadow 0.15s ease;
+      overflow: hidden;
     }
 
     /* Hover effect ONLY on the avatar icon, NOT on the greeting text */
@@ -1069,6 +1070,27 @@
       font-weight: 800;
       flex-shrink: 0;
       box-shadow: 0 4px 12px rgba(25, 137, 185, 0.22);
+      overflow: hidden;
+    }
+
+    .profile-picture-image {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .profile-photo-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .profile-photo-status {
+      color: var(--employee-muted);
+      font-size: 12px;
     }
 
     .profile-meta-grid {
@@ -2971,7 +2993,7 @@
         <div class="portal-top-nav-left">
           <button type="button" class="portal-tab portal-avatar-btn" data-panel="profilePanel" aria-label="Profile" title="Profile">
             <div class="portal-avatar-circle" id="portalTopAvatar">
-              {% if employee %}{{ employee.first_name|slice:":1"|upper }}{% else %}A{% endif %}
+              {% if employee and employee.profile_picture %}<img class="profile-picture-image" src="{{ employee.profile_picture.url }}" alt="Profile picture">{% elif employee %}{{ employee.first_name|slice:":1"|upper }}{% else %}A{% endif %}
             </div>
           </button>
           <span class="portal-greeting-text" onclick="switchPortalTab('profilePanel')" title="Profile">Hi, <strong id="portalGreetingName">{% if employee %}{{ employee.first_name }}{% else %}Alex{% endif %}</strong></span>
@@ -3119,7 +3141,7 @@
           </div>
           <div class="profile-hero">
             <div class="profile-avatar-circle" id="profileAvatarInitials">
-              {% if employee %}{{ employee.first_name|slice:":1" }}{{ employee.last_name|slice:":1" }}{% else %}EP{% endif %}
+              {% if employee and employee.profile_picture %}<img class="profile-picture-image" src="{{ employee.profile_picture.url }}" alt="Profile picture">{% elif employee %}{{ employee.first_name|slice:":1" }}{{ employee.last_name|slice:":1" }}{% else %}EP{% endif %}
             </div>
             <div>
               <h3 style="margin:0 0 4px; color:var(--employee-navy); font-size:20px; font-weight:800;" id="profFullNameDisplay">
@@ -3130,6 +3152,12 @@
                 <span style="color:var(--employee-muted); font-size:13px;" id="profDeptDisplay">{% if employee.department %}{{ employee.department.name }}{% else %}General Staff{% endif %}</span>
               </div>
             </div>
+          </div>
+          <div class="profile-photo-actions">
+            <input id="portalProfilePictureInput" type="file" accept="image/png,image/jpeg,image/webp" hidden onchange="uploadPortalProfilePicture(this)">
+            <button type="button" class="btn btn-outline-gray btn-sm" onclick="document.getElementById('portalProfilePictureInput').click()">Change photo</button>
+            <button type="button" class="btn btn-outline-gray btn-sm" id="removePortalProfilePicture" onclick="removePortalProfilePicture()" {% if not employee.profile_picture %}hidden{% endif %}>Remove photo</button>
+            <span class="profile-photo-status" id="portalProfilePictureStatus" role="status"></span>
           </div>
           <div class="profile-meta-grid">
             <div class="profile-meta-item">
@@ -4816,8 +4844,11 @@
             const fullName = `${profile.first_name} ${profile.last_name || ''}`.trim();
             const profNameEl = document.getElementById('profFullNameDisplay');
             if (profNameEl) profNameEl.textContent = fullName;
-            const initialsEl = document.getElementById('profileAvatarInitials');
-            if (initialsEl) initialsEl.textContent = `${profile.first_name[0]}${(profile.last_name || '')[0] || ''}`.toUpperCase();
+            const initials = `${profile.first_name[0]}${(profile.last_name || '')[0] || ''}`.toUpperCase();
+            renderPortalProfilePicture('profileAvatarInitials', profile.profile_picture, initials);
+            renderPortalProfilePicture('portalTopAvatar', profile.profile_picture, profile.first_name[0].toUpperCase());
+            const removePhoto = document.getElementById('removePortalProfilePicture');
+            if (removePhoto) removePhoto.hidden = !profile.profile_picture;
             const profEmailEl = document.getElementById('profEmail');
             if (profEmailEl && profile.email) profEmailEl.textContent = profile.email;
           }
@@ -4830,7 +4861,7 @@
           const topGreeting = document.getElementById('portalGreetingName');
           if (topGreeting) topGreeting.textContent = profile.first_name;
           const topAvatar = document.getElementById('portalTopAvatar');
-          if (topAvatar) topAvatar.textContent = profile.first_name[0].toUpperCase();
+          if (topAvatar && !profile.profile_picture) topAvatar.textContent = profile.first_name[0].toUpperCase();
         }
         if (profile.email) myEmployeeEmail = profile.email;
         if (profile.first_name) myEmployeeName = `${profile.first_name} ${profile.last_name || ''}`.trim();
@@ -4838,6 +4869,64 @@
         loadChatMessages(currentConvKey);
       } finally {
         portalRefreshInFlight = false;
+      }
+    }
+
+    function renderPortalProfilePicture(elementId, pictureUrl, fallback) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      el.replaceChildren();
+      if (pictureUrl) {
+        const image = document.createElement('img');
+        image.className = 'profile-picture-image';
+        image.src = pictureUrl;
+        image.alt = 'Profile picture';
+        el.appendChild(image);
+      } else {
+        el.textContent = fallback || 'EP';
+      }
+    }
+
+    async function uploadPortalProfilePicture(input) {
+      const file = input.files?.[0];
+      if (!file) return;
+      const statusEl = document.getElementById('portalProfilePictureStatus');
+      if (statusEl) statusEl.textContent = 'Uploading photo…';
+      const form = new FormData();
+      form.append('profile_picture', file);
+      try {
+        const response = await portalFetch('/api/settings/profile-picture/', { method: 'POST', body: form });
+        const data = await payload(response);
+        if (!response.ok) throw new Error(data.error || 'Photo could not be uploaded.');
+        const initials = (myEmployeeName || 'Employee').split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+        renderPortalProfilePicture('profileAvatarInitials', data.profile_picture, initials);
+        renderPortalProfilePicture('portalTopAvatar', data.profile_picture, initials[0]);
+        const remove = document.getElementById('removePortalProfilePicture');
+        if (remove) remove.hidden = false;
+        if (statusEl) statusEl.textContent = 'Profile photo updated.';
+      } catch (error) {
+        if (statusEl) statusEl.textContent = error.message || 'Photo could not be uploaded.';
+      } finally {
+        input.value = '';
+      }
+    }
+
+    async function removePortalProfilePicture() {
+      const statusEl = document.getElementById('portalProfilePictureStatus');
+      try {
+        const response = await portalFetch('/api/settings/profile-picture/', { method: 'DELETE' });
+        if (!response.ok) {
+          const data = await payload(response);
+          throw new Error(data.error || 'Photo could not be removed.');
+        }
+        const initials = (myEmployeeName || 'Employee').split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+        renderPortalProfilePicture('profileAvatarInitials', '', initials);
+        renderPortalProfilePicture('portalTopAvatar', '', initials[0]);
+        const remove = document.getElementById('removePortalProfilePicture');
+        if (remove) remove.hidden = true;
+        if (statusEl) statusEl.textContent = 'Profile photo removed.';
+      } catch (error) {
+        if (statusEl) statusEl.textContent = error.message || 'Photo could not be removed.';
       }
     }
 

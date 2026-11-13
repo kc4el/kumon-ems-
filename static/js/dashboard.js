@@ -3065,7 +3065,10 @@ function renderAccountProfile(data) {
   put('accountDepartmentLine', dept);
   put('accountUsernameLine', p.username || '—');
   put('accountManagedLine', managed.join(', ') || 'None assigned');
-  put('accountAvatar', initials.toUpperCase());
+  renderProfilePicture('accountAvatar', p.profile_picture, initials.toUpperCase());
+  renderProfilePicture('headerAccountAvatar', p.profile_picture, initials.toUpperCase());
+  const removePicture = document.getElementById('removeAccountProfilePicture');
+  if (removePicture) removePicture.hidden = !p.profile_picture;
   const managedRow = document.getElementById('accountManagedRow');
   if (managedRow) managedRow.hidden = !managed.length;
   const kicker = document.getElementById('accountProfileKicker');
@@ -3076,6 +3079,64 @@ function renderAccountProfile(data) {
   set('accountEmail', p.email);
   set('accountRole', role);
   setAccountTwoFactorState(!!data.two_factor_enabled);
+}
+
+function renderProfilePicture(elementId, pictureUrl, fallback) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  el.replaceChildren();
+  if (pictureUrl) {
+    const image = document.createElement('img');
+    image.className = 'profile-picture-image';
+    image.src = pictureUrl;
+    image.alt = 'Profile picture';
+    el.appendChild(image);
+  } else {
+    el.textContent = fallback || '—';
+  }
+}
+
+async function uploadAccountProfilePicture(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+  const status = document.getElementById('accountProfileStatus');
+  if (status) status.textContent = 'Uploading photo…';
+  const form = new FormData();
+  form.append('profile_picture', file);
+  try {
+    const res = await apiFetch('/api/settings/profile-picture/', { method: 'POST', body: form });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Photo could not be uploaded.');
+    renderProfilePicture('accountAvatar', data.profile_picture, '');
+    renderProfilePicture('headerAccountAvatar', data.profile_picture, '');
+    const remove = document.getElementById('removeAccountProfilePicture');
+    if (remove) remove.hidden = false;
+    if (status) status.textContent = 'Profile photo updated.';
+  } catch (error) {
+    if (status) status.textContent = error.message || 'Photo could not be uploaded.';
+  } finally {
+    input.value = '';
+  }
+}
+
+async function removeAccountProfilePicture() {
+  const status = document.getElementById('accountProfileStatus');
+  try {
+    const res = await apiFetch('/api/settings/profile-picture/', { method: 'DELETE' });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'Photo could not be removed.');
+    }
+    const name = document.getElementById('accountDisplayName')?.textContent || 'Account holder';
+    const initials = name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+    renderProfilePicture('accountAvatar', '', initials);
+    renderProfilePicture('headerAccountAvatar', '', initials);
+    const remove = document.getElementById('removeAccountProfilePicture');
+    if (remove) remove.hidden = true;
+    if (status) status.textContent = 'Profile photo removed.';
+  } catch (error) {
+    if (status) status.textContent = error.message || 'Photo could not be removed.';
+  }
 }
 
 async function loadAccountProfile() {

@@ -38,6 +38,9 @@ class Employee(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
+    profile_picture = models.FileField(
+        upload_to="profile-pictures/%Y/%m/", null=True, blank=True
+    )
     # ADDED: Frontend relies on displaying the employee's role/job title
     role = models.CharField(max_length=100, blank=True, null=True)
     department = models.ForeignKey(
@@ -560,6 +563,9 @@ class Notification(models.Model):
 class UserSetting(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="setting"
+    )
+    profile_picture = models.FileField(
+        upload_to="profile-pictures/%Y/%m/", null=True, blank=True
     )
     page_size = models.PositiveSmallIntegerField(default=10)
     muted_kinds = models.JSONField(default=list)

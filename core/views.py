@@ -1,7 +1,9 @@
 import logging
+import mimetypes
 import uuid
 from collections import Counter
 from datetime import timedelta
+from io import BytesIO
 
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
@@ -11,8 +13,9 @@ from django.contrib.sessions.models import Session
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, models, transaction
 from django.db.models import OuterRef, Subquery
-from django.http import HttpResponse
+from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views import View
 from django.utils.decorators import method_decorator
 from django.utils import timezone
@@ -92,6 +95,7 @@ from .serializers import (
     UserSettingSerializer,
 )
 from .supabase_client import rollback_supabase_user, supabase
+from . import profile_pictures
 from .mfa import (
     consume_recovery_code,
     decrypt_secret,
@@ -2374,13 +2378,21 @@ def _get_user_setting(user):
     return s
 
 
+def _profile_picture_url(request, user_setting):
+    if not user_setting.profile_picture:
+        return None
+    path = reverse("settings-profile-picture")
+    return request.build_absolute_uri(path) if request else path
+
+
 class MySettingsView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def _profile_payload(self, user):
+    def _profile_payload(self, user, request=None, user_setting=None):
+        user_setting = user_setting or _get_user_setting(user)
         employee = Employee.objects.select_related("department").filter(user=user).first()
         if employee:
-            profile = EmployeeSerializer(employee).data
+            profile = EmployeeSerializer(employee, context={"request": request}).data
             profile["department_name"] = employee.department.name if employee.department else ""
             profile["managed_departments"] = list(
                 employee.managed_departments.order_by("name").values_list("name", flat=True)
@@ -2394,13 +2406,14 @@ class MySettingsView(APIView):
                 "department_name": "",
                 "managed_departments": [],
             }
+        profile["profile_picture"] = _profile_picture_url(request, user_setting)
         profile["username"] = user.get_username()
         return profile
 
     def get(self, request):
         s = _get_user_setting(request.user)
         data = UserSettingSerializer(s).data
-        data["profile"] = self._profile_payload(request.user)
+        data["profile"] = self._profile_payload(request.user, request, s)
         google_link = OAuthLink.objects.filter(
             employee__user=request.user,
             provider=OAuthLink.Provider.GOOGLE,
@@ -2463,11 +2476,100 @@ class MySettingsView(APIView):
                 except IntegrityError:
                     raise Conflict409("That email is already in use.")
         out = UserSettingSerializer(s).data
-        out["profile"] = self._profile_payload(request.user)
+        out["profile"] = self._profile_payload(request.user, request, s)
         out["two_factor_enabled"] = AuthenticatorDevice.objects.filter(
             user=request.user, is_confirmed=True
         ).exists()
         return Response(out)
+
+
+class ProfilePictureView(APIView):
+    """Upload or remove the authenticated employee's profile picture."""
+
+    permission_classes = [IsAuthenticated]
+    MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+    IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
+
+    @staticmethod
+    def _is_supported_image(upload):
+        header = upload.read(64)
+        upload.seek(0)
+        return (
+            (
+                header.startswith(b"\x89PNG\r\n\x1a\n")
+                and len(header) >= 24
+                and header[12:16] == b"IHDR"
+            )
+            or header.startswith(b"\xff\xd8\xff")
+            or (header[:4] == b"RIFF" and header[8:12] == b"WEBP")
+        )
+
+    def get(self, request):
+        user_setting = _get_user_setting(request.user)
+        if not user_setting.profile_picture:
+            return Response({"error": "No profile picture is set."}, status=status.HTTP_404_NOT_FOUND)
+        key = user_setting.profile_picture.name
+        content_type = mimetypes.guess_type(key)[0] or "application/octet-stream"
+        try:
+            if profile_pictures.is_legacy_local_key(key):
+                image = user_setting.profile_picture.open("rb")
+            else:
+                image = profile_pictures.download(key)
+        except Exception:
+            logger.exception("Could not fetch profile picture %s", key)
+            return Response({"error": "Profile picture is unavailable."}, status=status.HTTP_502_BAD_GATEWAY)
+        return FileResponse(image if hasattr(image, "read") else BytesIO(image), content_type=content_type)
+
+    def post(self, request):
+        upload = request.FILES.get("profile_picture")
+        if not upload:
+            return Response({"error": "Choose an image to upload."}, status=status.HTTP_400_BAD_REQUEST)
+        if upload.size > self.MAX_UPLOAD_BYTES:
+            return Response({"error": "Profile pictures must be 5 MB or smaller."}, status=status.HTTP_400_BAD_REQUEST)
+        if upload.content_type not in self.IMAGE_TYPES or not self._is_supported_image(upload):
+            return Response(
+                {"error": "Upload a valid PNG, JPEG, or WebP image."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user_setting = _get_user_setting(request.user)
+        old_name = user_setting.profile_picture.name
+        try:
+            object_key = profile_pictures.upload(
+                request.user.id, upload.name, upload.read(), upload.content_type
+            )
+        except Exception:
+            logger.exception("Could not upload profile picture for user %s", request.user.pk)
+            return Response(
+                {"error": "Profile photo could not be uploaded. Please try again."},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+        user_setting.profile_picture.name = object_key
+        user_setting.save(update_fields=["profile_picture"])
+        if old_name and old_name != object_key:
+            try:
+                if profile_pictures.is_legacy_local_key(old_name):
+                    user_setting.profile_picture.storage.delete(old_name)
+                else:
+                    profile_pictures.remove(old_name)
+            except Exception:
+                logger.warning("Could not remove replaced profile picture %s", old_name)
+        return Response({"profile_picture": _profile_picture_url(request, user_setting)})
+
+    def delete(self, request):
+        user_setting = _get_user_setting(request.user)
+        old_name = user_setting.profile_picture.name
+        if old_name:
+            user_setting.profile_picture = None
+            user_setting.save(update_fields=["profile_picture"])
+            try:
+                if profile_pictures.is_legacy_local_key(old_name):
+                    user_setting.profile_picture.storage.delete(old_name)
+                else:
+                    profile_pictures.remove(old_name)
+            except Exception:
+                logger.warning("Could not remove profile picture %s", old_name)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ChangePasswordView(APIView):
