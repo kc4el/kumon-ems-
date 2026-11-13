@@ -2683,9 +2683,16 @@ class SiteSettingsView(APIView):
         stored["cors_origins"] = settings.CORS_ALLOWED_ORIGINS
         return Response(stored)
 
+    @transaction.atomic
     def patch(self, request):
         from .models import EmployeeAuditLog as _Audit
 
+        # Validate the entire batch before creating settings or audit records.
+        for key, value in request.data.items():
+            if key in ("throttle_anon", "throttle_user", "cors_origins"):
+                continue
+            ser = SiteSettingSerializer(data={"key": key, "value": str(value)})
+            ser.is_valid(raise_exception=True)
         for key, value in request.data.items():
             if key in ("throttle_anon", "throttle_user", "cors_origins"):
                 continue

@@ -12,6 +12,7 @@ from core.views_staff_requests import (AttendanceCorrectionDetailView,
     AttendanceCorrectionListCreateView, AvailableShiftRosterView, OvertimeSlipDetailView,
     OvertimeSlipListCreateView, ShiftRosterListCreateView, ShiftSwapDetailView,
     ShiftSwapListCreateView)
+from core.views_staff_requests import OvertimeRecalculateView
 from core.views_actions import ShiftSwapDecideView, AttendanceCorrectionApproveView
 
 
@@ -100,6 +101,21 @@ class StaffRequestsTests(TestCase):
         self.employee.is_active = False
         self.employee.save()
         self.assertEqual(self.call(ShiftRosterListCreateView, "get", self.user).status_code, 403)
+
+    def test_changed_overtime_requires_recalculation_and_review(self):
+        PayEstimatePolicy.objects.create(effective_date=self.day, overtime_threshold_hours=Decimal("7"), overtime_multiplier=Decimal("1.50"))
+        created = self.call(OvertimeSlipListCreateView, "post", self.user, {"attendance": str(self.att.pk)})
+        self.assertEqual(created.status_code, 201)
+        pk = created.data["id"]
+        self.att.clock_out -= timedelta(hours=1)
+        self.att.save(update_fields=["clock_out"])
+        self.assertEqual(self.call(OvertimeSlipDetailView, "patch", self.staff, {"status":"Approved"}, pk).status_code, 409)
+        self.assertEqual(self.call(OvertimeRecalculateView, "post", self.user, pk=pk).status_code, 403)
+        refreshed = self.call(OvertimeRecalculateView, "post", self.staff, pk=pk)
+        self.assertEqual(refreshed.status_code, 200)
+        self.assertEqual(refreshed.data["status"], "Pending")
+        self.assertEqual(refreshed.data["hours"], "1.00")
+        self.assertEqual(self.call(OvertimeSlipDetailView, "patch", self.staff, {"status":"Approved"}, pk).status_code, 200)
 
     def test_swap_history_remains_visible_only_to_original_participants(self):
         swap = ShiftSwap.objects.create(requester_roster=self.a, target_roster=self.b, requester_employee=self.employee, target_employee=self.other, reason="Private reason")

@@ -16,3 +16,12 @@ This update addresses the twelve confirmed findings reviewed against c7165a2.
 25 standalone Node tests and seven isolated Python tests passed. All 134 Python files in the application and test directories parsed successfully; modified JavaScript and inline template scripts passed syntax validation. Whitespace checks passed.
 
 Django integration regression tests were added for account sessions, notification counts, provisioning, and request integrity, but were not executed. Browser automation and live database checks were not performed. No database migration is required by these changes.
+
+## Second wave
+
+- The HR file and image pickers now replace one another, so the preview and submitted attachment agree. An invalid selection removes the stale preview.
+- Send completion remains scoped to the submitted conversation in both portals. A response cannot erase a newer draft or update another conversation's stream or read marker. Overlapping sends are suppressed.
+- Company settings validate the complete batch before writing and commit settings and audit rows atomically.
+- Overtime approval recalculates current attendance, schedule, and policy values under row locks. Changed or ineligible values block approval. HR can use Recalculate hours to update a pending request, inspect it, then approve or reject it. This does not change pay estimate calculations.
+
+Six isolated messaging tests and five isolated backend tests cover these fixes. Database integration tests were added for overtime recalculation and atomic settings; they remain unrun under the same runtime verification restriction. No migration is required.

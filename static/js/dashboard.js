@@ -2552,6 +2552,9 @@ function handleApplyLeave(e) {
 // Messages & Channels Handlers
 // ==========================================================================
 let activeConversationKey = 'announcements';
+let hrChatSendInFlight = false;
+let hrChatComposerRevision = 0;
+document.getElementById('chatTextInput')?.addEventListener('input', () => { hrChatComposerRevision++; });
 let messagesLoadVersion = 0;
 let activeMessagesRefreshTimer = null;
 
@@ -2635,6 +2638,7 @@ async function loadEmployeeInbox() {
 }
 
 function selectChannel(elem, channelKey, notify = true) {
+  hrChatComposerRevision++;
   activeConversationKey = channelKey;
   document.querySelectorAll('.channel-list-item, .inbox-user-tile').forEach(el => el.classList.remove('active'));
   elem.classList.add('active');
@@ -2666,6 +2670,7 @@ function messageInApp(fullName) {
   else showToast('No conversation is available for this employee yet.', 'info');
 }
 function selectInboxUser(elem, userName, initials, userRole, key, notify = true) {
+  hrChatComposerRevision++;
   activeConversationKey = key;
   document.querySelectorAll('.channel-list-item, .inbox-user-tile').forEach(el => el.classList.remove('active'));
   elem.classList.add('active');
@@ -2862,6 +2867,7 @@ function appendPersistedMessage(stream, message) {
 }
 
 function removeHrChatAttachment() {
+  hrChatComposerRevision++;
   const fileInput = document.getElementById('chatFileInput');
   const imgInput = document.getElementById('chatImageInput');
   if (fileInput) fileInput.value = '';
@@ -2873,6 +2879,11 @@ function removeHrChatAttachment() {
 function handleChatFileSelected(input) {
   const file = input.files[0];
   if (!file) return;
+  hrChatComposerRevision++;
+  const alternate = document.getElementById(input.id === 'chatFileInput' ? 'chatImageInput' : 'chatFileInput');
+  if (alternate) alternate.value = '';
+  const existingPreview = document.getElementById('hrChatAttachmentPreview');
+  if (existingPreview) existingPreview.style.display = 'none';
   const maxBytes = 10 * 1024 * 1024;
   if (file.size > maxBytes) {
     showToast(`File is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum is 10 MB.`, 'error');
@@ -2897,16 +2908,21 @@ function handleChatFileSelected(input) {
 
 async function handleSendChatMessage(e) {
   e.preventDefault();
+  if (hrChatSendInFlight) return;
   const input = document.getElementById('chatTextInput');
+  const submittedText = input ? input.value : '';
   const text = input ? input.value.trim() : '';
   const fileInput = document.getElementById('chatFileInput');
   const imageInput = document.getElementById('chatImageInput');
   const file = (fileInput && fileInput.files[0]) || (imageInput && imageInput.files[0]);
   if (!text && !file) return;
+  const key = activeConversationKey;
+  const revision = hrChatComposerRevision;
+  hrChatSendInFlight = true;
   messagesLoadVersion += 1;
 
   const formData = new FormData();
-  formData.append('conversation_key', activeConversationKey);
+  formData.append('conversation_key', key);
   formData.append('text', text);
   if (file) formData.append('attachment', file);
 
@@ -2922,18 +2938,22 @@ async function handleSendChatMessage(e) {
   } catch (error) {
     showToast(error.message || 'Message could not be saved.', 'error');
     return;
+  } finally {
+    hrChatSendInFlight = false;
   }
 
   const stream = document.getElementById('chatStreamMessages');
-  if (stream && savedMessage) {
+  if (key === activeConversationKey && stream && savedMessage) {
     appendPersistedMessage(stream, savedMessage);
     stream.scrollTop = stream.scrollHeight;
   }
 
-  if (input) input.value = '';
-  removeHrChatAttachment();
+  if (key === activeConversationKey && revision === hrChatComposerRevision && (!input || input.value === submittedText)) {
+    if (input) input.value = '';
+    if ((fileInput?.files?.[0] || imageInput?.files?.[0]) === file) removeHrChatAttachment();
+  }
   showToast('Message sent.');
-  markConversationRead(activeConversationKey, savedMessage.id);
+  if (key === activeConversationKey) markConversationRead(key, savedMessage.id);
   refreshHrChatUnreadDots();
 }
 

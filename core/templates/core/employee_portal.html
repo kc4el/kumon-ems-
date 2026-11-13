@@ -4331,6 +4331,9 @@
       allEmployeesCache = JSON.parse(document.getElementById('colleaguesData')?.textContent || '[]');
     } catch (_) {}
     let currentConvKey = 'announcements';
+    let employeeChatSendInFlight = false;
+    let employeeChatComposerRevision = 0;
+    document.getElementById('chatComposerInput')?.addEventListener('input', () => { employeeChatComposerRevision++; });
     let currentConvName = 'Announcements';
     let currentConvMeta = 'Center-wide broadcast';
     let currentConvAvatar = '#';
@@ -4789,6 +4792,7 @@
     }
 
     function selectChatConversation(key, name, meta, avatarText, isDirect = false) {
+      employeeChatComposerRevision++;
       currentConvKey = key;
       currentConvName = name;
       currentConvMeta = meta;
@@ -4982,6 +4986,7 @@
     }
 
     function handleChatFileChanged(input) {
+      employeeChatComposerRevision++;
       const file = input?.files?.[0];
       const btn = document.getElementById('chatAttachBtn');
       const preview = document.getElementById('chatAttachmentPreview');
@@ -5025,6 +5030,7 @@
     async function sendChatMessage(event) {
       if (event) event.preventDefault();
       if (currentConvKey === 'announcements') return;
+      if (employeeChatSendInFlight) return;
       const input = document.getElementById('chatComposerInput');
       if (!input) return;
       const fileInput = document.getElementById('chatComposerFile');
@@ -5032,6 +5038,9 @@
       const text = input.value.trim();
       if (!text && !file) return;
       const key = currentConvKey;
+      const revision = employeeChatComposerRevision;
+      const submittedText = input.value;
+      employeeChatSendInFlight = true;
       const formData = new FormData();
       formData.append('text', text);
       formData.append('conversation_key', key);
@@ -5045,8 +5054,10 @@
         const response = await portalFetch('/api/messages/', { method: 'POST', body: formData });
         const data = await payload(response);
         if (!response.ok) throw new Error(apiErrorMessage(data, 'Message could not be sent.'));
-        input.value = '';
-        removeChatAttachment();
+        if (key === currentConvKey && revision === employeeChatComposerRevision && input.value === submittedText) {
+          input.value = '';
+          if (fileInput?.files?.[0] === file) removeChatAttachment();
+        }
         if (key === currentConvKey) await loadChatMessages(key);
       } catch (err) {
         if (statusEl) {
@@ -5058,6 +5069,7 @@
           showStatus(err.message, true);
         }
       } finally {
+        employeeChatSendInFlight = false;
         if (button) button.disabled = false;
       }
     }

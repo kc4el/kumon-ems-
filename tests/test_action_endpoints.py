@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils import timezone
@@ -13,6 +13,7 @@ from core.models import (
     LeaveRequest,
     Notification,
     OvertimeSlip,
+    PayEstimatePolicy,
     ShiftRoster,
     ShiftSwap,
     SiteSetting,
@@ -123,11 +124,14 @@ class ActionEndpointsTests(TestCase):
 
     # 2. Overtime Actions
     def test_overtime_approve_and_reject(self):
+        day = date(2026, 11, 1)
+        PayEstimatePolicy.objects.create(effective_date=day, overtime_threshold_hours="8", overtime_multiplier="1.25")
+        ShiftRoster.objects.create(employee=self.emp, work_date=day, start_time=time(8), end_time=time(16), break_mins=0)
         att = Attendance.objects.create(
             employee=self.emp,
-            date=date(2026, 11, 1),
-            clock_in=timezone.now(),
-            clock_out=timezone.now() + timedelta(hours=10),
+            date=day,
+            clock_in=timezone.make_aware(datetime(2026, 11, 1, 8)),
+            clock_out=timezone.make_aware(datetime(2026, 11, 1, 18)),
         )
         slip = OvertimeSlip.objects.create(
             employee=self.emp,

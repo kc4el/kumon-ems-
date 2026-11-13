@@ -3078,14 +3078,14 @@
 
   <div id="toastContainer" class="toast-stack"></div>
 
-  <script src="{% static 'js/dashboard.js' %}?v=6.8"></script>
-  <script src="{% static 'js/hr-workflows.js' %}?v=3"></script>
+  <script src="{% static 'js/dashboard.js' %}?v=6.9"></script>
+  <script src="{% static 'js/hr-workflows.js' %}?v=4"></script>
   <script src="{% static 'js/leave-allocations.js' %}?v=1"></script>
   <script src="{% static 'js/live-notifications.js' %}"></script>
   <script>
     if (typeof switchView === 'undefined') {
       const relPrefix = window.location.protocol === 'file:' ? '../../../' : '/';
-      document.write('<script src="' + relPrefix + 'static/js/dashboard.js?v=6.8"><\/script>');
+      document.write('<script src="' + relPrefix + 'static/js/dashboard.js?v=6.9"><\/script>');
     }
   </script>
   <script>
