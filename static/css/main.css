@@ -9932,3 +9932,296 @@ html[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--moon,
 .leave-allocation-table-wrap { overflow-x: auto; }
 .leave-allocation-card td, .leave-allocation-card th { padding: 10px; text-align: left; }
 .leave-allocation-card td button { margin: 3px; }
+
+
+/* ==========================================================================
+   Dark Mode: Attendance Requests, Case Registers, Claims & HR Workflows
+   ========================================================================== */
+
+/* 1. Attendance requests (Shift swaps, Attendance corrections, Overtime tabs) */
+[data-theme="dark"] .staff-review {
+  background-color: #1e293b !important;
+  border: 1px solid #334155 !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .staff-review-tabs button {
+  background-color: #131c2e !important;
+  border: 1px solid #334155 !important;
+  color: #94a3b8 !important;
+  transition: all 0.15s ease;
+}
+
+[data-theme="dark"] .staff-review-tabs button:hover:not([aria-pressed="true"]) {
+  background-color: rgba(56, 189, 248, 0.12) !important;
+  border-color: rgba(56, 189, 248, 0.3) !important;
+  color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .staff-review-tabs button[aria-pressed="true"] {
+  background-color: rgba(56, 189, 248, 0.16) !important;
+  border-color: #38bdf8 !important;
+  color: #38bdf8 !important;
+  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.12) !important;
+}
+
+[data-theme="dark"] .staff-review-list {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .staff-review-record {
+  background-color: #131c2e !important;
+  border: 1px solid #334155 !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .staff-review-record p {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .staff-review-message {
+  color: #f87171 !important;
+}
+
+/* 2. Case Registers & Grievances / Complaints */
+[data-theme="dark"] .grievance-case-item,
+[data-theme="dark"] .hr-case {
+  background-color: #131c2e !important;
+  border: 1px solid #334155 !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .grievance-case-item h3,
+[data-theme="dark"] .case-title {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .case-submeta {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .grievance-case-item p,
+[data-theme="dark"] .hr-case p {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .case-quote {
+  background-color: #1e293b !important;
+  border-left: 3px solid #38bdf8 !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .hr-case form {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .hr-case label {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .hr-case select,
+[data-theme="dark"] .hr-case textarea {
+  background-color: #0f172a !important;
+  border: 1px solid #334155 !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .hr-case select:focus,
+[data-theme="dark"] .hr-case textarea:focus {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2) !important;
+  outline: none !important;
+}
+
+[data-theme="dark"] .hr-case .btn-link {
+  color: #38bdf8 !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+  text-decoration: underline !important;
+  padding: 6px 0 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  display: inline-block !important;
+  margin-top: 6px !important;
+}
+
+[data-theme="dark"] .hr-case .btn-link:hover {
+  color: #7dd3fc !important;
+}
+
+/* 3. Claims Register Table, Empty State & Pagination */
+[data-theme="dark"] .claims-table-wrapper {
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .claims-table {
+  background-color: transparent !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .claims-table th {
+  background-color: #131c2e !important;
+  color: #94a3b8 !important;
+  border-top: 1px solid #334155 !important;
+  border-bottom: 1px solid #334155 !important;
+}
+
+[data-theme="dark"] .claims-table tbody,
+[data-theme="dark"] .claims-table tbody tr {
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .claims-table td {
+  background-color: transparent !important;
+  color: #cbd5e1 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme="dark"] .claims-table tr:hover td {
+  background-color: #243047 !important;
+}
+
+[data-theme="dark"] .claims-pagination-bar {
+  border-top: 1px solid #334155 !important;
+  color: #94a3b8 !important;
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .btn-page-arr {
+  background-color: #1e293b !important;
+  border: 1px solid #334155 !important;
+  color: #cbd5e1 !important;
+  transition: all 0.15s ease;
+}
+
+[data-theme="dark"] .btn-page-arr:hover:not(:disabled) {
+  background-color: #243047 !important;
+  border-color: #475569 !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .btn-page-arr:disabled {
+  opacity: 0.35 !important;
+  cursor: not-allowed !important;
+}
+
+[data-theme="dark"] .claims-applicant-info strong {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .claims-applicant-info span {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .claims-cat-pill {
+  background-color: rgba(56, 189, 248, 0.12) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+}
+
+[data-theme="dark"] .claims-details-text {
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .claims-amount-txt {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .btn-claim-reject {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  border: 1px solid rgba(239, 68, 68, 0.35) !important;
+  color: #f87171 !important;
+}
+
+[data-theme="dark"] .btn-claim-reject:hover {
+  background-color: rgba(239, 68, 68, 0.28) !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .btn-claim-approve {
+  background-color: #0284c7 !important;
+  border: 1px solid #0284c7 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .btn-claim-approve:hover {
+  background-color: #0369a1 !important;
+}
+
+/* 4. Additional HR Workflow Modules */
+[data-theme="dark"] .hr-workflow-card {
+  background-color: #1e293b !important;
+  border: 1px solid #334155 !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .hr-workflow-form input,
+[data-theme="dark"] .hr-workflow-form select {
+  background-color: #0f172a !important;
+  border: 1px solid #334155 !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .hr-run-button {
+  background-color: #131c2e !important;
+  border: 1px solid #334155 !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .hr-run-button:hover {
+  background-color: #1e293b !important;
+  border-color: #475569 !important;
+}
+
+[data-theme="dark"] .hr-payroll-line {
+  border-bottom: 1px solid #334155 !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .estimate-controls select,
+[data-theme="dark"] .estimate-adjustment input {
+  background-color: #0f172a !important;
+  border: 1px solid #334155 !important;
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .estimate-summary span {
+  background-color: #131c2e !important;
+  border: 1px solid #334155 !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .estimate-summary strong {
+  color: #f8fafc !important;
+}
+
+[data-theme="dark"] .estimate-warning {
+  background: rgba(245, 158, 11, 0.12) !important;
+  border-left: 4px solid #f59e0b !important;
+  color: #fbbf24 !important;
+}
+
+[data-theme="dark"] .estimate-status {
+  color: #38bdf8 !important;
+}
+
+[data-theme="dark"] .estimate-line,
+[data-theme="dark"] .estimate-adjustment {
+  border-bottom: 1px solid #334155 !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .leave-allocation-card {
+  background-color: #1e293b !important;
+  border: 1px solid #334155 !important;
+  color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .leave-allocation-card input,
+[data-theme="dark"] .leave-allocation-card select {
+  background-color: #0f172a !important;
+  border: 1px solid #334155 !important;
+  color: #f8fafc !important;
+}
