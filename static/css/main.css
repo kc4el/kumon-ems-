@@ -9916,3 +9916,10 @@ html[data-theme="dark"] .portal-theme-icon-box .theme-toggle-icon--moon,
 .staff-review-record p { margin: 5px 0; }
 .staff-review-message { color: #a12c32; }
 .staff-review-actions button:disabled { opacity: .6; cursor: wait; }
+.leave-allocation-card { margin: 0 0 20px; padding: 20px; }
+.leave-allocation-controls, .leave-allocation-form { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin: 14px 0; }
+.leave-allocation-controls label, .leave-allocation-form label { display: grid; gap: 6px; }
+.leave-allocation-card input, .leave-allocation-card select { font: inherit; color: inherit; background: transparent; border: 1px solid var(--employee-line, #94a3b8); border-radius: 8px; padding: 9px; min-width: 100px; max-width: 100%; }
+.leave-allocation-table-wrap { overflow-x: auto; }
+.leave-allocation-card td, .leave-allocation-card th { padding: 10px; text-align: left; }
+.leave-allocation-card td button { margin: 3px; }

@@ -267,7 +267,15 @@ class LeaveAllocationSerializer(serializers.ModelSerializer):
         validators = []
 
     def validate_leave_type(self, value):
-        return value.strip().title()
+        value = value.strip().title()
+        if not value:
+            raise serializers.ValidationError("Enter a leave type.")
+        return value
+
+    def validate_year(self, value):
+        if not 1 <= value <= 9999:
+            raise serializers.ValidationError("Use a year between 1 and 9999.")
+        return value
 
 
 class OvertimeSlipSerializer(serializers.ModelSerializer):
@@ -502,9 +510,15 @@ class ExpenseClaimSerializer(serializers.ModelSerializer):
 
 
 class EmployeeAuditLogSerializer(serializers.ModelSerializer):
+    employee_name = serializers.SerializerMethodField()
+
+    def get_employee_name(self, obj):
+        return str(obj.employee) if obj.employee_id else None
+
     class Meta:
         model = EmployeeAuditLog
-        fields = "__all__"
+        fields = ("id", "employee", "employee_name", "actor", "actor_name", "action", "timestamp")
+        read_only_fields = fields
 
 
 class NotificationSerializer(serializers.ModelSerializer):

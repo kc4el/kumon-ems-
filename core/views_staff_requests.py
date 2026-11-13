@@ -63,7 +63,7 @@ def require_hr(user):
 
 
 def audit(employee, user, action):
-    EmployeeAuditLog.objects.create(employee=employee, action=f"{action} by user {user.pk}.")
+    EmployeeAuditLog.objects.create(employee=employee, actor=user, action=f"{action} by user {user.pk}.")
 
 
 def only_decision(data):

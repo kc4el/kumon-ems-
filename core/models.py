@@ -435,8 +435,22 @@ class ExpenseClaim(models.Model):
 class EmployeeAuditLog(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True)
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="employee_audit_events",
+    )
+    actor_name = models.CharField(max_length=255, blank=True, default="")
     action = models.CharField(max_length=255)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            from .audit_context import actor_name, current_actor
+            if self.actor_id is None:
+                self.actor = current_actor()
+            if not self.actor_name:
+                self.actor_name = actor_name(self.actor) if self.actor_id else "System"
+        super().save(*args, **kwargs)
 
 
 class Grievance(models.Model):

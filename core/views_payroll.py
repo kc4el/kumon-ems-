@@ -19,7 +19,7 @@ from .signals import create_audit_log
 
 def _audit(user, action):
     actor = getattr(user, "employee_profile", None)
-    create_audit_log(actor, f"Payroll {action} by user {user.pk} ({user.get_username()}).")
+    create_audit_log(actor, f"Payroll {action} by user {user.pk} ({user.get_username()}).", actor=user)
 
 
 def _open(run):

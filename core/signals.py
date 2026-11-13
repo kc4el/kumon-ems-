@@ -23,8 +23,8 @@ from .notifications import notify_employee
 logger = logging.getLogger(__name__)
 
 
-def create_audit_log(employee, action):
-    EmployeeAuditLog.objects.create(employee=employee, action=action)
+def create_audit_log(employee, action, actor=None):
+    EmployeeAuditLog.objects.create(employee=employee, action=action, actor=actor)
     logger.info("Audit: %s -> %s", employee, action)
 
 

@@ -17,7 +17,7 @@ from django.utils.decorators import method_decorator
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
-from rest_framework import generics, status
+from rest_framework import generics, serializers, status
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.exceptions import ValidationError as DRFValidationError
@@ -1281,11 +1281,32 @@ class LeaveRequestDetailView(
     permission_classes = [IsAuthenticated, IsOwnerOrStaff]
 
 
+class LeaveAllocationAccessMixin:
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        if not request.user.is_active or not _attendance_account_ready(request.user):
+            raise PermissionDenied("An active, onboarded account is required to access leave allocations.")
+
+
 class LeaveAllocationListCreateView(
-    ForceOwnerCreateMixin, OwnerQuerysetMixin, generics.ListCreateAPIView
+    LeaveAllocationAccessMixin, ForceOwnerCreateMixin, OwnerQuerysetMixin, generics.ListCreateAPIView
 ):
     queryset = LeaveAllocation.objects.all().order_by("-year", "leave_type")
     serializer_class = LeaveAllocationSerializer
+    permission_classes = [IsAuthenticatedReadOrStaffHRWrite]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        year = self.request.query_params.get("year")
+        if year is not None:
+            try:
+                year = int(year)
+                if not 1 <= year <= 9999:
+                    raise ValueError
+            except (TypeError, ValueError):
+                raise DRFValidationError({"year": "Use a year between 1 and 9999."})
+            qs = qs.filter(year=year)
+        return qs
 
     def perform_create(self, serializer):
         try:
@@ -1297,21 +1318,29 @@ class LeaveAllocationListCreateView(
             )
 
 
-class LeaveAllocationDetailView(generics.RetrieveUpdateDestroyAPIView):
+class LeaveAllocationDetailView(LeaveAllocationAccessMixin, OwnerQuerysetMixin, generics.RetrieveUpdateDestroyAPIView):
     queryset = LeaveAllocation.objects.all()
     serializer_class = LeaveAllocationSerializer
-    permission_classes = [IsAuthenticated, IsOwnerOrStaff]
+    permission_classes = [IsAuthenticatedReadOrStaffHRWrite, IsOwnerOrStaff]
 
     def perform_update(self, serializer):
         # Same 409 rule as create: PATCH onto an existing
         # (employee, type, year) tuple is a conflict, never a 500.
         try:
             with transaction.atomic():
-                serializer.save()
+                allocation = serializer.save()
+                EmployeeAuditLog.objects.create(employee=allocation.employee,
+                    action=f"Leave allocation updated: {allocation.leave_type}, {allocation.year}, {allocation.days_total} days.")
         except IntegrityError:
             raise Conflict409(
                 "An allocation for this employee, type and year already exists."
             )
+
+    def perform_destroy(self, instance):
+        with transaction.atomic():
+            EmployeeAuditLog.objects.create(employee=instance.employee,
+                action=f"Leave allocation removed: {instance.leave_type}, {instance.year}, {instance.days_total} days; default entitlement applies if configured.")
+            instance.delete()
 
 
 def leave_balance(employee_id, leave_type, year):
@@ -1357,16 +1386,21 @@ class LeaveBalanceView(APIView):
             )
         try:
             year = int(year)
+            if not 1 <= year <= 9999:
+                raise ValueError
         except (TypeError, ValueError):
             return Response(
-                {"error": "year must be an integer."},
+                {"error": "year must be between 1 and 9999."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        types = list(
+        emp = str(get_object_or_404(Employee, pk=serializers.UUIDField().run_validation(emp)).pk)
+        from .models import LEAVE_DEFAULTS
+        types = sorted(set(LEAVE_DEFAULTS) | set(
             LeaveAllocation.objects.filter(employee_id=emp, year=year)
             .values_list("leave_type", flat=True)
             .distinct()
-        ) or ["Vacation", "Sick"]
+        ) | set(LeaveRequest.objects.filter(employee_id=emp, start_date__year__lte=year,
+                end_date__year__gte=year).values_list("leave_type", flat=True)))
         return Response(
             {
                 "employee": emp,
@@ -1644,8 +1678,19 @@ class PayrollItemDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class EmployeeAuditLogListView(OwnerQuerysetMixin, generics.ListAPIView):
-    queryset = EmployeeAuditLog.objects.all().order_by("-timestamp")
+    queryset = EmployeeAuditLog.objects.select_related("employee").order_by("-timestamp", "-id")
     serializer_class = EmployeeAuditLogSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        actor = self.request.query_params.get("actor_name", "").strip()
+        search = self.request.query_params.get("search", "").strip()
+        if actor:
+            qs = qs.filter(actor_name="") if actor.casefold() == "not recorded" else qs.filter(actor_name__icontains=actor)
+        for term in search.split():
+            qs = qs.filter(models.Q(actor_name__icontains=term) | models.Q(action__icontains=term)
+                | models.Q(employee__first_name__icontains=term) | models.Q(employee__last_name__icontains=term))
+        return qs
 
 
 @method_decorator(csrf_protect, name="dispatch")

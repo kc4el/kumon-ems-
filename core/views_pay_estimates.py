@@ -87,7 +87,7 @@ class EstimateInputSerializer(StrictModelSerializer):
 def audit(request, estimate, action, revision=None):
     number = revision.number if revision else "none"
     # Employee-facing audit feeds filter by employee; estimate activity is HR-only.
-    EmployeeAuditLog.objects.create(employee=None,
+    EmployeeAuditLog.objects.create(employee=None, actor=request.user,
         action=f"Pay estimate {estimate.pk} revision {number}: {action} by user {request.user.pk}.")
 
 

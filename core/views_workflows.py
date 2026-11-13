@@ -29,6 +29,7 @@ def active_employee(user):
 def audit(request, obj, action):
     EmployeeAuditLog.objects.create(
         employee=obj.employee,
+        actor=request.user,
         action=f"{obj.__class__.__name__} {obj.pk}: {action} by user {request.user.pk}.",
     )
 

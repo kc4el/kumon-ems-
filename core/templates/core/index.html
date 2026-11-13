@@ -11,7 +11,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=7.8" />
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=7.9" />
   <script src="{% static 'js/qrcode.min.js' %}"></script>
   <script>
     function applyTheme(theme) {
@@ -200,7 +200,7 @@
       const relPrefix = window.location.protocol === 'file:' ? '../../../' : '/';
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = relPrefix + 'static/css/main.css?v=7.8';
+      link.href = relPrefix + 'static/css/main.css?v=7.9';
       document.head.appendChild(link);
     }
   </script>
@@ -2237,10 +2237,10 @@
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                   </svg>
-                  <input type="text" id="auditSearchInput" placeholder="Search admin, action, employee, or detail..."
-                    oninput="filterAuditLogs()" />
+                  <input type="text" id="auditSearchInput" placeholder="Search actor, action, or employee..."
+                    oninput="scheduleAuditFilters()" />
                 </div>
-                <input class="audit-select-control" id="auditAdminFilter" type="search" aria-label="Filter audit events by administrator" placeholder="Filter by administrator" oninput="filterAuditLogs()" />
+                <input class="audit-select-control" id="auditAdminFilter" type="search" aria-label="Filter audit events by actor" placeholder="Filter by actor" oninput="scheduleAuditFilters()" />
                 <button class="btn btn-navy-cta" onclick="exportAuditLogs()"
                   style="height:38px; display:inline-flex; align-items:center; gap:6px; padding:0 14px; font-size:13px;">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2269,11 +2269,11 @@
             <table class="claims-table audit-logs-table" id="auditLogsTable">
               <thead>
                 <tr>
-                  <th style="width: 210px;">ADMINISTRATOR</th>
+                  <th style="width: 210px;">PERFORMED BY</th>
                   <th style="width: 140px;">ACTION CLASS</th>
                   <th style="width: 150px;">TIMESTAMP</th>
                   <th style="width: 250px;">ACTION &amp; TARGET RECORD</th>
-                  <th>DETAILS &amp; AUDIT NOTES</th>
+                  <th>AFFECTED EMPLOYEE</th>
                   <th style="width: 120px;">STATUS</th>
                   <th style="width: 110px; text-align: right;">AUDIT ID</th>
                 </tr>
@@ -3079,13 +3079,14 @@
 
   <div id="toastContainer" class="toast-stack"></div>
 
-  <script src="{% static 'js/dashboard.js' %}?v=6.5"></script>
+  <script src="{% static 'js/dashboard.js' %}?v=6.6"></script>
   <script src="{% static 'js/hr-workflows.js' %}?v=2"></script>
+  <script src="{% static 'js/leave-allocations.js' %}?v=1"></script>
   <script src="{% static 'js/live-notifications.js' %}"></script>
   <script>
     if (typeof switchView === 'undefined') {
       const relPrefix = window.location.protocol === 'file:' ? '../../../' : '/';
-      document.write('<script src="' + relPrefix + 'static/js/dashboard.js?v=6.5"><\/script>');
+      document.write('<script src="' + relPrefix + 'static/js/dashboard.js?v=6.6"><\/script>');
     }
   </script>
   <script>
