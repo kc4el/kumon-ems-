@@ -2171,13 +2171,16 @@
             <!-- Composer Toolbar & Input -->
             <div class="chat-composer-bar">
               <form id="chatMessageForm" onsubmit="handleSendChatMessage(event)">
-                <input type="file" id="chatFileInput" hidden onchange="handleChatFileSelected(this)" />
-                <input type="file" id="chatImageInput" accept="image/*" hidden
+                <input type="file" id="chatFileInput" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.txt,.csv" hidden onchange="handleChatFileSelected(this)" />
+                <input type="file" id="chatImageInput" name="attachment_image" accept="image/png,image/jpeg,image/webp,image/gif" hidden
                   onchange="handleChatFileSelected(this)" />
+                <div id="hrChatAttachmentPreview" class="chat-attachment-preview" style="display: none; margin-bottom: 8px; padding: 4px 10px; background: rgba(2, 132, 199, 0.1); border: 1px solid rgba(2, 132, 199, 0.25); border-radius: 8px; font-size: 12px; color: var(--navy-800, #0f172a); align-items: center; gap: 6px; width: fit-content;">
+                  <span id="hrChatAttachmentName" style="max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500;"></span>
+                  <button type="button" onclick="removeHrChatAttachment()" style="background: transparent; border: 0; cursor: pointer; font-size: 16px; line-height: 1; padding: 0 4px; color: inherit;">&times;</button>
+                </div>
                 <div class="composer-input-row">
-                  <input type="text" id="chatTextInput" placeholder="Post an announcement to the team..." autocomplete="off"
-                    required />
-                  <button type="button" class="composer-tool-btn" title="Attach file"
+                  <input type="text" id="chatTextInput" placeholder="Post an announcement to the team..." autocomplete="off" />
+                  <button type="button" class="composer-tool-btn" id="hrChatFileBtn" title="Attach file"
                     onclick="document.getElementById('chatFileInput').click()">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path

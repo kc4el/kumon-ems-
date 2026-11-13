@@ -61,6 +61,27 @@ class MessageAttachmentTests(TestCase):
         }, format='multipart')
         self.assertEqual(rejected.status_code, 400)
 
+        # Upload without text (file only)
+        file_only = client.post('/api/messages/', {
+            'conversation_key': f'hr_{self.employee.pk}',
+            'text': '',
+            'attachment': SimpleUploadedFile('only_file.txt', b'file only content'),
+        }, format='multipart')
+        self.assertEqual(file_only.status_code, 201, file_only.data)
+        self.assertEqual(file_only.data['text'], '')
+        self.assertEqual(file_only.data['attachment_name'], 'only_file.txt')
+        self.assertTrue(file_only.data['attachment_url'])
+
+        # Upload JPEG with trailing padding
+        jpg_padded = b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xff\xdb\x00C\x00\xff\xd9\x00\x00'
+        jpg_resp = client.post('/api/messages/', {
+            'conversation_key': f'hr_{self.employee.pk}',
+            'text': 'photo with padding',
+            'attachment': SimpleUploadedFile('photo.jpg', jpg_padded, content_type='image/jpeg'),
+        }, format='multipart')
+        self.assertEqual(jpg_resp.status_code, 201, jpg_resp.data)
+        self.assertEqual(jpg_resp.data['attachment_name'], 'photo.jpg')
+
     def test_private_download_and_headers(self):
         msg = Message.objects.create(conversation_key=f'hr_{self.employee.pk}', text='caption', attachment=SimpleUploadedFile('hello.txt', b'hello'))
         for user in (self.owner, self.hr):

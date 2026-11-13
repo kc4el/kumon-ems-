@@ -1958,11 +1958,192 @@
 
     .chat-composer {
       display: flex;
-      align-items: center;
-      gap: 8px;
+      flex-direction: column;
+      gap: 6px;
       padding: 10px 14px;
       border-top: 1px solid var(--employee-line);
       background: var(--employee-card-bg);
+    }
+
+    .chat-composer-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .chat-attachment-preview {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      align-self: flex-start;
+      padding: 4px 10px;
+      background: rgba(2, 132, 199, 0.1);
+      border: 1px solid rgba(2, 132, 199, 0.25);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--employee-blue, #0284c7);
+      max-width: 100%;
+    }
+
+    .chat-attachment-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      object-fit: cover;
+    }
+
+    /* Outgoing bubble links should always be white and underlined */
+    .message-row.outgoing .message-bubble a {
+      color: #ffffff;
+      text-decoration: underline;
+      font-weight: 500;
+    }
+
+    .message-row.incoming .message-bubble a {
+      color: var(--employee-blue, #0284c7);
+      text-decoration: underline;
+      font-weight: 500;
+    }
+
+    /* Attachment image inside message bubble */
+    .chat-bubble-attachment-wrap {
+      margin-top: 6px;
+      margin-bottom: 4px;
+      border-radius: 10px;
+      overflow: hidden;
+      max-width: 260px;
+    }
+
+    .chat-bubble-attachment-img {
+      display: block;
+      width: 100%;
+      max-height: 220px;
+      object-fit: cover;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .chat-bubble-attachment-img:hover {
+      opacity: 0.95;
+      transform: scale(1.01);
+    }
+
+    /* Document/file card inside message bubble */
+    .chat-bubble-file-card {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 6px;
+      margin-bottom: 4px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      text-decoration: none !important;
+      transition: background 0.15s ease;
+      max-width: 100%;
+    }
+
+    .message-row.outgoing .chat-bubble-file-card {
+      background: rgba(255, 255, 255, 0.18);
+      color: #ffffff !important;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .message-row.outgoing .chat-bubble-file-card:hover {
+      background: rgba(255, 255, 255, 0.28);
+    }
+
+    .message-row.incoming .chat-bubble-file-card {
+      background: rgba(2, 132, 199, 0.08);
+      color: var(--employee-navy) !important;
+      border: 1px solid rgba(2, 132, 199, 0.2);
+    }
+
+    .message-row.incoming .chat-bubble-file-card:hover {
+      background: rgba(2, 132, 199, 0.15);
+    }
+
+    .chat-bubble-file-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .chat-bubble-file-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .chat-bubble-file-meta {
+      font-size: 11px;
+      opacity: 0.8;
+      display: block;
+    }
+
+    .chat-attachment-name {
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+
+    .chat-attachment-remove {
+      background: transparent;
+      border: 0;
+      color: inherit;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1;
+      padding: 0 2px;
+      opacity: 0.7;
+      transition: opacity 0.15s;
+    }
+
+    .chat-attachment-remove:hover {
+      opacity: 1;
+    }
+
+    .chat-tool-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: var(--employee-input-bg);
+      border: 1.5px solid var(--employee-input-border);
+      color: var(--employee-muted, #64748b);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .chat-tool-btn:hover {
+      background: rgba(2, 132, 199, 0.08);
+      border-color: var(--employee-blue, #0284c7);
+      color: var(--employee-blue, #0284c7);
+    }
+
+    .chat-tool-btn.has-file {
+      background: rgba(2, 132, 199, 0.14);
+      border-color: var(--employee-blue, #0284c7);
+      color: var(--employee-blue, #0284c7);
+    }
+
+    .chat-tool-btn .chat-file-indicator {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--employee-blue, #0284c7);
+      box-shadow: 0 0 0 2px var(--employee-card-bg);
     }
 
     .chat-composer-input {
@@ -3356,16 +3537,30 @@
               </div>
             </div>
 
+            <div id="chatActionStatus" class="employee-status-banner" role="status" style="display: none; margin: 8px 14px 0 14px;"></div>
             <form class="chat-composer" onsubmit="sendChatMessage(event)">
-              <textarea id="chatComposerInput" class="chat-composer-input" placeholder="Message announcements… (Press Enter to send)" rows="1" onkeydown="handleChatKeyDown(event)"></textarea>
-              <label for="chatComposerFile">Attach file</label>
-              <input id="chatComposerFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.txt" aria-label="Attach a PDF, image, or text file">
-              <button type="submit" class="chat-send-btn" aria-label="Send message" title="Send message">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="22" y1="2" x2="11" y2="13"></line>
-                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
-              </button>
+              <div id="chatAttachmentPreview" class="chat-attachment-preview" style="display: none;">
+                <img id="chatAttachmentThumb" class="chat-attachment-thumb" style="display: none;" alt="Preview" />
+                <svg id="chatAttachmentIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                <span id="chatAttachmentName" class="chat-attachment-name"></span>
+                <button type="button" class="chat-attachment-remove" title="Remove attachment" onclick="removeChatAttachment(event)">&times;</button>
+              </div>
+              <div class="chat-composer-row">
+                <input id="chatComposerFile" type="file" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.txt,.csv" aria-label="Attach a document or photo" hidden onchange="handleChatFileChanged(this)">
+                <button type="button" id="chatAttachBtn" class="chat-tool-btn" title="Attach file or photo" aria-label="Attach file" onclick="document.getElementById('chatComposerFile').click()">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                  </svg>
+                  <span id="chatFileIndicator" class="chat-file-indicator" style="display: none;"></span>
+                </button>
+                <textarea id="chatComposerInput" class="chat-composer-input" placeholder="Message announcements… (Press Enter to send)" rows="1" onkeydown="handleChatKeyDown(event)"></textarea>
+                <button type="submit" class="chat-send-btn" aria-label="Send message" title="Send message">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                  </svg>
+                </button>
+              </div>
             </form>
           </section>
         </div>
@@ -4684,12 +4879,15 @@
           const timeStr = msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : 'Just now';
           const senderInitials = (sender.split(' ').map((n) => n[0]).join('').slice(0, 2) || 'E').toUpperCase();
 
+          const hasText = Boolean(msg.text && msg.text.trim());
+          const attachHtml = renderChatAttachment(msg);
+
           return `<div class="message-row ${isOutgoing ? 'outgoing' : 'incoming'}">
             ${isOutgoing ? '' : `<div class="msg-avatar">${safe(senderInitials)}</div>`}
             <div class="message-bubble">
               ${isOutgoing ? '' : `<div class="msg-sender-name">${safe(sender)}</div>`}
-              <div style="white-space:pre-wrap;">${safe(msg.text || "")}</div>
-              ${/^\/api\/messages\/[0-9a-f-]+\/attachment\/$/i.test(msg.attachment_url || "") ? `<a href="${safe(msg.attachment_url)}">Download attachment</a>` : ""}
+              ${hasText ? `<div style="white-space:pre-wrap;">${safe(msg.text)}</div>` : ''}
+              ${attachHtml}
               <span class="msg-time">${safe(timeStr)}</span>
             </div>
           </div>`;
@@ -4699,6 +4897,79 @@
       } catch (error) {
         console.warn('Employee chat messages could not be refreshed.', error);
       }
+    }
+
+    function renderChatAttachment(msg) {
+      const url = msg.attachment_url;
+      if (!url || !/^\/api\/messages\/[0-9a-f-]+\/attachment\/$/i.test(url)) return '';
+      const name = msg.attachment_name || 'attachment';
+      const isImage = /\.(png|jpe?g|webp|gif)$/i.test(name);
+      if (isImage) {
+        return `<div class="chat-bubble-attachment-wrap">
+          <a href="${safe(url)}" target="_blank" rel="noopener" class="chat-attachment-img-link" title="View image">
+            <img src="${safe(url)}" alt="${safe(name)}" class="chat-bubble-attachment-img" loading="lazy" />
+          </a>
+          <div style="font-size:11px; margin-top:4px; opacity:0.9;">
+            <a href="${safe(url)}" download="${safe(name)}" style="display:inline-flex; align-items:center; gap:4px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <span>Download attachment</span>
+            </a>
+          </div>
+        </div>`;
+      }
+      return `<a href="${safe(url)}" download="${safe(name)}" class="chat-bubble-file-card" title="Download ${safe(name)}">
+        <div class="chat-bubble-file-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+            <polyline points="13 2 13 9 20 9"></polyline>
+          </svg>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div class="chat-bubble-file-name">${safe(name)}</div>
+          <span class="chat-bubble-file-meta">Download attachment</span>
+        </div>
+      </a>`;
+    }
+
+    function handleChatFileChanged(input) {
+      const file = input?.files?.[0];
+      const btn = document.getElementById('chatAttachBtn');
+      const preview = document.getElementById('chatAttachmentPreview');
+      const nameEl = document.getElementById('chatAttachmentName');
+      const indicator = document.getElementById('chatFileIndicator');
+      const thumb = document.getElementById('chatAttachmentThumb');
+      const icon = document.getElementById('chatAttachmentIcon');
+      if (file) {
+        if (btn) btn.classList.add('has-file');
+        if (indicator) indicator.style.display = 'block';
+        if (nameEl) nameEl.textContent = file.name;
+        if (preview) preview.style.display = 'inline-flex';
+        if (file.type && file.type.startsWith('image/') && thumb) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            thumb.src = e.target.result;
+            thumb.style.display = 'block';
+            if (icon) icon.style.display = 'none';
+          };
+          reader.readAsDataURL(file);
+        } else {
+          if (thumb) thumb.style.display = 'none';
+          if (icon) icon.style.display = 'block';
+        }
+      } else {
+        if (btn) btn.classList.remove('has-file');
+        if (indicator) indicator.style.display = 'none';
+        if (preview) preview.style.display = 'none';
+        if (thumb) { thumb.src = ''; thumb.style.display = 'none'; }
+        if (icon) icon.style.display = 'block';
+      }
+    }
+
+    function removeChatAttachment(e) {
+      if (e) e.stopPropagation();
+      const fileInput = document.getElementById('chatComposerFile');
+      if (fileInput) fileInput.value = '';
+      handleChatFileChanged(fileInput || { files: [] });
     }
 
     async function sendChatMessage(event) {
@@ -4714,19 +4985,29 @@
       formData.append('text', text);
       formData.append('conversation_key', key);
       if (file) formData.append('attachment', file);
-      const button = input.form.querySelector('button[type="submit"]');
-      button.disabled = true;
+      const button = input.form ? input.form.querySelector('button[type="submit"]') : null;
+      if (button) button.disabled = true;
+      const statusEl = document.getElementById('chatActionStatus');
+      if (statusEl) statusEl.style.display = 'none';
+
       try {
         const response = await portalFetch('/api/messages/', { method: 'POST', body: formData });
         const data = await payload(response);
         if (!response.ok) throw new Error(apiErrorMessage(data, 'Message could not be sent.'));
         input.value = '';
-        if (fileInput) fileInput.value = '';
+        removeChatAttachment();
         if (key === currentConvKey) await loadChatMessages(key);
       } catch (err) {
-        showStatus(err.message, true);
+        if (statusEl) {
+          statusEl.textContent = err.message || 'Message could not be sent.';
+          statusEl.className = 'employee-status-banner error';
+          statusEl.style.display = 'block';
+          setTimeout(() => { if (statusEl) statusEl.style.display = 'none'; }, 5000);
+        } else {
+          showStatus(err.message, true);
+        }
       } finally {
-        button.disabled = false;
+        if (button) button.disabled = false;
       }
     }
 

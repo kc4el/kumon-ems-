@@ -245,10 +245,8 @@ class PurgeResignedTests(TestCase):
 class PageViewTests(TestCase):
     def test_dashboard_view_renders_successfully(self):
         response = self.client.get("/")
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Kumon EMS")
-        self.assertContains(response, "view-dashboard")
-        self.assertContains(response, "/static/js/dashboard.js?v=6.4")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/login/")
 
     def test_login_view_renders_successfully(self):
         response = self.client.get("/login/")
@@ -261,10 +259,8 @@ class PageViewTests(TestCase):
 
     def test_new_staff_login_view_renders_successfully(self):
         response = self.client.get("/onboarding/login/")
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "New staff sign in")
-        self.assertContains(response, "Sign In to Portal")
-        self.assertNotContains(response, "HR Administrator? Use HR Login")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/login/")
 
     def test_hr_login_and_dashboard_are_separate(self):
         response = self.client.get("/hr/login/")

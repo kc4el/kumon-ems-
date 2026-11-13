@@ -532,6 +532,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 class MessageSerializer(serializers.ModelSerializer):
     attachment = serializers.FileField(write_only=True, required=False, allow_null=True)
     attachment_url = serializers.SerializerMethodField()
+    attachment_name = serializers.SerializerMethodField()
     is_own = serializers.SerializerMethodField()
 
     def validate_attachment(self, value):
@@ -546,6 +547,7 @@ class MessageSerializer(serializers.ModelSerializer):
             "sender_name",
             "text",
             "attachment",
+            "attachment_name",
             "attachment_url",
             "created_at",
             "is_own",
@@ -553,11 +555,18 @@ class MessageSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
             "created_at",
+            "attachment_name",
             "attachment_url",
             "sender_name",
             "conversation_key",
             "is_own",
         )
+
+    def get_attachment_name(self, obj):
+        if not obj.attachment:
+            return None
+        from pathlib import PurePosixPath
+        return PurePosixPath(str(obj.attachment.name).replace('\\', '/')).name
 
     def get_attachment_url(self, obj):
         if not obj.attachment:
@@ -580,9 +589,13 @@ class MessageSerializer(serializers.ModelSerializer):
         return obj.sender_name in sender_names
 
     def validate(self, attrs):
-        if not attrs.get("text") and not self.context["request"].FILES.get(
-            "attachment"
-        ):
+        text = (attrs.get("text") or "").strip()
+        request = self.context.get("request")
+        has_file = bool(
+            attrs.get("attachment")
+            or (request and request.FILES.get("attachment"))
+        )
+        if not text and not has_file:
             raise serializers.ValidationError("A message or attachment is required.")
         return attrs
 

@@ -2814,11 +2814,40 @@ function appendPersistedMessage(stream, message) {
     bubble.appendChild(text);
   }
   if (message.attachment_url) {
+    const attachName = message.attachment_name || 'attachment';
+    const isImage = /\.(png|jpe?g|webp|gif)$/i.test(attachName);
+    if (isImage) {
+      const imgWrap = document.createElement('div');
+      imgWrap.style.marginTop = '6px';
+      imgWrap.style.marginBottom = '4px';
+      imgWrap.style.maxWidth = '260px';
+      imgWrap.style.borderRadius = '8px';
+      imgWrap.style.overflow = 'hidden';
+      const imgLink = document.createElement('a');
+      imgLink.href = message.attachment_url;
+      imgLink.target = '_blank';
+      imgLink.rel = 'noopener';
+      const img = document.createElement('img');
+      img.src = message.attachment_url;
+      img.alt = attachName;
+      img.style.display = 'block';
+      img.style.width = '100%';
+      img.style.maxHeight = '200px';
+      img.style.objectFit = 'cover';
+      img.style.borderRadius = '8px';
+      imgLink.appendChild(img);
+      imgWrap.appendChild(imgLink);
+      bubble.appendChild(imgWrap);
+    }
     const link = document.createElement('a');
     link.href = message.attachment_url;
     link.target = '_blank';
     link.rel = 'noopener';
-    link.textContent = `Attachment: ${message.attachment_url.split('/').pop()}`;
+    link.download = attachName;
+    link.textContent = `Attachment: ${attachName}`;
+    link.style.display = 'inline-block';
+    link.style.marginTop = '4px';
+    link.style.fontSize = '12px';
     bubble.appendChild(link);
   }
   const timestamp = document.createElement('span');
@@ -2829,26 +2858,47 @@ function appendPersistedMessage(stream, message) {
   stream.appendChild(row);
 }
 
+function removeHrChatAttachment() {
+  const fileInput = document.getElementById('chatFileInput');
+  const imgInput = document.getElementById('chatImageInput');
+  if (fileInput) fileInput.value = '';
+  if (imgInput) imgInput.value = '';
+  const preview = document.getElementById('hrChatAttachmentPreview');
+  if (preview) preview.style.display = 'none';
+}
+
 function handleChatFileSelected(input) {
   const file = input.files[0];
   if (!file) return;
-  // Same 10MB + PDF/JPG/PNG rule as onboarding docs, single source.
-  const err = validateOnboardingFile(file);
-  if (err) {
-    showToast(err, 'error');
+  const maxBytes = 10 * 1024 * 1024;
+  if (file.size > maxBytes) {
+    showToast(`File is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum is 10 MB.`, 'error');
     input.value = '';
     return;
   }
-  showToast(`${file.name} attached. Add a message or press Send Message.`);
+  const ext = String(file.name || '').split('.').pop().toLowerCase();
+  const allowed = ['pdf', 'jpg', 'jpeg', 'png', 'webp', 'gif', 'txt', 'csv'];
+  if (!allowed.includes(ext)) {
+    showToast(`Unsupported file type (.${ext}). Allowed: PDF, JPG, PNG, WEBP, GIF, TXT, CSV.`, 'error');
+    input.value = '';
+    return;
+  }
+  const preview = document.getElementById('hrChatAttachmentPreview');
+  const nameEl = document.getElementById('hrChatAttachmentName');
+  if (preview && nameEl) {
+    nameEl.textContent = file.name;
+    preview.style.display = 'inline-flex';
+  }
+  showToast(`${file.name} attached.`);
 }
 
 async function handleSendChatMessage(e) {
   e.preventDefault();
   const input = document.getElementById('chatTextInput');
-  const text = input.value.trim();
+  const text = input ? input.value.trim() : '';
   const fileInput = document.getElementById('chatFileInput');
   const imageInput = document.getElementById('chatImageInput');
-  const file = fileInput.files[0] || imageInput.files[0];
+  const file = (fileInput && fileInput.files[0]) || (imageInput && imageInput.files[0]);
   if (!text && !file) return;
   messagesLoadVersion += 1;
 
@@ -2860,10 +2910,14 @@ async function handleSendChatMessage(e) {
   let savedMessage;
   try {
     const response = await apiFetch('/api/messages/', { method: 'POST', body: formData });
-    if (!response.ok) throw new Error('Unable to save message.');
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      const msg = errData.detail || errData.error || (errData.attachment ? errData.attachment[0] : null) || 'Unable to save message.';
+      throw new Error(msg);
+    }
     savedMessage = await response.json();
   } catch (error) {
-    showToast('Message could not be saved.');
+    showToast(error.message || 'Message could not be saved.', 'error');
     return;
   }
 
@@ -2873,9 +2927,8 @@ async function handleSendChatMessage(e) {
     stream.scrollTop = stream.scrollHeight;
   }
 
-  input.value = '';
-  fileInput.value = '';
-  imageInput.value = '';
+  if (input) input.value = '';
+  removeHrChatAttachment();
   showToast('Message sent.');
   markConversationRead(activeConversationKey, savedMessage.id);
   refreshHrChatUnreadDots();
